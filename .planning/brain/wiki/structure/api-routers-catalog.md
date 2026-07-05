@@ -2,7 +2,7 @@
 title: API routers catalog
 type: structure
 tags: [structure, api, trpc, catalog]
-source_commit: 105a8ccf64b34c611493215eb3519e8922343839
+source_commit: 2aabc35c8
 verify_with:
   - packages/api/src/root.ts
   - packages/api/src/portal-root.ts

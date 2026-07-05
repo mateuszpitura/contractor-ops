@@ -4725,7 +4725,8 @@
     "classification": "Klasyfikacja",
     "organization": "Organizacja",
     "tax": "Podatki",
-    "workflow-roles": "Role workflow"
+    "workflow-roles": "Role workflow",
+    "taxFiling": "Rozliczenia podatkowe"
   },
   "Notifications": {
     "popover": {
@@ -9229,6 +9230,42 @@
       "SAFE": "Znacznie poniżej progu zgłaszania 1099-K — nic do zrobienia.",
       "APPROACHING": "Zbliża się do progu zgłaszania 1099-K. To informacja — nie składamy 1099-K.",
       "OVER": "Powyżej progu zgłaszania 1099-K. Twój podmiot rozliczający płatności — a nie ta platforma — składa ewentualne 1099-K. To tylko informacja."
+    }
+  },
+  "Tax1042SBatch": {
+    "pageTitle": "Deklaracja 1042-S",
+    "pageDescription": "Sprawdź podatek u źródła dla zagranicznych odbiorców przed złożeniem. Nic nie jest składane automatycznie — najpierw weryfikujesz.",
+    "heading": "Przegląd partii 1042-S",
+    "generateCta": "Wygeneruj partię 1042-S",
+    "regenerateCta": "Wygeneruj partię ponownie",
+    "loadError": "Nie udało się tego załadować. Sprawdź połączenie i spróbuj ponownie.",
+    "reload": "Załaduj ponownie",
+    "empty": {
+      "heading": "Brak partii 1042-S dla roku {taxYear}",
+      "body": "Wygeneruj partię, aby przejrzeć podatek u źródła dla zagranicznych odbiorców przed złożeniem. Nic nie jest składane automatycznie — najpierw weryfikujesz."
+    },
+    "generatedAnnounce": "Wygenerowano partię 1042-S dla roku {taxYear} z {count} odbiorcami.",
+    "adviserNote": "Kwoty, formularze i klasyfikacje pokazane tutaj wymagają weryfikacji przez doradcę prawnego lub podatkowego właściwego dla danej jurysdykcji, zanim na nich polegasz.",
+    "correctedBadge": "Skorygowano",
+    "noFtin": "Brak FTIN w aktach",
+    "rateUnknown": "Nieustalona",
+    "columns": {
+      "income": "Dochód brutto (pole 2)",
+      "rate": "Stawka (pole 3b)",
+      "withheld": "Pobrano (pole 7)"
+    },
+    "summary": {
+      "heading": "Podsumowanie partii",
+      "taxYear": "Rok podatkowy",
+      "recipients": "Odbiorcy",
+      "grossTotal": "Brutto łącznie (pole 2)",
+      "withheldTotal": "Pobrano łącznie (pole 7)"
+    },
+    "treaty": {
+      "statutoryBadge": "30% ustawowo",
+      "statutory": "Brak kompletnego W-8 w aktach — podatek u źródła zgłoszony według ustawowej stawki 30%. Złóż ważne W-8, aby ubiegać się o stawkę z umowy.",
+      "appliedBadge": "Stawka z umowy",
+      "applied": "Stawka {rate} z umowy zastosowana na podstawie {article} (W-8 w aktach)."
     }
   }
 }

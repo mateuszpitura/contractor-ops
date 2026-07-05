@@ -2,10 +2,16 @@
 title: US tax forms (W-9 / W-8BEN / W-8BEN-E) and treaty engine
 type: domain
 tags: [us, tax, w-form, treaty, portal, esign, immutable-record]
-source_commit: 673e3168f
+source_commit: 2aabc35c8
 verify_with:
   - apps/web-vite/src/components/portal/tax-forms/
   - apps/web-vite/src/components/contractors/tax-forms/
+  - apps/web-vite/src/components/contractors/tax-filing/
+  - apps/web-vite/src/pages/dashboard/tax-filing.tsx
+  - packages/api/src/services/form-1042s.service.ts
+  - packages/api/src/services/form-1042s-pdf.ts
+  - packages/api/src/pdf-templates/form-1042s-recipient-copy.tsx
+  - packages/api/src/routers/finance/form-1042s-router.ts
   - apps/web-vite/src/components/contractors/form-1099k-band.tsx
   - apps/web-vite/src/components/contractors/hooks/use-1099k-tracker.ts
   - apps/web-vite/src/components/contractors/classification/us-classification-result.tsx
@@ -143,6 +149,43 @@ SHA-256 of each file pinned in `checksums.txt` (guarded by
 today; until the XSDs are placed, `xsdValidate` reports `XSD-BUNDLE-MISSING` (INVALID)
 rather than throwing, so the validator's VALID path stays blocked on the human download.
 
+## Form 1042-S (chapter-3 foreign withholding)
+
+`form-1042s.service` is the deterministic non-transmit core for US-source income paid to foreign
+recipients — the chapter-3 sibling of the 1099-NEC engine (no de-minimis threshold, a treaty
+§875(d) gate, FTIN in place of TIN). Box figures are ALWAYS server-derived: box-2 gross income sums
+settled (PAID) USD payouts (`PaymentRunItem` `completedAt` in the calendar tax year, per recipient
+per payer-org — the same settled source the 1099-K tracker uses); box-7 = box-2 × the resolved
+chapter-3 rate. The client input carries only `taxYear`/`formId` (mass-assignment guard).
+
+`resolveBox2Rate` implements the **§875(d) gate**: an incomplete W-8 chain short-circuits to the
+**30% statutory rate BEFORE any treaty lookup** and flags the recipient for escalation (never a silent
+skip); a complete chain resolves the treaty rate + article via the injected `applyTreaty` (the same
+`WithholdingTaxRate` table the W-form treaty engine reads). `routeFormType` routes from the W-form on
+file (W-8 → 1042-S, W-9 → 1099-NEC), never nationality.
+
+Immutability mirrors 1099-NEC: `buildForm1042SSnapshot` keeps `recipientFtinLast4` only (its sanitizer
+strips forged `ftin`/`tin`/`ssn` keys); a CORRECTED filing supersedes — `fileCorrection1042S` flips the
+prior ACTIVE row to SUPERSEDED then inserts a new ACTIVE row with `corrected: true` in one `$transaction`
+(audited `form1042s.correction`); the filed row is never mutated. `generateBatch1042S` is idempotent
+(reserve/complete/clear, audited `form1042s.generate`) and **REPORTED-only** — the core has zero
+payment-write call paths. The recipient-copy PDF (`form-1042s-pdf` → `form-1042s-recipient-copy.tsx`)
+renders a substitute black-ink form from the immutable snapshot (FTIN last-4 only), CAS-guarded, archived
+to the US R2 tax bucket under `1042-s/<orgId>/<id>.pdf`.
+
+**IRIS 1042-S e-file:** `buildIris1042SXml` (a **sibling** builder, not a parameterized 1099 builder —
+the Pub 1187 record layout differs materially) assembles the Transmission Manifest + WithholdingAgent +
+a 1042-S recipient record (income code, box-2 gross, ch3/ch4 exemption + rate, box-7 withheld, 13j/13k
+status, 13n LOB, treaty article) with a real XML builder (never string concat) and the masked last-4
+FTIN only. `xsdValidate1042S` is form-parameterized (`ENTRY_MATCHERS` per-form loader, so a missing
+1042-S XSD reports missing rather than validating against the 1099 schema), SSRF/XXE-safe, and stays
+`XSD-BUNDLE-MISSING` until the human-only IRS Pub 1187 XSDs land under `packages/iris/src/schema-bundle/`.
+The **transmit tail** (download-XML / upload-ack) is a documented **cross-phase HOLD** on the P86
+`TaxFilingTransmitter` seam + `iris-ack-parser` — no `form-1042s-transmit.service.ts` and no transmit
+procedures exist; they append to `form-1042s-router.ts` verbatim once P86 lands, never rebuilt.
+
+See [[integrations/irs-1042s]] for the IRIS transmit/XSD integration surface.
+
 ## 1099-K informational threshold tracker
 
 `form-1099k-tracker.service` is a **purely informational** band tracker — NOT a filing. A
@@ -178,6 +221,10 @@ contractor profile; it never mutates band state.
 | 1099-NEC engine | `packages/api/src/services/form-1099-nec.service.ts` (`generateBatch` / `aggregateBox1[Async]` / `getBox1ThresholdMinor` / `computeBox4Minor` / `buildForm1099NecSnapshot` / `supersedeCorrected` / `fileCorrection`) |
 | 1099-NEC Copy-B PDF | `packages/api/src/services/form-1099-nec-pdf.ts` (`renderAndArchiveCopyB` / `renderForm1099NecCopyB`) + `packages/api/src/pdf-templates/form-1099-nec-copy-b.tsx` (`Form1099NecCopyBDocument`) |
 | IRIS XML e-file | `packages/iris` (`buildIrisXml` / `xsdValidate`) — Copy A submission XML + bundled-XSD validation; XSD bundle under `src/schema-bundle/` is a human-action checkpoint |
+| 1042-S core | `packages/api/src/services/form-1042s.service.ts` (`resolveBox2Rate` §875(d) gate / `routeFormType` / `buildForm1042SSnapshot` / `generateBatch1042S` / `supersedeCorrected1042S` / `fileCorrection1042S`) |
+| 1042-S recipient PDF | `packages/api/src/services/form-1042s-pdf.ts` (`renderAndArchiveRecipientCopy`) + `packages/api/src/pdf-templates/form-1042s-recipient-copy.tsx` |
+| 1042-S staff router | `form1042s.generateBatch` / `fileCorrection` / `getRecipientCopyUrl` / `list` / `revealRecipientFtin` (contractorPii:read) — `packages/api/src/routers/finance/form-1042s-router.ts` (us-expansion gated) |
+| 1042-S IRIS | `packages/iris` (`buildIris1042SXml` / `xsdValidate1042S`) — Pub 1187 sibling builder + form-parameterized XSD |
 | Form routing | `packages/api/src/services/tax-form-routing.ts` (`determineFormType`) |
 | Validators | `packages/validators/src/w-form-validators.ts` (`taxFormSubmissionSchema` discriminated union) |
 | Flag gate | `packages/api/src/middleware/require-us-expansion-flag.ts` (`assertUsExpansionEnabled`) |
@@ -191,6 +238,15 @@ contractor profile; it never mutates band state.
 - Staff status card: `apps/web-vite/src/components/contractors/tax-forms/tax-form-status-card.tsx`
   + `hooks/use-tax-form-status.ts` — status pill (ACTIVE/DRAFT/SUPERSEDED/expiring) reusing the
   `UspsAddressStatusPill` idiom; full SSN behind `SsnMaskedReveal` (`contractorPii:read`).
+- Staff 1042-S batch review (workspace): `apps/web-vite/src/components/contractors/tax-filing/tax-1042s-batch-panel.tsx`
+  (wired 4-state) + `tax-1042s-batch-summary.tsx` + `treaty-rate-caption.tsx` + `hooks/use-1042s-batch.ts`
+  (sole tRPC boundary → `form1042s.list` / `generateBatch`). Mounted at the `/tax-filing` page
+  (`pages/dashboard/tax-filing.tsx` — thin Suspense + `module.us-expansion` flag gate + `contractor:read`),
+  reachable via the flag-gated Finance nav entry (`Landmark`). FTIN last-4 only via the gated
+  `SsnMaskedReveal`; a recipient without a complete W-8 renders the amber 30% statutory caption
+  (`treaty-rate-caption.tsx`, `data-basis="statutory"`) — never a filing block. Review-before-file
+  (Generate produces a reviewable summary; filing is a separate action). The staff filing card
+  (download XML / ack upload) + the portal 1042-S consent-gated recipient PDF are HELD on the P86 seam.
 - 1099-K informational band (profile): `apps/web-vite/src/components/contractors/form-1099k-band.tsx`
   + `hooks/use-1099k-tracker.ts` (read-only sole tRPC boundary → `form1099kTracker.getTrackerState`).
   SAFE (secondary) / APPROACHING / OVER render amber `warning` at most — never `destructive`, never a
@@ -240,6 +296,13 @@ contractor profile; it never mutates band state.
   generates, or transmits a 1099-K. `Form1099KTrackerState` is written **exclusively** by the cron
   (the read router never mutates it); `OVER` needs **both** the amount and count thresholds crossed;
   the threshold is read per tax year from `Tax1099KThreshold` ($20,000 + 200 OBBBA), never a constant.
+- 1042-S box figures are server-derived (box-2 = settled USD payouts; box-7 = box-2 × the §875(d)-gated
+  rate); the client asserts only `taxYear`/`formId`. An incomplete W-8 chain is 30% statutory +
+  escalation — never a treaty benefit and never a hard block on filing (the 30%-vs-treaty distinction is
+  an amber advisory caption). FTIN is last-4 only everywhere (snapshot, PDF, IRIS XML, DOM); the full
+  reveal is a separate `contractorPii:read` audited procedure. A CORRECTED 1042-S supersedes (never
+  mutates); `generateBatch1042S` is idempotent + REPORTED-only (zero payment writes). The 1042-S
+  transmit tail + portal consent step reuse the P86 seam verbatim once it lands — never rebuilt.
 
 ## Agent mistakes
 
@@ -272,9 +335,18 @@ contractor profile; it never mutates band state.
   NOT let the read router write `Form1099KTrackerState` (the cron is the sole writer). Do NOT band on
   a single dimension for `OVER` (both amount AND count) or hard-code the threshold (read
   `Tax1099KThreshold` by tax year).
+- Do NOT grant a treaty rate on an incomplete W-8 chain — the §875(d) gate short-circuits to 30%
+  statutory before any treaty lookup, and never blocks filing (the 30%-vs-treaty distinction is an amber
+  advisory caption, not a gate). Do NOT pass a full FTIN into the snapshot, the recipient PDF, or
+  `buildIris1042SXml` (last-4 only). Do NOT string-concatenate the 1042-S IRIS XML (sibling
+  `buildIris1042SXml`), and treat `XSD-BUNDLE-MISSING` as the human Pub 1187 XSD checkpoint, not a bug.
+  Do NOT rebuild the 1042-S transmit tail or the portal consent step — they reuse the P86 seam verbatim
+  once it lands (cross-phase HOLD).
 
 ## Related
 
+- [[domains/us-classification]]
+- [[integrations/irs-1042s]]
 - [[domains/tax-and-wht]]
 - [[domains/portal-external]]
 - [[domains/contractors-engagements]]

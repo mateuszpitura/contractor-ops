@@ -52,6 +52,8 @@ updated: 2026-06-09
 |------|------|
 | [[compliance-dashboard]] | KPIs, gate, renewals, blocked payments |
 | [[classification-ir35]] | IR35, DRV, SDS (flag-gated) |
+| [[us-classification]] | US worker classification — IRS common-law + CA AB5 + §530 + determination letter (flag-dark `module.us-expansion`) |
+| [[us-tax-forms]] | W-9/W-8, treaty engine, 1099-NEC + IRIS, 1042-S (chapter-3), 1099-K tracker (flag-dark `module.us-expansion`) |
 | [[consent-gdpr-pdpl]] | consent, GDPR erasure/portability |
 | [[gulf-saudization]] | UAE free-zone, Saudization |
 | [[tax-and-wht]] | VAT, WHT certificates |

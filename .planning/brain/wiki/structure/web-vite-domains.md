@@ -2,12 +2,14 @@
 title: web-vite UI domains
 type: structure
 tags: [structure, web-vite, ui]
-source_commit: 65cdee081
+source_commit: 2aabc35c8
 verify_with:
   - apps/web-vite/src/components/
   - apps/web-vite/ARCHITECTURE.md
   - apps/web-vite/src/router/
-updated: 2026-07-01
+  - apps/web-vite/src/pages/dashboard/tax-filing.tsx
+  - apps/web-vite/src/lib/navigation.ts
+updated: 2026-07-05
 ---
 
 # web-vite UI domains
@@ -35,6 +37,7 @@ Routes: `apps/web-vite/src/router/dashboard-routes.tsx`, `portal-routes.tsx`.
 | `contractors/insights/` | [[domains/contractors-engagements]] — list insight band (attention rail + composition strip, view-mode arranger); `hooks/use-contractor-insights.ts` = sole tRPC boundary |
 | `contractors/contractor-profile/overview/` | [[domains/contractors-engagements]] — detail overview widgets (compliance + financial pulse) |
 | `contractors/tax-forms/` | [[domains/us-tax-forms]] — staff W-form status card (`tax-form-status-card.tsx` + `hooks/use-tax-form-status.ts`) |
+| `contractors/tax-filing/` | [[domains/us-tax-forms]] — staff 1042-S batch review workspace (`tax-1042s-batch-panel.tsx` + `tax-1042s-batch-summary.tsx` + `treaty-rate-caption.tsx`; `hooks/use-1042s-batch.ts` = sole tRPC boundary → `form1042s.list`/`generateBatch`). Page `pages/dashboard/tax-filing.tsx` at `/tax-filing`, flag-gated `module.us-expansion` + `contractor:read`. FTIN last-4 via `SsnMaskedReveal`; 30% statutory = amber advisory, never a filing block. The filing card (download XML / ack upload) + portal 1042-S consent download are HELD on the P86 `iris-status-pill`/`ack-upload-field`/`step-edelivery-consent` seam |
 | `contracts/` | [[domains/contracts-lifecycle]] |
 | `portal/` | [[domains/portal-external]] |
 | `portal/tax-forms/` | [[domains/us-tax-forms]] — portal W-9/W-8BEN/W-8BEN-E self-cert wizard (`tax-form-wizard.tsx` + `hooks/use-tax-form-wizard.ts`), route `portal/tax-form` |
