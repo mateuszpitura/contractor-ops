@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { endOfMonth, endOfWeek, format, startOfMonth, startOfWeek } from 'date-fns';
+import { endOfMonth, format, startOfMonth, startOfWeek } from 'date-fns';
 import { parseAsString, useQueryState } from 'nuqs';
 import { useCallback, useMemo, useState } from 'react';
 
