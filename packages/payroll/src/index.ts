@@ -11,6 +11,8 @@
 
 export type { PayrollTargetSummary } from './engine/engine.js';
 export { PayrollExportEngine } from './engine/engine.js';
+// --- Profiles: US CSV file-export --------------------------------------------
+export { AdpProfile, registerAdpProfile } from './profiles/adp/index.js';
 // --- Profiles: PL file-export ------------------------------------------------
 export { ComarchProfile, registerComarchProfile } from './profiles/comarch/index.js';
 // --- Profiles: DE file-export ------------------------------------------------
@@ -22,6 +24,11 @@ export {
   registerDatevProfile,
 } from './profiles/datev/index.js';
 export { EnovaProfile, registerEnovaProfile } from './profiles/enova/index.js';
+export { GustoCsvProfile, registerGustoCsvProfile } from './profiles/gusto-csv/index.js';
+export {
+  QuickbooksCsvProfile,
+  registerQuickbooksCsvProfile,
+} from './profiles/quickbooks-csv/index.js';
 // --- Profiles: UK RTI file-export --------------------------------------------
 export { RtiEpsProfile, registerRtiEpsProfile } from './profiles/rti-eps/index.js';
 export { RtiFpsProfile, registerRtiFpsProfile } from './profiles/rti-fps/index.js';
@@ -36,6 +43,7 @@ export {
   type SymfoniaOptions,
   SymfoniaProfile,
 } from './profiles/symfonia/index.js';
+export { mapUsEmployeeToRow, type UsPayrollRow } from './profiles/us-shared/mapper.js';
 export {
   clearProfiles,
   getProfile,
