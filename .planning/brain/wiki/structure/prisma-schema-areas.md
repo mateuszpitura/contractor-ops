@@ -96,3 +96,10 @@ Additive, drift-safe, authored un-applied (per-region apply is a deferred human 
 - `DeprovisioningRun`: `contractorId`/`assignmentId` relaxed to nullable + `workerId?` (+ relation + index + CHECK) — an employee run keys off `workerId`; DROP NOT NULL is non-destructive.
 - `EmployeeProfile.terminatedAt?` — the dated termination signal feeding the 14-day IdP cooldown (mirrors `ContractorAssignment.endedAt`).
 - New tenant-owning `StatutoryCertificate` (`organizationId`, `workflowRunId`, `workerId`, `certType`, `jurisdiction`, `status StatutoryCertificateStatus DRAFT`, `snapshotJson`, `pdfArchiveKey?`) — mirrors the `Form1099Nec` snapshot+CAS shape; absent from `globalModels`. Detail: [[domains/worker-onboarding-offboarding]].
+
+## HRIS two-way sync (Phase 95 — `__20260705120000_hris_two_way_sync`, un-applied)
+
+Additive, drift-safe, authored un-applied:
+
+- `IntegrationProvider += PERSONIO, BAMBOOHR`.
+- **One HRIS per org** = a raw-SQL **PARTIAL unique index** `integration_connection_one_hris_per_org ON "IntegrationConnection"("organizationId") WHERE "provider"::text IN ('PERSONIO','BAMBOOHR')`. Prisma `@@unique` cannot filter; the `::text` cast sidesteps Postgres's "new enum value in the same transaction" restriction. P2002 on connect → typed `CONFLICT` (`isOneHrisPerOrgViolation`). No new table — the field mapping + snapshot-diff sync-state live in `IntegrationConnection.configJson`. Detail: [[domains/hris-sync]].

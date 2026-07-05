@@ -1,0 +1,207 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Grep|Glob|Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"/Users/mateusz.pitura/.nvm/versions/node/v24.14.1/bin/node\" '/Users/mateusz.pitura/Repos/projects/contractor-ops/.codex/hooks/ui-workflow-guard.js'",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"/Users/mateusz.pitura/.nvm/versions/node/v24.14.1/bin/node\" '/Users/mateusz.pitura/Repos/projects/contractor-ops/.codex/hooks/read-before-edit-guard.js'",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"/Users/mateusz.pitura/.nvm/versions/node/v24.14.1/bin/node\" '/Users/mateusz.pitura/Repos/projects/contractor-ops/.codex/hooks/gsd-prompt-guard.js'",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"/Users/mateusz.pitura/.nvm/versions/node/v24.14.1/bin/node\" '/Users/mateusz.pitura/Repos/projects/contractor-ops/.codex/hooks/gsd-read-guard.js'",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"/Users/mateusz.pitura/.nvm/versions/node/v24.14.1/bin/node\" '/Users/mateusz.pitura/Repos/projects/contractor-ops/.codex/hooks/gsd-workflow-guard.js'",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash '/Users/mateusz.pitura/Repos/projects/contractor-ops/.codex/hooks/gsd-validate-commit.sh'",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"/Users/mateusz.pitura/.nvm/versions/node/v24.14.1/bin/node\" '/Users/mateusz.pitura/Repos/projects/contractor-ops/.codex/hooks/no-bulk-script-guard.js'",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Read|Bash|Skill|Skills|Semble|CallMcpTool",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"/Users/mateusz.pitura/.nvm/versions/node/v24.14.1/bin/node\" '/Users/mateusz.pitura/Repos/projects/contractor-ops/.codex/hooks/ui-workflow-track.js'",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "Bash|Edit|Write|MultiEdit|Agent|Task",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"/Users/mateusz.pitura/.nvm/versions/node/v24.14.1/bin/node\" '/Users/mateusz.pitura/Repos/projects/contractor-ops/.codex/hooks/gsd-context-monitor.js'",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash '/Users/mateusz.pitura/Repos/projects/contractor-ops/.codex/hooks/gsd-phase-boundary.sh'",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"/Users/mateusz.pitura/.nvm/versions/node/v24.14.1/bin/node\" '/Users/mateusz.pitura/Repos/projects/contractor-ops/.codex/hooks/gsd-read-injection-scanner.js'",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PostCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash '/Users/mateusz.pitura/Repos/projects/contractor-ops/.codex/hooks/wiki-brain-inject.sh' postcompact",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"/Users/mateusz.pitura/.nvm/versions/node/v24.14.1/bin/node\" '/Users/mateusz.pitura/Repos/projects/contractor-ops/.codex/hooks/gsd-check-update.js'"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash '/Users/mateusz.pitura/Repos/projects/contractor-ops/.codex/hooks/gsd-session-state.sh'"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash '/Users/mateusz.pitura/Repos/projects/contractor-ops/.codex/hooks/inject-core-values.sh'",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash '/Users/mateusz.pitura/Repos/projects/contractor-ops/.codex/hooks/wiki-brain-inject.sh' sessionstart",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash '/Users/mateusz.pitura/Repos/projects/contractor-ops/.codex/hooks/inject-core-values-reminder.sh'",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"/Users/mateusz.pitura/.nvm/versions/node/v24.14.1/bin/node\" '/Users/mateusz.pitura/Repos/projects/contractor-ops/.codex/hooks/ui-workflow-prompt.js'",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "SubagentStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash '/Users/mateusz.pitura/Repos/projects/contractor-ops/.codex/hooks/inject-standards-subagent.sh'",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash '/Users/mateusz.pitura/Repos/projects/contractor-ops/.codex/hooks/wiki-brain-inject.sh' stop",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}

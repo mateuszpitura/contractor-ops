@@ -1,4 +1,61 @@
 {
+  "HrisSync": {
+    "title": "HRIS-Synchronisierung",
+    "description": "Zwei-Wege-Synchronisierung mit Ihrem HRIS (Personio oder BambooHR).",
+    "backAriaLabel": "Zurück zu Integrationen",
+    "connect": {
+      "heading": "HRIS verbinden",
+      "description": "Verbinden Sie Personio oder BambooHR, um Mitarbeiter-Stammdaten zu synchronisieren. Finanz- und Compliance-Daten werden nie überschrieben.",
+      "providerLabel": "Anbieter",
+      "tokenLabel": "Zugriffstoken",
+      "tokenPlaceholder": "API-Zugriffstoken einfügen"
+    },
+    "connected": {
+      "heading": "{provider} verbunden",
+      "status": "Status: {status}",
+      "lastSync": "zuletzt synchronisiert {when}",
+      "neverSynced": "noch nicht synchronisiert"
+    },
+    "empty": {
+      "heading": "Kein HRIS verbunden",
+      "description": "Verbinden Sie oben einen Anbieter, um Mitarbeiter zu synchronisieren."
+    },
+    "mapping": {
+      "heading": "Feldzuordnung",
+      "description": "Ordnen Sie jedes Registerfeld dem passenden HRIS-Attributnamen zu.",
+      "attrPlaceholder": "HRIS-Attributname",
+      "fields": {
+        "displayName": "Vollständiger Name",
+        "email": "E-Mail",
+        "position": "Position",
+        "department": "Abteilung",
+        "employmentStatus": "Beschäftigungsstatus",
+        "hireDate": "Eintrittsdatum",
+        "terminatedAt": "Austrittsdatum"
+      }
+    },
+    "actions": {
+      "connect": "Verbinden",
+      "disconnect": "Trennen",
+      "syncNow": "Jetzt synchronisieren",
+      "saveMapping": "Zuordnung speichern"
+    },
+    "error": {
+      "heading": "HRIS-Status konnte nicht geladen werden",
+      "description": "Beim Laden der Verbindung ist ein Fehler aufgetreten.",
+      "retry": "Erneut versuchen"
+    },
+    "toast": {
+      "connected": "HRIS verbunden",
+      "connectError": "HRIS konnte nicht verbunden werden",
+      "disconnected": "HRIS getrennt",
+      "disconnectError": "HRIS konnte nicht getrennt werden",
+      "syncQueued": "Synchronisierung gestartet",
+      "syncError": "Synchronisierung konnte nicht gestartet werden",
+      "mappingSaved": "Zuordnung gespeichert",
+      "mappingError": "Zuordnung konnte nicht gespeichert werden"
+    }
+  },
   "EmployeeLifecycle": {
     "subtitle": "Ein-/Austritt, gesetzliche Bescheinigungen und Beendigung",
     "unknownEmployee": "Mitarbeiter",

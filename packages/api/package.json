@@ -146,6 +146,11 @@
       "import": "./src/services/org-definition-sync.ts",
       "default": "./src/services/org-definition-sync.ts"
     },
+    "./services/hris-sync": {
+      "types": "./src/services/hris-sync/index.ts",
+      "import": "./src/services/hris-sync/index.ts",
+      "default": "./src/services/hris-sync/index.ts"
+    },
     "./services/teams/teams-bot-handler": {
       "types": "./src/services/teams/teams-bot-handler.ts",
       "import": "./src/services/teams/teams-bot-handler.ts",

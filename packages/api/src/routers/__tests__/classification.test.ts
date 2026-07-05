@@ -142,6 +142,12 @@ const {
       findFirst: vi.fn(async (args: { where: { id: string } }) => {
         return assignments.get(args.where.id) ?? null;
       }),
+      // Used by the HRIS classification-outcome push producer to resolve the
+      // subject worker; a CONTRACTOR-typed worker makes the push a no-op.
+      findUnique: vi.fn(async () => ({ contractor: { workerId: 'worker-mock' } })),
+    },
+    worker: {
+      findUnique: vi.fn(async () => ({ workerType: 'CONTRACTOR' })),
     },
     reassessmentTrigger: {
       updateMany: vi.fn(async () => ({ count: 0 })),

@@ -85,6 +85,7 @@ import {
 import { workflowRolesRouter, workflowRouter } from './routers/workflow/index';
 import { employeeTimeRouter } from './routers/workforce/employee-time';
 import { ewidencjaRouter } from './routers/workforce/ewidencja';
+import { hrisSyncRouter } from './routers/workforce/hris-sync-router';
 import { leaveRouter } from './routers/workforce/leave';
 import { payrollExportRouter } from './routers/workforce/payroll-export-router';
 
@@ -194,6 +195,7 @@ const workforceRouters = {
   employeeTime: employeeTimeRouter, // employeeTime: day-grain statutory time records + synchronous WT-limit check
   ewidencja: ewidencjaRouter, // ewidencja: PL KP §149 working-time register generate + read (INSERT-only versions)
   payrollExport: payrollExportRouter, // payrollExport: per-market payroll export adapters (file-export + Gusto/QuickBooks native), each dark behind its payroll.* flag
+  hrisSync: hrisSyncRouter, // hrisSync: HRIS two-way sync (Personio/BambooHR) — connect XOR, disconnect, syncNow, field mapping
 } as const;
 
 const conditionalWorkforceRouters = isWorkforceRegistered()

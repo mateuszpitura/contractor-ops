@@ -10,6 +10,7 @@ import { router } from '../../init';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
 import { writeAuditLog } from '../../services/audit-writer';
+import { enqueueHrisEmployeePush } from '../../services/outbox/hris-push-producer';
 import { autoCompleteRunIfTerminal, VALID_TRANSITIONS } from './payment-shared';
 
 export const paymentRunOpsRouter = router({
@@ -53,6 +54,52 @@ export const paymentRunOpsRouter = router({
             where: { id: item.invoiceId },
             data: { paymentStatus: 'READY' },
           });
+        }
+
+        // Push the business event to a connected HRIS iff this invoice belongs
+        // to an EMPLOYEE worker (contractor payments never push). The helper is
+        // a no-op for contractors; it only enqueues an outbox row that the drain
+        // dispatches — the adapter is never called inline.
+        if (input.status === 'PAID' || input.status === 'FAILED') {
+          const invoice = await tx.invoice.findUnique({
+            where: { id: item.invoiceId },
+            select: {
+              currency: true,
+              totalMinor: true,
+              contractor: { select: { workerId: true } },
+            },
+          });
+          const workerId = invoice?.contractor?.workerId;
+          if (workerId) {
+            const occurredAt = new Date().toISOString();
+            if (input.status === 'PAID') {
+              await enqueueHrisEmployeePush(tx, {
+                organizationId: ctx.organizationId,
+                workerId,
+                eventType: 'hris.invoice-paid.push',
+                payload: {
+                  workerId,
+                  invoiceId: item.invoiceId,
+                  paidAt: occurredAt,
+                  amount: String(invoice?.totalMinor ?? 0),
+                  currency: invoice?.currency ?? '',
+                },
+                businessEventId: updatedItem.id,
+              });
+            }
+            await enqueueHrisEmployeePush(tx, {
+              organizationId: ctx.organizationId,
+              workerId,
+              eventType: 'hris.payment-status.push',
+              payload: {
+                workerId,
+                paymentId: updatedItem.id,
+                status: input.status,
+                occurredAt,
+              },
+              businessEventId: updatedItem.id,
+            });
+          }
         }
 
         await autoCompleteRunIfTerminal(tx, item.paymentRunId);

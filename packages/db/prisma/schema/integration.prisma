@@ -157,6 +157,8 @@ enum IntegrationProvider {
   MICROSOFT_TEAMS
   PEPPOL
   ZATCA
+  PERSONIO
+  BAMBOOHR
 }
 
 enum IntegrationStatus {

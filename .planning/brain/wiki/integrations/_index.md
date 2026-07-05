@@ -36,6 +36,8 @@ updated: 2026-06-09
 |------|----------|
 | [[google-workspace]] | Directory import + calendar |
 | [[jira]] | Atlassian Cloud |
+| [[personio]] | Personio HRIS (two-way sync) |
+| [[bamboohr]] | BambooHR HRIS (two-way sync) |
 | [[linear]] | Linear |
 | [[teams]] | Microsoft Teams (Adaptive Cards) |
 | [[slack]] | Slack OAuth + user mapping + dispatch |

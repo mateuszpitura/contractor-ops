@@ -1,0 +1,54 @@
+{
+  "success": true,
+  "data": [
+    {
+      "type": "Person",
+      "id": "p-1001",
+      "attributes": {
+        "name": "Anna Kowalska",
+        "email": "anna.kowalska@example.com",
+        "position": "Senior Engineer",
+        "department": "Engineering",
+        "status": "active",
+        "hire_date": "2023-04-01",
+        "termination_date": null,
+        "cost_center": "CC-42",
+        "gross_salary": "8500.00"
+      },
+      "updated_at": "2026-06-01T10:00:00Z"
+    },
+    {
+      "type": "Person",
+      "id": "p-1002",
+      "attributes": {
+        "name": "Jan Nowak",
+        "email": "jan.nowak@example.com",
+        "position": "Product Manager",
+        "department": "Product",
+        "status": "onboarding",
+        "hire_date": "2024-11-15",
+        "termination_date": null,
+        "cost_center": "CC-07"
+      },
+      "updated_at": "2026-06-02T09:30:00Z"
+    },
+    {
+      "type": "Person",
+      "id": "p-1003",
+      "attributes": {
+        "name": "Maria Schmidt",
+        "email": "maria.schmidt@example.com",
+        "position": "Designer",
+        "department": "Design",
+        "status": "inactive",
+        "hire_date": "2021-02-10",
+        "termination_date": "2026-05-31"
+      },
+      "updated_at": "2026-05-31T17:00:00Z"
+    }
+  ],
+  "meta": {
+    "total_elements": 3,
+    "current_page": 0
+  }
+}

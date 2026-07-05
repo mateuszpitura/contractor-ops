@@ -1,4 +1,61 @@
 {
+  "HrisSync": {
+    "title": "HRIS sync",
+    "description": "Two-way sync with your HRIS (Personio or BambooHR).",
+    "backAriaLabel": "Back to integrations",
+    "connect": {
+      "heading": "Connect an HRIS",
+      "description": "Connect Personio or BambooHR to sync employee registry fields. Financial and compliance data is never overwritten.",
+      "providerLabel": "Provider",
+      "tokenLabel": "Access token",
+      "tokenPlaceholder": "Paste the API access token"
+    },
+    "connected": {
+      "heading": "{provider} connected",
+      "status": "Status: {status}",
+      "lastSync": "last synced {when}",
+      "neverSynced": "not synced yet"
+    },
+    "empty": {
+      "heading": "No HRIS connected",
+      "description": "Connect a provider above to start syncing employees."
+    },
+    "mapping": {
+      "heading": "Field mapping",
+      "description": "Map each registry field to the matching HRIS attribute name.",
+      "attrPlaceholder": "HRIS attribute name",
+      "fields": {
+        "displayName": "Full name",
+        "email": "Email",
+        "position": "Position",
+        "department": "Department",
+        "employmentStatus": "Employment status",
+        "hireDate": "Hire date",
+        "terminatedAt": "Termination date"
+      }
+    },
+    "actions": {
+      "connect": "Connect",
+      "disconnect": "Disconnect",
+      "syncNow": "Sync now",
+      "saveMapping": "Save mapping"
+    },
+    "error": {
+      "heading": "Couldn't load HRIS status",
+      "description": "Something went wrong loading the connection.",
+      "retry": "Retry"
+    },
+    "toast": {
+      "connected": "HRIS connected",
+      "connectError": "Couldn't connect the HRIS",
+      "disconnected": "HRIS disconnected",
+      "disconnectError": "Couldn't disconnect the HRIS",
+      "syncQueued": "Sync started",
+      "syncError": "Couldn't start the sync",
+      "mappingSaved": "Mapping saved",
+      "mappingError": "Couldn't save the mapping"
+    }
+  },
   "Contractors": {
     "compliance": {
       "us": {

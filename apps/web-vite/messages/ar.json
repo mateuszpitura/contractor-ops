@@ -1,4 +1,61 @@
 {
+  "HrisSync": {
+    "title": "مزامنة نظام الموارد البشرية",
+    "description": "مزامنة ثنائية الاتجاه مع نظام الموارد البشرية (Personio أو BambooHR).",
+    "backAriaLabel": "العودة إلى عمليات التكامل",
+    "connect": {
+      "heading": "ربط نظام الموارد البشرية",
+      "description": "اربط Personio أو BambooHR لمزامنة بيانات سجل الموظفين. لا تتم الكتابة فوق البيانات المالية وبيانات الامتثال أبدًا.",
+      "providerLabel": "المزود",
+      "tokenLabel": "رمز الوصول",
+      "tokenPlaceholder": "الصق رمز وصول واجهة برمجة التطبيقات"
+    },
+    "connected": {
+      "heading": "تم ربط {provider}",
+      "status": "الحالة: {status}",
+      "lastSync": "آخر مزامنة {when}",
+      "neverSynced": "لم تتم المزامنة بعد"
+    },
+    "empty": {
+      "heading": "لا يوجد نظام موارد بشرية مرتبط",
+      "description": "اربط مزودًا أعلاه لبدء مزامنة الموظفين."
+    },
+    "mapping": {
+      "heading": "تعيين الحقول",
+      "description": "عيّن كل حقل في السجل إلى اسم سمة نظام الموارد البشرية المطابق.",
+      "attrPlaceholder": "اسم سمة نظام الموارد البشرية",
+      "fields": {
+        "displayName": "الاسم الكامل",
+        "email": "البريد الإلكتروني",
+        "position": "المنصب",
+        "department": "القسم",
+        "employmentStatus": "حالة التوظيف",
+        "hireDate": "تاريخ التعيين",
+        "terminatedAt": "تاريخ إنهاء الخدمة"
+      }
+    },
+    "actions": {
+      "connect": "ربط",
+      "disconnect": "قطع الاتصال",
+      "syncNow": "المزامنة الآن",
+      "saveMapping": "حفظ التعيين"
+    },
+    "error": {
+      "heading": "تعذر تحميل حالة نظام الموارد البشرية",
+      "description": "حدث خطأ أثناء تحميل الاتصال.",
+      "retry": "إعادة المحاولة"
+    },
+    "toast": {
+      "connected": "تم ربط نظام الموارد البشرية",
+      "connectError": "تعذر ربط نظام الموارد البشرية",
+      "disconnected": "تم قطع اتصال نظام الموارد البشرية",
+      "disconnectError": "تعذر قطع اتصال نظام الموارد البشرية",
+      "syncQueued": "بدأت المزامنة",
+      "syncError": "تعذر بدء المزامنة",
+      "mappingSaved": "تم حفظ التعيين",
+      "mappingError": "تعذر حفظ التعيين"
+    }
+  },
   "EmployeeLifecycle": {
     "subtitle": "الإلحاق/إنهاء الخدمة، والشهادات القانونية، وإنهاء العمل",
     "unknownEmployee": "موظف",

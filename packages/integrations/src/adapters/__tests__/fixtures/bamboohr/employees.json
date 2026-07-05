@@ -1,0 +1,40 @@
+{
+  "fields": [
+    { "id": "displayName", "type": "text", "name": "Display name" },
+    { "id": "workEmail", "type": "email", "name": "Work Email" },
+    { "id": "jobTitle", "type": "list", "name": "Job Title" },
+    { "id": "department", "type": "list", "name": "Department" }
+  ],
+  "employees": [
+    {
+      "id": "77",
+      "displayName": "John Smith",
+      "workEmail": "john.smith@example.com",
+      "jobTitle": "Engineering Manager",
+      "department": "Engineering",
+      "status": "Active",
+      "hireDate": "2022-01-10",
+      "customBadgeId": "BADGE-77",
+      "customGrossPay": "9200.00"
+    },
+    {
+      "id": "88",
+      "displayName": "Priya Patel",
+      "workEmail": "priya.patel@example.com",
+      "jobTitle": "Account Executive",
+      "department": "Sales",
+      "status": "Active",
+      "hireDate": "2023-08-21",
+      "customBadgeId": "BADGE-88"
+    },
+    {
+      "id": "99",
+      "displayName": "Omar Haddad",
+      "workEmail": "omar.haddad@example.com",
+      "jobTitle": "Support Lead",
+      "department": "Customer Success",
+      "status": "Inactive",
+      "hireDate": "2020-03-05"
+    }
+  ]
+}

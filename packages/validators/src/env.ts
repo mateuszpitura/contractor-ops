@@ -376,6 +376,23 @@ const oauthAliasSchema = z.object({
   OUTLOOK_CLIENT_SECRET: z.string().min(1).optional(),
 });
 
+// ── HRIS two-way sync adapter credentials (Personio + BambooHR) ─────────────
+// All optional: the sync engine builds + tests against recorded fixtures with
+// zero credentials. The live pull/push paths read these lazily and are gated
+// behind integration.personio-sync / integration.bamboohr-sync. Personio uses a
+// proprietary client-credentials bearer; BambooHR uses OAuth 2.0. The BambooHR
+// custom-attribute mapping path carries a second gate
+// (BAMBOOHR_CUSTOM_ATTR_VERIFIED) until the tenant's custom-attribute contract
+// is confirmed.
+
+const hrisSchema = z.object({
+  PERSONIO_CLIENT_ID: z.string().min(1).optional(),
+  PERSONIO_CLIENT_SECRET: z.string().min(1).optional(),
+  BAMBOOHR_CLIENT_ID: z.string().min(1).optional(),
+  BAMBOOHR_CLIENT_SECRET: z.string().min(1).optional(),
+  BAMBOOHR_CUSTOM_ATTR_VERIFIED: z.string().min(1).optional(),
+});
+
 // ── Infisical (external secret store) ───────────────────────────────────────
 // Optional everywhere: when client id / secret / project id are all present the
 // secret-store factory in consuming packages wires a real Infisical-backed
@@ -434,6 +451,7 @@ export const serverEnvSchema = coreSchema
   .merge(platformOperatorSchema)
   .merge(observabilitySchema)
   .merge(oauthAliasSchema)
+  .merge(hrisSchema)
   .merge(infrastructureSchema)
   .merge(featureFlagsSchema)
   .merge(turnstileSchema)
