@@ -2,7 +2,7 @@
 title: Cron worker jobs
 type: structure
 tags: [structure, cron, background]
-source_commit: 01c17af08
+source_commit: 18d6df46b
 verify_with:
   - apps/cron-worker/src/jobs/handlers/
   - apps/api/src/lib/qstash-route.ts
@@ -38,6 +38,7 @@ sequenceDiagram
 | `compliance-reminder.ts` | compliance renewals | [[domains/compliance-dashboard]] |
 | `classification-economic-dependency.ts` | §2 SGB VI scan | [[domains/classification-ir35]] |
 | `form-1099k-tracker.ts` | informational 1099-K band scan (`module.us-expansion`; never files) | [[domains/us-tax-forms]] |
+| `year-end-1099-reminder.ts` | notify-only 1099-NEC batch-due reminder (`module.us-expansion`; **never generates or transmits**; mid-January, deduped per tax year) | [[domains/us-tax-year-end-filing]] |
 | `classification-reassessment-triggers.ts` | IR35 triggers | [[domains/classification-ir35]] |
 | `reminders/` + `drv-clearance-expiries.ts` | DRV expiry | [[domains/classification-ir35]] |
 | `token-refresh.ts` | OAuth token refresh | [[integrations/framework-core]] |

@@ -47,6 +47,8 @@ export const NOTIFICATION_TYPES = [
   // Daily working-time scan: a worker's rolling weekly average crossed the
   // statutory 48h cap (per-recipient digest, one per day).
   'employee.wt_limit_breach',
+  // Year-end 1099-NEC batch-due reminder (notify-only — never generates or files)
+  'tax.form_1099_year_end_reminder',
 ] as const;
 
 export const notificationTypeEnum = z.enum(NOTIFICATION_TYPES);

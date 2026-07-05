@@ -2,7 +2,7 @@
 title: Shared packages
 type: structure
 tags: [structure, packages]
-source_commit: 65cdee081
+source_commit: 18d6df46b
 verify_with:
   - packages/
   - .planning/codebase/STRUCTURE.md
@@ -27,7 +27,7 @@ updated: 2026-07-01
 | `feature-flags` | `packages/feature-flags` | Unleash wrapper + `registry.ts` |
 | `compliance-policy` | `packages/compliance-policy` | Payment eligibility rules |
 | `einvoice` | `packages/einvoice` | Country e-invoice profiles |
-| `iris` | `packages/iris` | IRS IRIS 1099-NEC e-file XML — `buildIrisXml` (fast-xml-parser builder, masked last-4 recipient TIN) + `xsdValidate` (libxmljs2, SSRF/XXE-safe); pinned-checksum XSD bundle is a human-action checkpoint (see [[domains/us-tax-forms]]) |
+| `iris` | `packages/iris` | IRS IRIS e-file XML — `buildIrisXml` (1099-NEC) + `buildIris1042SXml` (sibling builder), fast-xml-parser `XMLBuilder`, masked last-4 TIN + CFSF state code; `xsdValidate` / `xsdValidate1042S` (libxmljs2, SSRF/XXE-safe). A missing pinned-checksum XSD bundle (human-action SOR checkpoint) returns a non-throwing `BUNDLE_UNAVAILABLE` report — nothing files. See [[domains/us-tax-year-end-filing]], [[integrations/irs-iris]] |
 | `integrations` | `packages/integrations` | Adapter framework |
 | `classification` | `packages/classification` | IR35 / Scheinselbständigkeit scoring |
 | `billing` | `packages/billing` | Stripe webhook handlers |

@@ -181,6 +181,11 @@
       "import": "./src/services/form-1099k-tracker.service.ts",
       "default": "./src/services/form-1099k-tracker.service.ts"
     },
+    "./services/year-end-1099-reminder.service": {
+      "types": "./src/services/year-end-1099-reminder.service.ts",
+      "import": "./src/services/year-end-1099-reminder.service.ts",
+      "default": "./src/services/year-end-1099-reminder.service.ts"
+    },
     "./services/rbac-recipients": {
       "types": "./src/services/rbac-recipients.ts",
       "import": "./src/services/rbac-recipients.ts",
@@ -256,6 +261,7 @@
     "@contractor-ops/gov-api": "workspace:*",
     "@contractor-ops/idp-saga": "workspace:*",
     "@contractor-ops/integrations": "workspace:*",
+    "@contractor-ops/iris": "workspace:*",
     "@contractor-ops/logger": "workspace:*",
     "@contractor-ops/offboarding-templates": "workspace:*",
     "@contractor-ops/secrets": "workspace:*",
@@ -271,6 +277,7 @@
     "clamscan": "^2.4.0",
     "csv-stringify": "^6.7.0",
     "exceljs": "^4.4.0",
+    "fast-xml-parser": "^5.7.3",
     "file-type": "^22.0.1",
     "mt940js": "^1.3.5",
     "nodemailer": "^8.0.7",

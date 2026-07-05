@@ -1,0 +1,21 @@
+{
+  "taxYear": 2026,
+  "schemaVersion": { "versionNum": "2.0", "versionDt": "2025-11-06" },
+  "payer": { "tin": "123456789", "name": "Acme Org", "stateCode": "CA" },
+  "payees": [
+    {
+      "recipientTin": "XXX-XX-1120",
+      "recipientName": "Jane Q. Contractor",
+      "box1AmountMinor": 250000,
+      "box4BackupWithholdingMinor": 0,
+      "cfsfStateCode": ""
+    },
+    {
+      "recipientTin": "XXX-XX-4821",
+      "recipientName": "John P. Freelancer",
+      "box1AmountMinor": 480000,
+      "box4BackupWithholdingMinor": 115200,
+      "cfsfStateCode": "GA"
+    }
+  ]
+}

@@ -83,6 +83,7 @@ Read [[hot]] first. Code symbols: **semble** — never wiki alone. Discovery: [[
 - [[domains/consent-gdpr-pdpl]]
 - [[domains/gulf-saudization]]
 - [[domains/tax-and-wht]]
+- [[domains/us-tax-year-end-filing]]
 - [[domains/idp-deprovisioning]]
 - [[domains/public-api-surface]]
 

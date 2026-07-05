@@ -2,7 +2,7 @@
 title: Feature flags
 type: pattern
 tags: [feature-flags, unleash]
-source_commit: 105a8ccf64b34c611493215eb3519e8922343839
+source_commit: 18d6df46b
 verify_with:
   - packages/feature-flags/src/registry.ts
   - packages/feature-flags/src/flags-core.ts
@@ -33,6 +33,7 @@ Self-hosted Unleash OSS behind `@contractor-ops/feature-flags` wrapper. Keys dec
 | Workforce gate | `module.workforce-employees` — `middleware/require-workforce-flag.ts` (`assertWorkforceEnabled` / `isWorkforceRegistered`) + `root.ts` conditional-spread of `worker`/`employee`; mirrors `module.us-expansion`. See [[domains/worker-foundation]] |
 | Programmatic-ACH gate | `payments.ach-payouts` (default OFF, signoff PENDING→APPROVED) — **REUSED**, not re-minted, to gate the opt-in `payment.initiatePayout` programmatic-ACH path; the NACHA/Fedwire file export stays GA. See [[domains/us-payment-rail]], [[integrations/modern-treasury]] |
 | Plaid live-client gate | `payments.plaid-verification` (default OFF, **non-gated**) — gates ONLY the live Plaid Identity client; the deterministic mock advisory default is always on (fail-open). Non-gated because the only gated payments prefix is `payments.ach-`, so it needs no signoff-registry entry and is not in the v7.0 cohort. See [[integrations/plaid]] |
+| IRIS A2A transmit gate | `module.iris-efile` (default OFF, dark) — the **single** gate for the automated IRS IRIS A2A (SOAP/MTOM) transmit path in `tax-filing-transmitter.ts` (`selectTaxFilingTransmitter` returns `IrisA2A` only when enabled). **REUSED**, not re-minted — there is no `iris-a2a-transmit` flag. ManualDownload is the default GA path (no TCC). See [[domains/us-tax-year-end-filing]], [[integrations/irs-iris]] |
 
 ## Invariants
 

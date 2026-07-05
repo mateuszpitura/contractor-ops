@@ -12,3 +12,4 @@ export { invoiceIntakeRouter } from './invoice-intake';
 export { latePaymentInterestRouter } from './late-payment-interest';
 export { paymentRouter } from './payment';
 export { skontoRouter } from './skonto';
+export { tax1099Router } from './tax-1099-router';

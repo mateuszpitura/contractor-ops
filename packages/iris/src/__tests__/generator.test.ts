@@ -1,17 +1,26 @@
-// IRIS XML generator (buildIrisXml) — Wave-0 RED scaffold.
+// IRIS XML generator (buildIrisXml) — 1099-NEC.
 //
-// Asserts the not-yet-built buildIrisXml emits a Transmission Manifest carrying
-// the schema VersionNum/VersionDt it was built against, and a payee B-record
-// that carries the Combined Federal/State Filing (CFSF) state code for a
-// participating state. The generator must use fast-xml-parser XMLBuilder
-// (never string-concatenated XML — entity-escape bugs surface as opaque XSD
-// failures), mirroring packages/einvoice. This RED scaffold imports a module
-// that does not exist yet, so the suite fails at resolution until the generator
-// lands in a later wave.
+// Asserts buildIrisXml emits a Transmission Manifest carrying the schema
+// VersionNum/VersionDt it was built against, and a payee B-record that carries
+// the Combined Federal/State Filing (CFSF) state code for a participating
+// state. The generator uses fast-xml-parser XMLBuilder (never
+// string-concatenated XML — entity-escape bugs surface as opaque XSD failures),
+// mirroring packages/einvoice. These assertions are XSD-independent (XML shape
+// only) so they run GREEN now, before the IRS XSD bundle lands.
 
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-// The implementation does not exist yet — Wave-0 RED (resolution-fail).
 import { buildIrisXml } from '../generator.js';
+import type { IrisSubmissionInput } from '../types.js';
+
+const goldenInput = JSON.parse(
+  readFileSync(
+    path.join(path.dirname(fileURLToPath(import.meta.url)), 'fixtures', 'golden-1099-nec.json'),
+    'utf8',
+  ),
+) as IrisSubmissionInput;
 
 describe('buildIrisXml — IRIS 1099-NEC XML (US-FORM-05 / US-FORM-07)', () => {
   it('emits a Transmission Manifest with the schema VersionNum/VersionDt it was built against', () => {
@@ -72,5 +81,17 @@ describe('buildIrisXml — IRIS 1099-NEC XML (US-FORM-05 / US-FORM-07)', () => {
     });
 
     expect(xml).not.toContain('078051120');
+  });
+
+  it('builds the golden fixture (matched + CFSF-state recipient) with the CFSF code in the B-record', () => {
+    const xml = buildIrisXml(goldenInput);
+
+    // The golden fixture pairs a non-CFSF recipient with a CFSF-participating
+    // (GA) recipient — the participating state's code must reach its B-record.
+    expect(xml).toContain('GA');
+    expect(xml).toContain(goldenInput.payees[1].recipientTin);
+    // Both box-1 dollar figures (whole-dollar) are emitted.
+    expect(xml).toContain('2500');
+    expect(xml).toContain('4800');
   });
 });

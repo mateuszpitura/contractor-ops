@@ -9267,5 +9267,114 @@
       "appliedBadge": "Stawka z umowy",
       "applied": "Stawka {rate} z umowy zastosowana na podstawie {article} (W-8 w aktach)."
     }
+  },
+  "Tax1099Batch": {
+    "heading": "Partia 1099-NEC",
+    "generate": "Wygeneruj partię 1099-NEC",
+    "generateError": "Nie udało się wygenerować partii. Spróbuj ponownie.",
+    "loadError": "Nie udało się załadować. Sprawdź połączenie i spróbuj ponownie.",
+    "reload": "Odśwież",
+    "empty": {
+      "heading": "Brak partii 1099-NEC za {taxYear}",
+      "body": "Wygeneruj partię, aby przed złożeniem sprawdzić, którzy odbiorcy przekraczają próg za {taxYear}. Nic nie jest składane automatycznie — najpierw sprawdzasz."
+    },
+    "summary": {
+      "aboveThreshold": "{count} odbiorców powyżej progu za {taxYear}.",
+      "recipient": "Odbiorca",
+      "box1": "Pole 1 (wynagrodzenie bez zatrudnienia)",
+      "box4": "Pole 4 (podatek u źródła)",
+      "total": "Suma"
+    },
+    "adviserNote": "Kwoty i formularze pokazane tutaj wymagają weryfikacji przez doradcę podatkowego właściwego dla jurysdykcji, zanim na nich polegniesz."
+  },
+  "Tax1099Filing": {
+    "heading": "e-Deklaracja IRS",
+    "loadError": "Nie udało się załadować. Sprawdź połączenie i spróbuj ponownie.",
+    "reload": "Odśwież",
+    "empty": {
+      "heading": "Nic jeszcze nie złożono",
+      "body": "Po wygenerowaniu partii utwórz i pobierz tutaj zweryfikowany plik XML, a następnie prześlij potwierdzenie IRS, aby zapisać wynik."
+    },
+    "pillAriaLabel": "Status złożenia: {status}",
+    "status": {
+      "valid": "Zweryfikowano",
+      "accepted": "Zaakceptowano",
+      "invalid": "Nieprawidłowy",
+      "rejected": "Odrzucono",
+      "partiallyAccepted": "Częściowo zaakceptowano",
+      "acceptedWithErrors": "Zaakceptowano z błędami",
+      "processing": "Przetwarzanie",
+      "notFound": "Nie znaleziono",
+      "bundleUnavailable": "Oczekuje na aktywację"
+    },
+    "statusTooltip": {
+      "valid": "Plik IRIS przeszedł walidację schematu i jest gotowy do złożenia.",
+      "accepted": "IRS zaakceptował to zgłoszenie.",
+      "invalid": "Plik IRIS nie przeszedł walidacji schematu.",
+      "rejected": "IRS odrzucił to zgłoszenie.",
+      "partiallyAccepted": "Część rekordów zaakceptowano; inne wymagają korekty.",
+      "acceptedWithErrors": "Zaakceptowano, ale część rekordów zawiera błędy do przejrzenia.",
+      "processing": "IRS nadal przetwarza to zgłoszenie.",
+      "notFound": "IRS nie ma jeszcze wpisu dla tego potwierdzenia.",
+      "bundleUnavailable": "Walidacja schematu oczekuje na aktywację IRS."
+    },
+    "bundleUnavailable": "Walidacja schematu oczekuje na aktywację IRS — pliku nie można jeszcze złożyć.",
+    "validationFailed": "Plik IRIS nie przeszedł walidacji schematu i nie może zostać złożony. Błędy są wymienione poniżej — popraw dane odbiorców i wygeneruj ponownie.",
+    "download": "Pobierz zweryfikowany XML",
+    "ackParseFailed": "Nie udało się odczytać tego pliku potwierdzenia. Upewnij się, że to plik zwrócony przez IRS dla tego zgłoszenia, i prześlij go ponownie.",
+    "rejected": "IRS odrzucił to zgłoszenie. Zobacz szczegóły błędów dla każdego odbiorcy poniżej, złóż korektę, a następnie prześlij ponownie.",
+    "ackUpload": {
+      "label": "Plik potwierdzenia IRS",
+      "help": "Prześlij potwierdzenie (.xml) zwrócone przez IRS dla tego zgłoszenia."
+    },
+    "correction": {
+      "prompt": "Złóż korektę dla:",
+      "title": "Złóż korektę",
+      "body": "Złóż korektę: To zastępuje wcześniej złożone 1099-NEC dla {recipient}. Oryginalny rekord jest zachowany i nigdy nie edytowany. Kontynuować?",
+      "reasonLabel": "Powód",
+      "confirm": "Złóż korektę",
+      "cancel": "Anuluj"
+    },
+    "state": {
+      "heading": "Złożenie stanowe",
+      "stateLabel": "Stan",
+      "lookup": "Wyszukaj",
+      "loading": "Ładowanie danych stanowych…",
+      "prompt": "Wpisz dwuliterowy kod stanu, aby zobaczyć dane do złożenia.",
+      "cfsfHandled": "Automatycznie przekazano do {state} przez Combined Federal/State Filing — brak osobnego pliku.",
+      "download": "Pobierz plik stanowy"
+    },
+    "adviserNote": "Kwoty i formularze pokazane tutaj wymagają weryfikacji przez doradcę podatkowego właściwego dla jurysdykcji, zanim na nich polegniesz."
+  },
+  "TinMismatch": {
+    "heading": "Niezgodności TIN",
+    "advisoryBadge": "Informacja",
+    "advisory": "Dla tych odbiorców oznaczono podatek u źródła. To informacja — nigdy nie blokuje złożenia.",
+    "loadError": "Nie udało się załadować. Sprawdź połączenie i spróbuj ponownie.",
+    "reload": "Odśwież",
+    "empty": {
+      "heading": "Brak niezgodności TIN",
+      "body": "Nazwa i TIN każdego odbiorcy zgadzały się z danymi IRS. Nie trzeba nic robić."
+    },
+    "tinMask": "TIN kończący się na {last4}",
+    "escalate": "Eskaluj niezgodność",
+    "resolve": "Oznacz jako rozwiązane"
+  },
+  "Tax1099Consent": {
+    "heading": "Elektroniczne dostarczenie Twojego 1099-NEC",
+    "subtitle": "Wybierz, jak chcesz otrzymać swój 1099-NEC.",
+    "consentLabel": "Zgadzam się otrzymać mój 1099-NEC elektronicznie. Potwierdzam, że mogę otworzyć i wydrukować PDF, rozumiem, że mogę poprosić o kopię papierową, i mogę wycofać tę zgodę w dowolnym momencie.",
+    "affirm": "Wyraź zgodę i pobierz mój 1099-NEC",
+    "withdraw": "Wycofaj zgodę na dostarczenie elektroniczne",
+    "withdrawConfirm": "Wycofaj zgodę: Przestaniesz otrzymywać swój 1099-NEC elektronicznie i otrzymasz kopię papierową. Możesz ponownie wyrazić zgodę w dowolnym momencie. Kontynuować?",
+    "withdrawConfirmYes": "Wycofaj zgodę",
+    "withdrawConfirmNo": "Zachowaj dostarczenie elektroniczne",
+    "noConsent": "Nie wyraziłeś zgody na dostarczenie elektroniczne. Kopia papierowa Twojego 1099-NEC zostanie wysłana na adres w aktach.",
+    "download": "Pobierz mój 1099-NEC (kopia B)",
+    "downloadError": "Nie udało się przygotować pobierania. Spróbuj ponownie.",
+    "loadError": "Nie udało się załadować. Sprawdź połączenie i spróbuj ponownie.",
+    "reload": "Odśwież",
+    "tinMask": "TIN kończący się na {last4}",
+    "adviserNote": "Kwoty i formularze pokazane tutaj wymagają weryfikacji przez doradcę podatkowego właściwego dla jurysdykcji, zanim na nich polegniesz."
   }
 }

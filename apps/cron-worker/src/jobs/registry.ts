@@ -20,6 +20,7 @@ import { orgDefinitionSyncHandler } from './handlers/org-definition-sync.js';
 import { remindersHandler } from './handlers/reminders/index.js';
 import { tokenRefreshHandler } from './handlers/token-refresh.js';
 import { trialNotificationsHandler } from './handlers/trial-notifications.js';
+import { yearEnd1099ReminderHandler } from './handlers/year-end-1099-reminder.js';
 import type { JobHandler, JobMeta } from './runner.js';
 
 export interface JobDefinition {
@@ -41,6 +42,7 @@ export function getJobDefinitions(env: {
   CRON_LATE_INTEREST_PDF_REAPER_SCHEDULE: string;
   CRON_TRIAL_NOTIFICATIONS_SCHEDULE: string;
   CRON_REMINDERS_SCHEDULE: string;
+  CRON_YEAR_END_1099_REMINDER_SCHEDULE: string;
 }): JobDefinition[] {
   return [
     {
@@ -112,6 +114,13 @@ export function getJobDefinitions(env: {
     {
       meta: { name: 'reminders', schedule: env.CRON_REMINDERS_SCHEDULE },
       handler: remindersHandler,
+    },
+    {
+      meta: {
+        name: 'year-end-1099-reminder',
+        schedule: env.CRON_YEAR_END_1099_REMINDER_SCHEDULE,
+      },
+      handler: yearEnd1099ReminderHandler,
     },
   ];
 }
