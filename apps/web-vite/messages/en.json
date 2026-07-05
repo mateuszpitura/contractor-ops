@@ -9231,6 +9231,46 @@
       "OVER": "Over the 1099-K reporting threshold. Your payment settlor — not this platform — files any 1099-K. This is a heads-up only."
     }
   },
+  "Tax1042SConsent": {
+    "heading": "Electronic delivery of your 1042-S",
+    "subtitle": "Choose how you receive your 1042-S.",
+    "consentLabel": "I consent to receive my 1042-S electronically. I confirm I can open and print a PDF, I understand I can request a paper copy, and I can withdraw this consent at any time.",
+    "affirm": "Consent and download my 1042-S",
+    "withdraw": "Withdraw electronic-delivery consent",
+    "withdrawConfirm": "Withdraw consent: You'll stop receiving your 1042-S electronically and will get a paper copy instead. You can re-consent at any time. Continue?",
+    "withdrawConfirmYes": "Withdraw consent",
+    "withdrawConfirmNo": "Keep electronic delivery",
+    "noConsent": "You haven't consented to electronic delivery. A paper copy of your 1042-S will be mailed to your address on file.",
+    "download": "Download my 1042-S (Copy B)",
+    "downloadError": "We couldn't prepare your download. Try again.",
+    "loadError": "We couldn't load this. Check your connection and try again.",
+    "reload": "Reload",
+    "tinMask": "FTIN ending {last4}",
+    "adviserNote": "Figures and forms shown here need verification by a jurisdiction-specific tax adviser before you rely on them."
+  },
+  "Tax1042SFiling": {
+    "heading": "IRS e-file (1042-S)",
+    "loadError": "We couldn't load this. Check your connection and try again.",
+    "reload": "Reload",
+    "empty": {
+      "heading": "Nothing filed yet",
+      "body": "Once you generate a batch, build and download the validated 1042-S XML here, then upload the IRS acknowledgement to record the result."
+    },
+    "bundleUnavailable": "Schema validation is pending IRS enablement — the file can't be filed yet.",
+    "validationFailed": "The 1042-S file didn't pass schema validation and can't be filed. The validation errors are listed below — correct the recipient data and regenerate.",
+    "download": "Download validated 1042-S XML",
+    "ackParseFailed": "We couldn't read this acknowledgement file. Confirm it's the file IRS returned for this submission, then upload it again.",
+    "rejected": "IRS rejected this submission. See the error detail per recipient below, file a correction, then re-transmit.",
+    "correction": {
+      "prompt": "File a correction for:",
+      "title": "File a correction",
+      "body": "File a correction: This supersedes the previously filed 1042-S for {recipient}. The original record is kept and never edited. Continue?",
+      "reasonLabel": "Reason",
+      "confirm": "File correction",
+      "cancel": "Cancel"
+    },
+    "adviserNote": "Figures, forms, and classifications shown here need verification by a jurisdiction-specific legal or tax adviser before you rely on them."
+  },
   "Tax1042SBatch": {
     "pageTitle": "1042-S filing",
     "pageDescription": "Review foreign-recipient withholding before you file. Nothing is filed automatically — you review first.",

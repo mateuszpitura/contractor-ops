@@ -46,7 +46,7 @@ export interface Form1042SBatchSummary {
  * A 1042-S for tax year Y is filed the following calendar year, so the default
  * review year is the prior calendar year.
  */
-function defaultFilingTaxYear(now = new Date()): number {
+export function defaultFilingTaxYear(now = new Date()): number {
   return now.getUTCFullYear() - 1;
 }
 
