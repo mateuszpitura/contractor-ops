@@ -1,0 +1,83 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Contractor Ops Enterprise API",
+    "version": "1.0.0",
+    "description": "Fixture spec for marketplace-manifests generation tests."
+  },
+  "servers": [{ "url": "https://api.contractor-ops.com", "description": "Production" }],
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": { "type": "http", "scheme": "bearer", "bearerFormat": "co_live_ / co_test_" }
+    }
+  },
+  "security": [{ "ApiKeyAuth": [] }],
+  "paths": {
+    "/v1/contractors": {
+      "get": {
+        "operationId": "listContractors",
+        "summary": "List contractors",
+        "tags": ["Contractors"],
+        "responses": { "200": { "description": "OK" } }
+      },
+      "post": {
+        "operationId": "createContractor",
+        "summary": "Create a contractor",
+        "tags": ["Contractors"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "type": "object" },
+              "example": { "email": "dev@example.com", "displayName": "Dev Contractor" }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Created" } }
+      }
+    },
+    "/v1/contractors/{id}": {
+      "get": {
+        "operationId": "getContractor",
+        "summary": "Get a contractor by id",
+        "tags": ["Contractors"],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/v1/invoices": {
+      "get": {
+        "operationId": "listInvoices",
+        "summary": "List invoices",
+        "tags": ["Invoices"],
+        "responses": { "200": { "description": "OK" } }
+      },
+      "post": {
+        "operationId": "createInvoice",
+        "summary": "Create an invoice",
+        "tags": ["Invoices"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "type": "object" },
+              "example": { "contractorId": "ctr_1", "amount": 100 }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Created" } }
+      }
+    },
+    "/v1/invoices/{id}/approve": {
+      "patch": {
+        "operationId": "approveInvoice",
+        "summary": "Approve an invoice",
+        "tags": ["Invoices"],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "OK" } }
+      }
+    }
+  }
+}

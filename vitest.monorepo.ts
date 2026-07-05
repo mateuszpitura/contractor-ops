@@ -25,4 +25,7 @@ export const vitestProject = {
   idpSaga: { name: 'idp-saga', groupOrder: 17 },
   iris: { name: 'iris', groupOrder: 18 },
   payroll: { name: 'payroll', groupOrder: 19 },
+  marketplaceManifests: { name: 'marketplace-manifests', groupOrder: 20 },
+  n8nNodes: { name: 'n8n-nodes', groupOrder: 21 },
+  zapierApp: { name: 'zapier-app', groupOrder: 22 },
 } as const;
