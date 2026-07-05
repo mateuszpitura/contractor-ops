@@ -1,13 +1,17 @@
 ---
 title: Hot cache
 type: hot-cache
-updated: 2026-07-01
-source_commit: 105a8ccf6
+updated: 2026-07-05
+source_commit: ed9575550
 ---
 
 # Hot cache
 
 Discovery shortcuts for agents — not a changelog. History lives in `wiki/log.md` and git.
+
+## Worker on/offboarding (employee lifecycle)
+
+Employee on/offboarding = **extend the generic run + worker-key the coupled saga, never duplicate**. Single `startWorkflowRun` helper (`workflow-execution-runs.ts`) owns the only `workflowRun.create`; `startRunSchema` + `startDeprovisioningRun` are `CONTRACTOR|EMPLOYEE` discriminated unions. `EmployeeProfile.terminatedAt` arms the 14-day IdP cooldown (mirrors `ContractorAssignment.endedAt`). Per-market DRAFT templates = `@contractor-ops/employee-templates` on `@@unique([organizationId, jurisdiction, type, seedKey])`. Statutory certs = `statutory-cert-pdf.ts` (snapshot `*Last4`-only + CAS → `emp-cert/<org>/<id>.pdf`, LOCKED `CERT_ADVISER_VERIFY_*`). Gov interactions = network-free `{source:'STUB'}` seams. Router: `employeeLifecycle.*`. Detail: [[domains/worker-onboarding-offboarding]].
 
 ## Agent delegation (subagent-first)
 

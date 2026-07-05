@@ -2,7 +2,7 @@
 title: API routers catalog
 type: structure
 tags: [structure, api, trpc, catalog]
-source_commit: 105a8ccf64b34c611493215eb3519e8922343839
+source_commit: ed9575550
 verify_with:
   - packages/api/src/root.ts
   - packages/api/src/portal-root.ts
@@ -11,9 +11,10 @@ verify_with:
   - packages/api/src/routers/core/worker.ts
   - packages/api/src/routers/core/employee.ts
   - packages/api/src/routers/employee/employee-registry-router.ts
+  - packages/api/src/routers/employee/employee-lifecycle-router.ts
   - packages/api/src/routers/core/personnel-file/index.ts
   - packages/api/src/routers/finance/payment-core.ts
-updated: 2026-07-01
+updated: 2026-07-05
 ---
 
 # API routers catalog
@@ -119,6 +120,7 @@ Gated by `module.workforce-employees` (or `QA_DEFAULT_ORG_ID`) in `root.ts`; eac
 |-----------|---------|
 | `worker` | shared cross-type worker reads (`list`, `getById`) — pass an explicit `workerType` so the `withWorkerTypeDefault` extension does not force-filter to CONTRACTOR; returns contractors + employees |
 | `employee` | employee reads (`list`, `workerType=EMPLOYEE`) + the registry surface `mergeRouters`-composed from `employee-registry-router.ts` (`employeeRegistryRouter`): `register` (`employee:create`, creates `Worker(EMPLOYEE)` + `EmployeeProfile` in one `$transaction`, per-market validation, encrypts 4 national IDs, `omit`s every `*Encrypted`, `employee.registered` audit), `revealPii` (`employeePii:read`, field-routed decrypt + `<field>.revealed` audit, **staff-only** — absent from `portalAppRouter`), `listReferenceLists` (`employee:read`, seeded non-PII tuples). Full model + flow: [[domains/employee-registry]] |
+| `employeeLifecycle` | employee on/offboarding composition seam (`employee-lifecycle-router.ts`), all `employee`-RBAC-gated + `assertWorkforceEnabled` + `resourceType:'EMPLOYEE'` audit: `get` (`employee:read` — displayName/employmentStatus/`terminatedAt` for the UI IdP gate), `startOnboarding`/`startOffboarding` (`employee:update` — resolve the ACTIVE per-market `WorkflowTemplate` by `mapCountryCodeToJurisdiction`, start a worker run via the shared `startWorkflowRun` helper — never a duplicate `workflowRun.create`), `recordTermination` (writes `EmployeeProfile.terminatedAt` + status TERMINATED — the dated signal the IdP cooldown reads), `generateCert` (creates a DRAFT `StatutoryCertificate` + `renderAndArchiveStatutoryCert` → signed URL). Full flow: [[domains/worker-onboarding-offboarding]] |
 | `personnelFile` | jurisdiction-correct personnel file (akta osobowe) `mergeRouters`-composed from `routers/core/personnel-file/{read,classify,erasure}.ts`. **read:** `getFile` (per-section `{ locked \| unlocked+documents }` + retention posture — the lock is decided at the permission layer by `hasSectionPermission` BEFORE querying, a locked section returns NO document payload/count; cross-org read → `null`) + `getRetentionSummary`. **classify:** `attachDocument` (`employee:update` — links a virus-scanned `Document`, runs the hybrid classifier, files ACTIVE or routes ambiguous → `PENDING_REVIEW`, never blocks the upload), `classifyApprove`/`classifyReject`/`pendingReviewQueue` (`compliance:override`, in-tx audit). **erasure:** `requestErasure` (`employee:delete` — per-section erased/retained dispositions, `fullErasureClaimed = retained.length===0`, `personnel_file.erasure_retained_under_statute` audit). Full model + flow: [[domains/personnel-file]] |
 
 `contractor.*` is **not** gated — it is the always-on existing surface; the split adds `worker`/`employee` without changing the contractor route shape (locked by `contractor-contract-snapshot.test.ts`).
