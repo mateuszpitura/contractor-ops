@@ -11,6 +11,14 @@
 
 export type { PayrollTargetSummary } from './engine/engine.js';
 export { PayrollExportEngine } from './engine/engine.js';
+// --- Profiles: PL file-export ------------------------------------------------
+export { ComarchProfile, registerComarchProfile } from './profiles/comarch/index.js';
+export { EnovaProfile, registerEnovaProfile } from './profiles/enova/index.js';
+export {
+  registerSymfoniaProfile,
+  type SymfoniaOptions,
+  SymfoniaProfile,
+} from './profiles/symfonia/index.js';
 export {
   clearProfiles,
   getProfile,
