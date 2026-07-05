@@ -6009,6 +6009,142 @@
     }
   },
   "Portal": {
+    "employee": {
+      "dashboard": {
+        "title": "Mein Arbeitsbereich",
+        "subtitle": "Ihr Urlaub, Ihre Zeiten, Dokumente und Ihr Gehalt an einem Ort.",
+        "availableLeave": "Verfügbarer Urlaub",
+        "pendingRequests": "Offene Anträge",
+        "recentEntries": "Letzte Zeiteinträge",
+        "unavailableTitle": "Nicht verfügbar",
+        "unavailable": "Das Mitarbeiterportal ist für Ihre Organisation noch nicht aktiviert.",
+        "errorTitle": "Etwas ist schiefgelaufen",
+        "error": "Ihr Arbeitsbereich konnte nicht geladen werden. Bitte versuchen Sie es gleich erneut."
+      },
+      "leave": {
+        "title": "Urlaub",
+        "description": "Prüfen Sie Ihren Saldo und beantragen Sie Urlaub.",
+        "requestButton": "Urlaub beantragen",
+        "balancesHeading": "Salden",
+        "noBalances": "Noch keine Urlaubssalden.",
+        "available": "Verfügbar",
+        "requestsHeading": "Meine Anträge",
+        "noRequests": "Sie haben noch keinen Urlaub beantragt.",
+        "unavailableTitle": "Nicht verfügbar",
+        "unavailable": "Urlaub ist in Ihrem Portal noch nicht verfügbar.",
+        "errorTitle": "Etwas ist schiefgelaufen",
+        "error": "Ihr Urlaub konnte nicht geladen werden. Bitte versuchen Sie es gleich erneut.",
+        "status": {
+          "PENDING": "Ausstehend",
+          "APPROVED": "Genehmigt",
+          "REJECTED": "Abgelehnt",
+          "CANCELLED": "Storniert"
+        },
+        "form": {
+          "title": "Urlaub beantragen",
+          "description": "Wählen Sie eine Urlaubsart und die Tage Ihrer Abwesenheit.",
+          "leaveType": "Urlaubsart",
+          "leaveTypePlaceholder": "Urlaub auswählen",
+          "leaveTypeOption": "{available} verfügbar",
+          "leaveTypeRequired": "Wählen Sie eine Urlaubsart.",
+          "startDate": "Startdatum",
+          "endDate": "Enddatum",
+          "endAfterStart": "Das Enddatum muss am oder nach dem Startdatum liegen.",
+          "hours": "Stunden",
+          "hoursRequired": "Geben Sie an, wie viele Stunden Sie benötigen.",
+          "note": "Notiz",
+          "notePlaceholder": "Optionale Notiz für Ihre Führungskraft",
+          "cancel": "Abbrechen",
+          "submit": "Antrag senden",
+          "successToast": "Urlaubsantrag gesendet.",
+          "errorToast": "Ihr Antrag konnte nicht gesendet werden. Bitte versuchen Sie es erneut."
+        }
+      },
+      "time": {
+        "title": "Zeiten",
+        "description": "Ihre erfassten Stunden und Arbeitszeitnachweise.",
+        "recentHeading": "Letzte Einträge",
+        "noTime": "Noch keine Zeiten erfasst.",
+        "ewidencjaHeading": "Arbeitszeitnachweise",
+        "noEwidencja": "Noch keine Arbeitszeitnachweise.",
+        "version": "Version {version}",
+        "unavailableTitle": "Nicht verfügbar",
+        "unavailable": "Zeiten sind in Ihrem Portal noch nicht verfügbar.",
+        "errorTitle": "Etwas ist schiefgelaufen",
+        "error": "Ihre Zeiten konnten nicht geladen werden. Bitte versuchen Sie es gleich erneut."
+      },
+      "documents": {
+        "title": "Dokumente",
+        "description": "Die Dokumente Ihrer Personalakte.",
+        "section": {
+          "SECTION_A": "Bewerbung",
+          "SECTION_B": "Beschäftigung",
+          "SECTION_C": "Vergütung",
+          "SECTION_D": "Unterlagen"
+        },
+        "unnamedDocument": "Dokument",
+        "downloadAria": "{name} herunterladen",
+        "downloadError": "Das Dokument konnte nicht geöffnet werden. Bitte versuchen Sie es erneut.",
+        "emptyTitle": "Keine Dokumente",
+        "empty": "In Ihrer Akte sind noch keine Dokumente vorhanden.",
+        "unavailableTitle": "Nicht verfügbar",
+        "unavailable": "Dokumente sind in Ihrem Portal noch nicht verfügbar.",
+        "errorTitle": "Etwas ist schiefgelaufen",
+        "error": "Ihre Dokumente konnten nicht geladen werden. Bitte versuchen Sie es gleich erneut."
+      },
+      "pay": {
+        "title": "Gehalt",
+        "subtitle": "Wo Sie Ihre Gehaltsabrechnungen finden.",
+        "unavailableTitle": "Gehaltsabrechnungen liegen in der Lohnbuchhaltung",
+        "externalPayroll": "Ihre Gehaltsabrechnungen werden von Ihrem Lohnabrechnungssystem erstellt. Wenden Sie sich an Ihr HR-Team, um Zugang zu erhalten."
+      },
+      "team": {
+        "title": "Mein Team",
+        "subtitle": "Ihre direkten Mitarbeitenden und deren offene Anträge.",
+        "overview": {
+          "title": "Team",
+          "description": "Ihre direkten Mitarbeitenden.",
+          "unnamedReport": "Teammitglied",
+          "pendingLeave": "{count} offen",
+          "forbiddenTitle": "Keine Führungskraft",
+          "forbidden": "Sie haben noch keine direkten Mitarbeitenden.",
+          "errorTitle": "Etwas ist schiefgelaufen",
+          "error": "Ihr Team konnte nicht geladen werden. Bitte versuchen Sie es gleich erneut.",
+          "emptyTitle": "Keine Mitarbeitenden",
+          "empty": "Sie haben noch keine direkten Mitarbeitenden."
+        },
+        "approvals": {
+          "title": "Genehmigungen",
+          "description": "Prüfen und bearbeiten Sie die Urlaubsanträge Ihrer Mitarbeitenden.",
+          "unnamedReport": "Teammitglied",
+          "approve": "Genehmigen",
+          "approvedToast": "Antrag genehmigt.",
+          "rejectedToast": "Antrag abgelehnt.",
+          "actionError": "Die Aktion konnte nicht abgeschlossen werden. Bitte versuchen Sie es erneut.",
+          "forbiddenTitle": "Keine Führungskraft",
+          "forbidden": "Sie haben noch keine direkten Mitarbeitenden.",
+          "errorTitle": "Etwas ist schiefgelaufen",
+          "error": "Genehmigungen konnten nicht geladen werden. Bitte versuchen Sie es gleich erneut.",
+          "emptyTitle": "Alles erledigt",
+          "empty": "Es liegen keine offenen Anträge zur Prüfung vor.",
+          "status": {
+            "PENDING": "Ausstehend",
+            "APPROVED": "Genehmigt",
+            "REJECTED": "Abgelehnt",
+            "CANCELLED": "Storniert"
+          },
+          "reject": {
+            "action": "Ablehnen",
+            "title": "Antrag ablehnen",
+            "description": "Urlaubsantrag von {name} ablehnen?",
+            "reason": "Grund",
+            "reasonPlaceholder": "Optionale Notiz für Ihren Mitarbeitenden",
+            "cancel": "Abbrechen",
+            "confirm": "Antrag ablehnen"
+          }
+        }
+      }
+    },
     "nav": {
       "overview": "Übersicht",
       "contracts": "Verträge",

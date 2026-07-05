@@ -2,7 +2,7 @@
 title: Hot cache
 type: hot-cache
 updated: 2026-07-05
-source_commit: 3126586be
+source_commit: 84855c0a7
 ---
 
 # Hot cache
@@ -18,6 +18,11 @@ Discovery shortcuts for agents — not a changelog. History lives in `wiki/log.m
 ## HRIS two-way sync (Personio + BambooHR, Theme B)
 
 - Loop-free by a DISJOINT field partition — pull writes the HRIS-owned allowlist (`HrisWritableEmployeePatch`), push carries CO-owned events; `assertNotHrisOwnedField` guards. Engine: `packages/api/src/services/hris-sync/*` + `outbox/hris-push*.ts`. Router: `hrisSync` (workforce, dark). Adapters: `personio-adapter.ts` (bearer), `bamboohr-adapter.ts` (OAuth). Full: [[domains/hris-sync]].
+
+## Employee self-service portal (Theme B, dark)
+
+- Discriminated portal subject (Contractor XOR Worker): `middleware/portal-auth.ts` → `portalEmployeeProcedure` (attaches `ctx.workerId`, needs `module.employee-portal`) + `portalManagerProcedure` (≥1 report). Routers `portal/portal-employee-router.ts` + `portal-employee-akta.ts` + `portal-manager-router.ts`, dark-mounted in `portal-root.ts`. Reporting-line scope: `services/portal-reports.ts` (`assertIsDirectReport`). Akta self-view excludes section C IN the query (`portal-self-view-sections.ts`); pay stubs are external (`available:false`). Manager approve reuses `finalizeApprovedLeave`.
+- UI: `apps/web-vite/src/components/portal/employee/**` + `pages/portal/employee/**` (+ `team/`); hooks are the sole tRPC boundary; `isModuleDarkError` → graceful unavailable/forbidden. Shell bootstrap is still contractor-only (employee entry = follow-up). Full: [[domains/employee-portal]].
 - **Agent traps:** `invoice.paid` is NOT an outbox type (3 `hris.*.push` were added); one-HRIS-per-org is a raw-SQL partial index (`provider::text IN (...)`), not a Prisma `@@unique`; national-ID fields are never HRIS-writable; producers are EMPLOYEE-guarded.
 
 ## Public API keys / scopes / rate limits / write surface (Theme C)
