@@ -105,6 +105,10 @@ export const APPROVAL_NOT_ASSIGNED = 'approvalNotAssigned';
 export const APPROVAL_DELEGATE_NOT_MEMBER = 'approvalDelegateNotMember';
 export const APPROVAL_SELF_APPROVAL_FORBIDDEN = 'approvalSelfApprovalForbidden';
 
+// ─── Employee lifecycle ──────────────────────────────────────────
+export const EMPLOYEE_LIFECYCLE_TEMPLATE_NOT_FOUND = 'employeeLifecycleTemplateNotFound';
+export const EMPLOYEE_UNSUPPORTED_JURISDICTION = 'employeeUnsupportedJurisdiction';
+
 // ─── Workflow ────────────────────────────────────────────────────
 export const WORKFLOW_TEMPLATE_NOT_FOUND = 'workflowTemplateNotFound';
 export const WORKFLOW_RUN_NOT_FOUND = 'workflowRunNotFound';

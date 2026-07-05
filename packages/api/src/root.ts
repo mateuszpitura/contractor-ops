@@ -54,6 +54,7 @@ import {
   workerRouter,
 } from './routers/core/index';
 import { personnelFileRouter } from './routers/core/personnel-file/index';
+import { employeeLifecycleRouter } from './routers/employee/employee-lifecycle-router';
 import { equipmentRouter } from './routers/equipment/index';
 import {
   bacsRouter,
@@ -180,6 +181,7 @@ const conditionalUsExpansionRouters = isUsExpansionRegistered()
 const workforceRouters = {
   worker: workerRouter, // worker: shared cross-type worker reads (explicit workerType — contractors + employees)
   employee: employeeRouter, // employee: skeleton employee-type reads (workerType=EMPLOYEE; profile surface lands in a later phase)
+  employeeLifecycle: employeeLifecycleRouter, // employeeLifecycle: on/offboarding runs, statutory cert generation, dated termination
   personnelFile: personnelFileRouter, // personnelFile: gated akta-osobowe personnel file (read/section-access/classify/erasure)
 } as const;
 
