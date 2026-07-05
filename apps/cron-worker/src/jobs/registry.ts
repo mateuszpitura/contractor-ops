@@ -14,6 +14,7 @@ import { classificationReassessmentTriggersHandler } from './handlers/classifica
 import { dataPurgeHandler } from './handlers/data-purge.js';
 import { exchangeRatesHandler } from './handlers/exchange-rates.js';
 import { form1099kTrackerHandler } from './handlers/form-1099k-tracker.js';
+import { hrisSyncHandler } from './handlers/hris-sync.js';
 import { inpostStatusPollHandler } from './handlers/inpost-status-poll.js';
 import { jobHealthHandler } from './handlers/job-health.js';
 import { lateInterestPdfReaperHandler } from './handlers/late-interest-pdf-reaper.js';
@@ -35,6 +36,7 @@ export function getJobDefinitions(env: {
   CRON_EXCHANGE_RATES_SCHEDULE: string;
   CRON_BOE_RATE_POLL_SCHEDULE: string;
   CRON_ORG_DEFINITION_SYNC_SCHEDULE: string;
+  CRON_HRIS_SYNC_SCHEDULE: string;
   CRON_CLASSIFICATION_REASSESSMENT_TRIGGERS_SCHEDULE: string;
   CRON_CLASSIFICATION_ECONOMIC_DEPENDENCY_SCHEDULE: string;
   CRON_FORM_1099K_TRACKER_SCHEDULE: string;
@@ -66,6 +68,10 @@ export function getJobDefinitions(env: {
     {
       meta: { name: 'org-definition-sync', schedule: env.CRON_ORG_DEFINITION_SYNC_SCHEDULE },
       handler: orgDefinitionSyncHandler,
+    },
+    {
+      meta: { name: 'hris-sync', schedule: env.CRON_HRIS_SYNC_SCHEDULE },
+      handler: hrisSyncHandler,
     },
     {
       meta: {

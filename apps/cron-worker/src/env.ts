@@ -44,6 +44,7 @@ const envSchema = z.object({
   CRON_EXCHANGE_RATES_SCHEDULE: z.string().default('0 6 * * *'),
   CRON_BOE_RATE_POLL_SCHEDULE: z.string().default('0 6 * * *'),
   CRON_ORG_DEFINITION_SYNC_SCHEDULE: z.string().default('0 4 * * *'),
+  CRON_HRIS_SYNC_SCHEDULE: z.string().default('0 * * * *'),
   CRON_CLASSIFICATION_REASSESSMENT_TRIGGERS_SCHEDULE: z.string().default('0 3 * * *'),
   CRON_CLASSIFICATION_ECONOMIC_DEPENDENCY_SCHEDULE: z.string().default('0 2 * * *'),
   CRON_FORM_1099K_TRACKER_SCHEDULE: z.string().default('0 5 * * *'),

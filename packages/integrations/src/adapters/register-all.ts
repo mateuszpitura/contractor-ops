@@ -85,6 +85,8 @@ function startHeavyLoad(): Promise<void> {
       { EntraIdAdapter },
       { OktaAdapter },
       { GitHubAdapter },
+      { PersonioAdapter },
+      { BambooHrAdapter },
     ] = await Promise.all([
       import('./docusign-adapter.js'),
       import('./autenti-adapter.js'),
@@ -101,6 +103,8 @@ function startHeavyLoad(): Promise<void> {
       import('./entra-id-adapter.js'),
       import('./okta-adapter.js'),
       import('./github-adapter.js'),
+      import('./personio-adapter.js'),
+      import('./bamboohr-adapter.js'),
     ]);
     registerAdapter(new DocuSignAdapter());
     registerAdapter(new AutentiAdapter());
@@ -131,6 +135,10 @@ function startHeavyLoad(): Promise<void> {
     const githubAdapter = new GitHubAdapter();
     registerAdapter(githubAdapter);
     registerDeprovisionableAdapter('GITHUB', githubAdapter);
+    // HRIS two-way sync adapters (Personio bearer + BambooHR OAuth 2.0). Both
+    // pull vendor REST clients, so they live in the HEAVY lazy tier.
+    registerAdapter(new PersonioAdapter());
+    registerAdapter(new BambooHrAdapter());
     // Bir1 wraps a SOAP client (`bir1` npm package). Lazy-loaded so the SOAP
     // module graph stays out of cold-start for routes that only ever use the
     // (default) dataport adapter.

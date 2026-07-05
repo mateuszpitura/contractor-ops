@@ -85,6 +85,7 @@ import {
 import { workflowRolesRouter, workflowRouter } from './routers/workflow/index';
 import { employeeTimeRouter } from './routers/workforce/employee-time';
 import { ewidencjaRouter } from './routers/workforce/ewidencja';
+import { hrisSyncRouter } from './routers/workforce/hris-sync-router';
 import { leaveRouter } from './routers/workforce/leave';
 
 /**
@@ -192,6 +193,7 @@ const workforceRouters = {
   leave: leaveRouter, // leave: leave requests (approval chain), direct sick, leave-type/blackout config, team calendar
   employeeTime: employeeTimeRouter, // employeeTime: day-grain statutory time records + synchronous WT-limit check
   ewidencja: ewidencjaRouter, // ewidencja: PL KP §149 working-time register generate + read (INSERT-only versions)
+  hrisSync: hrisSyncRouter, // hrisSync: HRIS two-way sync (Personio/BambooHR) — connect XOR, disconnect, syncNow, field mapping
 } as const;
 
 const conditionalWorkforceRouters = isWorkforceRegistered()

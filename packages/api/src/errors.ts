@@ -483,3 +483,9 @@ export const PERSONNEL_DOCUMENT_NOT_PENDING_REVIEW = 'personnelDocumentNotPendin
 
 // ─── ACH return-code ingestion (US payout rail) ───────────────────
 export const PAYMENT_ACH_RETURN_FILE_INVALID = 'paymentAchReturnFileInvalid';
+
+// ─── HRIS two-way sync (Personio / BambooHR) ──────────────────────
+export const HRIS_ALREADY_CONNECTED = 'hrisAlreadyConnected';
+export const HRIS_NOT_CONNECTED = 'hrisNotConnected';
+export const HRIS_NO_CONNECTED_TO_SYNC = 'hrisNoConnectedToSync';
+export const HRIS_SYNC_NOT_ENABLED = 'hrisSyncNotEnabled';

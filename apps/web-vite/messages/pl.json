@@ -1,4 +1,61 @@
 {
+  "HrisSync": {
+    "title": "Synchronizacja HRIS",
+    "description": "Dwukierunkowa synchronizacja z systemem HRIS (Personio lub BambooHR).",
+    "backAriaLabel": "Powrót do integracji",
+    "connect": {
+      "heading": "Połącz system HRIS",
+      "description": "Połącz Personio lub BambooHR, aby synchronizować dane kadrowe pracowników. Dane finansowe i zgodności nigdy nie są nadpisywane.",
+      "providerLabel": "Dostawca",
+      "tokenLabel": "Token dostępu",
+      "tokenPlaceholder": "Wklej token dostępu API"
+    },
+    "connected": {
+      "heading": "{provider} połączony",
+      "status": "Status: {status}",
+      "lastSync": "ostatnia synchronizacja {when}",
+      "neverSynced": "jeszcze nie zsynchronizowano"
+    },
+    "empty": {
+      "heading": "Brak połączonego systemu HRIS",
+      "description": "Połącz dostawcę powyżej, aby rozpocząć synchronizację pracowników."
+    },
+    "mapping": {
+      "heading": "Mapowanie pól",
+      "description": "Przypisz każde pole rejestru do odpowiedniej nazwy atrybutu HRIS.",
+      "attrPlaceholder": "Nazwa atrybutu HRIS",
+      "fields": {
+        "displayName": "Imię i nazwisko",
+        "email": "E-mail",
+        "position": "Stanowisko",
+        "department": "Dział",
+        "employmentStatus": "Status zatrudnienia",
+        "hireDate": "Data zatrudnienia",
+        "terminatedAt": "Data zakończenia"
+      }
+    },
+    "actions": {
+      "connect": "Połącz",
+      "disconnect": "Rozłącz",
+      "syncNow": "Synchronizuj teraz",
+      "saveMapping": "Zapisz mapowanie"
+    },
+    "error": {
+      "heading": "Nie udało się załadować statusu HRIS",
+      "description": "Wystąpił błąd podczas ładowania połączenia.",
+      "retry": "Ponów"
+    },
+    "toast": {
+      "connected": "HRIS połączony",
+      "connectError": "Nie udało się połączyć systemu HRIS",
+      "disconnected": "HRIS rozłączony",
+      "disconnectError": "Nie udało się rozłączyć systemu HRIS",
+      "syncQueued": "Rozpoczęto synchronizację",
+      "syncError": "Nie udało się rozpocząć synchronizacji",
+      "mappingSaved": "Zapisano mapowanie",
+      "mappingError": "Nie udało się zapisać mapowania"
+    }
+  },
   "EmployeeLifecycle": {
     "subtitle": "Zatrudnianie/zwalnianie, świadectwa ustawowe i rozwiązanie stosunku pracy",
     "unknownEmployee": "Pracownik",
