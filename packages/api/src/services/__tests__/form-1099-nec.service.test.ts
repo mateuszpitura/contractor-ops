@@ -54,6 +54,59 @@ function resetIdempotency(): void {
   idemStore.clear();
 }
 
+/**
+ * A rollback-simulating `$transaction` double: the tx buffers `create`d rows and
+ * only flushes them to `committed` when the callback resolves. A throw inside the
+ * callback discards the buffer — modeling a Postgres transaction rollback.
+ */
+function makeRollbackPersist(createImpl: (data: unknown) => Promise<{ id: string }>) {
+  const committed: unknown[] = [];
+  const persist = {
+    $transaction: async <T>(
+      fn: (tx: {
+        form1099Nec: { create: (a: { data: unknown }) => Promise<{ id: string }> };
+      }) => Promise<T>,
+    ): Promise<T> => {
+      const staged: unknown[] = [];
+      const tx = {
+        form1099Nec: {
+          create: async ({ data }: { data: unknown }) => {
+            const res = await createImpl(data);
+            staged.push(data);
+            return res;
+          },
+        },
+      };
+      const out = await fn(tx);
+      committed.push(...staged);
+      return out;
+    },
+  };
+  return { persist, committed };
+}
+
+/** One batch recipient whose single payout clears the tax-year threshold. */
+function recipient1099(recipientId: string, payerOrgId: string, taxYear: number) {
+  return {
+    recipientId,
+    payerName: 'Acme',
+    recipientName: `Recipient ${recipientId}`,
+    recipientTinLast4: '1120',
+    payments: [
+      {
+        recipientId,
+        payerOrgId,
+        paymentDate: `${taxYear}-03-01`,
+        amountMinor: 250_000,
+        currency: 'USD',
+      },
+    ],
+    backupWithholdingFlagged: false,
+    tinMismatch: false,
+    recordedBackupWithholdingMinor: 0,
+  };
+}
+
 const payments = [
   {
     recipientId: 'rcpt-1',
@@ -274,7 +327,7 @@ describe('form-1099-nec.service — batch generation', () => {
 
   it('generates above the threshold, suppresses below, and persists ACTIVE rows', async () => {
     resetIdempotency();
-    const create = vi.fn(async () => ({ id: 'row-1' }));
+    const { persist, committed } = makeRollbackPersist(async () => ({ id: 'row-1' }));
 
     const result = await generateBatch(
       {
@@ -320,19 +373,19 @@ describe('form-1099-nec.service — batch generation', () => {
           },
         ],
       },
-      { db, persist: { form1099Nec: { create } } },
+      { db, persist },
     );
 
     expect(result.idempotent).toBe(false);
     expect(result.generated).toHaveLength(1);
     expect(result.generated[0]?.recipientId).toBe('rcpt-above');
     expect(result.suppressedRecipientIds).toEqual(['rcpt-below']);
-    expect(create).toHaveBeenCalledTimes(1);
+    expect(committed).toHaveLength(1);
   });
 
   it('a retried batch (same idempotency key) does not create duplicate rows', async () => {
     resetIdempotency();
-    const create = vi.fn(async () => ({ id: 'row-1' }));
+    const { persist, committed } = makeRollbackPersist(async () => ({ id: 'row-1' }));
     const input = {
       organizationId: 'org-1',
       payerOrgId: 'org-1',
@@ -358,14 +411,71 @@ describe('form-1099-nec.service — batch generation', () => {
         },
       ],
     } as const;
-    const deps = { db, persist: { form1099Nec: { create } } };
+    const deps = { db, persist };
 
     const first = await generateBatch(input, deps);
     const second = await generateBatch(input, deps);
 
     expect(first.idempotent).toBe(false);
     expect(second.idempotent).toBe(true);
-    expect(create).toHaveBeenCalledTimes(1);
+    expect(committed).toHaveLength(1);
+  });
+
+  it('rolls back the whole batch (zero rows persisted) when a create throws mid-batch', async () => {
+    resetIdempotency();
+    const { persist, committed } = makeRollbackPersist(async data => {
+      if ((data as { recipientId: string }).recipientId === 'rcpt-2') {
+        throw new Error('boom');
+      }
+      return { id: 'row' };
+    });
+
+    await expect(
+      generateBatch(
+        {
+          organizationId: 'org-tx',
+          payerOrgId: 'org-tx',
+          taxYear: 2030,
+          recipients: [
+            recipient1099('rcpt-1', 'org-tx', 2030),
+            recipient1099('rcpt-2', 'org-tx', 2030),
+            recipient1099('rcpt-3', 'org-tx', 2030),
+          ],
+        },
+        { db, persist },
+      ),
+    ).rejects.toThrow('boom');
+
+    // Full rollback: not even the rcpt-1 row that inserted before the throw survives.
+    expect(committed).toHaveLength(0);
+  });
+
+  it('treats a Form1099Nec_active_key P2002 as an idempotent skip — no duplicates, no error', async () => {
+    resetIdempotency();
+    const { persist, committed } = makeRollbackPersist(async () => {
+      throw Object.assign(new Error('Unique constraint failed'), {
+        code: 'P2002',
+        meta: { target: 'Form1099Nec_active_key' },
+      });
+    });
+
+    const result = await generateBatch(
+      {
+        organizationId: 'org-dup',
+        payerOrgId: 'org-dup',
+        taxYear: 2031,
+        recipients: [
+          recipient1099('rcpt-1', 'org-dup', 2031),
+          recipient1099('rcpt-2', 'org-dup', 2031),
+        ],
+      },
+      { db, persist },
+    );
+
+    expect(result.idempotent).toBe(true);
+    expect(result.generated).toHaveLength(2);
+    // Nothing new persisted — the prior batch already filed these ACTIVE rows.
+    expect(committed).toHaveLength(0);
   });
 
   it('derives a stable idempotency key per org/payer-org/tax-year', () => {

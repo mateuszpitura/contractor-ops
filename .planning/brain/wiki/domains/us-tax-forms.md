@@ -6,9 +6,11 @@ source_commit: 5d6e26a17
 source_commit: f9de62452
 source_commit: 28061f01e
 source_commit: 730cc8e69
+source_commit: 60258402c
 verify_with:
   - packages/db/prisma/schema/tax.prisma
   - packages/db/prisma/schema/migrations/20260705000000_us_tax_form_tables_plus_additive_integrity/
+  - packages/db/prisma/schema/migrations/20260705130000_form1099nec_active_key/
   - apps/web-vite/src/components/portal/tax-forms/
   - apps/web-vite/src/components/contractors/tax-forms/
   - apps/web-vite/src/components/contractors/tax-filing/
@@ -126,10 +128,15 @@ builds the immutable record-of-record with the recipient TIN **last-4 only** (a 
 A CORRECTED filing **supersedes, never mutates**: `supersedeCorrected` / `fileCorrection` flip the
 prior ACTIVE row for `(organizationId, payerOrgId, recipientId, taxYear)` to SUPERSEDED then insert
 a new ACTIVE row with `corrected: true` inside one `$transaction`; the filed row is never updated.
-`generateBatch` is wrapped in `idempotency.reserve/complete/clear` so a retried batch returns the
-prior result instead of re-filing, and writes an audit row on generation. The persistence sink is an
-injected port — the deterministic core is unit-tested with no live database; the schema-applied
-router/wiring caller supplies the real writer.
+`generateBatch` inserts the whole qualifying batch inside ONE interactive `persist.$transaction`, so a
+mid-batch throw rolls back every row (never a partial year-end filing), and is wrapped in
+`idempotency.reserve/complete/clear` so a retried batch returns the prior result instead of re-filing;
+it writes an audit row on generation. A re-run that collides with an already-filed batch surfaces P2002
+on the `Form1099Nec_active_key` partial index; the service treats that as an idempotent skip
+(`isActive1099NecKeyViolation` → `idempotent: true`, no duplicate rows, no error) rather than
+propagating the constraint error. The persistence sink is an injected `$transaction`-capable port — the
+deterministic core is unit-tested with a rollback-simulating double, no live database; the
+schema-applied router/wiring caller supplies the real writer.
 
 The recipient **Copy-B PDF** (`form-1099-nec-pdf` → `Form1099NecCopyBDocument`) is a substitute
 black-ink form per Pub 1179 §4.6, rendered via a lazy `import('@react-pdf/renderer')` `renderToBuffer`
@@ -321,9 +328,12 @@ contractor profile; it never mutates band state.
   constant ($600 TY2025 / $2,000 TY2026 OBBBA). Box-1 is aggregated by payment-date and
   FX-converted to USD at the payment-date rate, per recipient per payer-org.
 - A CORRECTED 1099 supersedes (prior ACTIVE → SUPERSEDED, new ACTIVE with `corrected: true`,
-  one `$transaction`); a filed `Form1099Nec` row is never updated. `generateBatch` is idempotent
-  so a retried batch never double-files. The Copy-B PDF renders from the immutable snapshot
-  (last-4 TIN only) — Copy B only, never IRS Copy A.
+  one `$transaction`); a filed `Form1099Nec` row is never updated. `generateBatch` inserts the whole
+  batch inside one `persist.$transaction` (a mid-batch throw rolls back every row — never a partial
+  year-end filing) and is idempotent (reserve/complete/clear); a re-run that collides with an
+  already-filed batch surfaces P2002 on the `Form1099Nec_active_key` partial index and is treated as an
+  idempotent skip (`isActive1099NecKeyViolation` → `idempotent: true`, no duplicates). The Copy-B PDF
+  renders from the immutable snapshot (last-4 TIN only) — Copy B only, never IRS Copy A.
 - IRIS Copy A is XML, never a PDF: `buildIrisXml` builds it with a real XML builder (never
   string concatenation), emits the recipient TIN masked to last-4 only, and stamps the schema
   `VersionNum`/`VersionDt` from the payload manifest. `xsdValidate` is SSRF/XXE-safe and returns
@@ -356,7 +366,10 @@ contractor profile; it never mutates band state.
   SUPERSEDED unbounded). `generateBatch1042S` now inserts the whole batch inside one
   `persist.$transaction` (mid-batch throw rolls back every row) and catches the `Form1042S_active_key`
   P2002 as an idempotent skip (`isActive1042SKeyViolation` → `idempotent: true`, no duplicates) — the
-  index is the DB backstop, the transaction + P2002-skip is the service half.
+  index is the DB backstop, the transaction + P2002-skip is the service half. `Form1099Nec` gains the
+  mirror partial UNIQUE `Form1099Nec_active_key` (same key, `WHERE status='ACTIVE'`, migration
+  `20260705130000_form1099nec_active_key`); `generateBatch` uses it identically — one
+  `persist.$transaction` + `isActive1099NecKeyViolation` P2002-skip.
 
 ## Agent mistakes
 

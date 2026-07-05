@@ -462,9 +462,9 @@ export interface GenerateBatchResult {
 }
 
 /**
- * Minimal Prisma create surface used by `generateBatch` to persist ACTIVE 1099
- * rows. Kept structural so a `$transaction` tx, the tenant client, or a test
- * double satisfy it.
+ * Minimal Prisma create surface for a single ACTIVE 1099 row — the shape of the
+ * `$transaction` tx client the batch inserts through. Kept structural so a real
+ * Prisma tx or a test double satisfy it.
  */
 export interface Form1099NecCreateClient {
   form1099Nec: {
@@ -472,24 +472,62 @@ export interface Form1099NecCreateClient {
   };
 }
 
+/**
+ * Transaction-capable persistence sink injected into `generateBatch`. The whole
+ * batch is inserted inside one interactive transaction so a mid-batch throw rolls
+ * back every row — a partial year-end filing is never left behind. The real
+ * writer is the tenant Prisma client; unit tests pass a rollback-simulating double.
+ */
+export interface Form1099NecPersistClient {
+  $transaction: <T>(fn: (tx: Form1099NecCreateClient) => Promise<T>) => Promise<T>;
+}
+
 export interface GenerateBatchDeps {
   /** Tenant client for FX conversion + threshold lookup. */
   db: DbClient;
-  /** Persistence sink for the generated ACTIVE rows. Injected so the deterministic
+  /**
+   * Persistence sink for the generated ACTIVE rows. Injected so the deterministic
    * core is unit-testable with no live database (the real writer is supplied by
    * the schema-applied router/wiring caller). When omitted, rows are computed
-   * but not persisted. */
-  persist?: Form1099NecCreateClient;
+   * but not persisted.
+   */
+  persist?: Form1099NecPersistClient;
   /** Audit identity for the generate action. */
   actorId?: string | null;
   actorType?: 'USER' | 'SYSTEM';
 }
 
 /**
+ * True when `err` is the P2002 unique-constraint violation raised by the
+ * `Form1099Nec_active_key` partial index (at most one ACTIVE return per org /
+ * payer-org / recipient / tax year). Detected structurally so the service takes
+ * no direct dependency on the Prisma error class. A fresh ACTIVE-row insert can
+ * only collide on this index — `id` is a new cuid and the row is a fresh ACTIVE
+ * insert — so a missing/opaque `meta.target` still resolves to this violation.
+ */
+function isActive1099NecKeyViolation(err: unknown): boolean {
+  if (typeof err !== 'object' || err === null || (err as { code?: unknown }).code !== 'P2002') {
+    return false;
+  }
+  const target = (err as { meta?: { target?: unknown } }).meta?.target;
+  if (typeof target === 'string') {
+    return target.includes('Form1099Nec_active_key') || target.includes('recipientId');
+  }
+  if (Array.isArray(target)) {
+    return target.includes('recipientId');
+  }
+  return true;
+}
+
+/**
  * Generate a tax-year 1099-NEC batch for one payer-org. Aggregates box-1 by
  * payment date (FX-converted to USD), gates each recipient on the tax-year
- * threshold table, populates box-4, builds the immutable snapshot, and (when a
- * persistence sink is supplied) inserts an ACTIVE row per qualifying recipient.
+ * threshold table, populates box-4, and builds the immutable snapshot. When a
+ * persistence sink is supplied, every ACTIVE row is inserted inside ONE
+ * interactive transaction, so a mid-batch throw rolls back the whole batch — a
+ * partial year-end filing is never left behind. A re-run that collides with an
+ * already-filed batch (P2002 on `Form1099Nec_active_key`) is treated as an
+ * idempotent skip: no duplicate rows, no error.
  *
  * Wrapped in idempotency reserve/complete/clear so a retried batch returns the
  * prior result instead of re-filing. Writes an audit row on generation.
@@ -517,6 +555,7 @@ export async function generateBatch(
 
     const generated: GeneratedForm1099[] = [];
     const suppressedRecipientIds: string[] = [];
+    const rowsToPersist: Prisma.Form1099NecUncheckedCreateInput[] = [];
 
     for (const recipient of recipients) {
       const { box1AmountMinor } = await aggregateBox1Async(db, {
@@ -552,20 +591,18 @@ export async function generateBatch(
       });
 
       if (persist) {
-        await persist.form1099Nec.create({
-          data: {
-            organizationId,
-            payerOrgId,
-            recipientId: recipient.recipientId,
-            taxYear,
-            status: 'ACTIVE',
-            corrected: false,
-            box1AmountMinor,
-            box4BackupWithholdingMinor,
-            currency: USD,
-            cfsfStateCode: recipient.cfsfStateCode ?? null,
-            snapshotJson: snapshotJson as unknown as Prisma.InputJsonValue,
-          },
+        rowsToPersist.push({
+          organizationId,
+          payerOrgId,
+          recipientId: recipient.recipientId,
+          taxYear,
+          status: 'ACTIVE',
+          corrected: false,
+          box1AmountMinor,
+          box4BackupWithholdingMinor,
+          currency: USD,
+          cfsfStateCode: recipient.cfsfStateCode ?? null,
+          snapshotJson: snapshotJson as unknown as Prisma.InputJsonValue,
         });
       }
 
@@ -575,6 +612,33 @@ export async function generateBatch(
         box4BackupWithholdingMinor,
         snapshotJson,
       });
+    }
+
+    // Persist the whole batch in ONE interactive transaction: a mid-batch throw
+    // rolls back every row rather than leaving a partial year-end filing. A P2002
+    // on the `Form1099Nec_active_key` partial index means a prior successful batch
+    // already filed these ACTIVE rows — the transaction rolled back, so treat the
+    // re-run as an idempotent skip (no duplicate rows, no error) and cache it so
+    // later retries short-circuit on the reservation.
+    if (persist && rowsToPersist.length > 0) {
+      try {
+        await persist.$transaction(async tx => {
+          for (const data of rowsToPersist) {
+            await tx.form1099Nec.create({ data });
+          }
+        });
+      } catch (err) {
+        if (isActive1099NecKeyViolation(err)) {
+          const skipResult: GenerateBatchResult = {
+            idempotent: true,
+            generated,
+            suppressedRecipientIds,
+          };
+          await complete(key, skipResult, BATCH_IDEMPOTENCY_TTL_SECONDS);
+          return skipResult;
+        }
+        throw err;
+      }
     }
 
     await writeAuditLog({
