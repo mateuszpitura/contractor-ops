@@ -84,11 +84,16 @@ export async function routeStripeEvent(
 
   const pendingNotifications: NotificationEvent[] = [];
 
+  // Source-event `created` timestamp (seconds → Date). Threaded into the
+  // subscription writers so the ordering guard can reject an out-of-order or
+  // late (Stripe retries for 3 days) redelivery.
+  const eventCreated = event.created ? new Date(event.created * 1000) : new Date();
+
   switch (event.type) {
     case 'checkout.session.completed': {
       const session = event.data.object as Stripe.Checkout.Session;
       if (session.mode === 'subscription' && session.subscription) {
-        await handleCheckoutCompleted(session, tx, pendingNotifications);
+        await handleCheckoutCompleted(session, tx, pendingNotifications, eventCreated);
         await emitStripeFunnelEvent('checkout_completed', session);
       } else if (session.mode === 'payment' && session.metadata?.type === 'top_up') {
         await handleTopUpCompleted(session, tx);
@@ -100,14 +105,14 @@ export async function routeStripeEvent(
     case 'customer.subscription.updated': {
       const subscription = event.data.object as unknown as SubscriptionWithPeriod;
       const wasCreate = event.type === 'customer.subscription.created';
-      await handleSubscriptionUpdated(subscription, tx, pendingNotifications);
+      await handleSubscriptionUpdated(subscription, tx, pendingNotifications, eventCreated);
       await emitSubscriptionFunnelEvent(subscription, wasCreate);
       break;
     }
 
     case 'customer.subscription.deleted': {
       const subscription = event.data.object as Stripe.Subscription;
-      await handleSubscriptionDeleted(subscription, tx);
+      await handleSubscriptionDeleted(subscription, tx, eventCreated);
       break;
     }
 
@@ -144,7 +149,7 @@ export async function routeStripeEvent(
 
     case 'customer.subscription.resumed': {
       const subscription = event.data.object as unknown as SubscriptionWithPeriod;
-      await handleSubscriptionUpdated(subscription, tx, pendingNotifications);
+      await handleSubscriptionUpdated(subscription, tx, pendingNotifications, eventCreated);
       break;
     }
 
@@ -197,6 +202,7 @@ async function handleCheckoutCompleted(
   session: Stripe.Checkout.Session,
   tx: TxClient,
   pendingNotifications: NotificationEvent[],
+  eventCreated: Date,
 ): Promise<void> {
   const subscriptionId =
     typeof session.subscription === 'string' ? session.subscription : session.subscription?.id;
@@ -209,7 +215,7 @@ async function handleCheckoutCompleted(
   const subscriptionResponse = await stripe.subscriptions.retrieve(subscriptionId);
   // Cast to include period fields available in webhook payload
   const subscription = subscriptionResponse as unknown as SubscriptionWithPeriod;
-  await handleSubscriptionUpdated(subscription, tx, pendingNotifications);
+  await handleSubscriptionUpdated(subscription, tx, pendingNotifications, eventCreated);
 
   // Create initial trial credit ledger for trialing subscriptions
   if (subscription.status === 'trialing') {
@@ -322,6 +328,7 @@ async function handleSubscriptionUpdated(
   subscription: SubscriptionWithPeriod,
   tx: TxClient,
   pendingNotifications: NotificationEvent[],
+  eventCreated: Date,
 ): Promise<void> {
   const organizationId = subscription.metadata?.organizationId;
   if (!organizationId) {
@@ -343,19 +350,38 @@ async function handleSubscriptionUpdated(
     },
   );
 
-  // Check if tier changed (for notification)
+  // Fetch the current row for (a) the tier-change notification and (b) the
+  // out-of-order guard. Event-id dedup (StripeEvent) blocks exact retries, but a
+  // distinct OLDER event whose first delivery was delayed (Stripe retries for up
+  // to 3 days) can still land after a newer one already updated the row. Applying
+  // it would resurrect stale state (e.g. ACTIVE clobbering a newer PAST_DUE /
+  // CANCELED). Skip when the incoming event predates the last one we applied.
   const previousSub = await tx.subscription.findUnique({
     where: { stripeSubscriptionId: subscription.id },
-    select: { tier: true },
+    select: { tier: true, lastEventCreated: true },
   });
 
+  if (previousSub?.lastEventCreated && eventCreated < previousSub.lastEventCreated) {
+    log.info(
+      {
+        subscriptionId: subscription.id,
+        organizationId,
+        eventCreated: eventCreated.toISOString(),
+        lastEventCreated: previousSub.lastEventCreated.toISOString(),
+      },
+      'skipping stale out-of-order subscription event',
+    );
+    return;
+  }
+
+  const upsertData = { ...data, lastEventCreated: eventCreated };
   await tx.subscription.upsert({
     where: { stripeSubscriptionId: subscription.id },
     create: {
       stripeSubscriptionId: subscription.id,
-      ...data,
+      ...upsertData,
     } as Parameters<typeof tx.subscription.upsert>[0]['create'],
-    update: data as Parameters<typeof tx.subscription.upsert>[0]['update'],
+    update: upsertData as Parameters<typeof tx.subscription.upsert>[0]['update'],
   });
 
   void invalidate(CacheKeys.subscription(organizationId), CacheKeys.creditBalance(organizationId));
@@ -408,6 +434,7 @@ async function queueTierChangeNotification(
 async function handleSubscriptionDeleted(
   subscription: Stripe.Subscription,
   tx: TxClient,
+  eventCreated: Date,
 ): Promise<void> {
   const result = await markSubscriptionDeleted(subscription, tx);
   if (!result) {
@@ -417,6 +444,15 @@ async function handleSubscriptionDeleted(
     );
     return;
   }
+
+  // Advance the ordering watermark so a delayed first-delivery of an older
+  // subscription event cannot resurrect a cancelled subscription.
+  await tx.subscription.update({
+    where: { stripeSubscriptionId: subscription.id },
+    data: { lastEventCreated: eventCreated } as Parameters<
+      typeof tx.subscription.update
+    >[0]['data'],
+  });
 
   void invalidate(
     CacheKeys.subscription(result.organizationId),

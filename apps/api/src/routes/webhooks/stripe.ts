@@ -3,9 +3,13 @@
  *
  *   1. Read raw body (signature verification needs the original bytes).
  *   2. Verify `stripe-signature` via Stripe SDK.
- *   3. Reject deliveries > 24 h old unless they are "settlement" event
- *      types — Stripe's 3-day redelivery window can otherwise re-fire
- *      stale events after our handler graph has moved on.
+ *   3. Reject deliveries > 24 h old unless they are "settlement" or
+ *      subscription-lifecycle event types — Stripe's 3-day redelivery
+ *      window can otherwise re-fire stale cosmetic events after our
+ *      handler graph has moved on. Subscription state-changing events are
+ *      exempt (a genuinely late cancellation must still be applied); the
+ *      billing-webhook out-of-order guard stops a late one clobbering
+ *      newer state.
  *   4. Inside a single Serializable transaction:
  *        - Upsert `StripeEvent { stripeEventId, eventType, payloadJson }`.
  *        - Skip processing if `processedAt` is already set (idempotency).
@@ -50,6 +54,28 @@ const SETTLEMENT_EVENT_TYPES = new Set<string>([
   'charge.dispute.updated',
 ]);
 
+// Subscription lifecycle events that MUTATE persisted entitlement state
+// (status / tier / cancellation). Stripe retries deliveries for up to 3 days,
+// so a genuinely late cancellation or status change can arrive outside the 24 h
+// window — dropping it as `late_delivery` would leave entitlement permanently
+// drifted from Stripe. These bypass the age gate; the billing-webhook
+// out-of-order guard (`lastEventCreated`) ensures a late delivery still cannot
+// overwrite newer state. Cosmetic / notification-only events (e.g.
+// `customer.subscription.trial_will_end`) stay subject to the gate.
+const SUBSCRIPTION_LIFECYCLE_EVENT_TYPES = new Set<string>([
+  'customer.subscription.created',
+  'customer.subscription.updated',
+  'customer.subscription.deleted',
+  'customer.subscription.paused',
+  'customer.subscription.resumed',
+]);
+
+function isAgeGateExempt(eventType: string): boolean {
+  return (
+    SETTLEMENT_EVENT_TYPES.has(eventType) || SUBSCRIPTION_LIFECYCLE_EVENT_TYPES.has(eventType)
+  );
+}
+
 const MAX_AGE_SECONDS = 24 * 60 * 60;
 
 // The raw-body parser registered inside the webhooks plugin scope delivers
@@ -83,7 +109,7 @@ export function registerStripeWebhookRoute(app: FastifyInstance): void {
     }
 
     const eventAgeSeconds = Math.floor(Date.now() / 1000) - event.created;
-    if (eventAgeSeconds > MAX_AGE_SECONDS && !SETTLEMENT_EVENT_TYPES.has(event.type)) {
+    if (eventAgeSeconds > MAX_AGE_SECONDS && !isAgeGateExempt(event.type)) {
       log.warn(
         { eventId: event.id, eventType: event.type, eventAgeSeconds },
         'rejecting late Stripe webhook delivery — outside 24h window',

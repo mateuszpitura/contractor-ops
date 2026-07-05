@@ -284,4 +284,33 @@ describe('POST /webhooks/stripe', () => {
     expect(transactionSpy).toHaveBeenCalledTimes(1);
     expect(routeEventSpy).toHaveBeenCalledTimes(1);
   });
+
+  it('subscription lifecycle events bypass the 24h window (a late cancellation must still apply)', async () => {
+    const nowSec = Math.floor(Date.now() / 1000);
+    constructEventSpy.mockReturnValue(
+      freshEvent({
+        id: 'evt_cancel_late',
+        type: 'customer.subscription.deleted',
+        created: nowSec - 72 * 60 * 60,
+      }),
+    );
+    txStripeEvent.findUnique.mockResolvedValue(null);
+    routeEventSpy.mockResolvedValue([]);
+
+    const res = await app.inject({
+      method: 'POST',
+      url: '/webhooks/stripe',
+      headers: {
+        'content-type': 'application/json',
+        'stripe-signature': SIGNATURE_HEADER,
+      },
+      payload: SIGNED_BODY,
+    });
+
+    expect(res.statusCode).toBe(200);
+    const body = res.json() as { received: boolean; skipped?: string };
+    expect(body.skipped).toBeUndefined();
+    expect(transactionSpy).toHaveBeenCalledTimes(1);
+    expect(routeEventSpy).toHaveBeenCalledTimes(1);
+  });
 });

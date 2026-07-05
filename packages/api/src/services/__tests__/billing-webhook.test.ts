@@ -1240,6 +1240,82 @@ describe('billing-webhook', () => {
   });
 
   // =========================================================================
+  // handleSubscriptionUpdated - out-of-order redelivery guard
+  // =========================================================================
+
+  describe('handleSubscriptionUpdated - out-of-order guard', () => {
+    function updatedEvent(createdSeconds: number, subOverrides = {}) {
+      return {
+        ...makeEvent('customer.subscription.updated', makeSubscription(subOverrides)),
+        created: createdSeconds,
+      } as Stripe.Event;
+    }
+
+    it('skips a stale event whose created predates the last applied event', async () => {
+      tx.subscription.findUnique.mockResolvedValue({
+        tier: 'PRO',
+        lastEventCreated: new Date(300 * 1000),
+      });
+      mockResolveTierFromPriceId.mockReturnValue('PRO');
+
+      await routeStripeEvent(updatedEvent(100), tx);
+
+      expect(tx.subscription.upsert).not.toHaveBeenCalled();
+    });
+
+    it('applies an event whose created is newer than the last applied event', async () => {
+      tx.subscription.findUnique.mockResolvedValue({
+        tier: 'PRO',
+        lastEventCreated: new Date(300 * 1000),
+      });
+      mockResolveTierFromPriceId.mockReturnValue('PRO');
+
+      await routeStripeEvent(updatedEvent(400), tx);
+
+      expect(tx.subscription.upsert).toHaveBeenCalled();
+    });
+
+    it('applies when no watermark is stored yet (first event for the row)', async () => {
+      tx.subscription.findUnique.mockResolvedValue({ tier: 'PRO', lastEventCreated: null });
+      mockResolveTierFromPriceId.mockReturnValue('PRO');
+
+      await routeStripeEvent(updatedEvent(100), tx);
+
+      expect(tx.subscription.upsert).toHaveBeenCalled();
+    });
+
+    it('stamps lastEventCreated on the upserted row', async () => {
+      tx.subscription.findUnique.mockResolvedValue(null);
+      mockResolveTierFromPriceId.mockReturnValue('PRO');
+
+      await routeStripeEvent(updatedEvent(500), tx);
+
+      expect(tx.subscription.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          create: expect.objectContaining({ lastEventCreated: new Date(500 * 1000) }),
+          update: expect.objectContaining({ lastEventCreated: new Date(500 * 1000) }),
+        }),
+      );
+    });
+
+    it('stamps lastEventCreated when a subscription is deleted', async () => {
+      tx.subscription.findUnique.mockResolvedValue({ id: 'db_sub_1', organizationId: 'org_1' });
+
+      const event = {
+        ...makeEvent('customer.subscription.deleted', makeSubscription()),
+        created: 900,
+      } as Stripe.Event;
+
+      await routeStripeEvent(event, tx);
+
+      expect(tx.subscription.update).toHaveBeenCalledWith({
+        where: { stripeSubscriptionId: 'sub_123' },
+        data: { lastEventCreated: new Date(900 * 1000) },
+      });
+    });
+  });
+
+  // =========================================================================
   // handleCheckoutCompleted - missing subscription ID
   // =========================================================================
 

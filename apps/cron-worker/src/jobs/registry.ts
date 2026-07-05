@@ -20,6 +20,7 @@ import { jobHealthHandler } from './handlers/job-health.js';
 import { lateInterestPdfReaperHandler } from './handlers/late-interest-pdf-reaper.js';
 import { orgDefinitionSyncHandler } from './handlers/org-definition-sync.js';
 import { remindersHandler } from './handlers/reminders/index.js';
+import { stripeReconcileHandler } from './handlers/stripe-reconcile.js';
 import { tokenRefreshHandler } from './handlers/token-refresh.js';
 import { trialNotificationsHandler } from './handlers/trial-notifications.js';
 import { yearEnd1099ReminderHandler } from './handlers/year-end-1099-reminder.js';
@@ -47,6 +48,7 @@ export function getJobDefinitions(env: {
   CRON_TRIAL_NOTIFICATIONS_SCHEDULE: string;
   CRON_REMINDERS_SCHEDULE: string;
   CRON_YEAR_END_1099_REMINDER_SCHEDULE: string;
+  CRON_STRIPE_RECONCILE_SCHEDULE: string;
 }): JobDefinition[] {
   return [
     {
@@ -133,6 +135,10 @@ export function getJobDefinitions(env: {
         schedule: env.CRON_YEAR_END_1099_REMINDER_SCHEDULE,
       },
       handler: yearEnd1099ReminderHandler,
+    },
+    {
+      meta: { name: 'stripe-reconcile', schedule: env.CRON_STRIPE_RECONCILE_SCHEDULE },
+      handler: stripeReconcileHandler,
     },
   ];
 }

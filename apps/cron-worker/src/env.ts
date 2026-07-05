@@ -57,6 +57,7 @@ const envSchema = z.object({
   // Year-end 1099-NEC batch-due reminder — mid-January (before the ~Jan 31
   // furnish deadline). Notify-only; never generates or files.
   CRON_YEAR_END_1099_REMINDER_SCHEDULE: z.string().default('0 8 15 1 *'),
+  CRON_STRIPE_RECONCILE_SCHEDULE: z.string().default('0 1 * * *'),
 
   /** Observability. */
   SENTRY_DSN: z.string().url().optional(),

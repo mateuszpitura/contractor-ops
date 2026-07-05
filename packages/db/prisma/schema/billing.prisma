@@ -13,6 +13,11 @@ model Subscription {
   currentPeriodEnd         DateTime
   trialEnd                 DateTime?
   cancelAtPeriodEnd        Boolean            @default(false)
+  // `created` timestamp of the last Stripe event applied to this row. The
+  // webhook ordering guard skips any event older than this so a delayed
+  // (Stripe retries for 3 days) or out-of-order redelivery cannot resurrect
+  // stale state. NULL = no event applied yet.
+  lastEventCreated         DateTime?
   seatCount                Int                @default(1)
   addOns                   String[]           @default([])
   createdAt                DateTime           @default(now())

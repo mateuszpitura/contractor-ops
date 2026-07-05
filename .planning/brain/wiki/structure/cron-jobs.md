@@ -4,6 +4,7 @@ type: structure
 tags: [structure, cron, background]
 source_commit: f0779951
 source_commit: f9de62452
+source_commit: 28061f01e
 verify_with:
   - apps/cron-worker/src/jobs/handlers/
   - apps/cron-worker/src/jobs/handlers/reminders/wt-limit-scan.ts
@@ -50,6 +51,7 @@ sequenceDiagram
 | `org-definition-sync.ts` | org definitions | [[domains/settings-and-org-admin]] |
 | `hris-sync.ts` (`runScheduledHrisSync`, `CRON_HRIS_SYNC_SCHEDULE` hourly) | HRIS two-way sync — fan-out over CONNECTED Personio/BambooHR connections, `lastSyncAt` throttle, per-connection `tenantStore.run` pull | [[domains/hris-sync]] |
 | `trial-notifications.ts` | billing trial | [[domains/billing-and-feature-gates]] |
+| `stripe-reconcile.ts` | daily Stripe subscription status/tier drift repair (`0 1 * * *`; `CRON_STRIPE_RECONCILE_SCHEDULE`) | [[integrations/stripe-billing]] |
 | `data-purge.ts` | GDPR retention | [[domains/consent-gdpr-pdpl]] |
 | `inpost-status-poll.ts` | courier polling | [[domains/equipment-logistics]] |
 | `late-interest-pdf-reaper.ts` | LPC PDF cleanup | [[domains/payments-and-bank-files]] |
@@ -63,6 +65,7 @@ sequenceDiagram
 - `cronProcedure` with `Authorization: Bearer CRON_SECRET`
 - **User-facing notification copy is i18n, never hardcoded English.** Cron handlers pass dotted `Notifications.*` keys (into `apps/web-vite/messages/<locale>.json`) as `dispatch({ title, body, metadata })`. `dispatch`'s `resolveEventCopy` resolves them against the org's `Organization.language` (single locale per org, resolved at write time), with `metadata` supplying `{placeholder}` params — used by `reminders/` (contract/invoice/task) and `drv-clearance-expiries.ts`.
 - **Bespoke cron emails** that bypass the React-Email pipeline (`trial-notifications.ts` → `sendAppEmail` raw HTML) resolve copy directly via `resolveMessage(key, normalizeLocale(org.language))` from `@contractor-ops/api/i18n/email-i18n` — the same bundle reader the email templates use.
+- **`stripe-reconcile.ts` is the entitlement-drift backstop, not the primary path.** Webhooks own subscription state; this daily job pages `stripe.subscriptions.list({ status: 'all' })` and repairs any `Subscription` row whose `status`/`tier` disagrees with Stripe (source of truth). It writes Stripe's value directly but **never touches `lastEventCreated`**, so the webhook out-of-order guard stays intact. Idempotent (a re-run is a no-op on matching rows) and no advisory lock — it makes no in-place decisions, only convergent writes. Reaches Stripe via `@contractor-ops/api/services/stripe-client` (lazy `getServerEnv()`) + `buildSubscriptionData` from `@contractor-ops/billing/webhook`.
 
 ## Related
 

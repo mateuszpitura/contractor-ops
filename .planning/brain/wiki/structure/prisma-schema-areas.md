@@ -2,7 +2,7 @@
 title: Prisma schema areas
 type: structure
 tags: [structure, database, prisma]
-source_commit: f9de62452
+source_commit: 28061f01e
 verify_with:
   - packages/db/prisma/schema/
   - packages/db/src/region.ts
@@ -41,6 +41,7 @@ PostgreSQL 17 schema split across files in `packages/db/prisma/schema/`. Multi-r
 | Compliance | compliance-related models | [[domains/compliance-dashboard]] |
 | Time tracking | `time-tracking.prisma` | [[domains/time-and-reconciliation]] |
 | E-invoice | `einvoice.prisma` | [[integrations/einvoice-profiles]] |
+| Billing | `billing.prisma` — `Subscription` (Stripe-synced, `organizationId`/`stripeSubscriptionId @unique`, `tier`/`status` drive `requireTier`), `OcrCreditLedger`, `StripeEvent` (webhook dedup, `stripeEventId @unique`). `Subscription.lastEventCreated DateTime?` = source-event `created` watermark for the webhook out-of-order guard (a redelivered STALE event whose `created` predates it is a no-op — added additive migration `20260705120000_subscription_last_event_created`, nullable/zero-backfill). See [[integrations/stripe-billing]] | [[domains/billing-and-feature-gates]] |
 | Cron job state | `cron.prisma` — `CronJobRunState` (global, NOT tenant-scoped: one row per scheduled job keyed `jobName @unique`, `lastSuccessAt`/`lastRunAt`). Persists last-success across cron-worker restarts (the in-memory map was wiped on restart) so job-health can alert on staleness | [[structure/cron-jobs]] |
 | Equipment | equipment models | [[domains/equipment-logistics]] |
 | Tax / WHT / treaty | `tax.prisma` — `WithholdingTaxRate` (shared rate table; `treatyArticle` column drives US treaty auto-populate), `WhtCertificate`, `TaxFormSubmission` (append-only, supersede-chained W-9/W-8BEN/W-8BEN-E record FK'd to `Contractor`). **Phase 87 US expansion (all tenant-owning, NOT in `globalModels`):** `Form1042S` (immutable + supersede-chain chapter-3 record — box-1 income code, box-2 gross minor, box-3a/3b + 4a/4b ch3/ch4 exemption codes + rates, box-7 withheld, recipient 13j/13k/13n status + LOB, `treatyArticle`, FTIN last-4 `snapshotJson`, `corrected`, `supersededById`, soft-delete `deletedAt`; supersede via `updateMany`, **NOT** in `APPEND_ONLY_MODELS`, mirrors `Form1099Nec`); `Form1099KTrackerState` (per-`(contractorId, taxYear)` informational band SAFE/APPROACHING/OVER + `lastScannedAt`/`lastCrossedAt`/`lastReminderAt`, mirrors `EconomicDependencyAlertState`); `Tax1099KThreshold` (tax-year-keyed config `@unique(taxYear)`, seeded $20,000 + 200 TY2026 OBBBA via `seed/tax-1099k-threshold.ts`). Also `ClassificationDocumentKind.US_DETERMINATION_LETTER` (`classification.prisma`) + nullable-additive `ContractorAssignment.workState` (`contractor.prisma` — the AB5 work-state trigger). Cross-org leak regression `cross-org-leak-1042s.test.ts`; live per-region apply DEFERRED (LOCAL-ONLY) | [[domains/tax-and-wht]], [[domains/us-tax-forms]], [[domains/us-classification]] |
