@@ -1,4 +1,59 @@
 {
+  "EmployeeLifecycle": {
+    "subtitle": "Ein-/Austritt, gesetzliche Bescheinigungen und Beendigung",
+    "unknownEmployee": "Mitarbeiter",
+    "status": {
+      "ACTIVE": "Aktiv",
+      "ON_LEAVE": "Im Urlaub",
+      "SUSPENDED": "Ausgesetzt",
+      "TERMINATED": "Beendet"
+    },
+    "runs": {
+      "heading": "Lebenszyklus-Vorgänge",
+      "empty": "Noch kein Ein-/Austrittsvorgang gestartet.",
+      "viewRun": "Vorgang ansehen"
+    },
+    "actions": {
+      "startOnboarding": "Onboarding starten",
+      "startOffboarding": "Offboarding starten"
+    },
+    "cert": {
+      "heading": "Gesetzliche Bescheinigung",
+      "typeLabel": "Bescheinigungstyp",
+      "generate": "Entwurf erstellen",
+      "needsRun": "Starten Sie einen Vorgang, bevor Sie eine Bescheinigung erstellen.",
+      "download": "Entwurf der Bescheinigung herunterladen"
+    },
+    "certTypes": {
+      "SWIADECTWO_PRACY": "Świadectwo pracy (PL)",
+      "PIT_11": "PIT-11 (PL)",
+      "ARBEITSZEUGNIS_SIMPLE": "Arbeitszeugnis — einfach (DE)",
+      "LOHNSTEUERBESCHEINIGUNG": "Lohnsteuerbescheinigung (DE)",
+      "P45": "P45 (UK)",
+      "W2": "W-2 (US)"
+    },
+    "termination": {
+      "heading": "Beendigung",
+      "dateLabel": "Beendigungsdatum",
+      "record": "Beendigung erfassen",
+      "recorded": "Ein Beendigungsdatum ist erfasst."
+    },
+    "idp": {
+      "heading": "IdP-Deprovisionierung",
+      "notEligibleUntilTermination": "Erfassen Sie ein Beendigungsdatum vor der Deprovisionierung."
+    },
+    "toasts": {
+      "onboardingStarted": "Onboarding-Vorgang gestartet.",
+      "offboardingStarted": "Offboarding-Vorgang gestartet.",
+      "terminationRecorded": "Beendigungsdatum erfasst.",
+      "certGenerated": "Entwurf der Bescheinigung erstellt."
+    },
+    "errors": {
+      "generic": "Etwas ist schiefgelaufen. Bitte erneut versuchen.",
+      "load": "Der Mitarbeiter-Lebenszyklus konnte nicht geladen werden.",
+      "retry": "Erneut versuchen"
+    }
+  },
   "Admin": {
     "BoeRate": {
       "pageTitle": "Bank of England Leitzinshistorie",

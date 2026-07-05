@@ -42,6 +42,38 @@ const CERT_TYPES = [
 const workerIdInput = z.object({ workerId: z.string().min(1) }).strict();
 
 export const employeeLifecycleRouter = router({
+  /**
+   * Lifecycle read state for an employee: the dated termination signal + status
+   * the UI uses to gate the IdP deprovisioning trigger (actionable only once a
+   * termination date exists). The 14-day cooldown stays server-side (Plan 04).
+   */
+  get: tenantProcedure
+    .use(requirePermission({ employee: ['read'] }))
+    .input(workerIdInput)
+    .query(async ({ ctx, input }) => {
+      assertWorkforceEnabled(ctx.organizationId, ctx.region);
+
+      const emp = await findOrThrow(
+        () =>
+          ctx.db.employeeProfile.findFirst({
+            where: { workerId: input.workerId, organizationId: ctx.organizationId },
+            select: {
+              terminatedAt: true,
+              employmentStatus: true,
+              worker: { select: { displayName: true } },
+            },
+          }),
+        E.WORKER_NOT_FOUND,
+      );
+
+      return {
+        workerId: input.workerId,
+        displayName: emp.worker.displayName,
+        terminatedAt: emp.terminatedAt,
+        employmentStatus: emp.employmentStatus,
+      };
+    }),
+
   startOnboarding: tenantProcedure
     .use(requirePermission({ employee: ['update'] }))
     .input(workerIdInput)

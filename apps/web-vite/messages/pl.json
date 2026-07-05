@@ -1,4 +1,59 @@
 {
+  "EmployeeLifecycle": {
+    "subtitle": "Zatrudnianie/zwalnianie, świadectwa ustawowe i rozwiązanie stosunku pracy",
+    "unknownEmployee": "Pracownik",
+    "status": {
+      "ACTIVE": "Aktywny",
+      "ON_LEAVE": "Na urlopie",
+      "SUSPENDED": "Zawieszony",
+      "TERMINATED": "Zakończony"
+    },
+    "runs": {
+      "heading": "Procesy cyklu życia",
+      "empty": "Nie rozpoczęto jeszcze procesu zatrudniania/zwalniania.",
+      "viewRun": "Zobacz proces"
+    },
+    "actions": {
+      "startOnboarding": "Rozpocznij onboarding",
+      "startOffboarding": "Rozpocznij offboarding"
+    },
+    "cert": {
+      "heading": "Świadectwo ustawowe",
+      "typeLabel": "Typ świadectwa",
+      "generate": "Wygeneruj projekt",
+      "needsRun": "Rozpocznij proces przed wygenerowaniem świadectwa.",
+      "download": "Pobierz projekt świadectwa"
+    },
+    "certTypes": {
+      "SWIADECTWO_PRACY": "Świadectwo pracy (PL)",
+      "PIT_11": "PIT-11 (PL)",
+      "ARBEITSZEUGNIS_SIMPLE": "Arbeitszeugnis — proste (DE)",
+      "LOHNSTEUERBESCHEINIGUNG": "Lohnsteuerbescheinigung (DE)",
+      "P45": "P45 (UK)",
+      "W2": "W-2 (US)"
+    },
+    "termination": {
+      "heading": "Rozwiązanie stosunku pracy",
+      "dateLabel": "Data rozwiązania",
+      "record": "Zarejestruj rozwiązanie",
+      "recorded": "Data rozwiązania została zarejestrowana."
+    },
+    "idp": {
+      "heading": "Cofnięcie dostępu IdP",
+      "notEligibleUntilTermination": "Zarejestruj datę rozwiązania przed cofnięciem dostępu."
+    },
+    "toasts": {
+      "onboardingStarted": "Rozpoczęto proces onboardingu.",
+      "offboardingStarted": "Rozpoczęto proces offboardingu.",
+      "terminationRecorded": "Zarejestrowano datę rozwiązania.",
+      "certGenerated": "Wygenerowano projekt świadectwa."
+    },
+    "errors": {
+      "generic": "Coś poszło nie tak. Spróbuj ponownie.",
+      "load": "Nie udało się załadować cyklu życia pracownika.",
+      "retry": "Spróbuj ponownie"
+    }
+  },
   "Admin": {
     "BoeRate": {
       "pageTitle": "Historia stopy bazowej Bank of England",

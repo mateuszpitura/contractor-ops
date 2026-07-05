@@ -17,6 +17,7 @@ const PaymentsPage = lazy(() => import('../pages/dashboard/payments.js'));
 const ContractsPage = lazy(() => import('../pages/dashboard/contracts.js'));
 const EquipmentPage = lazy(() => import('../pages/dashboard/equipment.js'));
 const EmployeesPage = lazy(() => import('../pages/dashboard/employees.js'));
+const EmployeeLifecyclePage = lazy(() => import('../pages/dashboard/employees/lifecycle.js'));
 const PersonnelFilePage = lazy(() => import('../pages/dashboard/employees/personnel-file.js'));
 const PersonnelClassifyQueuePage = lazy(
   () => import('../pages/dashboard/employees/personnel-classify-queue.js'),
@@ -89,6 +90,7 @@ export const dashboardRoutes = [
   { path: 'contracts', element: page(<ContractsPage />) },
   { path: 'equipment', element: page(<EquipmentPage />) },
   { path: 'employees', element: page(<EmployeesPage />) },
+  { path: 'employees/:workerId/lifecycle', element: page(<EmployeeLifecyclePage />) },
   { path: 'employees/:workerId/personnel-file', element: page(<PersonnelFilePage />) },
   {
     path: 'employees/personnel-classify-queue',

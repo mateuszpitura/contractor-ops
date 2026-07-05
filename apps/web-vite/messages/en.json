@@ -1,4 +1,59 @@
 {
+  "EmployeeLifecycle": {
+    "subtitle": "On/offboarding, statutory certificates, and termination",
+    "unknownEmployee": "Employee",
+    "status": {
+      "ACTIVE": "Active",
+      "ON_LEAVE": "On leave",
+      "SUSPENDED": "Suspended",
+      "TERMINATED": "Terminated"
+    },
+    "runs": {
+      "heading": "Lifecycle runs",
+      "empty": "No on/offboarding run started yet.",
+      "viewRun": "View run"
+    },
+    "actions": {
+      "startOnboarding": "Start onboarding",
+      "startOffboarding": "Start offboarding"
+    },
+    "cert": {
+      "heading": "Statutory certificate",
+      "typeLabel": "Certificate type",
+      "generate": "Generate draft",
+      "needsRun": "Start a run before generating a certificate.",
+      "download": "Download draft certificate"
+    },
+    "certTypes": {
+      "SWIADECTWO_PRACY": "Świadectwo pracy (PL)",
+      "PIT_11": "PIT-11 (PL)",
+      "ARBEITSZEUGNIS_SIMPLE": "Arbeitszeugnis — simple (DE)",
+      "LOHNSTEUERBESCHEINIGUNG": "Lohnsteuerbescheinigung (DE)",
+      "P45": "P45 (UK)",
+      "W2": "W-2 (US)"
+    },
+    "termination": {
+      "heading": "Termination",
+      "dateLabel": "Termination date",
+      "record": "Record termination",
+      "recorded": "A termination date is recorded."
+    },
+    "idp": {
+      "heading": "IdP deprovisioning",
+      "notEligibleUntilTermination": "Record a termination date before deprovisioning."
+    },
+    "toasts": {
+      "onboardingStarted": "Onboarding run started.",
+      "offboardingStarted": "Offboarding run started.",
+      "terminationRecorded": "Termination date recorded.",
+      "certGenerated": "Draft certificate generated."
+    },
+    "errors": {
+      "generic": "Something went wrong. Please try again.",
+      "load": "Could not load the employee lifecycle.",
+      "retry": "Retry"
+    }
+  },
   "Admin": {
     "BoeRate": {
       "pageTitle": "Bank of England base-rate history",
