@@ -9267,5 +9267,313 @@
       "appliedBadge": "معدل المعاهدة",
       "applied": "طُبِّق معدل المعاهدة {rate} بموجب {article} (نموذج W-8 في الملف)."
     }
+  },
+  "Leave": {
+    "pageTitle": "الإجازات",
+    "pageDescription": "راجع طلبات الإجازة والأرصدة وسجّل حالات الغياب لفريقك.",
+    "sectionLabel": "طلبات الإجازة",
+    "entityLabel": "طلبات",
+    "columns": {
+      "worker": "الموظف",
+      "type": "نوع الإجازة",
+      "dates": "التواريخ",
+      "days": "الأيام",
+      "status": "الحالة",
+      "actions": "الإجراءات"
+    },
+    "status": {
+      "PENDING": "قيد الانتظار",
+      "APPROVED": "معتمد",
+      "REJECTED": "مرفوض",
+      "CANCELLED": "ملغى"
+    },
+    "filters": {
+      "all": "الكل",
+      "PENDING": "قيد الانتظار",
+      "APPROVED": "معتمد",
+      "REJECTED": "مرفوض"
+    },
+    "actions": {
+      "approve": "اعتماد",
+      "reject": "رفض",
+      "requestClarification": "طلب توضيح",
+      "delegate": "تفويض",
+      "recordSick": "تسجيل إجازة مرضية",
+      "submitRequest": "إرسال الطلب",
+      "viewDetails": "عرض التفاصيل"
+    },
+    "empty": {
+      "heading": "لا توجد طلبات إجازة للمراجعة",
+      "body": "تظهر هنا طلبات الإجازة المعتمدة وقيد الانتظار من فريقك. تُوجَّه الطلبات الجديدة إليك تلقائيًا."
+    },
+    "filtered": {
+      "heading": "لا توجد طلبات تطابق هذه المرشحات.",
+      "clear": "مسح المرشحات"
+    },
+    "error": {
+      "message": "تعذّر تحميل قائمة الإجازات. تحقق من اتصالك وحاول مرة أخرى.",
+      "retry": "حاول مرة أخرى"
+    },
+    "panel": {
+      "title": "طلب إجازة",
+      "detailsTitle": "تفاصيل الطلب",
+      "worker": "الموظف",
+      "type": "نوع الإجازة",
+      "startDate": "تاريخ البدء",
+      "endDate": "تاريخ الانتهاء",
+      "requested": "المطلوب",
+      "submitted": "أُرسل"
+    },
+    "balance": {
+      "title": "رصيد الإجازة",
+      "entitlement": "الاستحقاق",
+      "used": "المستخدم",
+      "carryover": "المرحّل",
+      "remaining": "المتبقي",
+      "afterTitle": "الرصيد بعد هذا الطلب",
+      "afterFormula": "{available} متاح − {requested} مطلوب",
+      "remainingValue": "{days} أيام",
+      "insufficient": "رصيد غير كافٍ",
+      "insufficientHint": "يتجاوز هذا الطلب الرصيد المتاح ولا يمكن إرساله."
+    },
+    "approvalRow": {
+      "type": "نوع الإجازة",
+      "dateRange": "التواريخ",
+      "days": "الأيام",
+      "balanceAfter": "الرصيد بعده",
+      "conflict": "تعارض",
+      "blackout": "فترة حظر"
+    },
+    "reject": {
+      "heading": "رفض الطلب",
+      "label": "أضف سببًا (10 أحرف على الأقل)",
+      "placeholder": "اشرح سبب رفض هذا الطلب…",
+      "minChars": "يرجى إدخال 10 أحرف على الأقل.",
+      "confirm": "رفض الطلب",
+      "cancel": "إلغاء"
+    },
+    "sick": {
+      "trigger": "تسجيل إجازة مرضية",
+      "title": "تسجيل إجازة مرضية",
+      "description": "يسجّل هذا غيابًا مباشرة ويُشعر الموظف. لا يمر عبر الاعتماد.",
+      "worker": "الموظف",
+      "workerPlaceholder": "اختر موظفًا",
+      "startDate": "تاريخ البدء",
+      "endDate": "تاريخ الانتهاء",
+      "hours": "الساعات",
+      "hoursPlaceholder": "مثال: 8",
+      "note": "ملاحظة",
+      "noteOptional": "(اختياري)",
+      "notePlaceholder": "أضف سياقًا لهذا الغياب…",
+      "confirm": "تسجيل الغياب",
+      "submitting": "جارٍ التسجيل…",
+      "cancel": "إلغاء",
+      "validation": {
+        "workerRequired": "اختر موظفًا.",
+        "dateRequired": "اختر تاريخًا.",
+        "hoursRange": "أدخل ساعات بين 0.25 و24.",
+        "dateOrder": "يجب أن يكون تاريخ الانتهاء في نفس تاريخ البدء أو بعده."
+      }
+    },
+    "calendar": {
+      "title": "تقويم الفريق",
+      "sectionLabel": "توافر الفريق",
+      "viewMonth": "شهر",
+      "viewQuarter": "ربع سنة",
+      "conflict": "تعارض",
+      "conflictTooltip": "{count} طلبات متداخلة في هذا اليوم لفريق {team}",
+      "capacity": "{percent}% غائبون",
+      "outOf": "{out} من {total} غائبون",
+      "holiday": "عطلة رسمية",
+      "unassignedTeam": "غير معيَّن",
+      "moreRequests": "+{count} أخرى",
+      "legend": {
+        "title": "السعة",
+        "available": "متاح",
+        "busy": "مشغول",
+        "over": "تجاوز السعة"
+      },
+      "empty": {
+        "heading": "لا توجد إجازات مجدولة",
+        "body": "عندما يحجز فريقك إجازة أو يسجّل غيابًا، يظهر هنا. تُميَّز الطلبات المتداخلة تلقائيًا."
+      },
+      "error": {
+        "message": "تعذّر تحميل تقويم الفريق. حاول مرة أخرى.",
+        "retry": "حاول مرة أخرى"
+      },
+      "weekdays": {
+        "mon": "الإثنين",
+        "tue": "الثلاثاء",
+        "wed": "الأربعاء",
+        "thu": "الخميس",
+        "fri": "الجمعة",
+        "sat": "السبت",
+        "sun": "الأحد"
+      },
+      "cellLabel": "{date}: {percent}% من الفريق غائبون، {count} طلبات"
+    },
+    "toast": {
+      "sickRecorded": "تم تسجيل الإجازة المرضية.",
+      "requestSubmitted": "تم إرسال طلب الإجازة.",
+      "sickError": "تعذّر تسجيل هذا الغياب. حاول مرة أخرى.",
+      "requestError": "تعذّر إرسال هذا الطلب. حاول مرة أخرى."
+    },
+    "notification": {
+      "approvalRequest": {
+        "title": "طلب إجازة بانتظار الاعتماد",
+        "body": "تم إرسال طلب إجازة وهو بانتظار اعتمادك."
+      },
+      "sickRecorded": {
+        "title": "تم تسجيل إجازة مرضية",
+        "body": "تم تسجيل غياب مرضي لأحد الموظفين."
+      }
+    }
+  },
+  "EmployeeTime": {
+    "pageTitle": "وقت عمل الموظفين",
+    "pageDescription": "سجّل وقت العمل القانوني وتابع حدود وقت العمل.",
+    "sectionLabel": "إدخالات الوقت",
+    "entityLabel": "إدخالات",
+    "summary": {
+      "thisWeek": "ساعات هذا الأسبوع",
+      "overtimeThisMonth": "العمل الإضافي هذا الشهر",
+      "limitStatus": "حالة الحد",
+      "withinLimit": "ضمن الحد",
+      "approaching": "يقترب من الحد",
+      "breached": "تجاوز الحد"
+    },
+    "columns": {
+      "date": "التاريخ",
+      "worked": "المعمول",
+      "night": "ليلي",
+      "overtime": "إضافي",
+      "weekendHoliday": "عطلة نهاية الأسبوع / رسمية",
+      "onCall": "المناوبة",
+      "absence": "الغياب",
+      "actions": "الإجراءات"
+    },
+    "form": {
+      "title": "تسجيل الوقت",
+      "editTitle": "تعديل إدخال الوقت",
+      "description": "سجّل وقت العمل اليومي. تُفحص الحدود القانونية عند الحفظ.",
+      "date": "التاريخ",
+      "datePlaceholder": "اختر تاريخًا",
+      "hoursWorked": "ساعات العمل",
+      "nightHours": "الساعات الليلية",
+      "overtime": "العمل الإضافي",
+      "weekendHoliday": "عطلة نهاية الأسبوع / رسمية",
+      "onCall": "المناوبة (dyżur)",
+      "onCallLocation": "موقع المناوبة",
+      "onCallLocationPlaceholder": "مثال: المنزل، الموقع",
+      "absenceType": "نوع الغياب",
+      "absenceNone": "لا شيء (تم العمل)",
+      "notes": "ملاحظات",
+      "notesOptional": "(اختياري)",
+      "notesPlaceholder": "أضف سياقًا لهذا الإدخال…",
+      "save": "حفظ الإدخال",
+      "saving": "جارٍ الحفظ…",
+      "saveAnyway": "احفظ على أي حال",
+      "cancel": "إلغاء",
+      "hoursPlaceholder": "0",
+      "validation": {
+        "dateRequired": "اختر تاريخًا.",
+        "hoursRange": "أدخل قيمة بين 0 و24 ساعة."
+      }
+    },
+    "absenceKind": {
+      "VACATION": "إجازة",
+      "SICK": "مرضية",
+      "PARENTAL": "أبوية",
+      "BEREAVEMENT": "حداد",
+      "STUDY": "دراسية",
+      "UNPAID": "غير مدفوعة",
+      "OTHER_JUSTIFIED": "أخرى (مبررة)",
+      "UNJUSTIFIED": "غير مبررة"
+    },
+    "empty": {
+      "heading": "لم تُسجّل ساعات بعد",
+      "body": "سجّل هنا وقت العمل اليومي والعمل الإضافي وساعات المناوبة الليلية. تُفحص الحدود القانونية عند الحفظ."
+    },
+    "error": {
+      "message": "تعذّر حفظ إدخال الوقت هذا. حاول مرة أخرى.",
+      "loadMessage": "تعذّر تحميل إدخالات الوقت. حاول مرة أخرى.",
+      "retry": "حاول مرة أخرى"
+    },
+    "delete": {
+      "title": "حذف إدخال الوقت هذا؟",
+      "description": "يزيل هذا الوقت المسجّل لليوم. الحذف مسموح فقط قبل قفل السجل.",
+      "confirm": "حذف",
+      "cancel": "إلغاء"
+    },
+    "toast": {
+      "saved": "تم حفظ إدخال الوقت.",
+      "deleted": "تم حذف إدخال الوقت."
+    },
+    "wtLimit": {
+      "title": "حد وقت العمل",
+      "approachingTitle": "يقترب من حد وقت العمل",
+      "breachTitle": "تم تجاوز حد وقت العمل",
+      "viewRecord": "عرض سجل الوقت",
+      "saveAnyway": "احفظ على أي حال",
+      "dismiss": "إغلاق",
+      "daily": {
+        "approaching": "تنبيه — يقترب {name} من الحد اليومي {limit} ساعة (سُجّل {actual} ساعة). لا يزال بإمكانك الحفظ.",
+        "breach": "سجّل {name} {actual} ساعة — أكثر من الحد اليومي {limit} ساعة. لا يزال بإمكانك الحفظ."
+      },
+      "weekly": {
+        "approaching": "تنبيه — يقترب {name} من الحد الأسبوعي {limit} ساعة ({actual} ساعة هذا الأسبوع). لا يزال بإمكانك الحفظ.",
+        "breach": "سجّل {name} {actual} ساعة هذا الأسبوع — أكثر من الحد الأسبوعي {limit} ساعة. لا يزال بإمكانك الحفظ."
+      },
+      "night": {
+        "approaching": "تنبيه — يقترب {name} من حد العمل الليلي {limit} ساعة (سُجّل {actual} ساعة).",
+        "breach": "سجّل {name} {actual} ساعة عمل ليلي — أكثر من الحد {limit} ساعة."
+      },
+      "notification": {
+        "title": "تم تجاوز حد وقت العمل",
+        "body": "تجاوز موظف واحد أو أكثر حدًّا قانونيًا لوقت العمل."
+      }
+    }
+  },
+  "Ewidencja": {
+    "title": "سجل وقت العمل (ewidencja czasu pracy)",
+    "sectionLabel": "سجل KP §149",
+    "entityLabel": "سجلات",
+    "generate": "إنشاء التقرير",
+    "regenerate": "إعادة الإنشاء",
+    "export": "تصدير",
+    "exportPdf": "تصدير بصيغة PDF",
+    "exportCsv": "تصدير بصيغة CSV",
+    "archived": "مؤرشف",
+    "archivedTooltip": "سجل KP §149 غير قابل للتغيير — لا يمكن تعديله (يُحفظ 3 سنوات).",
+    "superseded": "استُبدل في {date}",
+    "active": "نشط",
+    "columns": {
+      "period": "الفترة",
+      "version": "الإصدار",
+      "status": "الحالة",
+      "generated": "تم الإنشاء",
+      "generatedBy": "أنشأه",
+      "actions": "الإجراءات"
+    },
+    "empty": {
+      "heading": "لم يُنشأ سجل لهذه الفترة",
+      "body": "أنشئ سجل وقت العمل KP §149 (ewidencja czasu pracy) لـ {employee}، {period}. بمجرد إنشائه يُؤرشف ولا يمكن تعديله."
+    },
+    "error": {
+      "message": "تعذّر تحميل أرشيف ewidencja. حاول مرة أخرى.",
+      "retry": "حاول مرة أخرى"
+    },
+    "regenerateConfirm": {
+      "title": "إعادة إنشاء السجل؟",
+      "description": "تنشئ إعادة الإنشاء لقطة جديدة غير قابلة للتغيير وتضع الحالية كمُستبدَلة. يبقى السجل القديم في الأرشيف. متابعة؟",
+      "confirm": "إعادة الإنشاء",
+      "cancel": "إلغاء"
+    },
+    "chainTitle": "سجل الإصدارات",
+    "versionLabel": "الإصدار {version}",
+    "toast": {
+      "generated": "تم إنشاء سجل وقت العمل.",
+      "regenerated": "تمت إعادة إنشاء سجل وقت العمل."
+    }
   }
 }
