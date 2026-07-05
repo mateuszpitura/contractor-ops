@@ -3495,6 +3495,7 @@
     "approvalChainHasActiveFlows": "Nie można usunąć łańcucha z aktywnymi przepływami zatwierdzania.",
     "approvalStepNotFound": "Nie znaleziono kroku zatwierdzania.",
     "approvalStepNotPending": "Krok nie oczekuje na zatwierdzenie.",
+    "approvalStepAlreadyDecided": "Ten krok został już rozstrzygnięty przez inną akcję.",
     "approvalNotAssigned": "Nie jesteś przypisanym zatwierdzającym dla tego kroku.",
     "approvalSelfApprovalForbidden": "Nie możesz zatwierdzić własnego zgłoszenia.",
     "approvalDelegateNotMember": "Delegowany użytkownik nie jest członkiem tej organizacji.",

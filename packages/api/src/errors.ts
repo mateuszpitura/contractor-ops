@@ -101,6 +101,7 @@ export const APPROVAL_CHAIN_NOT_FOUND = 'approvalChainNotFound';
 export const APPROVAL_CHAIN_HAS_ACTIVE_FLOWS = 'approvalChainHasActiveFlows';
 export const APPROVAL_STEP_NOT_FOUND = 'approvalStepNotFound';
 export const APPROVAL_STEP_NOT_PENDING = 'approvalStepNotPending';
+export const APPROVAL_STEP_ALREADY_DECIDED = 'approvalStepAlreadyDecided';
 export const APPROVAL_NOT_ASSIGNED = 'approvalNotAssigned';
 export const APPROVAL_DELEGATE_NOT_MEMBER = 'approvalDelegateNotMember';
 export const APPROVAL_SELF_APPROVAL_FORBIDDEN = 'approvalSelfApprovalForbidden';

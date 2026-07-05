@@ -2,11 +2,11 @@
 title: Approvals engine
 type: domain
 tags: [approvals, workflow]
-source_commit: 336516f5da666c16acff84e412a3d338db8bbbb8
+source_commit: 64f25f0a8344383e4a75b97c342be73ad228e6b3
 verify_with:
   - packages/api/src/services/approval-engine.ts
   - packages/api/src/routers/core/approval-queue.ts
-updated: 2026-06-17
+updated: 2026-07-05
 ---
 
 # Approvals engine
@@ -42,6 +42,7 @@ flowchart TD
 - Teams/Slack cards via integration framework
 - `approve` / `reject` each write a same-tx `writeAuditLog` row (`approval.approve` / `approval.reject`) keyed to the flow's `resourceType` / `resourceId` — see [[patterns/audit-log]]
 - **The engine is resource-agnostic — reuse it, never fork it.** A new approvable (Phase 92 `LEAVE_REQUEST`) plugs in at exactly two seams: a domain **route** helper (`routeToLeaveChain` in `approval-engine.ts`) + `createApprovalFlow({ resourceType })` at submit, and the **shared** `approve`/`reject`/bulk procedures at finalize. Those procedures are resourceType-gated (`requireAnyPermission({invoice:['approve']},{employee:['approve_leave']})` + a body `resourceType→permission` assertion), so a `leave_approver` actions a `LEAVE_REQUEST` via `employee:approve_leave` and never gains `invoice:approve` (the BFLA fence). Do NOT build a parallel leave approval flow. See [[leave-and-time]]
+- Deciding a step is compare-and-swap, not read-then-write: the state transition uses a guarded `updateMany({ where: { id, status: 'PENDING', approverUserId }, data })` and only proceeds (decision row, flow advancement, finalize) when `count === 1`. A `count === 0` loser throws `CONFLICT` (`approvalStepAlreadyDecided`). This closes the TOCTOU window where two racers (e.g. approve + reject) both read `PENDING` and both act. The `findFirst` + `validateStepForAction` read stays only for early 404/403/permission checks — the CAS is the real gate. `bulkApprove` / `bulkReject` carry the same guard per step (a lost race counts as a failed step in the aggregate result).
 
 ## Related
 
@@ -60,3 +61,4 @@ semble search "submitForApproval"
 ## Agent mistakes
 
 - Bypassing operator registry for one-off approval logic
+- Gating a decision on the `findFirst` read alone (read-then-`update` by `id`) — that is the TOCTOU bug; the transition must be a guarded `updateMany` CAS on `status: 'PENDING'` with a `CONFLICT` on `count === 0`

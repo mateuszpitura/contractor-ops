@@ -3495,6 +3495,7 @@
     "approvalChainHasActiveFlows": "Kette mit aktiven Freigabe-Flows kann nicht gelöscht werden.",
     "approvalStepNotFound": "Freigabestufe nicht gefunden.",
     "approvalStepNotPending": "Stufe wartet nicht auf Freigabe.",
+    "approvalStepAlreadyDecided": "Diese Stufe wurde bereits durch eine andere Aktion entschieden.",
     "approvalNotAssigned": "Sie sind nicht der zugewiesene Freigeber für diese Stufe.",
     "approvalSelfApprovalForbidden": "Sie können Ihre eigene Einreichung nicht freigeben.",
     "approvalDelegateNotMember": "Stellvertreter ist kein Mitglied dieser Organisation.",

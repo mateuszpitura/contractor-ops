@@ -473,15 +473,18 @@ describe('approval router — approve', () => {
       createdByUserId: null,
       steps: [],
     });
-    mockPrisma.approvalStep.update.mockResolvedValueOnce({
-      id: STEP_ID,
-      status: 'APPROVED',
-    });
-
     const out = await caller.approve({ stepId: STEP_ID, comment: 'ok' });
 
     expect(mockPrisma.approvalDecision.create).toHaveBeenCalled();
-    expect(mockPrisma.approvalStep.update).toHaveBeenCalled();
+    expect(mockPrisma.approvalStep.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          id: STEP_ID,
+          status: 'PENDING',
+          approverUserId: USER_ID,
+        }),
+      }),
+    );
     expect(out).toMatchObject({ id: STEP_ID, status: 'APPROVED' });
     expect(invalidateByPrefix).toHaveBeenCalledWith(`dash:${ORG_ID}`);
     expect(advanceFlow).toHaveBeenCalledWith(expect.anything(), FLOW_ID);
@@ -649,10 +652,6 @@ describe('approval router — reject', () => {
       invoiceNumber: 'INV-9',
     });
     mockPrisma.approvalFlow.findUnique.mockResolvedValue({ createdByUserId: null });
-    mockPrisma.approvalStep.update.mockResolvedValueOnce({
-      id: STEP_ID,
-      status: 'REJECTED',
-    });
 
     const out = await caller.reject({ stepId: STEP_ID, comment: REJECT_COMMENT });
 
@@ -698,6 +697,67 @@ describe('approval router — reject', () => {
         metadata: expect.objectContaining({ decision: 'rejected' }),
       }),
     );
+  });
+});
+
+describe('approval router — concurrency (TOCTOU guard)', () => {
+  it('concurrent approve + reject on one PENDING step yields exactly one decision and one CONFLICT', async () => {
+    const pendingStep = {
+      id: STEP_ID,
+      organizationId: ORG_ID,
+      status: 'PENDING',
+      approverUserId: USER_ID,
+      approvalFlowId: FLOW_ID,
+      approvalFlow: {
+        id: FLOW_ID,
+        resourceId: INV_ID,
+        resourceType: 'INVOICE',
+        status: 'PENDING',
+      },
+    };
+
+    // Both racers read the same still-PENDING step (the TOCTOU window).
+    mockPrisma.approvalStep.findFirst.mockResolvedValue(pendingStep);
+    mockPrisma.approvalStep.findUniqueOrThrow.mockResolvedValue({
+      id: STEP_ID,
+      status: 'APPROVED',
+    });
+    mockPrisma.invoice.findUnique.mockResolvedValue({
+      id: INV_ID,
+      invoiceNumber: 'INV-42',
+      totalMinor: 10000,
+      currency: 'PLN',
+      contractorId: null,
+      dueDate: null,
+    });
+    mockPrisma.approvalFlow.findUnique.mockResolvedValue({
+      id: FLOW_ID,
+      createdByUserId: null,
+      steps: [],
+    });
+
+    // Only the first guarded write commits the PENDING→decided transition; the
+    // loser's CAS matches zero rows.
+    mockPrisma.approvalStep.updateMany
+      .mockResolvedValueOnce({ count: 1 })
+      .mockResolvedValueOnce({ count: 0 });
+
+    const outcomes = await Promise.allSettled([
+      caller.approve({ stepId: STEP_ID }),
+      caller.reject({ stepId: STEP_ID, comment: REJECT_COMMENT }),
+    ]);
+
+    const fulfilled = outcomes.filter(o => o.status === 'fulfilled');
+    const rejected = outcomes.filter(o => o.status === 'rejected');
+    expect(fulfilled).toHaveLength(1);
+    expect(rejected).toHaveLength(1);
+    expect((rejected[0] as PromiseRejectedResult).reason).toMatchObject({
+      code: 'CONFLICT',
+    });
+
+    // The loser threw before writing, so exactly one decision row exists.
+    expect(mockPrisma.approvalDecision.create).toHaveBeenCalledTimes(1);
+    expect(mockPrisma.approvalStep.updateMany).toHaveBeenCalledTimes(2);
   });
 });
 

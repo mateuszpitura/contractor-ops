@@ -3493,6 +3493,7 @@
     "approvalChainHasActiveFlows": "لا يمكن حذف سلسلة بها تدفّقات موافقة نشطة.",
     "approvalStepNotFound": "Approval step غير موجود.",
     "approvalStepNotPending": "الخطوة ليست معلّقة الموافقة.",
+    "approvalStepAlreadyDecided": "تم البتّ في هذه الخطوة بالفعل من خلال إجراء آخر.",
     "approvalNotAssigned": "أنت لست المعتمد المُسنَد لهذه الخطوة.",
     "approvalDelegateNotMember": "المستخدم المُفوَّض إليه ليس عضوًا في هذه المؤسسة.",
     "workflowTemplateNotFound": "Workflow template غير موجود.",

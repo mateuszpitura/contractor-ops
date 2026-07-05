@@ -3495,6 +3495,7 @@
     "approvalChainHasActiveFlows": "Cannot delete chain with active approval flows.",
     "approvalStepNotFound": "Approval step not found.",
     "approvalStepNotPending": "Step is not pending approval.",
+    "approvalStepAlreadyDecided": "This step was already decided by another action.",
     "approvalNotAssigned": "You are not the assigned approver for this step.",
     "approvalSelfApprovalForbidden": "You cannot approve your own submission.",
     "approvalDelegateNotMember": "Delegate user is not a member of this organization.",

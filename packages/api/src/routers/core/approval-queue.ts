@@ -217,6 +217,26 @@ export const approvalQueueRouter = router({
         validateStepForAction(step, ctx.user?.id);
         await assertApprovalActionPermission(ctx, step.approvalFlow.resourceType);
 
+        // Compare-and-swap on the PENDING→APPROVED transition: the read above is
+        // advisory, so a concurrent reject/approve on the same step could both
+        // pass validation. Winning this guarded write is the true gate — the
+        // decision row and flow advancement below only run for the winner.
+        const cas = await tx.approvalStep.updateMany({
+          where: { id: step.id, status: 'PENDING', approverUserId: ctx.user?.id },
+          data: {
+            status: 'APPROVED',
+            actedAt: new Date(),
+            decision: 'APPROVE',
+            comment: input.comment ?? null,
+          },
+        });
+        if (cas.count === 0) {
+          throw new TRPCError({
+            code: 'CONFLICT',
+            message: E.APPROVAL_STEP_ALREADY_DECIDED,
+          });
+        }
+
         await tx.approvalDecision.create({
           data: {
             organizationId: ctx.organizationId,
@@ -227,14 +247,8 @@ export const approvalQueueRouter = router({
           },
         });
 
-        const updatedStep = await tx.approvalStep.update({
+        const updatedStep = await tx.approvalStep.findUniqueOrThrow({
           where: { id: step.id },
-          data: {
-            status: 'APPROVED',
-            actedAt: new Date(),
-            decision: 'APPROVE',
-            comment: input.comment ?? null,
-          },
         });
 
         await writeAuditLog({
@@ -364,6 +378,25 @@ export const approvalQueueRouter = router({
         validateStepForAction(step, ctx.user?.id);
         await assertApprovalActionPermission(ctx, step.approvalFlow.resourceType);
 
+        // Compare-and-swap on the PENDING→REJECTED transition (see approve): the
+        // guarded write is the real gate against a concurrent decision racing the
+        // advisory read; only the winner proceeds to reject the flow.
+        const cas = await tx.approvalStep.updateMany({
+          where: { id: step.id, status: 'PENDING', approverUserId: ctx.user?.id },
+          data: {
+            status: 'REJECTED',
+            actedAt: new Date(),
+            decision: 'REJECT',
+            comment: input.comment,
+          },
+        });
+        if (cas.count === 0) {
+          throw new TRPCError({
+            code: 'CONFLICT',
+            message: E.APPROVAL_STEP_ALREADY_DECIDED,
+          });
+        }
+
         await tx.approvalDecision.create({
           data: {
             organizationId: ctx.organizationId,
@@ -374,14 +407,8 @@ export const approvalQueueRouter = router({
           },
         });
 
-        const updatedStep = await tx.approvalStep.update({
+        const updatedStep = await tx.approvalStep.findUniqueOrThrow({
           where: { id: step.id },
-          data: {
-            status: 'REJECTED',
-            actedAt: new Date(),
-            decision: 'REJECT',
-            comment: input.comment,
-          },
         });
 
         await writeAuditLog({
@@ -535,20 +562,26 @@ export const approvalQueueRouter = router({
       processBulkApprovalSteps(ctx, input.stepIds, async (tx, step) => {
         await assertApprovalActionPermission(ctx, step.approvalFlow.resourceType);
 
+        const cas = await tx.approvalStep.updateMany({
+          where: { id: step.id, status: 'PENDING', approverUserId: ctx.user?.id },
+          data: {
+            status: 'APPROVED',
+            actedAt: new Date(),
+            decision: 'APPROVE',
+          },
+        });
+        if (cas.count === 0) {
+          throw new TRPCError({
+            code: 'CONFLICT',
+            message: E.APPROVAL_STEP_ALREADY_DECIDED,
+          });
+        }
+
         await tx.approvalDecision.create({
           data: {
             organizationId: ctx.organizationId,
             approvalStepId: step.id,
             actorUserId: ctx.user?.id,
-            decision: 'APPROVE',
-          },
-        });
-
-        await tx.approvalStep.update({
-          where: { id: step.id },
-          data: {
-            status: 'APPROVED',
-            actedAt: new Date(),
             decision: 'APPROVE',
           },
         });
@@ -581,21 +614,27 @@ export const approvalQueueRouter = router({
       processBulkApprovalSteps(ctx, input.stepIds, async (tx, step) => {
         await assertApprovalActionPermission(ctx, step.approvalFlow.resourceType);
 
+        const cas = await tx.approvalStep.updateMany({
+          where: { id: step.id, status: 'PENDING', approverUserId: ctx.user?.id },
+          data: {
+            status: 'REJECTED',
+            actedAt: new Date(),
+            decision: 'REJECT',
+            comment: input.comment,
+          },
+        });
+        if (cas.count === 0) {
+          throw new TRPCError({
+            code: 'CONFLICT',
+            message: E.APPROVAL_STEP_ALREADY_DECIDED,
+          });
+        }
+
         await tx.approvalDecision.create({
           data: {
             organizationId: ctx.organizationId,
             approvalStepId: step.id,
             actorUserId: ctx.user?.id,
-            decision: 'REJECT',
-            comment: input.comment,
-          },
-        });
-
-        await tx.approvalStep.update({
-          where: { id: step.id },
-          data: {
-            status: 'REJECTED',
-            actedAt: new Date(),
             decision: 'REJECT',
             comment: input.comment,
           },

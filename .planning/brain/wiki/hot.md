@@ -4,7 +4,7 @@ type: hot-cache
 updated: 2026-07-06
 source_commit: efb2b0794
 updated: 2026-07-05
-source_commit: f9de62452
+source_commit: 64f25f0a8
 ---
 
 # Hot cache
@@ -126,6 +126,10 @@ New user with no org → `DashboardShellContainer` (`components/layout/dashboard
 ## AuditLog is DB-level append-only
 
 `AuditLog` is append-only in Postgres, not by convention (migration `20260617000000_auditlog_append_only`): a `BEFORE UPDATE` trigger rejects **every** UPDATE; the `auditlog_delete` RLS policy permits a DELETE **only** inside a tx that called `allowAuditPurge(tx)` (`@contractor-ops/db`, `packages/db/src/rls.ts`). Sole caller = GDPR erasure (`routers/compliance/gdpr.ts`). Never `tx.auditLog.update*` (trigger throws) or `.delete*` without `allowAuditPurge` (RLS denies). To "fix" a row, INSERT a new one. Detail: [[patterns/audit-log]] · [[patterns/tenant-and-audit]].
+
+## Approval decide = compare-and-swap (not read-then-write)
+
+`approve` / `reject` + `bulkApprove` / `bulkReject` (`packages/api/src/routers/core/approval-queue.ts`) commit the step transition with a guarded `updateMany({ where: { id, status: 'PENDING', approverUserId }, data })`, NOT `update({ where: { id } })`. The `findFirst` + `validateStepForAction` read only gates early 404/403/permission; the CAS is the real lock. Decision row, `writeAuditLog`, flow advancement, and finalize run only when `count === 1`; a `count === 0` loser throws `CONFLICT` (`approvalStepAlreadyDecided`). Closes the TOCTOU window where a concurrent approve + reject both read `PENDING` and both act. Detail: [[domains/approvals-engine]].
 
 ## OCR AI kill-switch
 
