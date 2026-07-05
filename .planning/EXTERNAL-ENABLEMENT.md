@@ -1,0 +1,25 @@
+# External Enablement Register
+
+> **Principle:** external/manual dependencies never block development. Build the code, gate the dependent path behind a **default-off `module.*` flag (kill switch)**, make tests that need the external artifact **conditionally skip** (auto-flip GREEN when it lands), and record the enablement here. Nothing ships enabled without the artifact **and** an adviser/legal sign-off where noted. See [`MEMORY`](./MEMORY.md) → *External deps never block dev*.
+
+**Dev bypass:** the boot signoff gate for gated flag namespaces is bypassed locally with `FLAG_SIGNOFF_BYPASS=local` (LOCAL-ONLY — never in prod). Flags default disabled; flip to APPROVED post-deploy.
+
+## Register
+
+| # | External dependency | Flag / gate | Default | What's dark until enabled | Tests that auto-flip | Enablement steps |
+|---|---|---|---|---|---|---|
+| 1 | **IRS IRIS XSD bundle — 1099-series** (TY schema, SOR login) | `module.us-expansion` (surface) + `module.iris-efile` (transmit) | OFF | 1099-NEC XSD validation of generated IRIS XML; the "download validated XML" path | `packages/iris` XSD-validation assertions (golden 1099-NEC → `valid:true`) — skip while `schema-bundle/` has no `.xsd` | IRS SOR login → download TY package (1099-NEC payload XSD + Transmission Manifest XSD) → drop in `packages/iris/src/schema-bundle/` → `pnpm --filter @contractor-ops/iris exec tsx scripts/verify-iris-schema-checksums.ts --write` → `verify:schema-checksums` |
+| 2 | **IRS IRIS XSD bundle — 1042-S (Pub 1187)** | `module.us-expansion` + `module.iris-efile` | OFF | 1042-S XSD validation (`xsdValidate1042S`); the P87 1042-S filing/consent UI (Plan 09 T2-3) | `packages/iris` 1042-S XSD assertions | Same as #1 but the **1042-S** package (Publication 1187, distinct download) |
+| 3 | **IRS account / Secure Object Repository access** | prerequisite for #1 + #2 | — | Both XSD bundles above | — | Founder creates IRS account + SOR access **at full US-market launch** (not available now) |
+| 4 | **IRS IRIS A2A transmit enrollment (TCC)** | `module.iris-efile` (IrisA2A path) | OFF | Automated A2A transmit; **ManualDownload is the default path** (no enrollment needed to generate/validate/download) | transmitter A2A-path tests | IRS TCC approval → set A2A creds → flip `module.iris-efile` |
+| 5 | **IRS TIN-Matching PAF enrollment** (per-org) | operational prereq (Phase 86) | — | Live TIN-match calls; scaffold + fixtures run without it | TIN-match live-call tests (mock by default) | Per-org PAF enrollment in IRS e-Services |
+| 6 | **US / 1099 region DB migration apply** | deploy-time human step | not applied | The migration SQL is generated + committed; Prisma client compiles | schema/client typecheck (no live DB needed) | Apply generated migration to regional `DATABASE_URL_*` at deploy |
+| 7 | **Speakeasy SDK publish** (Phase 98-11) | CI publish job **disabled/dark** + `module.public-api` | OFF | SDK publish to npm/PyPI; the pipeline scaffold + spec snapshot build locally | SDK-gen smoke (snapshot build) | Confirm `.speakeasy/workflow.yaml` via `speakeasy quickstart` → set `SPEAKEASY_API_KEY` / `NPM_TOKEN` / PyPI OIDC → enable the CI job |
+| 8 | **Public API write endpoints** (Phase 98 → 99) | `module.public-api` (OFF) + `hide:true` on write routes | OFF | All write endpoints (double-dark: per-org flag 404 + absent from spec/SDK/portal) | BFLA + dark-gate contract tests (already GREEN, prove dark) | Phase 99 scope enforcement lands → flip `module.public-api` per org |
+| 9 | **de/pl/ar i18n native review** | deferred-items (per phase) | machine-translated | Native-quality copy for de/pl/ar (en/en-US are canonical) | i18n:parity (GREEN — parity, not quality) | Native-speaker review pass before US/EU GA |
+| 10 | **Human visual QA of new US surfaces** (e.g. P86-07 pills/RTL/consent) | deferred to US-enablement visual pass | built, unverified-by-eye | Nothing — code + i18n parity ship; only the eyeball confirmation defers | — | Founder renders + confirms status colors / amber-advisory / RTL / consent gate at US-enablement |
+
+## Notes
+
+- **Adviser-verify (legal/tax) is separate from technical enablement.** IRIS XSDs, generated 1099/1042-S XML, threshold config, and all treaty/withholding figures need jurisdiction-specific tax-adviser sign-off before any production deploy — local-only / legal-deferred posture. Flipping a flag technically ≠ cleared to file.
+- **TY roll-over:** IRS revs schemas per tax year (~Nov). Re-download + re-pin `checksums.txt` for the filing year in use.
