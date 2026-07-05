@@ -58,6 +58,7 @@ export const ORG_NO_COUNTRY = 'orgNoCountry';
 
 // ─── Contractor ──────────────────────────────────────────────────
 export const CONTRACTOR_NOT_FOUND = 'contractorNotFound';
+export const WORKER_NOT_FOUND = 'workerNotFound';
 export const CONTRACTOR_HAS_UNPAID_INVOICES = 'contractorHasUnpaidInvoices';
 export const CONTRACTOR_HAS_ACTIVE_WORKFLOWS = 'contractorHasActiveWorkflows';
 export const CONTRACTOR_HAS_ACTIVE_CONTRACTS = 'contractorHasActiveContracts';

@@ -130,11 +130,25 @@ export type TemplateListInput = z.infer<typeof templateListSchema>;
 // Workflow run schemas
 // ---------------------------------------------------------------------------
 
-export const startRunSchema = z.object({
-  templateId: z.string().min(1),
-  contractorId: z.string().min(1),
-  contractId: optionalFk,
-});
+// A run targets exactly one subject: a contractor OR an employee worker. The
+// discriminated union enforces "exactly one" at the type layer (a Prisma
+// relation cannot); the EMPLOYEE variant is .strict() so an injected
+// organizationId/workerType is rejected.
+export const startRunSchema = z.discriminatedUnion('subjectType', [
+  z.object({
+    subjectType: z.literal('CONTRACTOR'),
+    templateId: z.string().min(1),
+    contractorId: z.string().min(1),
+    contractId: optionalFk,
+  }),
+  z
+    .object({
+      subjectType: z.literal('EMPLOYEE'),
+      templateId: z.string().min(1),
+      workerId: z.string().min(1),
+    })
+    .strict(),
+]);
 
 export type StartRunInput = z.infer<typeof startRunSchema>;
 

@@ -130,6 +130,11 @@ export function evaluateCondition(
 /**
  * Resolves an assignee user ID based on the task's assignee mode.
  * Returns null if no matching user is found (task will be unassigned).
+ *
+ * Subject-agnostic: employee (worker) runs use ROLE_BASED (HR roles) or
+ * FIXED_USER assignees. The owner modes return null for an employee subject —
+ * a worker bag carries no `internalOwnerUserId` — instead of throwing, so an
+ * employee template that ever uses an owner mode degrades to unassigned.
  */
 export async function resolveAssignee(
   task: { assigneeMode: string; assigneeUserId?: string | null; assigneeRole?: string | null },

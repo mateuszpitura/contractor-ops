@@ -71,6 +71,7 @@ function makeTx() {
       })),
     },
     workflowTaskRun: { findMany: vi.fn(async () => []) },
+    auditLog: { create: vi.fn(async () => ({ id: 'clauditaaaaaaaaaaaaaaaaaaaa' })) },
   };
   return { tx, create };
 }
