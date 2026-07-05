@@ -360,38 +360,48 @@ export async function sendForSignature(params: SendForSignatureParams) {
     });
   }
 
-  // Claim the intent row before touching the provider. We own it if we created
-  // it (or if a prior attempt claimed it but never recorded a provider id).
-  let intentId = existingIntent?.id ?? null;
-  if (!intentId) {
-    try {
-      const created = await prisma.esignEnvelopeIntent.create({
-        data: {
-          organizationId,
-          documentId,
-          contractId: contractId ?? null,
-          provider: provider as never,
-          integrationConnectionId: connectionId,
-          signerSetHash,
-        },
-        select: { id: true },
+  // A prior attempt claimed this logical send but never stamped a provider id —
+  // it crashed somewhere between the claim and the `externalEnvelopeId`
+  // write-back. That attempt may already have created a provider process before
+  // dying, so re-issuing the create here would duplicate it. Fail closed and
+  // direct a manual reconcile rather than blindly re-creating. (This is the
+  // pre-existing claimed-but-unstamped row; a claim we make ourselves below is
+  // safe to proceed on because no provider call has happened yet.)
+  if (existingIntent) {
+    throw new TRPCError({ code: 'CONFLICT', message: E.ESIGN_NO_EXTERNAL_ID });
+  }
+
+  // No prior intent — claim the row now, before touching the provider. We own
+  // the (yet-to-be-created) process only if OUR create wins; a concurrent claim
+  // for the same logical send raises P2002.
+  let intentId: string;
+  try {
+    const created = await prisma.esignEnvelopeIntent.create({
+      data: {
+        organizationId,
+        documentId,
+        contractId: contractId ?? null,
+        provider: provider as never,
+        integrationConnectionId: connectionId,
+        signerSetHash,
+      },
+      select: { id: true },
+    });
+    intentId = created.id;
+  } catch (err) {
+    if (!isUniqueViolation(err)) throw err;
+    // A concurrent send claimed the same logical envelope first. Reuse its
+    // process rather than creating a duplicate at the provider.
+    const winner = await prisma.esignEnvelopeIntent.findUnique({ where: dedupKey });
+    if (winner?.externalEnvelopeId) {
+      return reuseProviderEnvelope({
+        ...reuseArgs,
+        externalEnvelopeId: winner.externalEnvelopeId,
       });
-      intentId = created.id;
-    } catch (err) {
-      if (!isUniqueViolation(err)) throw err;
-      // A concurrent send claimed the same logical envelope first. Reuse its
-      // process rather than creating a duplicate at the provider.
-      const winner = await prisma.esignEnvelopeIntent.findUnique({ where: dedupKey });
-      if (winner?.externalEnvelopeId) {
-        return reuseProviderEnvelope({
-          ...reuseArgs,
-          externalEnvelopeId: winner.externalEnvelopeId,
-        });
-      }
-      // The winner is mid-flight and has not recorded a provider id yet;
-      // refuse to create a second process. The caller retries once it settles.
-      throw new TRPCError({ code: 'CONFLICT', message: E.ESIGN_NO_EXTERNAL_ID });
     }
+    // The winner is mid-flight and has not recorded a provider id yet;
+    // refuse to create a second process. The caller retries once it settles.
+    throw new TRPCError({ code: 'CONFLICT', message: E.ESIGN_NO_EXTERNAL_ID });
   }
 
   // Fetch and prepare the document, then create the provider envelope.
@@ -486,6 +496,30 @@ export async function getSigningUrl(params: GetSigningUrlParams) {
 // ---------------------------------------------------------------------------
 
 /**
+ * Returns the signed `Document` already persisted for a completed envelope, or
+ * `null` when the envelope has no contract link (a `SIGNED_COPY` `DocumentLink`
+ * is only created for contract-linked envelopes). Used both by the fast-path
+ * idempotency check and by the loser of a concurrent completion race once the
+ * `SIGNED_PDF_SAVED` partial unique has rejected its duplicate write.
+ */
+async function loadSavedSignedDocument(envelope: {
+  organizationId: string;
+  contractId: string | null;
+}) {
+  if (!envelope.contractId) return null;
+  const existingLink = await prisma.documentLink.findFirst({
+    where: {
+      organizationId: envelope.organizationId,
+      entityType: 'CONTRACT',
+      entityId: envelope.contractId,
+      linkRole: 'SIGNED_COPY',
+    },
+    include: { document: true },
+  });
+  return existingLink?.document ?? null;
+}
+
+/**
  * Downloads the signed PDF from the provider, uploads to R2, and creates
  * Document + DocumentLink records. Called from the webhook API route when
  * the webhook handler returns completed === true.
@@ -512,11 +546,13 @@ export async function handleSigningCompletion(
     );
   }
 
-  // Idempotency: a redelivered "completed" webhook (or a provider firing the
-  // completed status more than once) must not re-download the signed PDF or
-  // insert a duplicate signed Document. SIGNED_PDF_SAVED is written in the same
-  // transaction as the Document + DocumentLink, so its presence proves the
-  // signed copy is already persisted.
+  // Idempotency fast path: a redelivered "completed" webhook (or a provider
+  // firing the completed status more than once) must not re-download the signed
+  // PDF or insert a duplicate signed Document. SIGNED_PDF_SAVED is written in the
+  // same transaction as the Document + DocumentLink, so its presence proves the
+  // signed copy is already persisted. This is only an optimization — the atomic
+  // guard is the SIGNED_PDF_SAVED partial unique enforced inside the transaction
+  // below, which closes the read-then-write race two concurrent deliveries hit.
   const alreadySaved = await prisma.signingEvent.findFirst({
     where: {
       organizationId: envelope.organizationId,
@@ -527,19 +563,7 @@ export async function handleSigningCompletion(
   });
 
   if (alreadySaved) {
-    if (envelope.contractId) {
-      const existingLink = await prisma.documentLink.findFirst({
-        where: {
-          organizationId: envelope.organizationId,
-          entityType: 'CONTRACT',
-          entityId: envelope.contractId,
-          linkRole: 'SIGNED_COPY',
-        },
-        include: { document: true },
-      });
-      return existingLink?.document ?? null;
-    }
-    return null;
+    return loadSavedSignedDocument(envelope);
   }
 
   // Download signed PDF from the provider
@@ -595,51 +619,63 @@ export async function handleSigningCompletion(
     }
   }
 
-  // Create Document and DocumentLink in a transaction
-  const document = await prisma.$transaction(async tx => {
-    // Create Document record with source = ESIGN
-    const doc = await tx.document.create({
-      data: {
-        organizationId: envelope.organizationId,
-        storageKey,
-        originalFileName: signedFileName,
-        mimeType: signedDoc.mimeType || 'application/pdf',
-        fileSizeBytes: BigInt(docBuffer.length),
-        checksumSha256,
-        documentType: documentType as never,
-        source: 'ESIGN',
-        virusScanStatus: 'CLEAN', // Signed PDFs from providers are trusted
-      },
-    });
-
-    // Create DocumentLink with SIGNED_COPY role if we have a contractId
-    if (envelope.contractId) {
-      await tx.documentLink.create({
+  // Create Document + DocumentLink + the terminal SIGNED_PDF_SAVED event in one
+  // transaction. The SIGNED_PDF_SAVED partial unique
+  // (signing_event_signed_pdf_saved_key) makes this write atomic: two concurrent
+  // "completed" deliveries both pass the fast-path check above, but only one can
+  // commit the event — the loser's event insert raises P2002, rolling back its
+  // whole transaction (duplicate Document + link included). We catch that P2002
+  // as an idempotent no-op and return the winner's already-persisted signed
+  // Document rather than surfacing an error or leaving a duplicate.
+  try {
+    return await prisma.$transaction(async tx => {
+      // Create Document record with source = ESIGN
+      const doc = await tx.document.create({
         data: {
           organizationId: envelope.organizationId,
-          documentId: doc.id,
-          entityType: 'CONTRACT',
-          entityId: envelope.contractId,
-          linkRole: 'SIGNED_COPY',
+          storageKey,
+          originalFileName: signedFileName,
+          mimeType: signedDoc.mimeType || 'application/pdf',
+          fileSizeBytes: BigInt(docBuffer.length),
+          checksumSha256,
+          documentType: documentType as never,
+          source: 'ESIGN',
+          virusScanStatus: 'CLEAN', // Signed PDFs from providers are trusted
         },
       });
-    }
 
-    // Create SIGNED_PDF_SAVED event
-    await tx.signingEvent.create({
-      data: {
-        organizationId: envelope.organizationId,
-        signingEnvelopeId: envelope.id,
-        eventType: 'SIGNED_PDF_SAVED',
-        description: `Signed PDF saved as ${signedFileName}`,
-        occurredAt: new Date(),
-      },
+      // Create DocumentLink with SIGNED_COPY role if we have a contractId
+      if (envelope.contractId) {
+        await tx.documentLink.create({
+          data: {
+            organizationId: envelope.organizationId,
+            documentId: doc.id,
+            entityType: 'CONTRACT',
+            entityId: envelope.contractId,
+            linkRole: 'SIGNED_COPY',
+          },
+        });
+      }
+
+      // Create SIGNED_PDF_SAVED event
+      await tx.signingEvent.create({
+        data: {
+          organizationId: envelope.organizationId,
+          signingEnvelopeId: envelope.id,
+          eventType: 'SIGNED_PDF_SAVED',
+          description: `Signed PDF saved as ${signedFileName}`,
+          occurredAt: new Date(),
+        },
+      });
+
+      return doc;
     });
-
-    return doc;
-  });
-
-  return document;
+  } catch (err) {
+    if (isUniqueViolation(err)) {
+      return loadSavedSignedDocument(envelope);
+    }
+    throw err;
+  }
 }
 
 /**

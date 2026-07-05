@@ -1,17 +1,24 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import * as E from '../../errors';
-import { sendForSignature } from '../esign-orchestrator';
+import { handleSigningCompletion, sendForSignature } from '../esign-orchestrator';
 import { createPresignedDownloadUrl } from '../r2';
 
 const {
   mockDocumentFindFirst,
+  mockDocumentFindUnique,
+  mockDocumentLinkFindFirst,
   mockTx,
   mockTransaction,
   mockCreateSigningEnvelope,
+  mockDownloadSignedDocument,
+  mockCreatePresignedUploadUrl,
+  mockGenerateStorageKey,
   mockIntentFindUnique,
   mockIntentCreate,
   mockIntentUpdate,
   mockSigningEnvelopeFindUnique,
+  mockSigningEnvelopeFindFirst,
+  mockSigningEventFindFirst,
 } = vi.hoisted(() => {
   const mockCreateSigningEnvelope = vi.fn();
 
@@ -24,19 +31,28 @@ const {
     signingEvent: { create: vi.fn() },
     contract: { update: vi.fn() },
     externalLink: { create: vi.fn() },
+    document: { create: vi.fn() },
+    documentLink: { create: vi.fn() },
   };
 
   const mockTransaction = vi.fn(async (fn: (tx: typeof mockTx) => Promise<unknown>) => fn(mockTx));
 
   return {
     mockDocumentFindFirst: vi.fn(),
+    mockDocumentFindUnique: vi.fn(),
+    mockDocumentLinkFindFirst: vi.fn(),
     mockTx,
     mockTransaction,
     mockCreateSigningEnvelope,
+    mockDownloadSignedDocument: vi.fn(),
+    mockCreatePresignedUploadUrl: vi.fn(),
+    mockGenerateStorageKey: vi.fn(),
     mockIntentFindUnique: vi.fn(),
     mockIntentCreate: vi.fn(),
     mockIntentUpdate: vi.fn(),
     mockSigningEnvelopeFindUnique: vi.fn(),
+    mockSigningEnvelopeFindFirst: vi.fn(),
+    mockSigningEventFindFirst: vi.fn(),
   };
 });
 
@@ -44,6 +60,10 @@ vi.mock('@contractor-ops/db', () => {
   const MockDbPrisma = {
     document: {
       findFirst: mockDocumentFindFirst,
+      findUnique: mockDocumentFindUnique,
+    },
+    documentLink: {
+      findFirst: mockDocumentLinkFindFirst,
     },
     esignEnvelopeIntent: {
       findUnique: mockIntentFindUnique,
@@ -52,6 +72,10 @@ vi.mock('@contractor-ops/db', () => {
     },
     signingEnvelope: {
       findUnique: mockSigningEnvelopeFindUnique,
+      findFirst: mockSigningEnvelopeFindFirst,
+    },
+    signingEvent: {
+      findFirst: mockSigningEventFindFirst,
     },
     $transaction: mockTransaction,
   };
@@ -66,15 +90,15 @@ vi.mock('@contractor-ops/db', () => {
 vi.mock('@contractor-ops/integrations/services/esign-service', () => ({
   createSigningEnvelope: mockCreateSigningEnvelope,
   getEmbeddedSigningUrl: vi.fn(),
-  downloadSignedDocument: vi.fn(),
+  downloadSignedDocument: mockDownloadSignedDocument,
   voidSigningEnvelope: vi.fn(),
   resendSigningNotification: vi.fn(),
 }));
 
 vi.mock('../r2', () => ({
   createPresignedDownloadUrl: vi.fn(),
-  createPresignedUploadUrl: vi.fn(),
-  generateStorageKey: vi.fn(),
+  createPresignedUploadUrl: mockCreatePresignedUploadUrl,
+  generateStorageKey: mockGenerateStorageKey,
 }));
 
 describe('sendForSignature', () => {
@@ -541,5 +565,114 @@ describe('sendForSignature', () => {
       message: E.ESIGN_NO_EXTERNAL_ID,
     });
     expect(mockCreateSigningEnvelope).not.toHaveBeenCalled();
+  });
+
+  it('throws CONFLICT on a pre-existing claimed-but-unstamped intent (prior crash) — no second provider create', async () => {
+    // The intent row was claimed by an earlier attempt that crashed after the
+    // provider create but before stamping externalEnvelopeId. A retry must NOT
+    // re-issue the provider create (which would duplicate the process) — it fails
+    // closed for manual reconcile.
+    mockIntentFindUnique.mockResolvedValue({ id: 'intent-1', externalEnvelopeId: null });
+
+    await expect(autentiSend()).rejects.toMatchObject({
+      code: 'CONFLICT',
+      message: E.ESIGN_NO_EXTERNAL_ID,
+    });
+    expect(mockCreateSigningEnvelope).not.toHaveBeenCalled();
+    expect(mockIntentCreate).not.toHaveBeenCalled();
+  });
+});
+
+describe('handleSigningCompletion', () => {
+  const baseEnvelope = {
+    id: 'env-internal-1',
+    externalEnvelopeId: 'ext-env-1',
+    organizationId: 'org_1',
+    contractId: 'contract_1',
+    documentId: 'doc_1',
+    recipients: [],
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true }));
+
+    mockSigningEnvelopeFindFirst.mockResolvedValue(baseEnvelope);
+    // Fast-path check: no SIGNED_PDF_SAVED yet → proceed to download + persist.
+    mockSigningEventFindFirst.mockResolvedValue(null);
+    mockDownloadSignedDocument.mockResolvedValue({
+      documentBase64: Buffer.from('signed-pdf-bytes').toString('base64'),
+      fileName: 'signed.pdf',
+      mimeType: 'application/pdf',
+    });
+    mockCreatePresignedUploadUrl.mockResolvedValue('https://r2.example.com/upload');
+    mockGenerateStorageKey.mockReturnValue('org_1/esign-env-internal-1/signed.pdf');
+    mockDocumentFindUnique.mockResolvedValue({ documentType: 'CONTRACT' });
+
+    mockTx.document.create.mockResolvedValue({ id: 'signed-doc-1' });
+    mockTx.documentLink.create.mockResolvedValue({});
+    mockTx.signingEvent.create.mockResolvedValue({});
+
+    // The winner's persisted signed Document, resolvable via its SIGNED_COPY link.
+    mockDocumentLinkFindFirst.mockResolvedValue({ document: { id: 'signed-doc-1' } });
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('persists the signed Document + SIGNED_PDF_SAVED event and returns the Document', async () => {
+    const doc = await handleSigningCompletion('env-internal-1', 'conn_1', 'DOCUSIGN');
+
+    expect(doc?.id).toBe('signed-doc-1');
+    expect(mockTx.document.create).toHaveBeenCalledTimes(1);
+    expect(mockTx.documentLink.create).toHaveBeenCalledTimes(1);
+    const savedEvent = mockTx.signingEvent.create.mock.calls.find(
+      (call: unknown[]) =>
+        (call[0] as { data: { eventType: string } }).data.eventType === 'SIGNED_PDF_SAVED',
+    );
+    expect(savedEvent).toBeDefined();
+  });
+
+  it('concurrent double-delivery: the loser catches the SIGNED_PDF_SAVED P2002 and returns the winner Document (no duplicate)', async () => {
+    // Both deliveries pass the fast-path check, but the partial unique lets only
+    // one SIGNED_PDF_SAVED event commit. Simulate the loser: its terminal event
+    // insert raises P2002, rolling back the whole transaction (duplicate Document
+    // + link included).
+    mockTx.signingEvent.create.mockRejectedValueOnce({ code: 'P2002' });
+
+    const doc = await handleSigningCompletion('env-internal-1', 'conn_1', 'DOCUSIGN');
+
+    // Idempotent no-op: returns the winner's already-persisted signed Document,
+    // resolved via the SIGNED_COPY DocumentLink — never a duplicate.
+    expect(doc?.id).toBe('signed-doc-1');
+    expect(mockDocumentLinkFindFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          entityType: 'CONTRACT',
+          entityId: 'contract_1',
+          linkRole: 'SIGNED_COPY',
+        }),
+      }),
+    );
+  });
+
+  it('redelivered completed webhook: returns the existing signed Document without re-downloading', async () => {
+    mockSigningEventFindFirst.mockResolvedValue({ id: 'evt-saved' });
+
+    const doc = await handleSigningCompletion('env-internal-1', 'conn_1', 'DOCUSIGN');
+
+    expect(doc?.id).toBe('signed-doc-1');
+    expect(mockDownloadSignedDocument).not.toHaveBeenCalled();
+    expect(mockTx.document.create).not.toHaveBeenCalled();
+  });
+
+  it('rethrows a non-P2002 transaction failure instead of masking it as idempotent', async () => {
+    mockTx.signingEvent.create.mockRejectedValueOnce(new Error('db exploded'));
+
+    await expect(handleSigningCompletion('env-internal-1', 'conn_1', 'DOCUSIGN')).rejects.toThrow(
+      'db exploded',
+    );
+    expect(mockDocumentLinkFindFirst).not.toHaveBeenCalled();
   });
 });
