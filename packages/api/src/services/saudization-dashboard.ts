@@ -160,6 +160,41 @@ export function computeSaudizationDashboard(
   };
 }
 
+// ---------------------------------------------------------------------------
+// Per-country nationalisation rollup (KSA Saudization + UAE Emiratisation).
+// ---------------------------------------------------------------------------
+//
+// The nationalisation math is country-agnostic — a rate is manual national /
+// manual total and a band is read-through, whether the quota regime is Nitaqat
+// (KSA) or the UAE Emiratisation quota. This wrapper composes the existing pure
+// derivation per country WITHOUT re-deriving anything: the KSA path is unchanged
+// (byte-for-byte `computeSaudizationDashboard`), and the UAE path reuses the same
+// function, feeding the manual Emirati headcount as `saudiHeadcount` and the
+// visa / Emirates-ID compliance items as `iqamaItems` (the permit rollup math is
+// identical). The locked anti-features hold for BOTH countries by construction:
+// the rate comes ONLY from the manual headcount (never an EmployeeProfile groupBy)
+// and the band is read-through, never inferred.
+
+export type NationalisationCountry = 'KSA' | 'UAE';
+
+export interface NationalisationDashboardResult extends SaudizationDashboardResult {
+  country: NationalisationCountry;
+}
+
+/**
+ * Compute a per-country nationalisation rollup. Delegates to the unchanged pure
+ * `computeSaudizationDashboard` and tags the result with its country. For UAE,
+ * `headcount.saudiHeadcount` carries the manual Emirati national count and
+ * `iqamaItems` the visa/Emirates-ID expiry rows; the derivation is identical.
+ * Pure: no DB, no writes, no throws; no platform-derived rate path exists.
+ */
+export function computeNationalisationDashboard(
+  country: NationalisationCountry,
+  params: SaudizationDashboardParams,
+): NationalisationDashboardResult {
+  return { country, ...computeSaudizationDashboard(params) };
+}
+
 export interface OffboardingTrajectoryParams {
   headcount: SaudiHeadcountInput | null;
   /** The currently-recorded band (read-through); surfaced verbatim, never asserted as projected. */

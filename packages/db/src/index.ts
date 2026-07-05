@@ -19,6 +19,8 @@
 export { createPrismaClientForUrl, PrismaClient, prisma } from './client.js';
 export type {
   ContractType,
+  EmployeeDocCategory,
+  EmploymentType,
   NitaqatBand,
   Prisma,
   TaxIdType,

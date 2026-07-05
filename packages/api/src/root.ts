@@ -1,5 +1,6 @@
 import { buildFlagBag } from '@contractor-ops/feature-flags';
 import { router } from './init';
+import { isHrDashboardRegistered } from './middleware/require-hr-dashboard-flag';
 import { isUsExpansionRegistered } from './middleware/require-us-expansion-flag';
 import { isWorkforceRegistered } from './middleware/require-workforce-flag';
 import {
@@ -85,6 +86,7 @@ import {
 import { workflowRolesRouter, workflowRouter } from './routers/workflow/index';
 import { employeeTimeRouter } from './routers/workforce/employee-time';
 import { ewidencjaRouter } from './routers/workforce/ewidencja';
+import { hrDashboardRouter } from './routers/workforce/hr-dashboard';
 import { hrisSyncRouter } from './routers/workforce/hris-sync-router';
 import { leaveRouter } from './routers/workforce/leave';
 import { payrollExportRouter } from './routers/workforce/payroll-export-router';
@@ -202,6 +204,18 @@ const conditionalWorkforceRouters = isWorkforceRegistered()
   ? workforceRouters
   : ({} as typeof workforceRouters);
 
+// The staff HR command dashboard (Theme B) ships doubly dark: the read-only
+// hrDashboard.* aggregates require BOTH module.workforce-employees (the data
+// prerequisite) AND module.hr-dashboard (the surface kill switch). Absent either
+// flag the namespace is omitted from appRouter (METHOD_NOT_FOUND); each procedure
+// also re-asserts module.hr-dashboard per request. The const keeps the spread
+// TYPE constant across branches so client typing always sees the namespace.
+const hrDashboardRouters = { hrDashboard: hrDashboardRouter } as const;
+const conditionalHrDashboardRouters =
+  isWorkforceRegistered() && isHrDashboardRegistered()
+    ? hrDashboardRouters
+    : ({} as typeof hrDashboardRouters);
+
 export const appRouter = router({
   adminBoeRate: adminBoeRateRouter, // adminBoeRate: Super-admin BoE base rate CRUD — list, insert, update, delete
   apiKey: apiKeyRouter, // apiKey: Enterprise API key management — create, list, update, revoke
@@ -268,6 +282,7 @@ export const appRouter = router({
   ...conditionalClassificationRouters,
   ...conditionalUsExpansionRouters,
   ...conditionalWorkforceRouters,
+  ...conditionalHrDashboardRouters,
 });
 
 /** Type-safe router type for client consumption */

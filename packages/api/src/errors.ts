@@ -366,6 +366,7 @@ export const FORM_1099_NOT_FOUND = 'form1099NotFound';
 export const STATE_FILING_CONFIG_NOT_FOUND = 'stateFilingConfigNotFound';
 export const IRIS_ACK_PARSE_FAILED = 'irisAckParseFailed';
 export const WORKFORCE_DISABLED = 'workforceDisabled';
+export const HR_DASHBOARD_DISABLED = 'hrDashboardDisabled';
 export const LEAVE_WORKER_NOT_FOUND = 'leaveWorkerNotFound';
 export const LEAVE_TYPE_NOT_FOUND = 'leaveTypeNotFound';
 export const LEAVE_SICK_TYPE_NOT_CONFIGURED = 'leaveSickTypeNotConfigured';
