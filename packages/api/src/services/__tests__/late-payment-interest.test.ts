@@ -97,17 +97,17 @@ describe('resolveStatutoryRate', () => {
     expect(rate).toBe(4.75);
   });
 
-  it('returns 0 when rate history is empty', () => {
+  it('returns null when rate history is empty', () => {
     const rate = resolveStatutoryRate([], new Date(Date.UTC(2026, 2, 15)));
-    expect(rate).toBe(0);
+    expect(rate).toBeNull();
   });
 
-  it('returns 0 when no entry predates the reference date', () => {
+  it('returns null when no entry predates the reference date', () => {
     const future: RateHistoryEntry[] = [
       { effectiveFrom: new Date(Date.UTC(2030, 0, 1)), ratePercent: 5 },
     ];
     const rate = resolveStatutoryRate(future, new Date(Date.UTC(2026, 2, 15)));
-    expect(rate).toBe(0);
+    expect(rate).toBeNull();
   });
 
   it('uses the latest entry when multiple entries predate the reference date', () => {
@@ -173,6 +173,15 @@ describe('calculateLateInterest — scope gates', () => {
     expect(result.applicable).toBe(false);
     expect(result.reason).toBe('NON_GBP_CURRENCY');
     expect(result.accruedInterestMinor).toBe(0);
+  });
+
+  it('missing rate history → not applicable (never accrues at the bare 8% margin)', () => {
+    const result = calculateLateInterest(makeInput({ rateHistory: [] }));
+    expect(result.applicable).toBe(false);
+    expect(result.reason).toBe('RATE_HISTORY_UNAVAILABLE');
+    expect(result.rateUsed).toBe(0);
+    expect(result.accruedInterestMinor).toBe(0);
+    expect(result.totalClaimMinor).toBe(0);
   });
 });
 

@@ -5,6 +5,7 @@ tags: [us, tax, w-form, treaty, portal, esign, immutable-record]
 source_commit: 5d6e26a17
 source_commit: f9de62452
 source_commit: 28061f01e
+source_commit: 730cc8e69
 verify_with:
   - packages/db/prisma/schema/tax.prisma
   - packages/db/prisma/schema/migrations/20260705000000_us_tax_form_tables_plus_additive_integrity/
@@ -110,8 +111,10 @@ arithmetic, not a classification verdict). `aggregateBox1` sums box-1 nonemploye
 by payment (settlement) date within the calendar tax year, **per recipient per payer-org**;
 `aggregateBox1Async` FX-converts any non-USD payout to USD at the **payment-date rate** through
 the in-tree `exchange-rate` service (one HALF-UP round on the integer minor-unit product — no
-float drift). A non-USD payout that reaches the synchronous reducer without a pre-converted USD
-amount throws rather than silently understating the box.
+float drift), passing `FX_CONVERSION_MAX_AGE_DAYS` so a rate older than the floor throws
+`StaleExchangeRateError` rather than mis-stating a filed return with a silently stale rate. A
+non-USD payout that reaches the synchronous reducer without a pre-converted USD amount throws
+rather than silently understating the box.
 
 Generation is gated by the **tax-year-keyed `Tax1099Threshold` table** (`getBox1ThresholdMinor`),
 never a constant: $600 TY2025, $2,000 TY2026 (OBBBA), inflation-indexed thereafter. `computeBox4Minor`

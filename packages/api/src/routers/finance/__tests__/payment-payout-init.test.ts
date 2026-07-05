@@ -81,15 +81,17 @@ function makeItem(overrides: Partial<StubItem> = {}): StubItem {
 
 /**
  * Minimal Prisma-shaped stub. `paymentRunItem.findMany` echoes the seeded items,
- * `auditLog.create` is spied for the write-audit assertion, `exchangeRate.findFirst`
- * models the ECB feed (absent key → missing rate → null).
+ * `paymentRunItem.update` captures the persisted FX provenance, `auditLog.create`
+ * is spied for the write-audit assertion, `exchangeRate.findFirst` models the ECB
+ * feed (absent key → missing rate → null).
  */
 function makeDb(items: StubItem[], rates: Record<string, number> = {}) {
   const findMany = vi.fn(async (_args: unknown) => items);
   const auditCreate = vi.fn(async () => ({}));
+  const itemUpdate = vi.fn(async (_args: { where: { id: string }; data: unknown }) => ({}));
   return {
     db: {
-      paymentRunItem: { findMany },
+      paymentRunItem: { findMany, update: itemUpdate },
       auditLog: { create: auditCreate },
       exchangeRate: {
         findFirst: async ({ where }: { where: { base: string; target: string } }) => {
@@ -101,6 +103,7 @@ function makeDb(items: StubItem[], rates: Record<string, number> = {}) {
     } as never,
     findMany,
     auditCreate,
+    itemUpdate,
   };
 }
 
@@ -230,7 +233,7 @@ describe('_initiatePayoutForRun — tenant isolation', () => {
 
 describe('_initiatePayoutForRun — settlement wiring (88-05 seam)', () => {
   it('sends the raw amount when the settlement currency equals the item currency', async () => {
-    const { db } = makeDb([
+    const { db, itemUpdate } = makeDb([
       makeItem({
         amountMinor: 50_000,
         currency: 'USD',
@@ -254,12 +257,14 @@ describe('_initiatePayoutForRun — settlement wiring (88-05 seam)', () => {
     expect(result.orders[0]?.settledAmountMinor).toBe(50_000);
     expect(spy.mock.calls[0]?.[0]?.currency).toBe('USD');
     expect(spy.mock.calls[0]?.[0]?.amountMinor).toBe(50_000);
+    // Same-currency: no FX provenance persisted (rate 1, nothing to reconstruct).
+    expect(itemUpdate).not.toHaveBeenCalled();
   });
 
   it('threads the per-run settlementCurrency override into the adapter amount', async () => {
     // Item is USD; override to PLN. Rate USD->PLN cross-rates through EUR:
     // EUR->USD 1.0 and EUR->PLN 4.0 => USD->PLN 4.0. 50_000 -> 200_000.
-    const { db } = makeDb([makeItem({ amountMinor: 50_000, currency: 'USD' })], {
+    const { db, itemUpdate } = makeDb([makeItem({ amountMinor: 50_000, currency: 'USD' })], {
       'EUR->USD': 1.0,
       'EUR->PLN': 4.0,
     });
@@ -280,6 +285,15 @@ describe('_initiatePayoutForRun — settlement wiring (88-05 seam)', () => {
     expect(result.orders[0]?.settlementCurrency).toBe('PLN');
     expect(result.orders[0]?.settledAmountMinor).toBe(200_000);
     expect(spy.mock.calls[0]?.[0]?.currency).toBe('PLN');
+
+    // FX provenance persisted so the payout row reconstructs its settled amount.
+    expect(itemUpdate).toHaveBeenCalledTimes(1);
+    const persisted = itemUpdate.mock.calls[0]?.[0]?.data as {
+      settlementRate: number;
+      settlementRateDate: Date;
+    };
+    expect(persisted.settlementRateDate).toEqual(paymentDate);
+    expect(Math.round(50_000 * persisted.settlementRate)).toBe(200_000);
   });
 
   it('errors (never zeroes) when the settlement rate is missing', async () => {

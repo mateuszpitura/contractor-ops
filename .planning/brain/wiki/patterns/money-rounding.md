@@ -2,7 +2,7 @@
 title: Money rounding policy
 type: pattern
 tags: [money, currency, rounding, finance, validators]
-source_commit: 2e6c4892ed6881b636499fb108a94f261e7e6e5e
+source_commit: 730cc8e69
 verify_with:
   - packages/api/src/services/skonto.ts
   - packages/api/src/services/late-payment-interest.ts
@@ -10,7 +10,7 @@ verify_with:
   - packages/api/src/services/bank-statement.ts
   - packages/api/src/routers/finance/payment-shared.ts
   - packages/api/src/services/payment-settlement.ts
-updated: 2026-07-01
+updated: 2026-07-05
 ---
 
 # Money rounding policy
@@ -47,11 +47,11 @@ Only where an invariant demands a fixed direction:
 | Site | Path | Rule |
 |------|------|------|
 | Skonto discount | `packages/api/src/services/skonto.ts` | FLOOR |
-| Late-payment interest | `packages/api/src/services/late-payment-interest.ts` | HALF-UP |
-| FX conversion | `packages/api/src/services/exchange-rate.ts` | Finite-guard inputs → single HALF-UP on integer minor units (no `decimal.js` in this service) |
+| Late-payment interest | `packages/api/src/services/late-payment-interest.ts` | HALF-UP; `resolveStatutoryRate` returns `null` (not 0) when no BoE rate is in effect on the §4(1) reference date, and `calculateLateInterest` then returns `applicable:false` (`RATE_HISTORY_UNAVAILABLE`) rather than accruing at the bare 8% margin |
+| FX conversion | `packages/api/src/services/exchange-rate.ts` | Finite-guard inputs → single HALF-UP on integer minor units (no `decimal.js` in this service). `getRate(…, maxAgeDays?)` throws `StaleExchangeRateError` when the observation is older than the floor (settlement + 1099 box-1 pass `FX_CONVERSION_MAX_AGE_DAYS = 7`; display-only reads pass none). An ECB-outage carry-forward row is stamped `CARRIED_FORWARD:<original-date>` so its staleness stays visible and is measured from the original observation, not the re-stamped row date |
 | Bank statement amounts | `packages/api/src/services/bank-statement.ts` | zod-validate external major amount → single HALF-UP to minor units; parser caps output at 5000 transactions (mirrors import `MAX_IMPORT_ROWS`) so the run matcher stays bounded |
 | Withholding deduction | `packages/api/src/routers/finance/payment-shared.ts` (`applyWithholding`) | ONE HALF-UP round of `whtAmountMinor` at the rate (SA WHT / US §3406 24% / 1042-S treaty), then `amountMinor = grossAmountMinor − whtAmountMinor` — integer gross/net invariant, no chained round |
-| Settlement FX | `packages/api/src/services/payment-settlement.ts` (`convertForSettlement`) | Delegates verbatim to `convertAmount` — single HALF-UP on integer minor units at the payment-date ECB rate; rate 1 same-currency; `null` on a missing rate (never a coerced 1.0 or a silently zeroed payout) |
+| Settlement FX | `packages/api/src/services/payment-settlement.ts` (`convertForSettlement`) | Delegates verbatim to `convertAmount` — single HALF-UP on integer minor units at the payment-date ECB rate; rate 1 same-currency; `null` on a missing rate and a throw on a stale rate (default `maxAgeDays = FX_CONVERSION_MAX_AGE_DAYS = 7`) — never a coerced 1.0 or a silently zeroed/stale payout. The applied rate + as-of date are persisted onto `PaymentRunItem.settlementRate`/`settlementRateDate` for provenance |
 
 ## Verify live
 

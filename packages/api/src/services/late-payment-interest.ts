@@ -78,11 +78,16 @@ export function getCompensationTier(invoiceTotalMinor: number): number {
  * 6-month statutory period per LPCDA §4(1).
  *
  * Reference dates: 30 Jun or 31 Dec preceding the debt period start.
+ *
+ * Returns `null` when no rate is in effect on the reference date (empty history,
+ * or every entry postdates it) — the caller must treat that as "cannot compute"
+ * rather than assuming a 0% base, which would silently accrue interest at the
+ * bare 8% margin.
  */
 export function resolveStatutoryRate(
   rateHistory: RateHistoryEntry[],
   debtPeriodStart: Date,
-): number {
+): number | null {
   // Determine the reference date (last day of the preceding 6-month period)
   const year = debtPeriodStart.getFullYear();
   const month = debtPeriodStart.getMonth(); // 0-indexed
@@ -109,8 +114,8 @@ export function resolveStatutoryRate(
     }
   }
 
-  // If no rate found, return 0 (should not happen with seeded data)
-  return 0;
+  // No rate in effect on the reference date — cannot determine the statutory base.
+  return null;
 }
 
 // ---------------------------------------------------------------------------
@@ -227,6 +232,24 @@ export function calculateLateInterest(input: LateInterestInput): LateInterestRes
   // Resolve the statutory rate
   const debtPeriodStart = new Date(overdueStartMs);
   const boeRate = resolveStatutoryRate(rateHistory, debtPeriodStart);
+
+  // Missing rate history → cannot determine the BoE base for this period. Fail
+  // loudly (not applicable) rather than accruing interest at the bare 8% margin.
+  if (boeRate === null) {
+    return {
+      applicable: false,
+      reason: 'RATE_HISTORY_UNAVAILABLE',
+      daysOverdue,
+      principalOutstandingMinor,
+      rateUsed: 0,
+      dailyInterestMinor: 0,
+      accruedInterestMinor: 0,
+      compensationTierMinor: 0,
+      totalClaimMinor: 0,
+      waiverApplied: false,
+    };
+  }
+
   const statutoryRate = boeRate + 8; // BoE rate + 8 percentage points
 
   // Daily interest = principal × (rate / 100) / 365

@@ -1,4 +1,4 @@
-import { convertAmount } from './exchange-rate';
+import { convertAmount, FX_CONVERSION_MAX_AGE_DAYS } from './exchange-rate';
 import type { DbClient } from './types';
 
 /**
@@ -35,6 +35,11 @@ export function resolveSettlementCurrency(input: ResolveSettlementCurrencyInput)
  * exactly one HALF-UP round is applied on the integer minor-unit product.
  * Same-currency short-circuits to rate 1; a missing rate returns `null` so the
  * caller surfaces an error rather than settling a silently zeroed amount.
+ *
+ * A `maxAgeDays` floor (default {@link FX_CONVERSION_MAX_AGE_DAYS}) makes a rate
+ * older than the threshold throw a `StaleExchangeRateError` instead of settling
+ * at a stale rate — real money must never leave on a rate the ECB feed stopped
+ * updating days ago.
  */
 export async function convertForSettlement(
   db: DbClient,
@@ -42,6 +47,7 @@ export async function convertForSettlement(
   fromCurrency: string,
   settlementCurrency: string,
   paymentDate: Date,
+  maxAgeDays: number = FX_CONVERSION_MAX_AGE_DAYS,
 ): Promise<{ amountMinor: number; rate: number; rateDate: Date } | null> {
-  return convertAmount(db, amountMinor, fromCurrency, settlementCurrency, paymentDate);
+  return convertAmount(db, amountMinor, fromCurrency, settlementCurrency, paymentDate, maxAgeDays);
 }

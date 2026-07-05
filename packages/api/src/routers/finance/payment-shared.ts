@@ -10,6 +10,7 @@ import {
 } from '../../lib/idempotency';
 import { writeAuditLog } from '../../services/audit-writer';
 import { decryptBankAccount } from '../../services/bank-account-crypto';
+import { StaleExchangeRateError } from '../../services/exchange-rate';
 import type {
   ExportItem,
   NachaExportItem,
@@ -286,18 +287,84 @@ export async function autoCompleteRunIfTerminal(tx: TxClient, paymentRunId: stri
 }
 
 /**
+ * Settle one payout item into `settlementCurrency` at the payment-date ECB rate.
+ * A rate that is missing entirely and a rate that is older than the FX max-age
+ * floor both surface `PAYMENT_SETTLEMENT_RATE_UNAVAILABLE` (UNPROCESSABLE_CONTENT)
+ * — a payout is never settled to a silently zeroed or silently stale amount. The
+ * distinct staleness cause is preserved in the thrown `StaleExchangeRateError`'s
+ * message (logged) even though the client-facing key is shared.
+ */
+async function settleItemAmount(
+  db: DbClient,
+  amountMinor: number,
+  fromCurrency: string,
+  settlementCurrency: string,
+  paymentDate: Date,
+): Promise<{ amountMinor: number; rate: number; rateDate: Date }> {
+  let settled: Awaited<ReturnType<typeof convertForSettlement>>;
+  try {
+    settled = await convertForSettlement(
+      db,
+      amountMinor,
+      fromCurrency,
+      settlementCurrency,
+      paymentDate,
+    );
+  } catch (err) {
+    if (err instanceof StaleExchangeRateError) {
+      log.warn({ err: err.message }, 'settlement rate stale — refusing payout');
+      throw new TRPCError({
+        code: 'UNPROCESSABLE_CONTENT',
+        message: E.PAYMENT_SETTLEMENT_RATE_UNAVAILABLE,
+      });
+    }
+    throw err;
+  }
+  if (!settled) {
+    throw new TRPCError({
+      code: 'UNPROCESSABLE_CONTENT',
+      message: E.PAYMENT_SETTLEMENT_RATE_UNAVAILABLE,
+    });
+  }
+  return settled;
+}
+
+/**
+ * Persist the FX provenance of a settled cross-currency payout onto its
+ * `PaymentRunItem` so any audit/row can reconstruct the settled amount
+ * (`round(amountMinor * settlementRate)`) and the as-of date. Same-currency
+ * settlements (rate 1, nothing to reconstruct) are skipped, matching the
+ * schema's "populated only for converted payouts" contract.
+ */
+async function persistSettlementProvenance(
+  db: DbClient,
+  itemId: string,
+  fromCurrency: string,
+  settlementCurrency: string,
+  settled: { rate: number; rateDate: Date },
+): Promise<void> {
+  if (fromCurrency === settlementCurrency) return;
+  await db.paymentRunItem.update({
+    where: { id: itemId },
+    data: { settlementRate: settled.rate, settlementRateDate: settled.rateDate },
+  });
+}
+
+/**
  * Builds the ExportItem array from payment-run items with resolved transfer
  * titles, applying the per-payout settlement conversion BEFORE the export buffer
  * is generated (the file must carry the settled amount, not the raw run amount).
  *
  * For each item the settlement currency is resolved (a per-run override wins,
  * else the contractor's own currency) and the gross is converted at the
- * payment-date ECB rate. A missing rate throws rather than emitting a zeroed
- * amount — the payout is never silently settled to nothing.
+ * payment-date ECB rate. A missing or stale rate throws rather than emitting a
+ * zeroed amount — the payout is never silently settled to nothing. The applied
+ * rate + as-of date are persisted onto the `PaymentRunItem` for FX provenance.
  */
 export async function _buildExportItems(
   db: DbClient,
   items: Array<{
+    id: string;
     amountMinor: number;
     currency: string;
     invoice: {
@@ -339,7 +406,7 @@ export async function _buildExportItems(
       perRunOverride: settlement.perRunOverride,
     });
 
-    const settled = await convertForSettlement(
+    const settled = await settleItemAmount(
       db,
       item.amountMinor,
       item.currency,
@@ -347,12 +414,7 @@ export async function _buildExportItems(
       settlement.paymentDate,
     );
 
-    if (!settled) {
-      throw new TRPCError({
-        code: 'UNPROCESSABLE_CONTENT',
-        message: E.PAYMENT_SETTLEMENT_RATE_UNAVAILABLE,
-      });
-    }
+    await persistSettlementProvenance(db, item.id, item.currency, settlementCurrency, settled);
 
     // Decrypt the US routing/account only when both are present. The plaintext
     // stays inside this function and reaches only the export file buffer — it is
@@ -766,19 +828,15 @@ export async function _initiatePayoutForRun(
         contractorCurrency,
         perRunOverride: args.settlementCurrency,
       });
-      const settled = await convertForSettlement(
+      const settled = await settleItemAmount(
         db,
         item.amountMinor,
         item.currency,
         settlementCurrency,
         paymentDate,
       );
-      if (!settled) {
-        throw new TRPCError({
-          code: 'UNPROCESSABLE_CONTENT',
-          message: E.PAYMENT_SETTLEMENT_RATE_UNAVAILABLE,
-        });
-      }
+
+      await persistSettlementProvenance(db, item.id, item.currency, settlementCurrency, settled);
 
       const order = await args.adapter.initiatePayout({
         idempotencyKey: `${args.idempotencyKey}:${item.id}`,

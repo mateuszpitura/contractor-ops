@@ -2,7 +2,7 @@
 title: US payment rail
 type: domain
 tags: [payments, ach, nacha, fedwire, pacs008, withholding, usd, plaid, modern-treasury, ach-return]
-source_commit: f9de62452
+source_commit: 730cc8e69
 verify_with:
   - packages/db/prisma/schema/payment.prisma
   - packages/api/src/services/payment-export.ts
@@ -55,8 +55,8 @@ flowchart TD
 ## USD + settlement currency
 
 - USD is a normal ECB currency (`EUR→USD` in the feed); `convertAmount` already cross-rates and short-circuits same-currency — there is **no `USD=1.0` short-circuit** (adding one would mask a genuinely missing rate on a holiday).
-- `resolveSettlementCurrency({ contractorCurrency, perRunOverride? })` — the per-run override wins, else `Contractor.currency`; a blank override is treated as unset. `convertForSettlement` delegates verbatim to `convertAmount` at the payment-date ECB rate (rate 1 same-currency; `null` on a missing rate — never a silently zeroed payout). `_buildExportItems` settles each item before the buffer is built; a missing rate throws `UNPROCESSABLE_CONTENT` (`E.PAYMENT_SETTLEMENT_RATE_UNAVAILABLE`).
-- **FX provenance columns** (`payment.prisma`): `PaymentRunItem.settlementRate Decimal? @db.Decimal(18,8)` + `settlementRateDate DateTime? @db.Date` — the rate and its source date actually applied to a converted payout, so a settled payout's audit can reconstruct the FX used. Nullable/backfill-safe; `_buildExportItems` / `_initiatePayoutForRun` currently discard `settled.rate`/`rateDate`, so wiring the settlement path to stamp these columns is a later change set — this migration adds the columns.
+- `resolveSettlementCurrency({ contractorCurrency, perRunOverride? })` — the per-run override wins, else `Contractor.currency`; a blank override is treated as unset. `convertForSettlement` delegates verbatim to `convertAmount` at the payment-date ECB rate (rate 1 same-currency; `null` on a missing rate — never a silently zeroed payout) and applies a **max-age floor** (`FX_CONVERSION_MAX_AGE_DAYS = 7`): a rate whose observation is older than the floor throws `StaleExchangeRateError` rather than settling at a stale rate. `_buildExportItems` / `_initiatePayoutForRun` settle each item through one `settleItemAmount` helper; both a missing rate and a stale rate surface `UNPROCESSABLE_CONTENT` (`E.PAYMENT_SETTLEMENT_RATE_UNAVAILABLE`) — real money never leaves on a zeroed or silently-stale rate.
+- **FX provenance columns** (`payment.prisma`): `PaymentRunItem.settlementRate Decimal? @db.Decimal(18,8)` + `settlementRateDate DateTime? @db.Date` — the rate and its source date actually applied to a converted payout, so a settled payout's audit can reconstruct the FX used (`round(amountMinor × settlementRate)`). Nullable/backfill-safe. `_buildExportItems` / `_initiatePayoutForRun` now **stamp** these columns from `settled.rate`/`rateDate` via `persistSettlementProvenance`, gated to a real cross-currency conversion (same-currency rate-1 settlements are skipped — nothing to reconstruct).
 
 ## Programmatic ACH + Plaid seams
 
@@ -102,7 +102,7 @@ No dedicated new staff screen in this rail — the payout run + lock/export flow
 - One withholding path for all jurisdictions (SA WHT + US §3406 24% + 1042-S treaty); SA branch preserved verbatim.
 - NACHA is hand-rolled, zero-dependency; Fedwire is `pacs.008` XML, not the retired FAIM flat file.
 - Same-Day ACH ceiling is dated config, not a constant.
-- Settlement FX is a single HALF-UP round via `convertAmount`; a missing rate throws, never zeroes. See [[patterns/money-rounding]].
+- Settlement FX is a single HALF-UP round via `convertAmount`; a missing **or** stale rate (older than the `FX_CONVERSION_MAX_AGE_DAYS = 7` floor) throws, never zeroes; the applied rate + as-of date are persisted onto `PaymentRunItem` for provenance. See [[patterns/money-rounding]].
 - Programmatic ACH + live Plaid are mock-behind-seam, flag-dark; Plaid is advisory fail-open. Bank routing/account are AES-256-GCM encrypted + masked-only; never logged full.
 - Whole surface gated on `module.us-expansion` + US region; programmatic ACH additionally behind `payments.ach-payouts`.
 - ACH returns are ingested through the reachable `payment.ingestAchReturnFile` (R01/R02/R03 → FAILED + reason; NOC/COR → advisory), idempotent + masked-audited; the returned `unmatched` count distinguishes a mis-uploaded / wrong-run file from a clean no-bounce run. The live return-webhook is a documented deferred seam.

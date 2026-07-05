@@ -9,6 +9,7 @@
 
 import { describe, expect, it } from 'vitest';
 
+import { StaleExchangeRateError } from '../exchange-rate';
 import { convertForSettlement, resolveSettlementCurrency } from '../payment-settlement';
 
 /** Stored EUR->USD rate for the fixture (mirrors the ECB daily feed shape). */
@@ -73,5 +74,18 @@ describe('convertForSettlement', () => {
     const db = makeDbStub({});
     const result = await convertForSettlement(db, 100_000, 'EUR', 'USD', paymentDate);
     expect(result).toBeNull();
+  });
+
+  it('throws when the newest rate is older than the settlement max-age floor (no silent stale)', async () => {
+    // Rate dated 30 days before the payment date — a genuine feed outage, not a
+    // weekend/holiday gap — must fail loudly rather than settle at a stale rate.
+    const staleDb = {
+      exchangeRate: {
+        findFirst: async () => ({ rate: EUR_USD, date: new Date('2026-03-12'), source: 'ECB' }),
+      },
+    } as never;
+    await expect(
+      convertForSettlement(staleDb, 100_000, 'EUR', 'USD', paymentDate),
+    ).rejects.toBeInstanceOf(StaleExchangeRateError);
   });
 });

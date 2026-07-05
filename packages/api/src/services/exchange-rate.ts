@@ -20,6 +20,101 @@ const AED_USD_PEG = 3.6725;
 /** SAR is pegged to USD at 3.75 SAR per 1 USD. */
 const SAR_USD_PEG = 3.75;
 
+/**
+ * Prefix marking a rate row copied forward from a prior day during an ECB feed
+ * outage (the fallback in `fetchAndStoreRates`). Encoded as
+ * `CARRIED_FORWARD:<YYYY-MM-DD>` where the suffix is the ORIGINAL observation
+ * date, so a multi-day outage keeps pointing at the last genuine ECB reading and
+ * the staleness stays visible to `getRate`'s max-age floor even though the row's
+ * own `date` is re-stamped to today on each carry-forward.
+ */
+export const CARRIED_FORWARD_SOURCE_PREFIX = 'CARRIED_FORWARD';
+
+/**
+ * Max age (in days) of the underlying rate observation before a settlement or
+ * tax/invoice FX conversion FAILS LOUDLY instead of silently applying a stale
+ * rate. ECB publishes on TARGET business days; the longest legitimate
+ * weekend+holiday gap (Easter, Christmas) is ~4 calendar days, so 7 tolerates
+ * every real gap with margin while still catching a genuine multi-day feed
+ * outage. Display-only conversions pass no floor and are unaffected.
+ */
+export const FX_CONVERSION_MAX_AGE_DAYS = 7;
+
+/**
+ * Thrown by `getRate` when a `maxAgeDays` floor is supplied and the resolved
+ * rate observation is older than that threshold. Settlement / tax conversions
+ * translate this into a caller-facing error rather than paying at a stale rate.
+ */
+export class StaleExchangeRateError extends Error {
+  readonly base: string;
+  readonly target: string;
+  /** Date of the underlying observation (original date for carried-forward rows). */
+  readonly rateDate: Date;
+  /** Date the conversion was requested for. */
+  readonly requestedDate: Date;
+  readonly ageDays: number;
+  readonly maxAgeDays: number;
+
+  constructor(args: {
+    base: string;
+    target: string;
+    rateDate: Date;
+    requestedDate: Date;
+    ageDays: number;
+    maxAgeDays: number;
+  }) {
+    super(
+      `Exchange rate ${args.base}->${args.target} is stale: observation dated ` +
+        `${args.rateDate.toISOString().slice(0, 10)} is ${args.ageDays}d old ` +
+        `(> ${args.maxAgeDays}d max) as of ${args.requestedDate.toISOString().slice(0, 10)}`,
+    );
+    this.name = 'StaleExchangeRateError';
+    this.base = args.base;
+    this.target = args.target;
+    this.rateDate = args.rateDate;
+    this.requestedDate = args.requestedDate;
+    this.ageDays = args.ageDays;
+    this.maxAgeDays = args.maxAgeDays;
+  }
+}
+
+/**
+ * The underlying observation date for a stored rate row. For a carried-forward
+ * row (`CARRIED_FORWARD:<YYYY-MM-DD>`) this is the embedded original date;
+ * otherwise the row's own `date`. Falls back to the row date if the suffix is
+ * unparseable.
+ */
+function observationDate(row: { date: Date; source: string }): Date {
+  if (row.source.startsWith(`${CARRIED_FORWARD_SOURCE_PREFIX}:`)) {
+    const iso = row.source.slice(CARRIED_FORWARD_SOURCE_PREFIX.length + 1);
+    const parsed = new Date(`${iso}T00:00:00.000Z`);
+    if (!Number.isNaN(parsed.getTime())) return parsed;
+  }
+  return row.date;
+}
+
+/** Whole-day age of `rateDate` relative to `asOf`, both floored to UTC midnight. */
+function rateAgeInDays(rateDate: Date, asOf: Date): number {
+  const dayMs = 24 * 60 * 60 * 1000;
+  const rateDay = Date.UTC(
+    rateDate.getUTCFullYear(),
+    rateDate.getUTCMonth(),
+    rateDate.getUTCDate(),
+  );
+  const asOfDay = Date.UTC(asOf.getUTCFullYear(), asOf.getUTCMonth(), asOf.getUTCDate());
+  return Math.floor((asOfDay - rateDay) / dayMs);
+}
+
+/**
+ * Build the `source` value for a carried-forward row, preserving the ORIGINAL
+ * observation date across a multi-day outage: if the prior row was itself
+ * carried forward, its embedded original date is reused.
+ */
+function carriedForwardSource(prev: { date: Date; source: string }): string {
+  if (prev.source.startsWith(`${CARRIED_FORWARD_SOURCE_PREFIX}:`)) return prev.source;
+  return `${CARRIED_FORWARD_SOURCE_PREFIX}:${prev.date.toISOString().slice(0, 10)}`;
+}
+
 // ---------------------------------------------------------------------------
 // ECB XML Parsing
 // ---------------------------------------------------------------------------
@@ -121,13 +216,13 @@ export async function fetchAndStoreRates(
                 target: r.target,
               },
             },
-            update: { rate: r.rate, source: r.source },
+            update: { rate: r.rate, source: carriedForwardSource(r) },
             create: {
               date: today,
               base: 'EUR',
               target: r.target,
               rate: r.rate,
-              source: r.source,
+              source: carriedForwardSource(r),
             },
           }),
         ),
@@ -229,6 +324,13 @@ export async function fetchAndStoreRates(
  * Get exchange rate for a currency pair on a specific date.
  * Falls back to most recent available rate if exact date not found (weekends/holidays).
  *
+ * When `maxAgeDays` is supplied, the resolved observation must be no older than
+ * that many days relative to `date` — otherwise a {@link StaleExchangeRateError}
+ * is thrown rather than silently returning a stale rate. Carried-forward rows
+ * are measured from their ORIGINAL observation date (not the re-stamped row
+ * date), so a multi-day ECB outage is caught even though a fresh row is written
+ * each day. Omit `maxAgeDays` for display-only reads that tolerate any age.
+ *
  * Pass **`ctx.db`** (regional tenant client) from tenant routes.
  */
 export async function getRate(
@@ -236,6 +338,7 @@ export async function getRate(
   base: string,
   target: string,
   date: Date,
+  maxAgeDays?: number,
 ): Promise<{
   rate: number;
   date: Date;
@@ -247,6 +350,22 @@ export async function getRate(
   });
 
   if (!direct) return null;
+
+  if (maxAgeDays !== undefined) {
+    const observedOn = observationDate(direct);
+    const ageDays = rateAgeInDays(observedOn, date);
+    if (ageDays > maxAgeDays) {
+      throw new StaleExchangeRateError({
+        base,
+        target,
+        rateDate: observedOn,
+        requestedDate: date,
+        ageDays,
+        maxAgeDays,
+      });
+    }
+  }
+
   return {
     rate: Number(direct.rate),
     date: direct.date,
@@ -271,6 +390,7 @@ export async function convertAmount(
   fromCurrency: string,
   toCurrency: string,
   date?: Date,
+  maxAgeDays?: number,
 ): Promise<{
   amountMinor: number;
   rate: number;
@@ -286,17 +406,18 @@ export async function convertAmount(
 
   const rateDate = date ?? new Date();
 
-  // Convert through EUR as base
+  // Convert through EUR as base. `maxAgeDays` (when set) makes each leg throw a
+  // StaleExchangeRateError rather than convert at a stale rate.
   let fromToEur = 1; // If from is EUR, rate is 1
   if (fromCurrency !== 'EUR') {
-    const fromRate = await getRate(db, 'EUR', fromCurrency, rateDate);
+    const fromRate = await getRate(db, 'EUR', fromCurrency, rateDate, maxAgeDays);
     if (!fromRate) return null;
     fromToEur = 1 / fromRate.rate; // Invert: EUR per 1 fromCurrency
   }
 
   let eurToTarget = 1; // If target is EUR, rate is 1
   if (toCurrency !== 'EUR') {
-    const toRate = await getRate(db, 'EUR', toCurrency, rateDate);
+    const toRate = await getRate(db, 'EUR', toCurrency, rateDate, maxAgeDays);
     if (!toRate) return null;
     eurToTarget = toRate.rate; // EUR to target directly
   }
