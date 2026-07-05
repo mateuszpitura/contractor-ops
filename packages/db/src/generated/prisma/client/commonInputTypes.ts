@@ -1265,6 +1265,23 @@ export type EnumEmploymentStatusNullableWithAggregatesFilter<$PrismaModel = neve
   _max?: Prisma.NestedEnumEmploymentStatusNullableFilter<$PrismaModel>
 }
 
+export type EnumStatutoryCertificateStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.StatutoryCertificateStatus | Prisma.EnumStatutoryCertificateStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.StatutoryCertificateStatus[] | Prisma.ListEnumStatutoryCertificateStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.StatutoryCertificateStatus[] | Prisma.ListEnumStatutoryCertificateStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumStatutoryCertificateStatusFilter<$PrismaModel> | $Enums.StatutoryCertificateStatus
+}
+
+export type EnumStatutoryCertificateStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.StatutoryCertificateStatus | Prisma.EnumStatutoryCertificateStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.StatutoryCertificateStatus[] | Prisma.ListEnumStatutoryCertificateStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.StatutoryCertificateStatus[] | Prisma.ListEnumStatutoryCertificateStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumStatutoryCertificateStatusWithAggregatesFilter<$PrismaModel> | $Enums.StatutoryCertificateStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumStatutoryCertificateStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumStatutoryCertificateStatusFilter<$PrismaModel>
+}
+
 export type EnumEquipmentTypeFilter<$PrismaModel = never> = {
   equals?: $Enums.EquipmentType | Prisma.EnumEquipmentTypeFieldRefInput<$PrismaModel>
   in?: $Enums.EquipmentType[] | Prisma.ListEnumEquipmentTypeFieldRefInput<$PrismaModel>
@@ -3945,6 +3962,23 @@ export type NestedEnumEmploymentStatusNullableWithAggregatesFilter<$PrismaModel 
   _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
   _min?: Prisma.NestedEnumEmploymentStatusNullableFilter<$PrismaModel>
   _max?: Prisma.NestedEnumEmploymentStatusNullableFilter<$PrismaModel>
+}
+
+export type NestedEnumStatutoryCertificateStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.StatutoryCertificateStatus | Prisma.EnumStatutoryCertificateStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.StatutoryCertificateStatus[] | Prisma.ListEnumStatutoryCertificateStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.StatutoryCertificateStatus[] | Prisma.ListEnumStatutoryCertificateStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumStatutoryCertificateStatusFilter<$PrismaModel> | $Enums.StatutoryCertificateStatus
+}
+
+export type NestedEnumStatutoryCertificateStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.StatutoryCertificateStatus | Prisma.EnumStatutoryCertificateStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.StatutoryCertificateStatus[] | Prisma.ListEnumStatutoryCertificateStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.StatutoryCertificateStatus[] | Prisma.ListEnumStatutoryCertificateStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumStatutoryCertificateStatusWithAggregatesFilter<$PrismaModel> | $Enums.StatutoryCertificateStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumStatutoryCertificateStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumStatutoryCertificateStatusFilter<$PrismaModel>
 }
 
 export type NestedEnumEquipmentTypeFilter<$PrismaModel = never> = {

@@ -34,6 +34,12 @@ model Worker {
   // 1:1 jurisdiction-correct personnel file ("akta osobowe") for employees.
   personnelFile   PersonnelFile?
 
+  // Employee on/offboarding runs + IdP deprovisioning runs keyed to this worker
+  // (present when workerType = EMPLOYEE). Reciprocal of the nullable workerId FK
+  // on WorkflowRun and DeprovisioningRun.
+  workflowRuns       WorkflowRun[]
+  deprovisioningRuns DeprovisioningRun[]
+
   @@index([organizationId])
   @@index([organizationId, workerType])
 }

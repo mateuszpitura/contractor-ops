@@ -709,6 +709,11 @@ export type ContractorAssignmentSumOrderByAggregateInput = {
   allocationPercent?: Prisma.SortOrder
 }
 
+export type ContractorAssignmentNullableScalarRelationFilter = {
+  is?: Prisma.ContractorAssignmentWhereInput | null
+  isNot?: Prisma.ContractorAssignmentWhereInput | null
+}
+
 export type ContractorAssignmentCreateNestedOneWithoutClassificationAssessmentsInput = {
   create?: Prisma.XOR<Prisma.ContractorAssignmentCreateWithoutClassificationAssessmentsInput, Prisma.ContractorAssignmentUncheckedCreateWithoutClassificationAssessmentsInput>
   connectOrCreate?: Prisma.ContractorAssignmentCreateOrConnectWithoutClassificationAssessmentsInput
@@ -845,10 +850,12 @@ export type ContractorAssignmentCreateNestedOneWithoutDeprovisioningRunsInput = 
   connect?: Prisma.ContractorAssignmentWhereUniqueInput
 }
 
-export type ContractorAssignmentUpdateOneRequiredWithoutDeprovisioningRunsNestedInput = {
+export type ContractorAssignmentUpdateOneWithoutDeprovisioningRunsNestedInput = {
   create?: Prisma.XOR<Prisma.ContractorAssignmentCreateWithoutDeprovisioningRunsInput, Prisma.ContractorAssignmentUncheckedCreateWithoutDeprovisioningRunsInput>
   connectOrCreate?: Prisma.ContractorAssignmentCreateOrConnectWithoutDeprovisioningRunsInput
   upsert?: Prisma.ContractorAssignmentUpsertWithoutDeprovisioningRunsInput
+  disconnect?: Prisma.ContractorAssignmentWhereInput | boolean
+  delete?: Prisma.ContractorAssignmentWhereInput | boolean
   connect?: Prisma.ContractorAssignmentWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.ContractorAssignmentUpdateToOneWithWhereWithoutDeprovisioningRunsInput, Prisma.ContractorAssignmentUpdateWithoutDeprovisioningRunsInput>, Prisma.ContractorAssignmentUncheckedUpdateWithoutDeprovisioningRunsInput>
 }

@@ -320,7 +320,9 @@ export const EntityType = {
   EQUIPMENT: 'EQUIPMENT',
   SHIPMENT: 'SHIPMENT',
   USER: 'USER',
-  RETURN_REQUEST: 'RETURN_REQUEST'
+  RETURN_REQUEST: 'RETURN_REQUEST',
+  WORKER: 'WORKER',
+  EMPLOYEE: 'EMPLOYEE'
 } as const
 
 export type EntityType = (typeof EntityType)[keyof typeof EntityType]
@@ -500,6 +502,15 @@ export const EmploymentStatus = {
 } as const
 
 export type EmploymentStatus = (typeof EmploymentStatus)[keyof typeof EmploymentStatus]
+
+
+export const StatutoryCertificateStatus = {
+  DRAFT: 'DRAFT',
+  ISSUED: 'ISSUED',
+  VOID: 'VOID'
+} as const
+
+export type StatutoryCertificateStatus = (typeof StatutoryCertificateStatus)[keyof typeof StatutoryCertificateStatus]
 
 
 export const EquipmentType = {

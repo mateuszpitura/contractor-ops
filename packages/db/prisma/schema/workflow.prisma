@@ -10,6 +10,11 @@ model WorkflowTemplate {
   version             Int
   status              WorkflowTemplateStatus @default(DRAFT)
   appliesToEntityType EntityType
+  // Per-market employee on/offboarding seeds carry the ISO jurisdiction and a
+  // stable seed identity so the boot upsert is idempotent. Both stay null for
+  // org-authored (non-seeded) templates.
+  jurisdiction        String?
+  seedKey             String?
   createdByUserId     String
   createdAt           DateTime               @default(now())
   updatedAt           DateTime               @updatedAt
@@ -19,6 +24,7 @@ model WorkflowTemplate {
   tasks WorkflowTaskTemplate[]
   runs  WorkflowRun[]
 
+  @@unique([organizationId, jurisdiction, type, seedKey])
   @@index([organizationId])
   @@index([organizationId, type, status])
 }
@@ -110,6 +116,10 @@ model WorkflowRun {
   entityId             String
   contractorId         String?
   contractId           String?
+  // Employee subject for a worker-keyed on/offboarding run (mutually exclusive
+  // with contractorId; enforced by a discriminated-union input + a defence-in-
+  // depth CHECK). Null for contractor runs.
+  workerId             String?
   status               WorkflowRunStatus @default(NOT_STARTED)
   startedByUserId      String
   startedAt            DateTime          @default(now())
@@ -131,6 +141,7 @@ model WorkflowRun {
   workflowTemplate WorkflowTemplate @relation(fields: [workflowTemplateId], references: [id])
   contractor       Contractor?      @relation(fields: [contractorId], references: [id])
   contract         Contract?        @relation(fields: [contractId], references: [id])
+  worker           Worker?          @relation(fields: [workerId], references: [id])
   startedBy        User             @relation("WorkflowRunStarter", fields: [startedByUserId], references: [id])
 
   tasks       WorkflowTaskRun[]
@@ -142,6 +153,7 @@ model WorkflowRun {
   @@index([organizationId])
   @@index([organizationId, status])
   @@index([organizationId, contractorId])
+  @@index([organizationId, workerId])
   @@index([organizationId, entityType, entityId])
   @@index([organizationId, dueAt])
 }

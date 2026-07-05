@@ -127,6 +127,7 @@ model Organization {
   form1099Nec                    Form1099Nec[]
   form1042s                      Form1042S[]
   form1099kTrackerStates         Form1099KTrackerState[]
+  statutoryCertificates          StatutoryCertificate[]
   irisSubmissions                IrisSubmission[]
   irisAcks                       IrisAck[]
   apiKeys                        OrganizationApiKey[]

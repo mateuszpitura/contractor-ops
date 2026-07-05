@@ -296,6 +296,8 @@ enum EntityType {
   SHIPMENT
   USER
   RETURN_REQUEST
+  WORKER
+  EMPLOYEE
 }
 
 enum DocumentLinkRole {

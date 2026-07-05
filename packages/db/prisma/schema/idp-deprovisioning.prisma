@@ -8,23 +8,30 @@
 model DeprovisioningRun {
   id                String                  @id @default(cuid())
   organizationId    String // tenantBound — Phase 70 lint:schema requirement
-  contractorId      String
-  assignmentId      String
+  // Contractor/assignment FKs are nullable so an employee run keys off workerId
+  // instead. Exactly one subject (contractor XOR worker) is enforced by a
+  // discriminated-union input + a defence-in-depth CHECK; DROP NOT NULL is
+  // non-destructive — existing contractor rows keep their FKs.
+  contractorId      String?
+  assignmentId      String?
+  workerId          String?
   status            DeprovisioningRunStatus @default(PENDING)
   startedAt         DateTime                @default(now())
   finishedAt        DateTime?
   triggeredByUserId String
   idempotencyKey    String // saga-start client-supplied dedup key; uniqueness is per-org (@@unique below)
 
-  organization    Organization         @relation(fields: [organizationId], references: [id])
-  contractor      Contractor           @relation(fields: [contractorId], references: [id])
-  assignment      ContractorAssignment @relation(fields: [assignmentId], references: [id])
-  triggeredByUser User                 @relation("UserTriggeredDeprovisioningRuns", fields: [triggeredByUserId], references: [id])
+  organization    Organization          @relation(fields: [organizationId], references: [id])
+  contractor      Contractor?           @relation(fields: [contractorId], references: [id])
+  assignment      ContractorAssignment? @relation(fields: [assignmentId], references: [id])
+  worker          Worker?               @relation(fields: [workerId], references: [id])
+  triggeredByUser User                  @relation("UserTriggeredDeprovisioningRuns", fields: [triggeredByUserId], references: [id])
   steps           DeprovisioningStep[]
 
   @@unique([organizationId, idempotencyKey]) // per-org dedup: prevents cross-tenant key squatting (WR-1)
   @@index([organizationId, status]) // admin reconcile queue: WHERE status = PARTIAL_FAILURE
   @@index([organizationId, assignmentId]) // contractor-profile audit lookup
+  @@index([organizationId, workerId]) // employee-profile audit lookup
   @@index([startedAt]) // newest-first audit listing
 }
 

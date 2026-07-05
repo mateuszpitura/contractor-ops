@@ -253,6 +253,11 @@ export type PeppolCapabilityCache = Prisma.PeppolCapabilityCacheModel
  */
 export type EmployeeProfile = Prisma.EmployeeProfileModel
 /**
+ * Model StatutoryCertificate
+ * 
+ */
+export type StatutoryCertificate = Prisma.StatutoryCertificateModel
+/**
  * Model Equipment
  * 
  */
