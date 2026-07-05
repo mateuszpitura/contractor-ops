@@ -9814,5 +9814,33 @@
       "generated": "Working-time record generated.",
       "regenerated": "Working-time record regenerated."
     }
+  },
+  "PayrollExport": {
+    "pageTitle": "Payroll export",
+    "pageDescription": "Export employee master data to your payroll system for each market.",
+    "empty": "No payroll targets are available yet.",
+    "employeeIds": {
+      "label": "Employees to export",
+      "placeholder": "worker-id-1\nworker-id-2",
+      "hint": "Enter one worker ID per line, or separate them with spaces or commas."
+    },
+    "targets": {
+      "heading": "Export targets",
+      "notEnabled": "Not enabled for your organization yet."
+    },
+    "actions": {
+      "exportCsv": "Export CSV",
+      "exportXml": "Export XML",
+      "exporting": "Exporting…"
+    },
+    "toasts": {
+      "exported": "Export downloaded.",
+      "exportedWithWarnings": "Export downloaded with {count} warning(s)."
+    },
+    "errors": {
+      "load": "Could not load payroll targets.",
+      "retry": "Try again",
+      "generic": "Something went wrong. Please try again."
+    }
   }
 }

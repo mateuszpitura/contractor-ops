@@ -725,6 +725,9 @@ importers:
       '@contractor-ops/offboarding-templates':
         specifier: workspace:*
         version: link:../offboarding-templates
+      '@contractor-ops/payroll':
+        specifier: workspace:*
+        version: link:../payroll
       '@contractor-ops/secrets':
         specifier: workspace:*
         version: link:../secrets

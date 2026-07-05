@@ -85,6 +85,7 @@ import { workflowRolesRouter, workflowRouter } from './routers/workflow/index';
 import { employeeTimeRouter } from './routers/workforce/employee-time';
 import { ewidencjaRouter } from './routers/workforce/ewidencja';
 import { leaveRouter } from './routers/workforce/leave';
+import { payrollExportRouter } from './routers/workforce/payroll-export-router';
 
 /**
  * Root tRPC router merging all sub-routers.
@@ -191,6 +192,7 @@ const workforceRouters = {
   leave: leaveRouter, // leave: leave requests (approval chain), direct sick, leave-type/blackout config, team calendar
   employeeTime: employeeTimeRouter, // employeeTime: day-grain statutory time records + synchronous WT-limit check
   ewidencja: ewidencjaRouter, // ewidencja: PL KP §149 working-time register generate + read (INSERT-only versions)
+  payrollExport: payrollExportRouter, // payrollExport: per-market payroll export adapters (file-export + Gusto/QuickBooks native), each dark behind its payroll.* flag
 } as const;
 
 const conditionalWorkforceRouters = isWorkforceRegistered()
