@@ -3776,43 +3776,43 @@
   },
   "Compliance": {
     "paymentBlockModal": {
-      "title": "[de] Compliance EXPIRED — payment blocked",
-      "subtitle": "[de] {contractorCount, plural, one {# contractor} other {# contractors}}, {itemCount, plural, one {# expired document} other {# expired documents}} prevent this payment run.",
-      "noReasonsTitle": "[de] Payment blocked",
-      "noReasonsDescription": "[de] The payment run cannot proceed. Contact the compliance team for details.",
-      "itemCountSuffix": "[de] {count, plural, one {# document} other {# documents}}",
-      "expiredOn": "[de] expired on {date} ({tz})",
-      "deepLinkAriaLabel": "[de] Open {label} compliance details",
-      "close": "[de] Close"
+      "title": "Compliance ABGELAUFEN — Zahlung gesperrt",
+      "subtitle": "{contractorCount, plural, one {# Auftragnehmer} other {# Auftragnehmer}}, {itemCount, plural, one {# abgelaufenes Dokument} other {# abgelaufene Dokumente}} verhindern diesen Zahlungslauf.",
+      "noReasonsTitle": "Zahlung gesperrt",
+      "noReasonsDescription": "Der Zahlungslauf kann nicht fortgesetzt werden. Wenden Sie sich für Details an das Compliance-Team.",
+      "itemCountSuffix": "{count, plural, one {# Dokument} other {# Dokumente}}",
+      "expiredOn": "abgelaufen am {date} ({tz})",
+      "deepLinkAriaLabel": "Compliance-Details für {label} öffnen",
+      "close": "Schließen"
     },
     "documentType": {
       "compliance-policy-engine": {
         "uk": {
-          "right_to_work": "[de] UK Right-to-Work share code",
-          "utr": "[de] HMRC UTR",
-          "business_registration": "[de] Companies House registration",
-          "sds": "[de] Status Determination Statement",
+          "right_to_work": "UK Right-to-Work-Share-Code",
+          "utr": "HMRC UTR",
+          "business_registration": "Companies-House-Registrierung",
+          "sds": "Status Determination Statement (SDS)",
           "ip_assignment": "UK Übertragung geistigen Eigentums"
         },
         "de": {
-          "a1": "[de] A1-Bescheinigung",
-          "aufenthaltstitel": "[de] Aufenthaltstitel residence permit",
-          "eight_b_estg": "[de] §48b EStG Freistellungsbescheinigung",
+          "a1": "A1-Bescheinigung",
+          "aufenthaltstitel": "Aufenthaltstitel",
+          "eight_b_estg": "§48b EStG Freistellungsbescheinigung",
           "werkvertrag_ip": "DE Werkvertrag — Einräumung von Nutzungsrechten"
         },
         "pl": {
-          "zus_a1": "[de] ZUS A1",
-          "udt": "[de] UDT certification",
+          "zus_a1": "ZUS A1",
+          "udt": "UDT-Zertifizierung",
           "ip_assignment": "PL — Übertragung wirtschaftlicher Urheberrechte"
         },
         "ksa": {
-          "iqama": "[de] Iqama residency permit",
-          "work_permit_qiwa": "[de] Work permit + Qiwa authorisation",
+          "iqama": "Iqama-Aufenthaltsgenehmigung",
+          "work_permit_qiwa": "Arbeitserlaubnis + Qiwa-Autorisierung",
           "ip_assignment": "KSA — Übertragung wirtschaftlicher Rechte"
         },
         "uae": {
-          "emirates_id": "[de] Emirates ID",
-          "free_zone_license": "[de] Free-zone trade license",
+          "emirates_id": "Emirates ID",
+          "free_zone_license": "Freihandelszonen-Gewerbelizenz",
           "ip_assignment": "UAE — Verfügung über wirtschaftliche Rechte"
         },
         "us": {

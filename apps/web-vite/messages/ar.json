@@ -3776,43 +3776,43 @@
   },
   "Compliance": {
     "paymentBlockModal": {
-      "title": "[ar] Compliance EXPIRED — payment blocked",
-      "subtitle": "[ar] {contractorCount, plural, one {# contractor} other {# contractors}}, {itemCount, plural, one {# expired document} other {# expired documents}} prevent this payment run.",
-      "noReasonsTitle": "[ar] Payment blocked",
-      "noReasonsDescription": "[ar] The payment run cannot proceed. Contact the compliance team for details.",
-      "itemCountSuffix": "[ar] {count, plural, one {# document} other {# documents}}",
-      "expiredOn": "[ar] expired on {date} ({tz})",
-      "deepLinkAriaLabel": "[ar] Open {label} compliance details",
-      "close": "[ar] Close"
+      "title": "الامتثال منتهي الصلاحية — تم حظر الدفع",
+      "subtitle": "{contractorCount, plural, zero {# مقاول} one {مقاول واحد} two {مقاولان} few {# مقاولين} many {# مقاولًا} other {# مقاول}}، و{itemCount, plural, zero {# مستند منتهي الصلاحية} one {مستند واحد منتهي الصلاحية} two {مستندان منتهيا الصلاحية} few {# مستندات منتهية الصلاحية} many {# مستندًا منتهي الصلاحية} other {# مستند منتهي الصلاحية}} تمنع تنفيذ عملية الدفع هذه.",
+      "noReasonsTitle": "تم حظر الدفع",
+      "noReasonsDescription": "لا يمكن متابعة عملية الدفع. اتصل بفريق الامتثال للحصول على التفاصيل.",
+      "itemCountSuffix": "{count, plural, zero {# مستند} one {مستند واحد} two {مستندان} few {# مستندات} many {# مستندًا} other {# مستند}}",
+      "expiredOn": "انتهت في {date} ({tz})",
+      "deepLinkAriaLabel": "فتح تفاصيل امتثال {label}",
+      "close": "إغلاق"
     },
     "documentType": {
       "compliance-policy-engine": {
         "uk": {
-          "right_to_work": "[ar] UK Right-to-Work share code",
-          "utr": "[ar] HMRC UTR",
-          "business_registration": "[ar] Companies House registration",
-          "sds": "[ar] Status Determination Statement",
+          "right_to_work": "رمز مشاركة الحق في العمل (المملكة المتحدة)",
+          "utr": "HMRC UTR",
+          "business_registration": "التسجيل في Companies House",
+          "sds": "بيان تحديد الحالة (SDS)",
           "ip_assignment": "UK — تنازل عن الملكية الفكرية"
         },
         "de": {
-          "a1": "[ar] A1-Bescheinigung",
-          "aufenthaltstitel": "[ar] Aufenthaltstitel residence permit",
-          "eight_b_estg": "[ar] §48b EStG Freistellungsbescheinigung",
+          "a1": "شهادة A1",
+          "aufenthaltstitel": "تصريح الإقامة (Aufenthaltstitel)",
+          "eight_b_estg": "شهادة الإعفاء §48b EStG",
           "werkvertrag_ip": "DE Werkvertrag — منح حقوق الاستخدام"
         },
         "pl": {
-          "zus_a1": "[ar] ZUS A1",
-          "udt": "[ar] UDT certification",
+          "zus_a1": "ZUS A1",
+          "udt": "شهادة UDT",
           "ip_assignment": "PL — التنازل عن حقوق النشر الاقتصادية"
         },
         "ksa": {
-          "iqama": "[ar] Iqama residency permit",
-          "work_permit_qiwa": "[ar] Work permit + Qiwa authorisation",
+          "iqama": "تصريح الإقامة (الإقامة)",
+          "work_permit_qiwa": "تصريح العمل + تفويض قوى (Qiwa)",
           "ip_assignment": "KSA — نقل الحقوق الاقتصادية"
         },
         "uae": {
-          "emirates_id": "[ar] Emirates ID",
-          "free_zone_license": "[ar] Free-zone trade license",
+          "emirates_id": "الهوية الإماراتية",
+          "free_zone_license": "رخصة تجارية للمنطقة الحرة",
           "ip_assignment": "UAE — التصرف في الحقوق الاقتصادية"
         },
         "us": {

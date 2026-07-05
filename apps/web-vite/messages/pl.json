@@ -3776,43 +3776,43 @@
   },
   "Compliance": {
     "paymentBlockModal": {
-      "title": "[pl] Compliance EXPIRED — payment blocked",
-      "subtitle": "[pl] {contractorCount, plural, one {# contractor} other {# contractors}}, {itemCount, plural, one {# expired document} other {# expired documents}} prevent this payment run.",
-      "noReasonsTitle": "[pl] Payment blocked",
-      "noReasonsDescription": "[pl] The payment run cannot proceed. Contact the compliance team for details.",
-      "itemCountSuffix": "[pl] {count, plural, one {# document} other {# documents}}",
-      "expiredOn": "[pl] expired on {date} ({tz})",
-      "deepLinkAriaLabel": "[pl] Open {label} compliance details",
-      "close": "[pl] Close"
+      "title": "Zgodność WYGASŁA — płatność zablokowana",
+      "subtitle": "{contractorCount, plural, one {# wykonawca} few {# wykonawców} many {# wykonawców} other {# wykonawcy}}, {itemCount, plural, one {# wygasły dokument} few {# wygasłe dokumenty} many {# wygasłych dokumentów} other {# wygasłego dokumentu}} blokują ten przebieg płatności.",
+      "noReasonsTitle": "Płatność zablokowana",
+      "noReasonsDescription": "Nie można kontynuować przebiegu płatności. Skontaktuj się z zespołem ds. zgodności, aby uzyskać szczegóły.",
+      "itemCountSuffix": "{count, plural, one {# dokument} few {# dokumenty} many {# dokumentów} other {# dokumentu}}",
+      "expiredOn": "wygasło {date} ({tz})",
+      "deepLinkAriaLabel": "Otwórz szczegóły zgodności dla {label}",
+      "close": "Zamknij"
     },
     "documentType": {
       "compliance-policy-engine": {
         "uk": {
-          "right_to_work": "[pl] UK Right-to-Work share code",
-          "utr": "[pl] HMRC UTR",
-          "business_registration": "[pl] Companies House registration",
-          "sds": "[pl] Status Determination Statement",
+          "right_to_work": "Kod udostępniania Right-to-Work (UK)",
+          "utr": "HMRC UTR",
+          "business_registration": "Rejestracja w Companies House",
+          "sds": "Status Determination Statement (SDS)",
           "ip_assignment": "Przeniesienie praw własności intelektualnej (UK)"
         },
         "de": {
-          "a1": "[pl] A1-Bescheinigung",
-          "aufenthaltstitel": "[pl] Aufenthaltstitel residence permit",
-          "eight_b_estg": "[pl] §48b EStG Freistellungsbescheinigung",
+          "a1": "Zaświadczenie A1",
+          "aufenthaltstitel": "Aufenthaltstitel (tytuł pobytowy)",
+          "eight_b_estg": "Zaświadczenie o zwolnieniu §48b EStG",
           "werkvertrag_ip": "DE Werkvertrag — udzielenie praw do korzystania"
         },
         "pl": {
-          "zus_a1": "[pl] ZUS A1",
-          "udt": "[pl] UDT certification",
+          "zus_a1": "ZUS A1",
+          "udt": "Certyfikacja UDT",
           "ip_assignment": "PL — Przeniesienie autorskich praw majątkowych"
         },
         "ksa": {
-          "iqama": "[pl] Iqama residency permit",
-          "work_permit_qiwa": "[pl] Work permit + Qiwa authorisation",
+          "iqama": "Iqama (zezwolenie na pobyt)",
+          "work_permit_qiwa": "Zezwolenie na pracę + autoryzacja Qiwa",
           "ip_assignment": "KSA — przeniesienie praw majątkowych"
         },
         "uae": {
-          "emirates_id": "[pl] Emirates ID",
-          "free_zone_license": "[pl] Free-zone trade license",
+          "emirates_id": "Emirates ID",
+          "free_zone_license": "Licencja handlowa strefy wolnocłowej",
           "ip_assignment": "UAE — rozporządzenie prawami majątkowymi"
         },
         "us": {
