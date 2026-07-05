@@ -707,6 +707,9 @@ importers:
       '@contractor-ops/integrations':
         specifier: workspace:*
         version: link:../integrations
+      '@contractor-ops/iris':
+        specifier: workspace:*
+        version: link:../iris
       '@contractor-ops/logger':
         specifier: workspace:*
         version: link:../logger
@@ -761,6 +764,9 @@ importers:
       exceljs:
         specifier: ^4.4.0
         version: 4.4.0
+      fast-xml-parser:
+        specifier: 5.7.3
+        version: 5.7.3
       file-type:
         specifier: ^22.0.1
         version: 22.0.1

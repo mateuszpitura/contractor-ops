@@ -122,9 +122,15 @@ export interface IrisValidationError {
  * Result of validating an IRIS XML document against the bundled IRS XSD.
  *
  * Mirrors the packages/einvoice layer-1 report shape: `VALID` only when the
- * instance round-trips the schema with zero errors.
+ * instance round-trips the schema with zero errors; `INVALID` when the schema
+ * genuinely rejects the instance. `BUNDLE_UNAVAILABLE` is a distinct,
+ * non-throwing outcome for the pre-enablement state where the IRS IRIS XSD
+ * bundle has not been placed yet (IRS SOR login required — see
+ * src/schema-bundle/README.md): validation could not run, so the instance is
+ * neither proven valid nor genuinely rejected. Callers MUST treat
+ * `BUNDLE_UNAVAILABLE` as "do not file" (validity unproven), never as VALID.
  */
 export interface IrisValidationReport {
-  status: 'VALID' | 'INVALID';
+  status: 'VALID' | 'INVALID' | 'BUNDLE_UNAVAILABLE';
   errors: IrisValidationError[];
 }

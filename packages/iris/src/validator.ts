@@ -95,8 +95,12 @@ async function validateAgainstBundle(xml: string, form: IrisForm): Promise<IrisV
       { bundleDir: getBundleDir() },
       'IRIS validator: no XSD bundle present — place the IRS IRIS schemas at the human-action checkpoint',
     );
+    // Pre-enablement state (bundle not downloaded from IRS SOR yet): report a
+    // distinct, non-throwing BUNDLE_UNAVAILABLE so a caller never confuses
+    // "could not validate" with a genuine schema rejection. Nothing files on
+    // this outcome. The moment the .xsd files land, validation runs for real.
     return {
-      status: 'INVALID',
+      status: 'BUNDLE_UNAVAILABLE',
       errors: [
         {
           code: 'XSD-BUNDLE-MISSING',
