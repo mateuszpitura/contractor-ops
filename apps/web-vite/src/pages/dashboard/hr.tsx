@@ -2,7 +2,10 @@ import { Suspense } from 'react';
 import { Navigate } from 'react-router-dom';
 
 import { HrDashboardHeader } from '../../components/hr-dashboard/hr-dashboard-header.js';
+import { HrDocExpirySection } from '../../components/hr-dashboard/hr-doc-expiry-section.js';
 import { HrHeadcountSection } from '../../components/hr-dashboard/hr-headcount-section.js';
+import { HrNationalisationSection } from '../../components/hr-dashboard/hr-nationalisation-section.js';
+import { HrProbationSection } from '../../components/hr-dashboard/hr-probation-section.js';
 import { HrUtilizationSection } from '../../components/hr-dashboard/hr-utilization-section.js';
 import { useFlag } from '../../components/layout/feature-flag-context.js';
 import { AnimateIn } from '../../components/shared/animate-in.js';
@@ -49,6 +52,18 @@ function HrDashboardPageContent() {
 
       <AnimateIn delay={3}>
         <HrUtilizationSection />
+      </AnimateIn>
+
+      <AnimateIn delay={4}>
+        <HrDocExpirySection />
+      </AnimateIn>
+
+      <AnimateIn delay={5}>
+        <HrProbationSection />
+      </AnimateIn>
+
+      <AnimateIn delay={5}>
+        <HrNationalisationSection />
       </AnimateIn>
     </div>
   );
