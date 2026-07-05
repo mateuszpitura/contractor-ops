@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v7.0
 milestone_name: GTM Expansion
 status: ready_to_plan
-stopped_at: Phase 98 complete (8/12) — ready to discuss Phase 99
-last_updated: 2026-07-05T22:13:10.657Z
+stopped_at: Phase 92 complete (12/16) — ready to discuss Phase 93
+last_updated: 2026-07-05T22:38:29.057Z
 last_activity: 2026-07-01 -- Phase 93 planning complete
 progress:
   total_phases: 20
   completed_phases: 15
   total_plans: 176
-  completed_plans: 161
+  completed_plans: 165
   percent: 75
 ---
 
@@ -25,11 +25,11 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-07 — v7.0 GTM Expansion started; v6.0 shipped 2026-06-07)
 
 **Core value:** The invoice-to-payment flow must work end-to-end: invoice arrives, gets matched to contract, routed through approval, and batched for payment — with full audit trail and zero manual tracking in spreadsheets.
-**Current focus:** Phase 99 — theme c api keys scopes rate limiting
+**Current focus:** Phase 93 — theme b employee on offboarding
 
 ## Current Position
 
-Phase: 99
+Phase: 93
 Plan: Not started
 Status: Ready to plan
 Last activity: 2026-07-05

@@ -106,15 +106,15 @@ Requirements for the v7.0 milestone. Each maps to exactly one phase (filled by r
 
 ### Theme B — Leave Management (LEAVE)
 
-- [ ] **LEAVE-01**: Leave-balance engine per market — PL 20/26-day rule, DE BUrlG minimum + per-contract overrides, UK 5.6-week statutory, US per-state, UAE/SA per-MOL/MHRSD
-- [ ] **LEAVE-02**: Leave-request workflow on the v1.0 approval-chain engine — per-org leave types (vacation/sick/parental/bereavement/study/etc.), blackout periods, manual sick-leave entry (e-ZLA/eAU auto-pull deferred to v7.5)
-- [ ] **LEAVE-03**: Team calendar — month/quarter view, capacity heatmap, conflict warnings on overlapping same-team requests
+- [x] **LEAVE-01**: Leave-balance engine per market — PL 20/26-day rule, DE BUrlG minimum + per-contract overrides, UK 5.6-week statutory, US per-state, UAE/SA per-MOL/MHRSD
+- [x] **LEAVE-02**: Leave-request workflow on the v1.0 approval-chain engine — per-org leave types (vacation/sick/parental/bereavement/study/etc.), blackout periods, manual sick-leave entry (e-ZLA/eAU auto-pull deferred to v7.5)
+- [x] **LEAVE-03**: Team calendar — month/quarter view, capacity heatmap, conflict warnings on overlapping same-team requests
 
 ### Theme B — KP-Grade Time Tracking (TIME-EMP)
 
-- [ ] **TIME-EMP-01**: Employee time tracking distinct from v2.0 B2B time — captures overtime (PL 50/100%, DE §3 ArbZG ceiling, UK WTR opt-out flag), night-shift premium, weekend/holiday work
-- [ ] **TIME-EMP-02**: Per-jurisdiction working-time-limit alerts (PL 8h/day 48h/week, DE ArbZG, UK 48h WTR opt-out, US FLSA OT >40h/week non-exempt)
-- [ ] **TIME-EMP-03**: PL "ewidencja czasu pracy" report per KP §149 with 3-year audit-immutable archive
+- [x] **TIME-EMP-01**: Employee time tracking distinct from v2.0 B2B time — captures overtime (PL 50/100%, DE §3 ArbZG ceiling, UK WTR opt-out flag), night-shift premium, weekend/holiday work
+- [x] **TIME-EMP-02**: Per-jurisdiction working-time-limit alerts (PL 8h/day 48h/week, DE ArbZG, UK 48h WTR opt-out, US FLSA OT >40h/week non-exempt)
+- [x] **TIME-EMP-03**: PL "ewidencja czasu pracy" report per KP §149 with 3-year audit-immutable archive
 
 ### Theme B — Employee Onboarding / Offboarding (EMP-ON / EMP-OFF)
 
@@ -298,12 +298,12 @@ Which phases cover which requirements. Phase numbering continues from v6.0 (ende
 | AKTA-02 | Phase 91 | Pending |
 | AKTA-03 | Phase 91 | Pending |
 | AKTA-04 | Phase 91 | Pending |
-| LEAVE-01 | Phase 92 | Pending |
-| LEAVE-02 | Phase 92 | Pending |
-| LEAVE-03 | Phase 92 | Pending |
-| TIME-EMP-01 | Phase 92 | Pending |
-| TIME-EMP-02 | Phase 92 | Pending |
-| TIME-EMP-03 | Phase 92 | Pending |
+| LEAVE-01 | Phase 92 | Complete |
+| LEAVE-02 | Phase 92 | Complete |
+| LEAVE-03 | Phase 92 | Complete |
+| TIME-EMP-01 | Phase 92 | Complete |
+| TIME-EMP-02 | Phase 92 | Complete |
+| TIME-EMP-03 | Phase 92 | Complete |
 | EMP-ON-01 | Phase 93 | Pending |
 | EMP-OFF-01 | Phase 93 | Pending |
 | EMP-OFF-02 | Phase 93 | Pending |
