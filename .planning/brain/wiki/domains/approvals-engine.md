@@ -2,7 +2,7 @@
 title: Approvals engine
 type: domain
 tags: [approvals, workflow]
-source_commit: 64f25f0a8344383e4a75b97c342be73ad228e6b3
+source_commit: b618a39e5
 verify_with:
   - packages/api/src/services/approval-engine.ts
   - packages/api/src/routers/core/approval-queue.ts
@@ -41,6 +41,7 @@ flowchart TD
 
 - Invoice must be matched before submit — [[invoice-to-payment]]
 - APPROVAL_REQUEST notification (`approval-submit.ts` submitForApproval) is enqueued through the outbox INSIDE the submit tx (`enqueueNotificationOutboxEvent`, dedupKey `approval-request:<stepId>`) so it commits atomically with the flow + the invoice `APPROVAL_PENDING` flip — exactly-once. See [[notifications-and-reminders]]
+- `submitForApproval` enqueues the first approver's `APPROVAL_REQUEST` into the transactional outbox **inside** the flow-creation tx (`enqueueNotificationDispatch({ tx })`, dedupKey `APPROVAL_REQUEST:${flowId}`) — delivered iff the flow commits, then exactly-once by the drain. Replaces the old post-commit fire-and-forget `dispatch(...)`. See [[patterns/transactional-outbox]].
 - Teams/Slack cards via integration framework
 - `approve` / `reject` each write a same-tx `writeAuditLog` row (`approval.approve` / `approval.reject`) keyed to the flow's `resourceType` / `resourceId` — see [[patterns/audit-log]]
 - **The engine is resource-agnostic — reuse it, never fork it.** A new approvable (Phase 92 `LEAVE_REQUEST`) plugs in at exactly two seams: a domain **route** helper (`routeToLeaveChain` in `approval-engine.ts`) + `createApprovalFlow({ resourceType })` at submit, and the **shared** `approve`/`reject`/bulk procedures at finalize. Those procedures are resourceType-gated (`requireAnyPermission({invoice:['approve']},{employee:['approve_leave']})` + a body `resourceType→permission` assertion), so a `leave_approver` actions a `LEAVE_REQUEST` via `employee:approve_leave` and never gains `invoice:approve` (the BFLA fence). Do NOT build a parallel leave approval flow. See [[leave-and-time]]

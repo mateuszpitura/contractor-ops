@@ -2,7 +2,7 @@
 title: Invoice to payment flow
 type: domain
 tags: [finance, invoice, approval, payment]
-source_commit: 57946f642
+source_commit: b618a39e5
 verify_with:
   - packages/api/src/services/invoice-intake/
   - packages/api/src/services/compliance-payment-gate.ts
@@ -53,6 +53,7 @@ stateDiagram-v2
 ## Invariants
 
 - Match: `MATCHED` or `MANUALLY_CONFIRMED` before approval submit
+- `invoice.create` enqueues the finance-team `INVOICE_RECEIVED` notification into the transactional outbox **inside** the create tx (`enqueueNotificationDispatch({ tx })`, dedupKey `INVOICE_RECEIVED:${invoiceId}`) — delivered iff the invoice commits, then exactly-once by the drain (replaces post-commit fire-and-forget). See [[patterns/transactional-outbox]].
 - Payment run blocked when compliance fails — `@contractor-ops/compliance-policy`
 - INVOICE_RECEIVED notification (`invoice-crud.ts` create) is enqueued through the outbox INSIDE the create tx (`enqueueNotificationOutboxEvent`, dedupKey `invoice-received:<id>`), not post-commit fire-and-forget — exactly-once. See [[notifications-and-reminders]]
 - [[patterns/tenant-and-audit]] on mutations

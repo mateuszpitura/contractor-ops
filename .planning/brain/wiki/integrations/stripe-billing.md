@@ -2,7 +2,7 @@
 title: Stripe billing
 type: integration
 tags: [stripe, billing]
-source_commit: 28061f01e
+source_commit: b618a39e5
 verify_with:
   - packages/api/src/routers/finance/billing.ts
   - packages/billing/src/webhook/
@@ -46,6 +46,7 @@ flowchart LR
 - Webhook signature verification on inbound Stripe events
 - Webhook notifications (payment-failed / trial / subscription-changed): `routeStripeEvent` collects a `NotificationEvent[]`; the route (`webhooks/stripe.ts`) enqueues each into the outbox INSIDE the Serializable tx (dedupKey `stripe:<eventId>:<i>`), not the old post-commit `dispatchStripeWebhookNotifications` — exactly-once. See [[domains/notifications-and-reminders]]
 - **Event dedup + Serializable tx.** `apps/api/src/routes/webhooks/stripe.ts` upserts `StripeEvent { stripeEventId @unique }`, skips when `processedAt` is set, and processes inside one Serializable tx; 500-on-error so Stripe retries. Do not weaken these.
+- **Notifications go through the outbox, in the same tx.** `routeStripeEvent` collects the `NotificationEvent[]`; the route enqueues each via `enqueueNotificationDispatch({ tx })` **inside** the Serializable tx (dedupKey `stripe:${event.id}:${i}`) rather than dispatching post-commit. A rollback discards the queued notifications with the writes; a crash after commit no longer drops a payment-failed/trial email — the drain delivers them exactly-once. `dispatchStripeWebhookNotifications` remains only as a test helper. See [[patterns/transactional-outbox]].
 - **Age gate exempts state-changing events.** The 24 h late-delivery gate (`skipped: 'late_delivery'`) applies only to cosmetic/notification events. Settlement events (`SETTLEMENT_EVENT_TYPES`) **and** subscription-lifecycle events (`SUBSCRIPTION_LIFECYCLE_EVENT_TYPES`: `customer.subscription.created`/`updated`/`deleted`/`paused`/`resumed`) bypass it via `isAgeGateExempt` — Stripe retries for 3 days, so a genuinely late cancellation must still apply. `trial_will_end` stays gated (notification-only).
 - **Out-of-order guard on `Subscription.lastEventCreated`.** `handleSubscriptionUpdated` (`billing-webhook.ts`) stores the source event's `created` timestamp and skips any event whose `created` predates the stored value — a delayed/redelivered STALE event can no longer clobber newer state (e.g. ACTIVE over PAST_DUE/CANCELED). Event-id dedup does not catch this (distinct delayed first-deliveries). `handleSubscriptionDeleted` also advances the watermark so a late cancellation stays sticky.
 - **Daily reconcile backstop.** `stripe-reconcile.ts` (cron-worker) pages `stripe.subscriptions.list` and repairs residual status/tier drift once a day; it deliberately does not touch `lastEventCreated`. See [[structure/cron-jobs]].
@@ -54,6 +55,7 @@ flowchart LR
 
 - [[domains/billing-and-feature-gates]]
 - [[framework-core]]
+- [[patterns/transactional-outbox]]
 
 ## Verify live
 
