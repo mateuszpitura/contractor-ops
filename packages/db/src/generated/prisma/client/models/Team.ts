@@ -238,6 +238,8 @@ export type TeamWhereInput = {
   projects?: Prisma.ProjectListRelationFilter
   contractorAssignments?: Prisma.ContractorAssignmentListRelationFilter
   contracts?: Prisma.ContractListRelationFilter
+  leaveRequests?: Prisma.LeaveRequestListRelationFilter
+  blackoutPeriods?: Prisma.BlackoutPeriodListRelationFilter
 }
 
 export type TeamOrderByWithRelationInput = {
@@ -260,6 +262,8 @@ export type TeamOrderByWithRelationInput = {
   projects?: Prisma.ProjectOrderByRelationAggregateInput
   contractorAssignments?: Prisma.ContractorAssignmentOrderByRelationAggregateInput
   contracts?: Prisma.ContractOrderByRelationAggregateInput
+  leaveRequests?: Prisma.LeaveRequestOrderByRelationAggregateInput
+  blackoutPeriods?: Prisma.BlackoutPeriodOrderByRelationAggregateInput
 }
 
 export type TeamWhereUniqueInput = Prisma.AtLeast<{
@@ -285,6 +289,8 @@ export type TeamWhereUniqueInput = Prisma.AtLeast<{
   projects?: Prisma.ProjectListRelationFilter
   contractorAssignments?: Prisma.ContractorAssignmentListRelationFilter
   contracts?: Prisma.ContractListRelationFilter
+  leaveRequests?: Prisma.LeaveRequestListRelationFilter
+  blackoutPeriods?: Prisma.BlackoutPeriodListRelationFilter
 }, "id">
 
 export type TeamOrderByWithAggregationInput = {
@@ -338,6 +344,8 @@ export type TeamCreateInput = {
   projects?: Prisma.ProjectCreateNestedManyWithoutTeamInput
   contractorAssignments?: Prisma.ContractorAssignmentCreateNestedManyWithoutTeamInput
   contracts?: Prisma.ContractCreateNestedManyWithoutTeamInput
+  leaveRequests?: Prisma.LeaveRequestCreateNestedManyWithoutTeamInput
+  blackoutPeriods?: Prisma.BlackoutPeriodCreateNestedManyWithoutTeamInput
 }
 
 export type TeamUncheckedCreateInput = {
@@ -357,6 +365,8 @@ export type TeamUncheckedCreateInput = {
   projects?: Prisma.ProjectUncheckedCreateNestedManyWithoutTeamInput
   contractorAssignments?: Prisma.ContractorAssignmentUncheckedCreateNestedManyWithoutTeamInput
   contracts?: Prisma.ContractUncheckedCreateNestedManyWithoutTeamInput
+  leaveRequests?: Prisma.LeaveRequestUncheckedCreateNestedManyWithoutTeamInput
+  blackoutPeriods?: Prisma.BlackoutPeriodUncheckedCreateNestedManyWithoutTeamInput
 }
 
 export type TeamUpdateInput = {
@@ -376,6 +386,8 @@ export type TeamUpdateInput = {
   projects?: Prisma.ProjectUpdateManyWithoutTeamNestedInput
   contractorAssignments?: Prisma.ContractorAssignmentUpdateManyWithoutTeamNestedInput
   contracts?: Prisma.ContractUpdateManyWithoutTeamNestedInput
+  leaveRequests?: Prisma.LeaveRequestUpdateManyWithoutTeamNestedInput
+  blackoutPeriods?: Prisma.BlackoutPeriodUpdateManyWithoutTeamNestedInput
 }
 
 export type TeamUncheckedUpdateInput = {
@@ -395,6 +407,8 @@ export type TeamUncheckedUpdateInput = {
   projects?: Prisma.ProjectUncheckedUpdateManyWithoutTeamNestedInput
   contractorAssignments?: Prisma.ContractorAssignmentUncheckedUpdateManyWithoutTeamNestedInput
   contracts?: Prisma.ContractUncheckedUpdateManyWithoutTeamNestedInput
+  leaveRequests?: Prisma.LeaveRequestUncheckedUpdateManyWithoutTeamNestedInput
+  blackoutPeriods?: Prisma.BlackoutPeriodUncheckedUpdateManyWithoutTeamNestedInput
 }
 
 export type TeamCreateManyInput = {
@@ -625,6 +639,38 @@ export type TeamUpdateOneWithoutContractorAssignmentsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.TeamUpdateToOneWithWhereWithoutContractorAssignmentsInput, Prisma.TeamUpdateWithoutContractorAssignmentsInput>, Prisma.TeamUncheckedUpdateWithoutContractorAssignmentsInput>
 }
 
+export type TeamCreateNestedOneWithoutBlackoutPeriodsInput = {
+  create?: Prisma.XOR<Prisma.TeamCreateWithoutBlackoutPeriodsInput, Prisma.TeamUncheckedCreateWithoutBlackoutPeriodsInput>
+  connectOrCreate?: Prisma.TeamCreateOrConnectWithoutBlackoutPeriodsInput
+  connect?: Prisma.TeamWhereUniqueInput
+}
+
+export type TeamUpdateOneWithoutBlackoutPeriodsNestedInput = {
+  create?: Prisma.XOR<Prisma.TeamCreateWithoutBlackoutPeriodsInput, Prisma.TeamUncheckedCreateWithoutBlackoutPeriodsInput>
+  connectOrCreate?: Prisma.TeamCreateOrConnectWithoutBlackoutPeriodsInput
+  upsert?: Prisma.TeamUpsertWithoutBlackoutPeriodsInput
+  disconnect?: Prisma.TeamWhereInput | boolean
+  delete?: Prisma.TeamWhereInput | boolean
+  connect?: Prisma.TeamWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.TeamUpdateToOneWithWhereWithoutBlackoutPeriodsInput, Prisma.TeamUpdateWithoutBlackoutPeriodsInput>, Prisma.TeamUncheckedUpdateWithoutBlackoutPeriodsInput>
+}
+
+export type TeamCreateNestedOneWithoutLeaveRequestsInput = {
+  create?: Prisma.XOR<Prisma.TeamCreateWithoutLeaveRequestsInput, Prisma.TeamUncheckedCreateWithoutLeaveRequestsInput>
+  connectOrCreate?: Prisma.TeamCreateOrConnectWithoutLeaveRequestsInput
+  connect?: Prisma.TeamWhereUniqueInput
+}
+
+export type TeamUpdateOneWithoutLeaveRequestsNestedInput = {
+  create?: Prisma.XOR<Prisma.TeamCreateWithoutLeaveRequestsInput, Prisma.TeamUncheckedCreateWithoutLeaveRequestsInput>
+  connectOrCreate?: Prisma.TeamCreateOrConnectWithoutLeaveRequestsInput
+  upsert?: Prisma.TeamUpsertWithoutLeaveRequestsInput
+  disconnect?: Prisma.TeamWhereInput | boolean
+  delete?: Prisma.TeamWhereInput | boolean
+  connect?: Prisma.TeamWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.TeamUpdateToOneWithWhereWithoutLeaveRequestsInput, Prisma.TeamUpdateWithoutLeaveRequestsInput>, Prisma.TeamUncheckedUpdateWithoutLeaveRequestsInput>
+}
+
 export type TeamCreateNestedManyWithoutOrganizationInput = {
   create?: Prisma.XOR<Prisma.TeamCreateWithoutOrganizationInput, Prisma.TeamUncheckedCreateWithoutOrganizationInput> | Prisma.TeamCreateWithoutOrganizationInput[] | Prisma.TeamUncheckedCreateWithoutOrganizationInput[]
   connectOrCreate?: Prisma.TeamCreateOrConnectWithoutOrganizationInput | Prisma.TeamCreateOrConnectWithoutOrganizationInput[]
@@ -723,6 +769,8 @@ export type TeamCreateWithoutManagerInput = {
   projects?: Prisma.ProjectCreateNestedManyWithoutTeamInput
   contractorAssignments?: Prisma.ContractorAssignmentCreateNestedManyWithoutTeamInput
   contracts?: Prisma.ContractCreateNestedManyWithoutTeamInput
+  leaveRequests?: Prisma.LeaveRequestCreateNestedManyWithoutTeamInput
+  blackoutPeriods?: Prisma.BlackoutPeriodCreateNestedManyWithoutTeamInput
 }
 
 export type TeamUncheckedCreateWithoutManagerInput = {
@@ -741,6 +789,8 @@ export type TeamUncheckedCreateWithoutManagerInput = {
   projects?: Prisma.ProjectUncheckedCreateNestedManyWithoutTeamInput
   contractorAssignments?: Prisma.ContractorAssignmentUncheckedCreateNestedManyWithoutTeamInput
   contracts?: Prisma.ContractUncheckedCreateNestedManyWithoutTeamInput
+  leaveRequests?: Prisma.LeaveRequestUncheckedCreateNestedManyWithoutTeamInput
+  blackoutPeriods?: Prisma.BlackoutPeriodUncheckedCreateNestedManyWithoutTeamInput
 }
 
 export type TeamCreateOrConnectWithoutManagerInput = {
@@ -769,6 +819,8 @@ export type TeamCreateWithoutFallbackApproverInput = {
   projects?: Prisma.ProjectCreateNestedManyWithoutTeamInput
   contractorAssignments?: Prisma.ContractorAssignmentCreateNestedManyWithoutTeamInput
   contracts?: Prisma.ContractCreateNestedManyWithoutTeamInput
+  leaveRequests?: Prisma.LeaveRequestCreateNestedManyWithoutTeamInput
+  blackoutPeriods?: Prisma.BlackoutPeriodCreateNestedManyWithoutTeamInput
 }
 
 export type TeamUncheckedCreateWithoutFallbackApproverInput = {
@@ -787,6 +839,8 @@ export type TeamUncheckedCreateWithoutFallbackApproverInput = {
   projects?: Prisma.ProjectUncheckedCreateNestedManyWithoutTeamInput
   contractorAssignments?: Prisma.ContractorAssignmentUncheckedCreateNestedManyWithoutTeamInput
   contracts?: Prisma.ContractUncheckedCreateNestedManyWithoutTeamInput
+  leaveRequests?: Prisma.LeaveRequestUncheckedCreateNestedManyWithoutTeamInput
+  blackoutPeriods?: Prisma.BlackoutPeriodUncheckedCreateNestedManyWithoutTeamInput
 }
 
 export type TeamCreateOrConnectWithoutFallbackApproverInput = {
@@ -864,6 +918,8 @@ export type TeamCreateWithoutContractsInput = {
   contractors?: Prisma.ContractorCreateNestedManyWithoutPrimaryTeamInput
   projects?: Prisma.ProjectCreateNestedManyWithoutTeamInput
   contractorAssignments?: Prisma.ContractorAssignmentCreateNestedManyWithoutTeamInput
+  leaveRequests?: Prisma.LeaveRequestCreateNestedManyWithoutTeamInput
+  blackoutPeriods?: Prisma.BlackoutPeriodCreateNestedManyWithoutTeamInput
 }
 
 export type TeamUncheckedCreateWithoutContractsInput = {
@@ -882,6 +938,8 @@ export type TeamUncheckedCreateWithoutContractsInput = {
   contractors?: Prisma.ContractorUncheckedCreateNestedManyWithoutPrimaryTeamInput
   projects?: Prisma.ProjectUncheckedCreateNestedManyWithoutTeamInput
   contractorAssignments?: Prisma.ContractorAssignmentUncheckedCreateNestedManyWithoutTeamInput
+  leaveRequests?: Prisma.LeaveRequestUncheckedCreateNestedManyWithoutTeamInput
+  blackoutPeriods?: Prisma.BlackoutPeriodUncheckedCreateNestedManyWithoutTeamInput
 }
 
 export type TeamCreateOrConnectWithoutContractsInput = {
@@ -916,6 +974,8 @@ export type TeamUpdateWithoutContractsInput = {
   contractors?: Prisma.ContractorUpdateManyWithoutPrimaryTeamNestedInput
   projects?: Prisma.ProjectUpdateManyWithoutTeamNestedInput
   contractorAssignments?: Prisma.ContractorAssignmentUpdateManyWithoutTeamNestedInput
+  leaveRequests?: Prisma.LeaveRequestUpdateManyWithoutTeamNestedInput
+  blackoutPeriods?: Prisma.BlackoutPeriodUpdateManyWithoutTeamNestedInput
 }
 
 export type TeamUncheckedUpdateWithoutContractsInput = {
@@ -934,6 +994,8 @@ export type TeamUncheckedUpdateWithoutContractsInput = {
   contractors?: Prisma.ContractorUncheckedUpdateManyWithoutPrimaryTeamNestedInput
   projects?: Prisma.ProjectUncheckedUpdateManyWithoutTeamNestedInput
   contractorAssignments?: Prisma.ContractorAssignmentUncheckedUpdateManyWithoutTeamNestedInput
+  leaveRequests?: Prisma.LeaveRequestUncheckedUpdateManyWithoutTeamNestedInput
+  blackoutPeriods?: Prisma.BlackoutPeriodUncheckedUpdateManyWithoutTeamNestedInput
 }
 
 export type TeamCreateWithoutContractorsInput = {
@@ -952,6 +1014,8 @@ export type TeamCreateWithoutContractorsInput = {
   projects?: Prisma.ProjectCreateNestedManyWithoutTeamInput
   contractorAssignments?: Prisma.ContractorAssignmentCreateNestedManyWithoutTeamInput
   contracts?: Prisma.ContractCreateNestedManyWithoutTeamInput
+  leaveRequests?: Prisma.LeaveRequestCreateNestedManyWithoutTeamInput
+  blackoutPeriods?: Prisma.BlackoutPeriodCreateNestedManyWithoutTeamInput
 }
 
 export type TeamUncheckedCreateWithoutContractorsInput = {
@@ -970,6 +1034,8 @@ export type TeamUncheckedCreateWithoutContractorsInput = {
   projects?: Prisma.ProjectUncheckedCreateNestedManyWithoutTeamInput
   contractorAssignments?: Prisma.ContractorAssignmentUncheckedCreateNestedManyWithoutTeamInput
   contracts?: Prisma.ContractUncheckedCreateNestedManyWithoutTeamInput
+  leaveRequests?: Prisma.LeaveRequestUncheckedCreateNestedManyWithoutTeamInput
+  blackoutPeriods?: Prisma.BlackoutPeriodUncheckedCreateNestedManyWithoutTeamInput
 }
 
 export type TeamCreateOrConnectWithoutContractorsInput = {
@@ -1004,6 +1070,8 @@ export type TeamUpdateWithoutContractorsInput = {
   projects?: Prisma.ProjectUpdateManyWithoutTeamNestedInput
   contractorAssignments?: Prisma.ContractorAssignmentUpdateManyWithoutTeamNestedInput
   contracts?: Prisma.ContractUpdateManyWithoutTeamNestedInput
+  leaveRequests?: Prisma.LeaveRequestUpdateManyWithoutTeamNestedInput
+  blackoutPeriods?: Prisma.BlackoutPeriodUpdateManyWithoutTeamNestedInput
 }
 
 export type TeamUncheckedUpdateWithoutContractorsInput = {
@@ -1022,6 +1090,8 @@ export type TeamUncheckedUpdateWithoutContractorsInput = {
   projects?: Prisma.ProjectUncheckedUpdateManyWithoutTeamNestedInput
   contractorAssignments?: Prisma.ContractorAssignmentUncheckedUpdateManyWithoutTeamNestedInput
   contracts?: Prisma.ContractUncheckedUpdateManyWithoutTeamNestedInput
+  leaveRequests?: Prisma.LeaveRequestUncheckedUpdateManyWithoutTeamNestedInput
+  blackoutPeriods?: Prisma.BlackoutPeriodUncheckedUpdateManyWithoutTeamNestedInput
 }
 
 export type TeamCreateWithoutContractorAssignmentsInput = {
@@ -1040,6 +1110,8 @@ export type TeamCreateWithoutContractorAssignmentsInput = {
   contractors?: Prisma.ContractorCreateNestedManyWithoutPrimaryTeamInput
   projects?: Prisma.ProjectCreateNestedManyWithoutTeamInput
   contracts?: Prisma.ContractCreateNestedManyWithoutTeamInput
+  leaveRequests?: Prisma.LeaveRequestCreateNestedManyWithoutTeamInput
+  blackoutPeriods?: Prisma.BlackoutPeriodCreateNestedManyWithoutTeamInput
 }
 
 export type TeamUncheckedCreateWithoutContractorAssignmentsInput = {
@@ -1058,6 +1130,8 @@ export type TeamUncheckedCreateWithoutContractorAssignmentsInput = {
   contractors?: Prisma.ContractorUncheckedCreateNestedManyWithoutPrimaryTeamInput
   projects?: Prisma.ProjectUncheckedCreateNestedManyWithoutTeamInput
   contracts?: Prisma.ContractUncheckedCreateNestedManyWithoutTeamInput
+  leaveRequests?: Prisma.LeaveRequestUncheckedCreateNestedManyWithoutTeamInput
+  blackoutPeriods?: Prisma.BlackoutPeriodUncheckedCreateNestedManyWithoutTeamInput
 }
 
 export type TeamCreateOrConnectWithoutContractorAssignmentsInput = {
@@ -1092,6 +1166,8 @@ export type TeamUpdateWithoutContractorAssignmentsInput = {
   contractors?: Prisma.ContractorUpdateManyWithoutPrimaryTeamNestedInput
   projects?: Prisma.ProjectUpdateManyWithoutTeamNestedInput
   contracts?: Prisma.ContractUpdateManyWithoutTeamNestedInput
+  leaveRequests?: Prisma.LeaveRequestUpdateManyWithoutTeamNestedInput
+  blackoutPeriods?: Prisma.BlackoutPeriodUpdateManyWithoutTeamNestedInput
 }
 
 export type TeamUncheckedUpdateWithoutContractorAssignmentsInput = {
@@ -1110,6 +1186,200 @@ export type TeamUncheckedUpdateWithoutContractorAssignmentsInput = {
   contractors?: Prisma.ContractorUncheckedUpdateManyWithoutPrimaryTeamNestedInput
   projects?: Prisma.ProjectUncheckedUpdateManyWithoutTeamNestedInput
   contracts?: Prisma.ContractUncheckedUpdateManyWithoutTeamNestedInput
+  leaveRequests?: Prisma.LeaveRequestUncheckedUpdateManyWithoutTeamNestedInput
+  blackoutPeriods?: Prisma.BlackoutPeriodUncheckedUpdateManyWithoutTeamNestedInput
+}
+
+export type TeamCreateWithoutBlackoutPeriodsInput = {
+  id?: string
+  name: string
+  code?: string | null
+  status?: $Enums.SimpleStatus
+  source?: $Enums.OrgDefinitionSource
+  externalId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  organization: Prisma.OrganizationCreateNestedOneWithoutTeamsInput
+  manager?: Prisma.UserCreateNestedOneWithoutManagedTeamsInput
+  fallbackApprover?: Prisma.UserCreateNestedOneWithoutFallbackApprovedTeamsInput
+  members?: Prisma.MemberCreateNestedManyWithoutTeamInput
+  contractors?: Prisma.ContractorCreateNestedManyWithoutPrimaryTeamInput
+  projects?: Prisma.ProjectCreateNestedManyWithoutTeamInput
+  contractorAssignments?: Prisma.ContractorAssignmentCreateNestedManyWithoutTeamInput
+  contracts?: Prisma.ContractCreateNestedManyWithoutTeamInput
+  leaveRequests?: Prisma.LeaveRequestCreateNestedManyWithoutTeamInput
+}
+
+export type TeamUncheckedCreateWithoutBlackoutPeriodsInput = {
+  id?: string
+  organizationId: string
+  name: string
+  code?: string | null
+  managerUserId?: string | null
+  fallbackApproverId?: string | null
+  status?: $Enums.SimpleStatus
+  source?: $Enums.OrgDefinitionSource
+  externalId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.MemberUncheckedCreateNestedManyWithoutTeamInput
+  contractors?: Prisma.ContractorUncheckedCreateNestedManyWithoutPrimaryTeamInput
+  projects?: Prisma.ProjectUncheckedCreateNestedManyWithoutTeamInput
+  contractorAssignments?: Prisma.ContractorAssignmentUncheckedCreateNestedManyWithoutTeamInput
+  contracts?: Prisma.ContractUncheckedCreateNestedManyWithoutTeamInput
+  leaveRequests?: Prisma.LeaveRequestUncheckedCreateNestedManyWithoutTeamInput
+}
+
+export type TeamCreateOrConnectWithoutBlackoutPeriodsInput = {
+  where: Prisma.TeamWhereUniqueInput
+  create: Prisma.XOR<Prisma.TeamCreateWithoutBlackoutPeriodsInput, Prisma.TeamUncheckedCreateWithoutBlackoutPeriodsInput>
+}
+
+export type TeamUpsertWithoutBlackoutPeriodsInput = {
+  update: Prisma.XOR<Prisma.TeamUpdateWithoutBlackoutPeriodsInput, Prisma.TeamUncheckedUpdateWithoutBlackoutPeriodsInput>
+  create: Prisma.XOR<Prisma.TeamCreateWithoutBlackoutPeriodsInput, Prisma.TeamUncheckedCreateWithoutBlackoutPeriodsInput>
+  where?: Prisma.TeamWhereInput
+}
+
+export type TeamUpdateToOneWithWhereWithoutBlackoutPeriodsInput = {
+  where?: Prisma.TeamWhereInput
+  data: Prisma.XOR<Prisma.TeamUpdateWithoutBlackoutPeriodsInput, Prisma.TeamUncheckedUpdateWithoutBlackoutPeriodsInput>
+}
+
+export type TeamUpdateWithoutBlackoutPeriodsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumSimpleStatusFieldUpdateOperationsInput | $Enums.SimpleStatus
+  source?: Prisma.EnumOrgDefinitionSourceFieldUpdateOperationsInput | $Enums.OrgDefinitionSource
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  organization?: Prisma.OrganizationUpdateOneRequiredWithoutTeamsNestedInput
+  manager?: Prisma.UserUpdateOneWithoutManagedTeamsNestedInput
+  fallbackApprover?: Prisma.UserUpdateOneWithoutFallbackApprovedTeamsNestedInput
+  members?: Prisma.MemberUpdateManyWithoutTeamNestedInput
+  contractors?: Prisma.ContractorUpdateManyWithoutPrimaryTeamNestedInput
+  projects?: Prisma.ProjectUpdateManyWithoutTeamNestedInput
+  contractorAssignments?: Prisma.ContractorAssignmentUpdateManyWithoutTeamNestedInput
+  contracts?: Prisma.ContractUpdateManyWithoutTeamNestedInput
+  leaveRequests?: Prisma.LeaveRequestUpdateManyWithoutTeamNestedInput
+}
+
+export type TeamUncheckedUpdateWithoutBlackoutPeriodsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  organizationId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  managerUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fallbackApproverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumSimpleStatusFieldUpdateOperationsInput | $Enums.SimpleStatus
+  source?: Prisma.EnumOrgDefinitionSourceFieldUpdateOperationsInput | $Enums.OrgDefinitionSource
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.MemberUncheckedUpdateManyWithoutTeamNestedInput
+  contractors?: Prisma.ContractorUncheckedUpdateManyWithoutPrimaryTeamNestedInput
+  projects?: Prisma.ProjectUncheckedUpdateManyWithoutTeamNestedInput
+  contractorAssignments?: Prisma.ContractorAssignmentUncheckedUpdateManyWithoutTeamNestedInput
+  contracts?: Prisma.ContractUncheckedUpdateManyWithoutTeamNestedInput
+  leaveRequests?: Prisma.LeaveRequestUncheckedUpdateManyWithoutTeamNestedInput
+}
+
+export type TeamCreateWithoutLeaveRequestsInput = {
+  id?: string
+  name: string
+  code?: string | null
+  status?: $Enums.SimpleStatus
+  source?: $Enums.OrgDefinitionSource
+  externalId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  organization: Prisma.OrganizationCreateNestedOneWithoutTeamsInput
+  manager?: Prisma.UserCreateNestedOneWithoutManagedTeamsInput
+  fallbackApprover?: Prisma.UserCreateNestedOneWithoutFallbackApprovedTeamsInput
+  members?: Prisma.MemberCreateNestedManyWithoutTeamInput
+  contractors?: Prisma.ContractorCreateNestedManyWithoutPrimaryTeamInput
+  projects?: Prisma.ProjectCreateNestedManyWithoutTeamInput
+  contractorAssignments?: Prisma.ContractorAssignmentCreateNestedManyWithoutTeamInput
+  contracts?: Prisma.ContractCreateNestedManyWithoutTeamInput
+  blackoutPeriods?: Prisma.BlackoutPeriodCreateNestedManyWithoutTeamInput
+}
+
+export type TeamUncheckedCreateWithoutLeaveRequestsInput = {
+  id?: string
+  organizationId: string
+  name: string
+  code?: string | null
+  managerUserId?: string | null
+  fallbackApproverId?: string | null
+  status?: $Enums.SimpleStatus
+  source?: $Enums.OrgDefinitionSource
+  externalId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.MemberUncheckedCreateNestedManyWithoutTeamInput
+  contractors?: Prisma.ContractorUncheckedCreateNestedManyWithoutPrimaryTeamInput
+  projects?: Prisma.ProjectUncheckedCreateNestedManyWithoutTeamInput
+  contractorAssignments?: Prisma.ContractorAssignmentUncheckedCreateNestedManyWithoutTeamInput
+  contracts?: Prisma.ContractUncheckedCreateNestedManyWithoutTeamInput
+  blackoutPeriods?: Prisma.BlackoutPeriodUncheckedCreateNestedManyWithoutTeamInput
+}
+
+export type TeamCreateOrConnectWithoutLeaveRequestsInput = {
+  where: Prisma.TeamWhereUniqueInput
+  create: Prisma.XOR<Prisma.TeamCreateWithoutLeaveRequestsInput, Prisma.TeamUncheckedCreateWithoutLeaveRequestsInput>
+}
+
+export type TeamUpsertWithoutLeaveRequestsInput = {
+  update: Prisma.XOR<Prisma.TeamUpdateWithoutLeaveRequestsInput, Prisma.TeamUncheckedUpdateWithoutLeaveRequestsInput>
+  create: Prisma.XOR<Prisma.TeamCreateWithoutLeaveRequestsInput, Prisma.TeamUncheckedCreateWithoutLeaveRequestsInput>
+  where?: Prisma.TeamWhereInput
+}
+
+export type TeamUpdateToOneWithWhereWithoutLeaveRequestsInput = {
+  where?: Prisma.TeamWhereInput
+  data: Prisma.XOR<Prisma.TeamUpdateWithoutLeaveRequestsInput, Prisma.TeamUncheckedUpdateWithoutLeaveRequestsInput>
+}
+
+export type TeamUpdateWithoutLeaveRequestsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumSimpleStatusFieldUpdateOperationsInput | $Enums.SimpleStatus
+  source?: Prisma.EnumOrgDefinitionSourceFieldUpdateOperationsInput | $Enums.OrgDefinitionSource
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  organization?: Prisma.OrganizationUpdateOneRequiredWithoutTeamsNestedInput
+  manager?: Prisma.UserUpdateOneWithoutManagedTeamsNestedInput
+  fallbackApprover?: Prisma.UserUpdateOneWithoutFallbackApprovedTeamsNestedInput
+  members?: Prisma.MemberUpdateManyWithoutTeamNestedInput
+  contractors?: Prisma.ContractorUpdateManyWithoutPrimaryTeamNestedInput
+  projects?: Prisma.ProjectUpdateManyWithoutTeamNestedInput
+  contractorAssignments?: Prisma.ContractorAssignmentUpdateManyWithoutTeamNestedInput
+  contracts?: Prisma.ContractUpdateManyWithoutTeamNestedInput
+  blackoutPeriods?: Prisma.BlackoutPeriodUpdateManyWithoutTeamNestedInput
+}
+
+export type TeamUncheckedUpdateWithoutLeaveRequestsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  organizationId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  managerUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fallbackApproverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumSimpleStatusFieldUpdateOperationsInput | $Enums.SimpleStatus
+  source?: Prisma.EnumOrgDefinitionSourceFieldUpdateOperationsInput | $Enums.OrgDefinitionSource
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.MemberUncheckedUpdateManyWithoutTeamNestedInput
+  contractors?: Prisma.ContractorUncheckedUpdateManyWithoutPrimaryTeamNestedInput
+  projects?: Prisma.ProjectUncheckedUpdateManyWithoutTeamNestedInput
+  contractorAssignments?: Prisma.ContractorAssignmentUncheckedUpdateManyWithoutTeamNestedInput
+  contracts?: Prisma.ContractUncheckedUpdateManyWithoutTeamNestedInput
+  blackoutPeriods?: Prisma.BlackoutPeriodUncheckedUpdateManyWithoutTeamNestedInput
 }
 
 export type TeamCreateWithoutOrganizationInput = {
@@ -1128,6 +1398,8 @@ export type TeamCreateWithoutOrganizationInput = {
   projects?: Prisma.ProjectCreateNestedManyWithoutTeamInput
   contractorAssignments?: Prisma.ContractorAssignmentCreateNestedManyWithoutTeamInput
   contracts?: Prisma.ContractCreateNestedManyWithoutTeamInput
+  leaveRequests?: Prisma.LeaveRequestCreateNestedManyWithoutTeamInput
+  blackoutPeriods?: Prisma.BlackoutPeriodCreateNestedManyWithoutTeamInput
 }
 
 export type TeamUncheckedCreateWithoutOrganizationInput = {
@@ -1146,6 +1418,8 @@ export type TeamUncheckedCreateWithoutOrganizationInput = {
   projects?: Prisma.ProjectUncheckedCreateNestedManyWithoutTeamInput
   contractorAssignments?: Prisma.ContractorAssignmentUncheckedCreateNestedManyWithoutTeamInput
   contracts?: Prisma.ContractUncheckedCreateNestedManyWithoutTeamInput
+  leaveRequests?: Prisma.LeaveRequestUncheckedCreateNestedManyWithoutTeamInput
+  blackoutPeriods?: Prisma.BlackoutPeriodUncheckedCreateNestedManyWithoutTeamInput
 }
 
 export type TeamCreateOrConnectWithoutOrganizationInput = {
@@ -1190,6 +1464,8 @@ export type TeamCreateWithoutMembersInput = {
   projects?: Prisma.ProjectCreateNestedManyWithoutTeamInput
   contractorAssignments?: Prisma.ContractorAssignmentCreateNestedManyWithoutTeamInput
   contracts?: Prisma.ContractCreateNestedManyWithoutTeamInput
+  leaveRequests?: Prisma.LeaveRequestCreateNestedManyWithoutTeamInput
+  blackoutPeriods?: Prisma.BlackoutPeriodCreateNestedManyWithoutTeamInput
 }
 
 export type TeamUncheckedCreateWithoutMembersInput = {
@@ -1208,6 +1484,8 @@ export type TeamUncheckedCreateWithoutMembersInput = {
   projects?: Prisma.ProjectUncheckedCreateNestedManyWithoutTeamInput
   contractorAssignments?: Prisma.ContractorAssignmentUncheckedCreateNestedManyWithoutTeamInput
   contracts?: Prisma.ContractUncheckedCreateNestedManyWithoutTeamInput
+  leaveRequests?: Prisma.LeaveRequestUncheckedCreateNestedManyWithoutTeamInput
+  blackoutPeriods?: Prisma.BlackoutPeriodUncheckedCreateNestedManyWithoutTeamInput
 }
 
 export type TeamCreateOrConnectWithoutMembersInput = {
@@ -1242,6 +1520,8 @@ export type TeamUpdateWithoutMembersInput = {
   projects?: Prisma.ProjectUpdateManyWithoutTeamNestedInput
   contractorAssignments?: Prisma.ContractorAssignmentUpdateManyWithoutTeamNestedInput
   contracts?: Prisma.ContractUpdateManyWithoutTeamNestedInput
+  leaveRequests?: Prisma.LeaveRequestUpdateManyWithoutTeamNestedInput
+  blackoutPeriods?: Prisma.BlackoutPeriodUpdateManyWithoutTeamNestedInput
 }
 
 export type TeamUncheckedUpdateWithoutMembersInput = {
@@ -1260,6 +1540,8 @@ export type TeamUncheckedUpdateWithoutMembersInput = {
   projects?: Prisma.ProjectUncheckedUpdateManyWithoutTeamNestedInput
   contractorAssignments?: Prisma.ContractorAssignmentUncheckedUpdateManyWithoutTeamNestedInput
   contracts?: Prisma.ContractUncheckedUpdateManyWithoutTeamNestedInput
+  leaveRequests?: Prisma.LeaveRequestUncheckedUpdateManyWithoutTeamNestedInput
+  blackoutPeriods?: Prisma.BlackoutPeriodUncheckedUpdateManyWithoutTeamNestedInput
 }
 
 export type TeamCreateWithoutProjectsInput = {
@@ -1278,6 +1560,8 @@ export type TeamCreateWithoutProjectsInput = {
   contractors?: Prisma.ContractorCreateNestedManyWithoutPrimaryTeamInput
   contractorAssignments?: Prisma.ContractorAssignmentCreateNestedManyWithoutTeamInput
   contracts?: Prisma.ContractCreateNestedManyWithoutTeamInput
+  leaveRequests?: Prisma.LeaveRequestCreateNestedManyWithoutTeamInput
+  blackoutPeriods?: Prisma.BlackoutPeriodCreateNestedManyWithoutTeamInput
 }
 
 export type TeamUncheckedCreateWithoutProjectsInput = {
@@ -1296,6 +1580,8 @@ export type TeamUncheckedCreateWithoutProjectsInput = {
   contractors?: Prisma.ContractorUncheckedCreateNestedManyWithoutPrimaryTeamInput
   contractorAssignments?: Prisma.ContractorAssignmentUncheckedCreateNestedManyWithoutTeamInput
   contracts?: Prisma.ContractUncheckedCreateNestedManyWithoutTeamInput
+  leaveRequests?: Prisma.LeaveRequestUncheckedCreateNestedManyWithoutTeamInput
+  blackoutPeriods?: Prisma.BlackoutPeriodUncheckedCreateNestedManyWithoutTeamInput
 }
 
 export type TeamCreateOrConnectWithoutProjectsInput = {
@@ -1330,6 +1616,8 @@ export type TeamUpdateWithoutProjectsInput = {
   contractors?: Prisma.ContractorUpdateManyWithoutPrimaryTeamNestedInput
   contractorAssignments?: Prisma.ContractorAssignmentUpdateManyWithoutTeamNestedInput
   contracts?: Prisma.ContractUpdateManyWithoutTeamNestedInput
+  leaveRequests?: Prisma.LeaveRequestUpdateManyWithoutTeamNestedInput
+  blackoutPeriods?: Prisma.BlackoutPeriodUpdateManyWithoutTeamNestedInput
 }
 
 export type TeamUncheckedUpdateWithoutProjectsInput = {
@@ -1348,6 +1636,8 @@ export type TeamUncheckedUpdateWithoutProjectsInput = {
   contractors?: Prisma.ContractorUncheckedUpdateManyWithoutPrimaryTeamNestedInput
   contractorAssignments?: Prisma.ContractorAssignmentUncheckedUpdateManyWithoutTeamNestedInput
   contracts?: Prisma.ContractUncheckedUpdateManyWithoutTeamNestedInput
+  leaveRequests?: Prisma.LeaveRequestUncheckedUpdateManyWithoutTeamNestedInput
+  blackoutPeriods?: Prisma.BlackoutPeriodUncheckedUpdateManyWithoutTeamNestedInput
 }
 
 export type TeamCreateManyManagerInput = {
@@ -1392,6 +1682,8 @@ export type TeamUpdateWithoutManagerInput = {
   projects?: Prisma.ProjectUpdateManyWithoutTeamNestedInput
   contractorAssignments?: Prisma.ContractorAssignmentUpdateManyWithoutTeamNestedInput
   contracts?: Prisma.ContractUpdateManyWithoutTeamNestedInput
+  leaveRequests?: Prisma.LeaveRequestUpdateManyWithoutTeamNestedInput
+  blackoutPeriods?: Prisma.BlackoutPeriodUpdateManyWithoutTeamNestedInput
 }
 
 export type TeamUncheckedUpdateWithoutManagerInput = {
@@ -1410,6 +1702,8 @@ export type TeamUncheckedUpdateWithoutManagerInput = {
   projects?: Prisma.ProjectUncheckedUpdateManyWithoutTeamNestedInput
   contractorAssignments?: Prisma.ContractorAssignmentUncheckedUpdateManyWithoutTeamNestedInput
   contracts?: Prisma.ContractUncheckedUpdateManyWithoutTeamNestedInput
+  leaveRequests?: Prisma.LeaveRequestUncheckedUpdateManyWithoutTeamNestedInput
+  blackoutPeriods?: Prisma.BlackoutPeriodUncheckedUpdateManyWithoutTeamNestedInput
 }
 
 export type TeamUncheckedUpdateManyWithoutManagerInput = {
@@ -1441,6 +1735,8 @@ export type TeamUpdateWithoutFallbackApproverInput = {
   projects?: Prisma.ProjectUpdateManyWithoutTeamNestedInput
   contractorAssignments?: Prisma.ContractorAssignmentUpdateManyWithoutTeamNestedInput
   contracts?: Prisma.ContractUpdateManyWithoutTeamNestedInput
+  leaveRequests?: Prisma.LeaveRequestUpdateManyWithoutTeamNestedInput
+  blackoutPeriods?: Prisma.BlackoutPeriodUpdateManyWithoutTeamNestedInput
 }
 
 export type TeamUncheckedUpdateWithoutFallbackApproverInput = {
@@ -1459,6 +1755,8 @@ export type TeamUncheckedUpdateWithoutFallbackApproverInput = {
   projects?: Prisma.ProjectUncheckedUpdateManyWithoutTeamNestedInput
   contractorAssignments?: Prisma.ContractorAssignmentUncheckedUpdateManyWithoutTeamNestedInput
   contracts?: Prisma.ContractUncheckedUpdateManyWithoutTeamNestedInput
+  leaveRequests?: Prisma.LeaveRequestUncheckedUpdateManyWithoutTeamNestedInput
+  blackoutPeriods?: Prisma.BlackoutPeriodUncheckedUpdateManyWithoutTeamNestedInput
 }
 
 export type TeamUncheckedUpdateManyWithoutFallbackApproverInput = {
@@ -1503,6 +1801,8 @@ export type TeamUpdateWithoutOrganizationInput = {
   projects?: Prisma.ProjectUpdateManyWithoutTeamNestedInput
   contractorAssignments?: Prisma.ContractorAssignmentUpdateManyWithoutTeamNestedInput
   contracts?: Prisma.ContractUpdateManyWithoutTeamNestedInput
+  leaveRequests?: Prisma.LeaveRequestUpdateManyWithoutTeamNestedInput
+  blackoutPeriods?: Prisma.BlackoutPeriodUpdateManyWithoutTeamNestedInput
 }
 
 export type TeamUncheckedUpdateWithoutOrganizationInput = {
@@ -1521,6 +1821,8 @@ export type TeamUncheckedUpdateWithoutOrganizationInput = {
   projects?: Prisma.ProjectUncheckedUpdateManyWithoutTeamNestedInput
   contractorAssignments?: Prisma.ContractorAssignmentUncheckedUpdateManyWithoutTeamNestedInput
   contracts?: Prisma.ContractUncheckedUpdateManyWithoutTeamNestedInput
+  leaveRequests?: Prisma.LeaveRequestUncheckedUpdateManyWithoutTeamNestedInput
+  blackoutPeriods?: Prisma.BlackoutPeriodUncheckedUpdateManyWithoutTeamNestedInput
 }
 
 export type TeamUncheckedUpdateManyWithoutOrganizationInput = {
@@ -1547,6 +1849,8 @@ export type TeamCountOutputType = {
   projects: number
   contractorAssignments: number
   contracts: number
+  leaveRequests: number
+  blackoutPeriods: number
 }
 
 export type TeamCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1555,6 +1859,8 @@ export type TeamCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   projects?: boolean | TeamCountOutputTypeCountProjectsArgs
   contractorAssignments?: boolean | TeamCountOutputTypeCountContractorAssignmentsArgs
   contracts?: boolean | TeamCountOutputTypeCountContractsArgs
+  leaveRequests?: boolean | TeamCountOutputTypeCountLeaveRequestsArgs
+  blackoutPeriods?: boolean | TeamCountOutputTypeCountBlackoutPeriodsArgs
 }
 
 /**
@@ -1602,6 +1908,20 @@ export type TeamCountOutputTypeCountContractsArgs<ExtArgs extends runtime.Types.
   where?: Prisma.ContractWhereInput
 }
 
+/**
+ * TeamCountOutputType without action
+ */
+export type TeamCountOutputTypeCountLeaveRequestsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.LeaveRequestWhereInput
+}
+
+/**
+ * TeamCountOutputType without action
+ */
+export type TeamCountOutputTypeCountBlackoutPeriodsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.BlackoutPeriodWhereInput
+}
+
 
 export type TeamSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1623,6 +1943,8 @@ export type TeamSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   projects?: boolean | Prisma.Team$projectsArgs<ExtArgs>
   contractorAssignments?: boolean | Prisma.Team$contractorAssignmentsArgs<ExtArgs>
   contracts?: boolean | Prisma.Team$contractsArgs<ExtArgs>
+  leaveRequests?: boolean | Prisma.Team$leaveRequestsArgs<ExtArgs>
+  blackoutPeriods?: boolean | Prisma.Team$blackoutPeriodsArgs<ExtArgs>
   _count?: boolean | Prisma.TeamCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["team"]>
 
@@ -1684,6 +2006,8 @@ export type TeamInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   projects?: boolean | Prisma.Team$projectsArgs<ExtArgs>
   contractorAssignments?: boolean | Prisma.Team$contractorAssignmentsArgs<ExtArgs>
   contracts?: boolean | Prisma.Team$contractsArgs<ExtArgs>
+  leaveRequests?: boolean | Prisma.Team$leaveRequestsArgs<ExtArgs>
+  blackoutPeriods?: boolean | Prisma.Team$blackoutPeriodsArgs<ExtArgs>
   _count?: boolean | Prisma.TeamCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type TeamIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1708,6 +2032,8 @@ export type $TeamPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     projects: Prisma.$ProjectPayload<ExtArgs>[]
     contractorAssignments: Prisma.$ContractorAssignmentPayload<ExtArgs>[]
     contracts: Prisma.$ContractPayload<ExtArgs>[]
+    leaveRequests: Prisma.$LeaveRequestPayload<ExtArgs>[]
+    blackoutPeriods: Prisma.$BlackoutPeriodPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -2123,6 +2449,8 @@ export interface Prisma__TeamClient<T, Null = never, ExtArgs extends runtime.Typ
   projects<T extends Prisma.Team$projectsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Team$projectsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProjectPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   contractorAssignments<T extends Prisma.Team$contractorAssignmentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Team$contractorAssignmentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ContractorAssignmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   contracts<T extends Prisma.Team$contractsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Team$contractsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ContractPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  leaveRequests<T extends Prisma.Team$leaveRequestsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Team$leaveRequestsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$LeaveRequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  blackoutPeriods<T extends Prisma.Team$blackoutPeriodsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Team$blackoutPeriodsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BlackoutPeriodPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2719,6 +3047,54 @@ export type Team$contractsArgs<ExtArgs extends runtime.Types.Extensions.Internal
   take?: number
   skip?: number
   distinct?: Prisma.ContractScalarFieldEnum | Prisma.ContractScalarFieldEnum[]
+}
+
+/**
+ * Team.leaveRequests
+ */
+export type Team$leaveRequestsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the LeaveRequest
+   */
+  select?: Prisma.LeaveRequestSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the LeaveRequest
+   */
+  omit?: Prisma.LeaveRequestOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.LeaveRequestInclude<ExtArgs> | null
+  where?: Prisma.LeaveRequestWhereInput
+  orderBy?: Prisma.LeaveRequestOrderByWithRelationInput | Prisma.LeaveRequestOrderByWithRelationInput[]
+  cursor?: Prisma.LeaveRequestWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.LeaveRequestScalarFieldEnum | Prisma.LeaveRequestScalarFieldEnum[]
+}
+
+/**
+ * Team.blackoutPeriods
+ */
+export type Team$blackoutPeriodsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the BlackoutPeriod
+   */
+  select?: Prisma.BlackoutPeriodSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the BlackoutPeriod
+   */
+  omit?: Prisma.BlackoutPeriodOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.BlackoutPeriodInclude<ExtArgs> | null
+  where?: Prisma.BlackoutPeriodWhereInput
+  orderBy?: Prisma.BlackoutPeriodOrderByWithRelationInput | Prisma.BlackoutPeriodOrderByWithRelationInput[]
+  cursor?: Prisma.BlackoutPeriodWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.BlackoutPeriodScalarFieldEnum | Prisma.BlackoutPeriodScalarFieldEnum[]
 }
 
 /**

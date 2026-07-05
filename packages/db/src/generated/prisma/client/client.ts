@@ -272,6 +272,11 @@ export type EInvoiceLifecycleEvent = Prisma.EInvoiceLifecycleEventModel
  */
 export type PeppolCapabilityCache = Prisma.PeppolCapabilityCacheModel
 /**
+ * Model EmployeeTimeRecord
+ * 
+ */
+export type EmployeeTimeRecord = Prisma.EmployeeTimeRecordModel
+/**
  * Model EmployeeProfile
  * 
  */
@@ -321,6 +326,11 @@ export type SigningRecipient = Prisma.SigningRecipientModel
  * 
  */
 export type SigningEvent = Prisma.SigningEventModel
+/**
+ * Model EwidencjaSnapshot
+ * 
+ */
+export type EwidencjaSnapshot = Prisma.EwidencjaSnapshotModel
 /**
  * Model ExchangeRate
  * 
@@ -456,6 +466,31 @@ export type InvoiceInterestWaiver = Prisma.InvoiceInterestWaiverModel
  * 
  */
 export type InvoiceInterestClaim = Prisma.InvoiceInterestClaimModel
+/**
+ * Model LeaveType
+ * 
+ */
+export type LeaveType = Prisma.LeaveTypeModel
+/**
+ * Model BlackoutPeriod
+ * 
+ */
+export type BlackoutPeriod = Prisma.BlackoutPeriodModel
+/**
+ * Model LeaveRequest
+ * 
+ */
+export type LeaveRequest = Prisma.LeaveRequestModel
+/**
+ * Model LeaveLedgerEntry
+ * 
+ */
+export type LeaveLedgerEntry = Prisma.LeaveLedgerEntryModel
+/**
+ * Model LeaveBalance
+ * 
+ */
+export type LeaveBalance = Prisma.LeaveBalanceModel
 /**
  * Model Notification
  * 
@@ -607,6 +642,11 @@ export type ContractorNotificationPreference = Prisma.ContractorNotificationPref
  * 
  */
 export type PendingUpload = Prisma.PendingUploadModel
+/**
+ * Model PublicHoliday
+ * 
+ */
+export type PublicHoliday = Prisma.PublicHolidayModel
 /**
  * Model TaxRate
  * 

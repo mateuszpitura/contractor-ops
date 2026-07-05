@@ -97,6 +97,7 @@ export const ModelName = {
   EInvoiceLifecycle: 'EInvoiceLifecycle',
   EInvoiceLifecycleEvent: 'EInvoiceLifecycleEvent',
   PeppolCapabilityCache: 'PeppolCapabilityCache',
+  EmployeeTimeRecord: 'EmployeeTimeRecord',
   EmployeeProfile: 'EmployeeProfile',
   Equipment: 'Equipment',
   EquipmentAssignment: 'EquipmentAssignment',
@@ -107,6 +108,7 @@ export const ModelName = {
   SigningEnvelope: 'SigningEnvelope',
   SigningRecipient: 'SigningRecipient',
   SigningEvent: 'SigningEvent',
+  EwidencjaSnapshot: 'EwidencjaSnapshot',
   ExchangeRate: 'ExchangeRate',
   Export: 'Export',
   BoEBaseRateHistory: 'BoEBaseRateHistory',
@@ -134,6 +136,11 @@ export const ModelName = {
   InvoiceInterestCompensation: 'InvoiceInterestCompensation',
   InvoiceInterestWaiver: 'InvoiceInterestWaiver',
   InvoiceInterestClaim: 'InvoiceInterestClaim',
+  LeaveType: 'LeaveType',
+  BlackoutPeriod: 'BlackoutPeriod',
+  LeaveRequest: 'LeaveRequest',
+  LeaveLedgerEntry: 'LeaveLedgerEntry',
+  LeaveBalance: 'LeaveBalance',
   Notification: 'Notification',
   UserNotificationPreference: 'UserNotificationPreference',
   Comment: 'Comment',
@@ -164,6 +171,7 @@ export const ModelName = {
   ContractorChangeRequest: 'ContractorChangeRequest',
   ContractorNotificationPreference: 'ContractorNotificationPreference',
   PendingUpload: 'PendingUpload',
+  PublicHoliday: 'PublicHoliday',
   TaxRate: 'TaxRate',
   WithholdingTaxRate: 'WithholdingTaxRate',
   WhtCertificate: 'WhtCertificate',
@@ -1072,6 +1080,30 @@ export const PeppolCapabilityCacheScalarFieldEnum = {
 export type PeppolCapabilityCacheScalarFieldEnum = (typeof PeppolCapabilityCacheScalarFieldEnum)[keyof typeof PeppolCapabilityCacheScalarFieldEnum]
 
 
+export const EmployeeTimeRecordScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  workerId: 'workerId',
+  workDate: 'workDate',
+  startTime: 'startTime',
+  endTime: 'endTime',
+  workedMinutes: 'workedMinutes',
+  nightMinutes: 'nightMinutes',
+  overtimeMinutes50: 'overtimeMinutes50',
+  overtimeMinutes100: 'overtimeMinutes100',
+  weekendHolidayMinutes: 'weekendHolidayMinutes',
+  onCallMinutes: 'onCallMinutes',
+  onCallLocation: 'onCallLocation',
+  absenceKind: 'absenceKind',
+  wtOptOut: 'wtOptOut',
+  source: 'source',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type EmployeeTimeRecordScalarFieldEnum = (typeof EmployeeTimeRecordScalarFieldEnum)[keyof typeof EmployeeTimeRecordScalarFieldEnum]
+
+
 export const EmployeeProfileScalarFieldEnum = {
   id: 'id',
   organizationId: 'organizationId',
@@ -1253,6 +1285,24 @@ export const SigningEventScalarFieldEnum = {
 } as const
 
 export type SigningEventScalarFieldEnum = (typeof SigningEventScalarFieldEnum)[keyof typeof SigningEventScalarFieldEnum]
+
+
+export const EwidencjaSnapshotScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  workerId: 'workerId',
+  periodStart: 'periodStart',
+  periodEnd: 'periodEnd',
+  periodKey: 'periodKey',
+  version: 'version',
+  previousSnapshotId: 'previousSnapshotId',
+  status: 'status',
+  snapshotJson: 'snapshotJson',
+  generatedByUserId: 'generatedByUserId',
+  createdAt: 'createdAt'
+} as const
+
+export type EwidencjaSnapshotScalarFieldEnum = (typeof EwidencjaSnapshotScalarFieldEnum)[keyof typeof EwidencjaSnapshotScalarFieldEnum]
 
 
 export const ExchangeRateScalarFieldEnum = {
@@ -1760,6 +1810,88 @@ export const InvoiceInterestClaimScalarFieldEnum = {
 } as const
 
 export type InvoiceInterestClaimScalarFieldEnum = (typeof InvoiceInterestClaimScalarFieldEnum)[keyof typeof InvoiceInterestClaimScalarFieldEnum]
+
+
+export const LeaveTypeScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  name: 'name',
+  code: 'code',
+  kind: 'kind',
+  requiresApproval: 'requiresApproval',
+  paid: 'paid',
+  active: 'active',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type LeaveTypeScalarFieldEnum = (typeof LeaveTypeScalarFieldEnum)[keyof typeof LeaveTypeScalarFieldEnum]
+
+
+export const BlackoutPeriodScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  startDate: 'startDate',
+  endDate: 'endDate',
+  teamId: 'teamId',
+  reason: 'reason',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BlackoutPeriodScalarFieldEnum = (typeof BlackoutPeriodScalarFieldEnum)[keyof typeof BlackoutPeriodScalarFieldEnum]
+
+
+export const LeaveRequestScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  workerId: 'workerId',
+  leaveTypeId: 'leaveTypeId',
+  startDate: 'startDate',
+  endDate: 'endDate',
+  requestedMinutes: 'requestedMinutes',
+  status: 'status',
+  teamId: 'teamId',
+  approvalFlowId: 'approvalFlowId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type LeaveRequestScalarFieldEnum = (typeof LeaveRequestScalarFieldEnum)[keyof typeof LeaveRequestScalarFieldEnum]
+
+
+export const LeaveLedgerEntryScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  workerId: 'workerId',
+  leaveTypeId: 'leaveTypeId',
+  entryType: 'entryType',
+  minutes: 'minutes',
+  effectiveDate: 'effectiveDate',
+  sourceRef: 'sourceRef',
+  reason: 'reason',
+  createdByUserId: 'createdByUserId',
+  createdAt: 'createdAt'
+} as const
+
+export type LeaveLedgerEntryScalarFieldEnum = (typeof LeaveLedgerEntryScalarFieldEnum)[keyof typeof LeaveLedgerEntryScalarFieldEnum]
+
+
+export const LeaveBalanceScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  workerId: 'workerId',
+  leaveTypeId: 'leaveTypeId',
+  year: 'year',
+  entitledMinutes: 'entitledMinutes',
+  usedMinutes: 'usedMinutes',
+  carryoverMinutes: 'carryoverMinutes',
+  recomputedAt: 'recomputedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type LeaveBalanceScalarFieldEnum = (typeof LeaveBalanceScalarFieldEnum)[keyof typeof LeaveBalanceScalarFieldEnum]
 
 
 export const NotificationScalarFieldEnum = {
@@ -2277,6 +2409,18 @@ export const PendingUploadScalarFieldEnum = {
 } as const
 
 export type PendingUploadScalarFieldEnum = (typeof PendingUploadScalarFieldEnum)[keyof typeof PendingUploadScalarFieldEnum]
+
+
+export const PublicHolidayScalarFieldEnum = {
+  id: 'id',
+  countryCode: 'countryCode',
+  holidayDate: 'holidayDate',
+  name: 'name',
+  region: 'region',
+  createdAt: 'createdAt'
+} as const
+
+export type PublicHolidayScalarFieldEnum = (typeof PublicHolidayScalarFieldEnum)[keyof typeof PublicHolidayScalarFieldEnum]
 
 
 export const TaxRateScalarFieldEnum = {

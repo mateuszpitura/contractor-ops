@@ -24,6 +24,13 @@ export const RETENTION_YEARS = {
   'uk-personnel-financial': 7,
   'us-i9-post-hire': 3,
   'us-i9-post-termination': 1,
+  // PL KP art. 149 working-time register. 3 years is the DB-immutability floor
+  // (roszczenia ze stosunku pracy przedawniają się z upływem 3 lat, KP art. 291
+  // §1). The dokumentacja pracownicza itself is retained 10 years (KP §94⁴) —
+  // satisfied here by NON-DELETION: EwidencjaSnapshot is append-only, carries no
+  // deletedAt, and joins no soft-delete purge cascade, so nothing ever deletes
+  // it. Values pending legal/tax-adviser verification (LOCAL-ONLY).
+  'KP-ewidencja': 3,
 } as const;
 
 export type RetainedRecordType = keyof typeof RETENTION_YEARS;
@@ -37,6 +44,11 @@ export type RetainedRecordType = keyof typeof RETENTION_YEARS;
  */
 export const MODEL_RETENTION_TYPE: Partial<Record<string, RetainedRecordType>> = {
   Form1099Nec: '1099-NEC',
+  // Documents the KP §149 register's statutory window. EwidencjaSnapshot is NOT
+  // a soft-delete model, so getRetentionCutoff is never invoked for it by the
+  // purge cron (which iterates softDeleteModels) — the mapping records the
+  // window without wiring any deletion path.
+  EwidencjaSnapshot: 'KP-ewidencja',
 };
 
 /** Statutory retention period, in years, for a known record type. */
