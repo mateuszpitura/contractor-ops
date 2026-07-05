@@ -2,11 +2,12 @@
 title: KSeF Poland
 type: integration
 tags: [ksef, poland, einvoice]
-source_commit: 70f5782d78e33ba98c82e4ccda2cd4b0b4aff216
+source_commit: 2612ccfab6a36dcb629d021e927af3fd1d520ae3
 verify_with:
   - packages/api/src/routers/integrations/ksef.ts
   - packages/einvoice/src/profiles/ksef/
-updated: 2026-06-10
+  - packages/api/src/services/ksef-sync-orchestrator.ts
+updated: 2026-07-05
 ---
 
 # KSeF (Poland)
@@ -38,6 +39,7 @@ sequenceDiagram
 | Adapter | `packages/integrations/src/adapters/ksef-adapter.ts` |
 | API client | `packages/integrations/src/services/ksef-api-client.ts` |
 | Profile | `packages/einvoice/src/profiles/ksef/` |
+| Sync orchestrator | `packages/api/src/services/ksef-sync-orchestrator.ts` |
 | Cron routes | `apps/api/src/routes/ksef.ts` |
 | Intake overlap | `invoiceIntake` router + `services/invoice-intake/` |
 
@@ -49,6 +51,7 @@ Invoice KSeF references, settings e-invoicing, contractor e-invoicing section.
 
 - Token/certificate auth — not OAuth; **polling** only (`supportsWebhooks: false`)
 - Tenant-scoped org credentials via framework
+- **Metadata query is paginated.** `queryInvoices` returns one page plus a `hasMore` / `pageToken` cursor; `ksef-sync-orchestrator` drains every page (feeding `pageToken` into the next request) before finalizing. The sync checkpoint (`IntegrationConnection.lastSuccessAt`) advances **only** when the whole run ends with zero errors, so a mid-sync page failure — or a `hasMore` with no `pageToken` — leaves the checkpoint pinned and the window is re-queried next run. Per-invoice failures are isolated into `errors[]` (already-fetched invoices are skipped on re-query).
 
 ## Related
 
@@ -67,3 +70,4 @@ semble search "ksef-api-client"
 
 - Expecting webhook-driven sync for KSeF
 - Parsing XML without einvoice profile validators
+- Consuming only `result.invoiceMetadataList` from `queryInvoices` and ignoring `hasMore` / `pageToken` — drops every invoice past page 1 while the checkpoint advances (permanent loss)

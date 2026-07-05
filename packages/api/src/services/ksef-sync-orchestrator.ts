@@ -334,6 +334,68 @@ async function ingestKsefInvoices(
   return totals;
 }
 
+// KSeF paginates the metadata query; without a cap a server that keeps
+// returning `hasMore: true` would loop forever. 1000 pages is far beyond any
+// realistic incremental sync window.
+const KSEF_MAX_QUERY_PAGES = 1000;
+
+/**
+ * Drains every page of the KSeF metadata query, ingesting each page as it
+ * arrives and accumulating the running totals.
+ *
+ * KSeF returns results one page at a time with a `hasMore` / `pageToken`
+ * continuation cursor; consuming only the first page permanently loses every
+ * subsequent invoice. A `hasMore: true` response with no `pageToken` (or an
+ * over-long page chain) is recorded as an error so the caller's checkpoint
+ * (`lastSuccessAt`) does NOT advance past invoices we could not fetch.
+ */
+async function ingestAllKsefPages(
+  db: TenantDb,
+  client: KsefApiClient,
+  organizationId: string,
+  nip: string,
+  dateFrom: string,
+  dateTo: string,
+): Promise<SyncTotals> {
+  const totals: SyncTotals = { invoicesCreated: 0, duplicatesFound: 0, errors: [] };
+  let pageToken: string | undefined;
+  let pageCount = 0;
+
+  while (true) {
+    const page = await client.queryInvoices(nip, dateFrom, dateTo, pageToken);
+
+    const pageTotals = await ingestKsefInvoices(
+      db,
+      client,
+      organizationId,
+      page.invoiceMetadataList,
+    );
+    totals.invoicesCreated += pageTotals.invoicesCreated;
+    totals.duplicatesFound += pageTotals.duplicatesFound;
+    totals.errors.push(...pageTotals.errors);
+
+    pageCount++;
+    if (!page.hasMore) break;
+
+    if (!page.pageToken) {
+      totals.errors.push(
+        'KSeF query reported more pages but returned no pageToken; stopping before checkpoint advance to avoid dropping invoices',
+      );
+      break;
+    }
+    if (pageCount >= KSEF_MAX_QUERY_PAGES) {
+      totals.errors.push(
+        `KSeF query exceeded ${KSEF_MAX_QUERY_PAGES} pages; stopping before checkpoint advance to avoid an unbounded loop`,
+      );
+      break;
+    }
+
+    pageToken = page.pageToken;
+  }
+
+  return totals;
+}
+
 /**
  * Finalizes a successful sync run: updates the connection row, marks the sync
  * log SUCCESS, and dispatches the admin notification.
@@ -437,9 +499,11 @@ async function runKsefSyncForConnection(
     client = await authenticateKsefClient(connection, nip);
 
     const { dateFrom, dateTo } = resolveDateRange(connection.lastSuccessAt ?? null);
-    const result = await client.queryInvoices(nip, dateFrom, dateTo);
 
-    const totals = await ingestKsefInvoices(db, client, organizationId, result.invoiceMetadataList);
+    // Drain every KSeF page before finalizing — the checkpoint (`lastSuccessAt`,
+    // advanced only when `totals.errors` is empty) must not move past invoices
+    // that live on later pages or that a mid-sync page failure never fetched.
+    const totals = await ingestAllKsefPages(db, client, organizationId, nip, dateFrom, dateTo);
 
     await finalizeSyncSuccess(db, organizationId, connectionId, syncLogId, totals);
 

@@ -290,4 +290,66 @@ describe('processKsefSync', () => {
     expect(dispatchArg.type).toBe('KSEF_SYNC_COMPLETE');
     expect(dispatchArg.recipientUserIds).toEqual(['user-1']);
   });
+
+  it('drains all pages: ingests every invoice across a multi-page query before advancing checkpoint', async () => {
+    setupSuccessfulSync();
+    mockKsefClient.queryInvoices.mockReset();
+    mockKsefClient.queryInvoices
+      .mockResolvedValueOnce({
+        invoiceMetadataList: [
+          { ksefReferenceNumber: 'page1-a' },
+          { ksefReferenceNumber: 'page1-b' },
+        ],
+        hasMore: true,
+        pageToken: 'token-page-2',
+      })
+      .mockResolvedValueOnce({
+        invoiceMetadataList: [
+          { ksefReferenceNumber: 'page2-a' },
+          { ksefReferenceNumber: 'page2-b' },
+        ],
+        hasMore: false,
+      });
+
+    const result = await processKsefSync({ organizationId: ORG_ID, connectionId: CONN_ID });
+
+    // All four invoices across both pages ingested — none lost.
+    expect(result.invoicesCreated).toBe(4);
+    expect(result.errors).toHaveLength(0);
+    expect(mockKsefClient.queryInvoices).toHaveBeenCalledTimes(2);
+    // Second query fed the previous page's continuation token.
+    expect(mockKsefClient.queryInvoices.mock.calls[1]?.[3]).toBe('token-page-2');
+    expect(mockKsefClient.downloadInvoiceXml).toHaveBeenCalledTimes(4);
+    // Checkpoint advances only after the final page: CONNECTED + lastSuccessAt set.
+    const connUpdate = mockTenantDb.integrationConnection.update.mock.calls[0]?.[0];
+    expect(connUpdate.data.status).toBe('CONNECTED');
+    expect(connUpdate.data.lastSuccessAt).toBeInstanceOf(Date);
+  });
+
+  it('page 2 fetch failure leaves the checkpoint unchanged', async () => {
+    setupSuccessfulSync();
+    mockKsefClient.queryInvoices.mockReset();
+    mockKsefClient.queryInvoices
+      .mockResolvedValueOnce({
+        invoiceMetadataList: [{ ksefReferenceNumber: 'page1-a' }],
+        hasMore: true,
+        pageToken: 'token-page-2',
+      })
+      .mockRejectedValueOnce(new Error('KSeF page 2 fetch failed'));
+
+    await expect(
+      processKsefSync({ organizationId: ORG_ID, connectionId: CONN_ID }),
+    ).rejects.toThrow('KSeF page 2 fetch failed');
+
+    // Page 1 was ingested before the failure — its invoices are safe to re-fetch.
+    expect(mockKsefClient.queryInvoices).toHaveBeenCalledTimes(2);
+    expect(mockTenantDb.invoice.create).toHaveBeenCalledTimes(1);
+    // No connection update ever advances lastSuccessAt; the only update is the ERROR flip.
+    const connUpdates = mockTenantDb.integrationConnection.update.mock.calls.map(c => c[0]);
+    expect(connUpdates.every(u => u.data.lastSuccessAt === undefined)).toBe(true);
+    expect(connUpdates.at(-1)?.data.status).toBe('ERROR');
+    // Sync log marked FAILED, not SUCCESS.
+    const logUpdate = mockTenantDb.integrationSyncLog.update.mock.calls.at(-1)?.[0];
+    expect(logUpdate.data.status).toBe('FAILED');
+  });
 });

@@ -183,10 +183,18 @@ export class KsefApiClient {
   /**
    * Queries KSeF for invoices matching the given NIP and date range.
    *
-   * Starts an async query, polls for completion, and returns metadata list.
+   * Starts an async query, polls for completion, and returns one page of
+   * metadata plus the `hasMore` / `pageToken` continuation cursor. To fetch the
+   * next page, pass the previous page's `pageToken` back in. Callers MUST drain
+   * every page while `hasMore` is true, otherwise KSeF invoices are dropped.
    * The query uses "subject2" subjectType (buyer perspective).
    */
-  async queryInvoices(nip: string, dateFrom: string, dateTo: string): Promise<KsefQueryResult> {
+  async queryInvoices(
+    nip: string,
+    dateFrom: string,
+    dateTo: string,
+    pageToken?: string,
+  ): Promise<KsefQueryResult> {
     this.requireSession();
 
     // Start query
@@ -205,6 +213,7 @@ export class KsefApiClient {
             invoicingDateTo: dateTo,
             subjectType: 'subject2',
           },
+          ...(pageToken ? { pageToken } : {}),
         }),
       },
     );
