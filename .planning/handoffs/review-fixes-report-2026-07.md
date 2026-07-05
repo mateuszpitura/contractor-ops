@@ -1,19 +1,20 @@
 # Review-Fix Execution Report — 2026-07-05
 
-Execution of the fix backlog in [`codebase-review-2026-07-05.md`](./codebase-review-2026-07-05.md), run as 8 waves of parallel subagents in one shared worktree, plus a follow-up batch (FW-1..FW-3) closing the discovered follow-ups.
+Execution of the fix backlog in [`codebase-review-2026-07-05.md`](./codebase-review-2026-07-05.md), run as 8 waves of parallel subagents in one shared worktree, plus a follow-up batch (FW-1..FW-3) and a Fable-review fix pass (RW-1..RW-2).
 
 - **Branch:** `review-fixes`
 - **Base commit:** `2bd9229ae` (main, 92 wave-1 merged)
-- **Head commit:** `ae3415e94`
-- **Commits:** 44 (task-tagged, atomic; 36 waves + 1 report + 7 follow-up)
+- **Head commit:** `c25e80843` (this report commits on top)
+- **Commits:** 54 (task-tagged, atomic; 36 waves + 1 report + 7 follow-up + 8 Fable-fix + 2 report updates)
 - **Worktree:** `.claude/worktrees/review-fixes` (NOT merged, NOT pushed, NOT pruned)
+- **Independent review:** Fable adversarial 3-verifier pass → **SHIP-WITH-FIXES**; all 4 pre-merge fixes + the drift-gate + the actionable LOWs applied (see "Fable review fixes" below).
 
 ## Final gate results
 
 | Gate | Result | Notes |
 |------|--------|-------|
 | Full `pnpm typecheck` | 41/42 packages green | Only failure = **pre-existing base debt**: `apps/web-vite` `leave/__tests__/team-calendar.test.tsx` imports `team-calendar-view` (never implemented). Added by base commit `c5a2c8d0e` (phase-92 "Wave-0 RED/HOLD contracts"); **untouched by any review-fix wave**. Every package this work modified typechecks clean. |
-| `@contractor-ops/api` tests | **4017 passed, 0 failed** (17 skip, 27 todo) | Green (re-run after the follow-up batch). |
+| `@contractor-ops/api` tests | **4029 passed, 0 failed** (17 skip, 27 todo) | Green (re-run after the Fable-fix pass). |
 | `@contractor-ops/cron-worker` tests | **81/81** | Green. |
 | `@contractor-ops/api-server` tests | 192 passed, **1 failed** | Failure = **pre-existing**: `teams-auth-config.test.ts` forces `NODE_ENV=production` and trips an UPSTASH guard; observed failing in Wave 1 immediately after branching. No wave touched teams-auth source. |
 | `@contractor-ops/public-api` tests | **117/117** | Green. |
@@ -115,12 +116,35 @@ Ran after the waves as a single-owner migration step + disjoint service agents +
 - **Larger deferred backlog** (not follow-ups): T1-* security tier, T2-1/2-3/2-5/2-6, T3-2..T3-7, INT-1-5/1-8, INT-2-*, INT-3-*, CMS-0-*, A11Y-1..5, GL-1-1/4/5/6, COV — see the wave ledger's "not done" rows. GL-0-6/GL-1-3/T2-4 remain other-session-owned.
 - **Pre-existing base-branch reds** (all inherited, none introduced here): web-vite `team-calendar-view` RED test, `teams-auth-config` UPSTASH test, `no-process-env` 184>182, 11 phase-92 test breadcrumbs, `root.ts` catalog drift, and the manual-gate-migration/gulf-domain replay gap.
 
+## Fable review fixes (independent adversarial review → SHIP-WITH-FIXES)
+
+An independent Fable reviewer (3-verifier pass) verified the 44-commit branch: 13/16 spot-checked fixes HOLD in source, test-integrity CLEAN across all 51 touched test files (no weakened assertions), migrations additive+reversible, scope clean. Verdict **SHIP-WITH-FIXES** with 4 pre-merge items + the inert drift-gate + LOWs. All applied (full api re-run: 4029 passed, 0 failed):
+
+| Finding | Sev | Status | Commit |
+|---------|-----|--------|--------|
+| M1 Stripe watermark asymmetry — `handlePaymentFailed`/`handleSubscriptionPaused`/`handleSubscriptionDeleted` didn't guard+advance `lastEventCreated` → a late exempt `subscription.updated` could resurrect a delinquent org to ACTIVE | pre-merge | **fixed** | `4c563dd43` — uniform ordering guard + watermark on ALL subscription state changes |
+| M2 Autenti claimed-but-unstamped crash window — retry after a crash between provider-create and write-back re-created the provider process | pre-merge | **fixed** | `c38b3f816` — pre-existing unstamped intent row → `CONFLICT` (manual reconcile), not re-create |
+| M3 e-sign completion TOCTOU — read-then-write, concurrent double-delivery duplicated signed Documents | pre-merge | **fixed** | `44e771fd2` (partial unique `signing_event_signed_pdf_saved_key`) + `c38b3f816` (atomic write + P2002-idempotent) |
+| T0-4 wiring untested — the hook registration wasn't gated (deleting `afterCreateOrganization:` kept the suite green) | pre-merge | **fixed** | `1585093b5` — test now fails if the hook line is removed (verified) |
+| Drift-check CI gate inert — no shadow DB in CI, WARN-degrades | biggest follow-up | **fixed (report-only)** | `ff02c4a74` (replay health — see below) + `c25e80843` (CI provisions PG-17 shadow; step `continue-on-error` until the drift tail is reconciled) |
+| LOW: `Math.random` outbox id | LOW | **fixed** | `3cb021937` — `oxe_${randomUUID()}` |
+| LOW: export-race loser writes settlement provenance out-of-tx | LOW | **fixed** | `107de3564` — loser skips the provenance write |
+| LOW: `settlementRateDate` = payment date not ECB observation date | LOW | **fixed** | `107de3564` — stamps the ECB rate observation date |
+| LOW: `InvoiceInterestClaim` full (not partial) unique | LOW | **documented** | `44e771fd2` — the model has NO void/status column; a partial predicate isn't yet expressible → left full unique with an in-schema note (did not invent a column) |
+| LOW: spurious `de.d.ts`/`de.js` worktree churn | LOW | **discarded** | reverted (generated reformatting only; `de.ts` source unchanged) — tree now clean |
+
+**Migration replay health (`ff02c4a74`, big win beyond the ask):** the reviewer flagged the drift gate as inert. Root-caused two migration-ordering bugs (the `__`-gate migrations + `phase_73` sorted before dependencies) + the gulf/ewidencja/working-time-leave domains having ZERO migrations. Re-timestamped the manual-gate folders in dependency order and authored the missing CREATE-TABLE migrations, so a full `prisma migrate diff --from-migrations` replay + `migrate deploy` now **apply cleanly on a fresh DB** — the entire T0-6 "relation does not exist" class is eliminated. **Caveat:** `check-migration-drift` still exits 1 on a large **pre-existing accumulated db-push drift tail** (generated `searchVector` columns, PK drops, dropped uniques, additive enum variants/columns) that is unsafe to reconstruct blind; the CI step is therefore provisioned **report-only** (`continue-on-error`) with an inline flip-condition. Reconciling that drift tail is a dedicated follow-up ticket.
+
+**Note — renamed migration folders:** `ff02c4a74` re-timestamped the manual-gate migration folders (`__employee_profile_additive` → `20260705160003_employee_profile_additive`, etc.). Any DB that already applied the OLD folder names via `migrate deploy` needs a `prisma migrate resolve` reconciliation. Local dev uses db-push (untracked in `_prisma_migrations`), so this is a fresh-DB/CI concern, aligned with the local-only posture.
+
+Coordination: `form-1099-nec.service.ts`'s persist seam now requires a `$transaction`-capable client (like the 1042-S sibling) — inform the phase-86 owner when they wire the 1099-NEC batch.
+
 ## Operational note — external-session git collision
 
 A concurrent worktree-recovery session (flagged out-of-scope in the handover) mutated the shared `.git` during Wave 6, orphaning the first INT-1-1 attempt onto a foreign lineage and once briefly repointing the checkout. Detected via git-integrity guards; nothing was force-resolved. The `review-fixes` branch ref stayed intact throughout; INT-1-1 was cleanly re-run on the correct tip. All 36 commits are linear on `review-fixes` with verified parents. A leftover `lint-staged automatic backup` stash exists (holds only a formatting delta + generated `de.*` artifacts — no source work); left untouched per git-safety rules.
 
 ## Handoff
 
-Branch `review-fixes` @ `ae3415e94`, base `2bd9229ae` (44 commits, linear). **Not merged / not pushed / not pruned** — merge decision stays with the main session. Recommend resolving the pre-existing base-branch reds (team-calendar impl, process-env ratchet, root.ts catalog, manual-gate-migration/gulf replay) on `main` before merge, since they will surface in CI regardless of this branch.
+Branch `review-fixes` @ `c25e80843` (this report commits on top), base `2bd9229ae` (54 commits, linear, clean tree). **Not merged / not pushed / not pruned** — merge decision stays with the main session. Fable's SHIP-WITH-FIXES items are all applied. Recommend resolving the pre-existing base-branch reds (team-calendar impl, process-env ratchet, root.ts catalog) on `main` before merge, since they will surface in CI regardless of this branch.
 
-**Post-merge follow-ups to ticket:** the manual-gate migration ordering + gulf-domain migration (unblocks the full drift replay); the AR-locale native/legal review; and the larger deferred backlog listed under "Remaining" above.
+**Post-merge follow-ups to ticket:** reconcile the accumulated db-push drift tail so the CI drift-gate can flip from report-only to hard-gate (generated `searchVector` columns, PK drops, dropped uniques, additive enum variants/columns); `prisma migrate resolve` for any DB that applied the old manual-gate migration folder names; the AR-locale native/legal review; and the larger deferred backlog listed under "Remaining" above.
