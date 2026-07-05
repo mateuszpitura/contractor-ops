@@ -4,8 +4,9 @@ Production deployment guide for `contractor-ops` on [Render](https://render.com)
 
 ## Database migrations (runbook)
 
-Migrations are executed automatically on every Render deploy via the
-`preDeployCommand` hook on each service. Operators rarely need to run them
+App-schema migrations run automatically on every `api-server` deploy via its
+`preDeployCommand` hook; the CMS runs its own Payload migrations on the `cms`
+deploy. No other service applies migrations. Operators rarely need to run them
 manually — but when a migration goes wrong, the rollback path is in-band and
 covered below.
 
@@ -13,9 +14,9 @@ covered below.
 
 | Service | preDeployCommand | What it does |
 |---|---|---|
-| `web` | `pnpm --filter @contractor-ops/db run db:migrate:all` | Applies Prisma migrations against **both** regional Neon databases (EU + ME). Implemented by `packages/db/scripts/migrate-all-regions.ts`, which iterates over `DATABASE_URL_EU` and `DATABASE_URL_ME` and invokes `prisma migrate deploy` per region. |
+| `api-server` | `pnpm --filter @contractor-ops/db run db:migrate:all` | Applies Prisma migrations against every configured regional Neon database (EU + ME, and US once provisioned). Implemented by `packages/db/scripts/migrate-all-regions.ts`, which iterates over `DATABASE_URL_EU/ME/US` and invokes `prisma migrate deploy` per region, preferring each region's `DIRECT_URL_*` (unpooled) endpoint so migration advisory locks don't hang on the Neon PgBouncer pooler. |
 | `cms` | `pnpm --filter @contractor-ops/cms run migrate` | Applies Payload v3 migrations against `CMS_DATABASE_URL` (separate Neon project, isolated from app DBs). Wraps `payload migrate` via dotenv so env loading matches local dev. |
-| `public-api`, `worker`, cron jobs | _(none)_ | Read-only against the same regional databases — they inherit the schema applied by `web`'s preDeploy step. Roll order: `web` deploys first, downstream services pick up the new schema on their next revision. |
+| `public-api`, `cron-worker`, `web-vite` | _(none)_ | Read-only against the same regional databases — they inherit the schema applied by `api-server`'s preDeploy step. Roll order: `api-server` deploys first, downstream services pick up the new schema on their next revision. |
 
 ### Failure mode
 
@@ -306,7 +307,7 @@ Suggested wrapper as `pnpm unleash:open` / `pnpm unleash:close` (add to root `pa
 
 ### Preview environments
 
-Every PR opens an automatic preview environment (`previews.generation: automatic`, expires after 7 days). Preview env vars inherit from `app-shared` but use isolated databases — connect a Neon branch via `DATABASE_URL` per-PR override if you need full data isolation.
+The blueprint sets `previews.generation: automatic` globally, but every backend service that carries production secrets — `api-server`, `public-api`, `cron-worker`, `cms` (plus `clamav`, `unleash-*`, `cloudflared`) — opts out with `previews: generation: off`. Preview instances inherit `app-shared` (production `DATABASE_URL_EU/ME` + secrets), so a preview `cron-worker` would run the daily data-purge (hard-delete) against production. Only the `web-vite` static SPA keeps PR previews (`pullRequestPreviewsEnabled: true`) — it ships no server process and reads only build-time public `VITE_*` values. To preview a backend service, first stand up an isolated preview env group with its own database.
 
 ### Render MCP / CLI
 

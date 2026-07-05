@@ -298,6 +298,11 @@ services:
     plan: starter
     branch: main
     autoDeploy: true
+    # No PR previews: a preview instance would inherit app-shared (production
+    # CMS_DATABASE_URL + secrets). Disable until an isolated preview env group
+    # with its own DB exists.
+    previews:
+      generation: off
     dockerfilePath: ./apps/cms/Dockerfile
     dockerContext: .
     dockerCommand: node apps/cms/server.js
@@ -392,6 +397,20 @@ services:
       - path: /*
         name: Content-Security-Policy
         value: "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.r2.cloudflarestorage.com; connect-src 'self' https://*.sentry.io https://*.ingest.sentry.io; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none';"
+    # NEXT_PUBLIC_* are inlined into the static export at build time (Next.js
+    # output:'export'). Set in the Render dashboard BEFORE the first build of
+    # each environment — otherwise PostHog analytics ship dead and the blog /
+    # CMS + canonical URLs fall back to their hard-coded production hosts
+    # (apps/landing/src/lib/{posthog.tsx,cms.ts} + blog/changelog RSS routes).
+    envVars:
+      - key: NEXT_PUBLIC_POSTHOG_KEY
+        sync: false
+      - key: NEXT_PUBLIC_POSTHOG_HOST
+        sync: false
+      - key: NEXT_PUBLIC_CMS_URL
+        sync: false
+      - key: NEXT_PUBLIC_LANDING_URL
+        sync: false
 
   # ── Web Service: Public REST API (Enterprise) ──────────────────────────
   # Hono + tRPC caller, OpenAPI at /v1/docs, scoped API-key auth.
@@ -404,6 +423,11 @@ services:
     plan: standard
     branch: main
     autoDeploy: true
+    # No PR previews: a preview instance would inherit app-shared (production
+    # DATABASE_URL_EU/ME + secrets). Disable until an isolated preview env
+    # group with its own DB exists.
+    previews:
+      generation: off
     dockerfilePath: ./apps/public-api/Dockerfile
     dockerContext: .
     dockerCommand: node apps/public-api/dist/index.js
@@ -553,10 +577,26 @@ services:
     plan: standard
     branch: main
     autoDeploy: true
+    # No PR previews: a preview instance would inherit app-shared (production
+    # DATABASE_URL_EU/ME + secrets). Disable until an isolated preview env
+    # group with its own DB exists.
+    previews:
+      generation: off
     dockerfilePath: ./apps/api/Dockerfile
     dockerContext: .
     dockerCommand: node apps/api/dist/index.js
-    healthCheckPath: /health
+    # Shallow liveness probe (apps/api/src/routes/health.ts `/ready`) — returns
+    # 200 as long as the process is up. The deep `/health` probe 503s on
+    # Redis/QStash/R2/backpressure degradation; using it here would make Render
+    # cycle the whole fleet during a downstream incident. `/health` stays for
+    # dashboards + alerting.
+    healthCheckPath: /ready
+    # Apply Prisma migrations to every configured region before the new revision
+    # takes traffic. A non-zero exit aborts the rollout and the previous revision
+    # keeps serving. migrate-all-regions.ts prefers each region's DIRECT_URL_*
+    # (unpooled Neon endpoint) so migration advisory locks don't hang on the
+    # PgBouncer pooler.
+    preDeployCommand: pnpm --filter @contractor-ops/db run db:migrate:all
     scaling:
       minInstances: 2
       maxInstances: 6
@@ -591,6 +631,12 @@ services:
     plan: starter
     branch: main
     autoDeploy: true
+    # MANDATORY no PR previews: a preview worker inherits app-shared (production
+    # DATABASE_URL_EU/ME + secrets) and would run the daily data-purge job — the
+    # load-bearing hard-delete path — against the production databases. Never
+    # spawn this per PR.
+    previews:
+      generation: off
     dockerfilePath: ./apps/cron-worker/Dockerfile
     dockerContext: .
     dockerCommand: node apps/cron-worker/dist/index.js

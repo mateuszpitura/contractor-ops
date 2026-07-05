@@ -38,9 +38,9 @@ const SCHEMA_PATH = resolve(PACKAGE_DIR, 'prisma/schema');
 const PRISMA_BIN = resolve(PACKAGE_DIR, 'node_modules', '.bin', 'prisma');
 
 // NOTE: this is a plain array (NOT Record<DataRegion>), so tsc does not force a
-// US entry — it is added manually for lockstep consistency (D-07). migrateRegion
+// US entry — it is added manually for lockstep consistency. migrateRegion
 // skips-on-missing, so an unset DATABASE_URL_US locally is a no-op.
-const REGION_ENV_VARS = ['DATABASE_URL_EU', 'DATABASE_URL_ME', 'DATABASE_URL_US'] as const;
+const REGIONS = ['EU', 'ME', 'US'] as const;
 
 interface RegionResult {
   region: string;
@@ -48,17 +48,26 @@ interface RegionResult {
   error?: string;
 }
 
-function migrateRegion(envVar: string): RegionResult {
-  const url = process.env[envVar];
-  const region = envVar.replace('DATABASE_URL_', '');
+function migrateRegion(region: string): RegionResult {
+  const pooledUrl = process.env[`DATABASE_URL_${region}`];
 
-  if (!url) {
+  if (!pooledUrl) {
     return { region, status: 'skipped' };
   }
 
+  // Prefer the DIRECT (unpooled) Neon endpoint for migrations. `prisma migrate
+  // deploy` takes Postgres advisory locks and runs DDL that hang or fail over
+  // Neon's PgBouncer pooler; DIRECT_URL_<region> points at the unpooled host.
+  // Falls back to the pooled URL when unset (fine for local/unpooled Postgres).
+  // Prisma 7 dropped the schema `directUrl` field, so this override is applied
+  // through DATABASE_URL, which prisma.config.ts reads for the CLI. The runtime
+  // app is unaffected — it connects via @prisma/adapter-pg, not this datasource
+  // URL, and the override lives only in this migrate child's env.
+  const migrateUrl = process.env[`DIRECT_URL_${region}`] ?? pooledUrl;
+
   try {
     execFileSync(PRISMA_BIN, ['migrate', 'deploy', `--schema=${SCHEMA_PATH}`], {
-      env: { ...process.env, DATABASE_URL: url },
+      env: { ...process.env, DATABASE_URL: migrateUrl },
       stdio: 'inherit',
       cwd: PACKAGE_DIR,
     });
@@ -73,8 +82,8 @@ function migrateRegion(envVar: string): RegionResult {
 function main() {
   const results: RegionResult[] = [];
 
-  for (const envVar of REGION_ENV_VARS) {
-    const result = migrateRegion(envVar);
+  for (const region of REGIONS) {
+    const result = migrateRegion(region);
     results.push(result);
 
     if (result.status === 'failed') {
