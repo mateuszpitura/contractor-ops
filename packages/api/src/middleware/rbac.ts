@@ -60,6 +60,56 @@ export function requirePermission(permission: Permission) {
   return middleware;
 }
 
+/** Minimal context shape the permission check reads (both auth modes). */
+export interface PermissionCheckContext {
+  authMode?: string;
+  apiKeyId?: string | null;
+  apiKeyScopes?: readonly string[] | null;
+  headers: Headers;
+}
+
+/**
+ * Predicate form of the RBAC check — returns whether the caller holds `permission`
+ * under whichever auth mode is active (API-key scopes or a Better Auth session).
+ * Reused by `requireAnyPermission` and by per-request, resource-aware body gates
+ * (e.g. the approval procedures' resourceType→permission assertion).
+ */
+export async function hasPermission(
+  ctx: PermissionCheckContext,
+  permission: Permission,
+): Promise<boolean> {
+  if (ctx.authMode === 'apiKey') {
+    if (!(ctx.apiKeyId && ctx.apiKeyScopes)) return false;
+    const required = permissionToScopes(permission);
+    const granted = new Set(ctx.apiKeyScopes);
+    return required.every(s => granted.has(s));
+  }
+
+  const result = await authApi.hasPermission({
+    headers: ctx.headers,
+    body: { permissions: permission },
+  });
+  return Boolean(result?.success);
+}
+
+/**
+ * Coarse OR-set gate: passes when the caller holds ANY of the supplied permission
+ * objects, rejects a caller holding none. Fine-grained, per-resource enforcement
+ * (which of the OR-set a specific resource requires) is a body assertion via
+ * {@link hasPermission} after the resource is fetched — this middleware only
+ * admits callers who could act on at least one branch, without over-granting.
+ */
+export function requireAnyPermission(...permissions: Permission[]) {
+  return t.middleware(async ({ ctx, next }) => {
+    for (const permission of permissions) {
+      if (await hasPermission(ctx, permission)) {
+        return next();
+      }
+    }
+    throw new TRPCError({ code: 'FORBIDDEN', message: E.PERMISSION_DENIED });
+  });
+}
+
 /**
  * Procedure that requires admin-level organization permissions.
  * Chain: auth -> tenant -> rbac(organization.update) -> handler
