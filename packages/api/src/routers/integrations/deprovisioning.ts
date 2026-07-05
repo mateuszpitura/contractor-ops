@@ -13,6 +13,7 @@ import {
   DEPROVISIONING_PROVIDER_SIGNOFF_PENDING,
   DEPROVISIONING_STEP_NOT_FOUND,
   DEPROVISIONING_STEP_NOT_OVERRIDABLE,
+  WORKER_NOT_FOUND,
 } from '../../errors';
 import { router } from '../../init';
 import { findOrThrow } from '../../lib/find-or-throw';
@@ -100,12 +101,13 @@ function deriveProvidersForRun(settingsJson: unknown): DeprovisioningToggleProvi
  * default (Europe/Berlin), which is conservative — the cooldown is computed for
  * ALL valid IANA TZs identically.
  */
-const COUNTRY_TZ: Record<string, string> = {
+export const COUNTRY_TZ: Record<string, string> = {
   DE: 'Europe/Berlin',
   GB: 'Europe/London',
   PL: 'Europe/Warsaw',
   SA: 'Asia/Riyadh',
   AE: 'Asia/Dubai',
+  US: 'America/New_York',
 };
 const DEFAULT_JURISDICTION_TZ = 'Europe/Berlin';
 
@@ -201,39 +203,89 @@ export const deprovisioningRouter = router({
    */
   startDeprovisioningRun: integrationProcedure({ permission: { idp: ['start_run'] } })
     .input(
-      z.object({
-        assignmentId: z.string().min(1),
-        idempotencyKey: z.string().min(8).max(128),
-      }),
+      z.discriminatedUnion('subjectType', [
+        z.object({
+          subjectType: z.literal('CONTRACTOR'),
+          assignmentId: z.string().min(1),
+          idempotencyKey: z.string().min(8).max(128),
+        }),
+        z
+          .object({
+            subjectType: z.literal('EMPLOYEE'),
+            workerId: z.string().min(1),
+            idempotencyKey: z.string().min(8).max(128),
+          })
+          .strict(),
+      ]),
     )
     .mutation(async ({ ctx, input }) => {
-      const assignment = await findOrThrow(
-        () =>
-          ctx.db.contractorAssignment.findFirst({
-            where: { id: input.assignmentId, organizationId: ctx.organizationId },
-            select: {
-              id: true,
-              status: true,
-              endedAt: true,
-              contractorId: true,
-              contractor: { select: { id: true, countryCode: true, email: true } },
-            },
-          }),
-        DEPROVISIONING_ASSIGNMENT_NOT_FOUND,
-      );
+      // Resolve exactly one subject. The cooldown gate + step execution half are
+      // subject-agnostic — an employee run keys off EmployeeProfile.terminatedAt
+      // (dated termination signal) instead of an ENDED assignment.
+      let externalUserId: string | null;
+      let runSubject: {
+        contractorId: string | null;
+        assignmentId: string | null;
+        workerId: string | null;
+      };
+      let decision: ReturnType<typeof canStartDeprovisioning>;
 
-      const decision = canStartDeprovisioning({
-        endedAt: assignment.endedAt ?? null,
-        jurisdictionTz: COUNTRY_TZ[assignment.contractor.countryCode] ?? DEFAULT_JURISDICTION_TZ,
-        status: assignment.status,
-      });
+      if (input.subjectType === 'EMPLOYEE') {
+        const emp = await findOrThrow(
+          () =>
+            ctx.db.employeeProfile.findFirst({
+              where: { workerId: input.workerId, organizationId: ctx.organizationId },
+              select: {
+                countryCode: true,
+                terminatedAt: true,
+                worker: { select: { email: true } },
+              },
+            }),
+          WORKER_NOT_FOUND,
+        );
+        decision = canStartDeprovisioning({
+          endedAt: emp.terminatedAt ?? null,
+          // No assignment row exists for an employee — synthesize the ENDED
+          // status the pure gate expects from the dated termination signal.
+          status: emp.terminatedAt ? 'ENDED' : 'ACTIVE',
+          jurisdictionTz: COUNTRY_TZ[emp.countryCode] ?? DEFAULT_JURISDICTION_TZ,
+        });
+        externalUserId = emp.worker.email;
+        runSubject = { contractorId: null, assignmentId: null, workerId: input.workerId };
+      } else {
+        const assignment = await findOrThrow(
+          () =>
+            ctx.db.contractorAssignment.findFirst({
+              where: { id: input.assignmentId, organizationId: ctx.organizationId },
+              select: {
+                id: true,
+                status: true,
+                endedAt: true,
+                contractorId: true,
+                contractor: { select: { id: true, countryCode: true, email: true } },
+              },
+            }),
+          DEPROVISIONING_ASSIGNMENT_NOT_FOUND,
+        );
+        decision = canStartDeprovisioning({
+          endedAt: assignment.endedAt ?? null,
+          jurisdictionTz: COUNTRY_TZ[assignment.contractor.countryCode] ?? DEFAULT_JURISDICTION_TZ,
+          status: assignment.status,
+        });
+        externalUserId = assignment.contractor.email;
+        runSubject = {
+          contractorId: assignment.contractorId,
+          assignmentId: assignment.id,
+          workerId: null,
+        };
+      }
+
       if (!decision.allowed) {
         // Structured cooldown detail (reason + earliestDate) is in the audit log and the
         // getDeprovisioningEligibility query; the message is an i18n error key.
         throw new TRPCError({ code: 'FORBIDDEN', message: DEPROVISIONING_COOLDOWN_ACTIVE });
       }
 
-      const externalUserId = assignment.contractor.email;
       if (!externalUserId) {
         throw new TRPCError({
           code: 'PRECONDITION_FAILED',
@@ -263,8 +315,9 @@ export const deprovisioningRouter = router({
           const created = await tx.deprovisioningRun.create({
             data: {
               organizationId: ctx.organizationId,
-              contractorId: assignment.contractorId,
-              assignmentId: assignment.id,
+              contractorId: runSubject.contractorId,
+              assignmentId: runSubject.assignmentId,
+              workerId: runSubject.workerId,
               triggeredByUserId: ctx.user.id,
               idempotencyKey: input.idempotencyKey,
               status: 'PENDING',

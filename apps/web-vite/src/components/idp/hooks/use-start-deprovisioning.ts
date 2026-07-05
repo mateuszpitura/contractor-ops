@@ -93,7 +93,7 @@ export function useStartDeprovisioning({
 
   const start = useCallback(() => {
     if (!(assignmentId && idempotencyKey) || startMutation.isPending) return;
-    startMutation.mutate({ assignmentId, idempotencyKey });
+    startMutation.mutate({ subjectType: 'CONTRACTOR', assignmentId, idempotencyKey });
   }, [assignmentId, idempotencyKey, startMutation]);
 
   const eligibility = eligibilityQuery.data;
