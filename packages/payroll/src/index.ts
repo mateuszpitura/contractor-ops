@@ -13,7 +13,16 @@ export type { PayrollTargetSummary } from './engine/engine.js';
 export { PayrollExportEngine } from './engine/engine.js';
 // --- Profiles: PL file-export ------------------------------------------------
 export { ComarchProfile, registerComarchProfile } from './profiles/comarch/index.js';
+// --- Profiles: DE file-export ------------------------------------------------
+export {
+  type DatevConnectConnection,
+  type DatevConnectResult,
+  DatevProfile,
+  pushViaDatevConnect,
+  registerDatevProfile,
+} from './profiles/datev/index.js';
 export { EnovaProfile, registerEnovaProfile } from './profiles/enova/index.js';
+export { registerSageDeProfile, SageDeProfile } from './profiles/sage-de/index.js';
 export {
   registerSymfoniaProfile,
   type SymfoniaOptions,

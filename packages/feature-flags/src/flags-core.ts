@@ -369,6 +369,15 @@ export const FLAGS = deepFreeze({
     jurisdiction: 'ANY',
     owner: 'payroll-platform',
   },
+  'payroll.sage-de': {
+    key: 'payroll.sage-de',
+    description:
+      'Sage HR / Personalwirtschaft (DE) payroll integration adapter (Theme B). Distinct from DATEV. Ship dark — requires signoff PENDING→APPROVED before enabling per-org.',
+    default: false,
+    category: 'payroll',
+    jurisdiction: 'ANY',
+    owner: 'payroll-platform',
+  },
   'payroll.sage-uk': {
     key: 'payroll.sage-uk',
     description:
@@ -435,6 +444,7 @@ export const V7_FLAG_KEYS = [
   'payroll.comarch',
   'payroll.enova',
   'payroll.datev',
+  'payroll.sage-de',
   'payroll.sage-uk',
   'payroll.gusto',
   'payroll.quickbooks',
