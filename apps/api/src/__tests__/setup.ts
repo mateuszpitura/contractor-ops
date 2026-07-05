@@ -30,11 +30,10 @@ env.BETTER_AUTH_SECRET = env.BETTER_AUTH_SECRET ?? 'test-secret-test-secret';
 env.BETTER_AUTH_URL = env.BETTER_AUTH_URL ?? 'https://api.example.test';
 env.PUBLIC_APP_URL = env.PUBLIC_APP_URL ?? 'https://app.example.test';
 
-// Stripe client is constructed eagerly at module load by
-// `packages/api/src/services/stripe-client.ts`; without a key it throws
-// "Neither apiKey nor config.authenticator provided" before any test
-// runs. The value is non-functional — billing tests mock Stripe
-// directly — but having any string keeps module load alive.
+// STRIPE_SECRET_KEY is required by `validateServerEnv`, which the appRouter
+// runs at module load via eager `getServerEnv()` callers (e.g.
+// billing-constants). The value is non-functional — billing tests mock Stripe
+// directly — but it must satisfy the schema so imports don't throw.
 env.STRIPE_SECRET_KEY = env.STRIPE_SECRET_KEY ?? 'sk_test_placeholder';
 
 // Remaining server-env credentials enforced by `validateServerEnv`
@@ -88,6 +87,8 @@ env.ANTHROPIC_API_KEY = env.ANTHROPIC_API_KEY ?? 'sk-ant-test-placeholder';
 env.BANK_ACCOUNT_ENCRYPTION_KEY =
   env.BANK_ACCOUNT_ENCRYPTION_KEY ??
   '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef';
+env.SSN_ENCRYPTION_KEY =
+  env.SSN_ENCRYPTION_KEY ?? 'fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210';
 env.EMPLOYEE_PII_ENCRYPTION_KEY =
   env.EMPLOYEE_PII_ENCRYPTION_KEY ??
   'fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210';
