@@ -43,4 +43,9 @@ enum ActorType {
   INTEGRATION
   API_KEY
   CONTRACTOR
+  // Employee-portal self-service actor — an employee Worker acting on their own
+  // records (leave request, document upload) or a line manager acting on a
+  // direct report. Distinct from CONTRACTOR: a portal employee is never a
+  // Contractor, and never a staff USER.
+  EMPLOYEE
 }

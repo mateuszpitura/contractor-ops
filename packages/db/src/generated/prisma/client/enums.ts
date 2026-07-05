@@ -46,7 +46,8 @@ export const ActorType = {
   SYSTEM: 'SYSTEM',
   INTEGRATION: 'INTEGRATION',
   API_KEY: 'API_KEY',
-  CONTRACTOR: 'CONTRACTOR'
+  CONTRACTOR: 'CONTRACTOR',
+  EMPLOYEE: 'EMPLOYEE'
 } as const
 
 export type ActorType = (typeof ActorType)[keyof typeof ActorType]

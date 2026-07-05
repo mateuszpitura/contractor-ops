@@ -122,8 +122,21 @@ function makeTimeEntry(id: string, workerId: string, organizationId: string): Re
     organizationId,
     workerId,
     workDate: new Date('2026-07-01'),
-    minutes: 480,
+    workedMinutes: 480,
+    nightMinutes: 0,
     deletedAt: null,
+  };
+}
+
+function makeLedgerAccrual(workerId: string, organizationId: string, leaveTypeId: string): Rec {
+  return {
+    id: `ledger-${workerId}`,
+    organizationId,
+    workerId,
+    leaveTypeId,
+    entryType: 'ACCRUAL',
+    minutes: 12000,
+    effectiveDate: new Date('2026-01-01'),
   };
 }
 
@@ -155,8 +168,14 @@ export function makePortalEmployeeFixture(): PortalEmployeeFixture {
       makeProfile(WORKER_X, ORG_C, null),
     ],
     leaveTypes: [
-      { id: LEAVE_TYPE_ID, organizationId: ORG_A, name: 'Vacation', kind: 'VACATION' },
-      { id: 'lt-vacation-c', organizationId: ORG_C, name: 'Vacation', kind: 'VACATION' },
+      { id: LEAVE_TYPE_ID, organizationId: ORG_A, name: 'Vacation', kind: 'ANNUAL', active: true },
+      {
+        id: 'lt-vacation-c',
+        organizationId: ORG_C,
+        name: 'Vacation',
+        kind: 'ANNUAL',
+        active: true,
+      },
     ],
     leaveRequests: [
       makeLeaveRequest('lr-A', WORKER_A, ORG_A),
@@ -189,7 +208,11 @@ export function makePortalEmployeeFixture(): PortalEmployeeFixture {
         usedMinutes: 0,
       },
     ],
-    leaveLedger: [],
+    leaveLedger: [
+      makeLedgerAccrual(WORKER_A, ORG_A, LEAVE_TYPE_ID),
+      makeLedgerAccrual(WORKER_B, ORG_A, LEAVE_TYPE_ID),
+      makeLedgerAccrual(WORKER_X, ORG_C, 'lt-vacation-c'),
+    ],
     personnelFiles: [
       makePersonnelFile(WORKER_A, ORG_A),
       makePersonnelFile(WORKER_B, ORG_A),
@@ -333,8 +356,8 @@ export function createDbFromFixture(fx: PortalEmployeeFixture) {
     personnelFileDocument: fx.personnelDocuments,
     document: fx.documents,
     timeEntry: fx.timeEntries,
-    employeeTimeEntry: fx.timeEntries,
-    ewidencjaEntry: fx.ewidencja,
+    employeeTimeRecord: fx.timeEntries,
+    ewidencjaSnapshot: fx.ewidencja,
     pendingUpload: fx.pendingUploads,
     portalSession: fx.portalSessions,
   };
