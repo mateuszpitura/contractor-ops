@@ -298,6 +298,8 @@ enum EntityType {
   RETURN_REQUEST
   LEAVE_REQUEST
   EMPLOYEE_TIME_RECORD
+  WORKER
+  EMPLOYEE
 }
 
 enum DocumentLinkRole {

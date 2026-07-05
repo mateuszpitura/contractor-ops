@@ -43,6 +43,8 @@ export type WorkflowTemplateMinAggregateOutputType = {
   version: number | null
   status: $Enums.WorkflowTemplateStatus | null
   appliesToEntityType: $Enums.EntityType | null
+  jurisdiction: string | null
+  seedKey: string | null
   createdByUserId: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -57,6 +59,8 @@ export type WorkflowTemplateMaxAggregateOutputType = {
   version: number | null
   status: $Enums.WorkflowTemplateStatus | null
   appliesToEntityType: $Enums.EntityType | null
+  jurisdiction: string | null
+  seedKey: string | null
   createdByUserId: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -71,6 +75,8 @@ export type WorkflowTemplateCountAggregateOutputType = {
   version: number
   status: number
   appliesToEntityType: number
+  jurisdiction: number
+  seedKey: number
   createdByUserId: number
   createdAt: number
   updatedAt: number
@@ -95,6 +101,8 @@ export type WorkflowTemplateMinAggregateInputType = {
   version?: true
   status?: true
   appliesToEntityType?: true
+  jurisdiction?: true
+  seedKey?: true
   createdByUserId?: true
   createdAt?: true
   updatedAt?: true
@@ -109,6 +117,8 @@ export type WorkflowTemplateMaxAggregateInputType = {
   version?: true
   status?: true
   appliesToEntityType?: true
+  jurisdiction?: true
+  seedKey?: true
   createdByUserId?: true
   createdAt?: true
   updatedAt?: true
@@ -123,6 +133,8 @@ export type WorkflowTemplateCountAggregateInputType = {
   version?: true
   status?: true
   appliesToEntityType?: true
+  jurisdiction?: true
+  seedKey?: true
   createdByUserId?: true
   createdAt?: true
   updatedAt?: true
@@ -224,6 +236,8 @@ export type WorkflowTemplateGroupByOutputType = {
   version: number
   status: $Enums.WorkflowTemplateStatus
   appliesToEntityType: $Enums.EntityType
+  jurisdiction: string | null
+  seedKey: string | null
   createdByUserId: string
   createdAt: Date
   updatedAt: Date
@@ -261,6 +275,8 @@ export type WorkflowTemplateWhereInput = {
   version?: Prisma.IntFilter<"WorkflowTemplate"> | number
   status?: Prisma.EnumWorkflowTemplateStatusFilter<"WorkflowTemplate"> | $Enums.WorkflowTemplateStatus
   appliesToEntityType?: Prisma.EnumEntityTypeFilter<"WorkflowTemplate"> | $Enums.EntityType
+  jurisdiction?: Prisma.StringNullableFilter<"WorkflowTemplate"> | string | null
+  seedKey?: Prisma.StringNullableFilter<"WorkflowTemplate"> | string | null
   createdByUserId?: Prisma.StringFilter<"WorkflowTemplate"> | string
   createdAt?: Prisma.DateTimeFilter<"WorkflowTemplate"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"WorkflowTemplate"> | Date | string
@@ -278,6 +294,8 @@ export type WorkflowTemplateOrderByWithRelationInput = {
   version?: Prisma.SortOrder
   status?: Prisma.SortOrder
   appliesToEntityType?: Prisma.SortOrder
+  jurisdiction?: Prisma.SortOrderInput | Prisma.SortOrder
+  seedKey?: Prisma.SortOrderInput | Prisma.SortOrder
   createdByUserId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -288,6 +306,7 @@ export type WorkflowTemplateOrderByWithRelationInput = {
 
 export type WorkflowTemplateWhereUniqueInput = Prisma.AtLeast<{
   id?: string
+  organizationId_jurisdiction_type_seedKey?: Prisma.WorkflowTemplateOrganizationIdJurisdictionTypeSeedKeyCompoundUniqueInput
   AND?: Prisma.WorkflowTemplateWhereInput | Prisma.WorkflowTemplateWhereInput[]
   OR?: Prisma.WorkflowTemplateWhereInput[]
   NOT?: Prisma.WorkflowTemplateWhereInput | Prisma.WorkflowTemplateWhereInput[]
@@ -298,13 +317,15 @@ export type WorkflowTemplateWhereUniqueInput = Prisma.AtLeast<{
   version?: Prisma.IntFilter<"WorkflowTemplate"> | number
   status?: Prisma.EnumWorkflowTemplateStatusFilter<"WorkflowTemplate"> | $Enums.WorkflowTemplateStatus
   appliesToEntityType?: Prisma.EnumEntityTypeFilter<"WorkflowTemplate"> | $Enums.EntityType
+  jurisdiction?: Prisma.StringNullableFilter<"WorkflowTemplate"> | string | null
+  seedKey?: Prisma.StringNullableFilter<"WorkflowTemplate"> | string | null
   createdByUserId?: Prisma.StringFilter<"WorkflowTemplate"> | string
   createdAt?: Prisma.DateTimeFilter<"WorkflowTemplate"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"WorkflowTemplate"> | Date | string
   organization?: Prisma.XOR<Prisma.OrganizationScalarRelationFilter, Prisma.OrganizationWhereInput>
   tasks?: Prisma.WorkflowTaskTemplateListRelationFilter
   runs?: Prisma.WorkflowRunListRelationFilter
-}, "id">
+}, "id" | "organizationId_jurisdiction_type_seedKey">
 
 export type WorkflowTemplateOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -315,6 +336,8 @@ export type WorkflowTemplateOrderByWithAggregationInput = {
   version?: Prisma.SortOrder
   status?: Prisma.SortOrder
   appliesToEntityType?: Prisma.SortOrder
+  jurisdiction?: Prisma.SortOrderInput | Prisma.SortOrder
+  seedKey?: Prisma.SortOrderInput | Prisma.SortOrder
   createdByUserId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -337,6 +360,8 @@ export type WorkflowTemplateScalarWhereWithAggregatesInput = {
   version?: Prisma.IntWithAggregatesFilter<"WorkflowTemplate"> | number
   status?: Prisma.EnumWorkflowTemplateStatusWithAggregatesFilter<"WorkflowTemplate"> | $Enums.WorkflowTemplateStatus
   appliesToEntityType?: Prisma.EnumEntityTypeWithAggregatesFilter<"WorkflowTemplate"> | $Enums.EntityType
+  jurisdiction?: Prisma.StringNullableWithAggregatesFilter<"WorkflowTemplate"> | string | null
+  seedKey?: Prisma.StringNullableWithAggregatesFilter<"WorkflowTemplate"> | string | null
   createdByUserId?: Prisma.StringWithAggregatesFilter<"WorkflowTemplate"> | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"WorkflowTemplate"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"WorkflowTemplate"> | Date | string
@@ -350,6 +375,8 @@ export type WorkflowTemplateCreateInput = {
   version: number
   status?: $Enums.WorkflowTemplateStatus
   appliesToEntityType: $Enums.EntityType
+  jurisdiction?: string | null
+  seedKey?: string | null
   createdByUserId: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -367,6 +394,8 @@ export type WorkflowTemplateUncheckedCreateInput = {
   version: number
   status?: $Enums.WorkflowTemplateStatus
   appliesToEntityType: $Enums.EntityType
+  jurisdiction?: string | null
+  seedKey?: string | null
   createdByUserId: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -382,6 +411,8 @@ export type WorkflowTemplateUpdateInput = {
   version?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumWorkflowTemplateStatusFieldUpdateOperationsInput | $Enums.WorkflowTemplateStatus
   appliesToEntityType?: Prisma.EnumEntityTypeFieldUpdateOperationsInput | $Enums.EntityType
+  jurisdiction?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  seedKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdByUserId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -399,6 +430,8 @@ export type WorkflowTemplateUncheckedUpdateInput = {
   version?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumWorkflowTemplateStatusFieldUpdateOperationsInput | $Enums.WorkflowTemplateStatus
   appliesToEntityType?: Prisma.EnumEntityTypeFieldUpdateOperationsInput | $Enums.EntityType
+  jurisdiction?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  seedKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdByUserId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -415,6 +448,8 @@ export type WorkflowTemplateCreateManyInput = {
   version: number
   status?: $Enums.WorkflowTemplateStatus
   appliesToEntityType: $Enums.EntityType
+  jurisdiction?: string | null
+  seedKey?: string | null
   createdByUserId: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -428,6 +463,8 @@ export type WorkflowTemplateUpdateManyMutationInput = {
   version?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumWorkflowTemplateStatusFieldUpdateOperationsInput | $Enums.WorkflowTemplateStatus
   appliesToEntityType?: Prisma.EnumEntityTypeFieldUpdateOperationsInput | $Enums.EntityType
+  jurisdiction?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  seedKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdByUserId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -442,6 +479,8 @@ export type WorkflowTemplateUncheckedUpdateManyInput = {
   version?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumWorkflowTemplateStatusFieldUpdateOperationsInput | $Enums.WorkflowTemplateStatus
   appliesToEntityType?: Prisma.EnumEntityTypeFieldUpdateOperationsInput | $Enums.EntityType
+  jurisdiction?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  seedKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdByUserId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -457,6 +496,13 @@ export type WorkflowTemplateOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
+export type WorkflowTemplateOrganizationIdJurisdictionTypeSeedKeyCompoundUniqueInput = {
+  organizationId: string
+  jurisdiction: string
+  type: $Enums.WorkflowTemplateType
+  seedKey: string
+}
+
 export type WorkflowTemplateCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   organizationId?: Prisma.SortOrder
@@ -466,6 +512,8 @@ export type WorkflowTemplateCountOrderByAggregateInput = {
   version?: Prisma.SortOrder
   status?: Prisma.SortOrder
   appliesToEntityType?: Prisma.SortOrder
+  jurisdiction?: Prisma.SortOrder
+  seedKey?: Prisma.SortOrder
   createdByUserId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -484,6 +532,8 @@ export type WorkflowTemplateMaxOrderByAggregateInput = {
   version?: Prisma.SortOrder
   status?: Prisma.SortOrder
   appliesToEntityType?: Prisma.SortOrder
+  jurisdiction?: Prisma.SortOrder
+  seedKey?: Prisma.SortOrder
   createdByUserId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -498,6 +548,8 @@ export type WorkflowTemplateMinOrderByAggregateInput = {
   version?: Prisma.SortOrder
   status?: Prisma.SortOrder
   appliesToEntityType?: Prisma.SortOrder
+  jurisdiction?: Prisma.SortOrder
+  seedKey?: Prisma.SortOrder
   createdByUserId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -598,6 +650,8 @@ export type WorkflowTemplateCreateWithoutOrganizationInput = {
   version: number
   status?: $Enums.WorkflowTemplateStatus
   appliesToEntityType: $Enums.EntityType
+  jurisdiction?: string | null
+  seedKey?: string | null
   createdByUserId: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -613,6 +667,8 @@ export type WorkflowTemplateUncheckedCreateWithoutOrganizationInput = {
   version: number
   status?: $Enums.WorkflowTemplateStatus
   appliesToEntityType: $Enums.EntityType
+  jurisdiction?: string | null
+  seedKey?: string | null
   createdByUserId: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -658,6 +714,8 @@ export type WorkflowTemplateScalarWhereInput = {
   version?: Prisma.IntFilter<"WorkflowTemplate"> | number
   status?: Prisma.EnumWorkflowTemplateStatusFilter<"WorkflowTemplate"> | $Enums.WorkflowTemplateStatus
   appliesToEntityType?: Prisma.EnumEntityTypeFilter<"WorkflowTemplate"> | $Enums.EntityType
+  jurisdiction?: Prisma.StringNullableFilter<"WorkflowTemplate"> | string | null
+  seedKey?: Prisma.StringNullableFilter<"WorkflowTemplate"> | string | null
   createdByUserId?: Prisma.StringFilter<"WorkflowTemplate"> | string
   createdAt?: Prisma.DateTimeFilter<"WorkflowTemplate"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"WorkflowTemplate"> | Date | string
@@ -671,6 +729,8 @@ export type WorkflowTemplateCreateWithoutTasksInput = {
   version: number
   status?: $Enums.WorkflowTemplateStatus
   appliesToEntityType: $Enums.EntityType
+  jurisdiction?: string | null
+  seedKey?: string | null
   createdByUserId: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -687,6 +747,8 @@ export type WorkflowTemplateUncheckedCreateWithoutTasksInput = {
   version: number
   status?: $Enums.WorkflowTemplateStatus
   appliesToEntityType: $Enums.EntityType
+  jurisdiction?: string | null
+  seedKey?: string | null
   createdByUserId: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -717,6 +779,8 @@ export type WorkflowTemplateUpdateWithoutTasksInput = {
   version?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumWorkflowTemplateStatusFieldUpdateOperationsInput | $Enums.WorkflowTemplateStatus
   appliesToEntityType?: Prisma.EnumEntityTypeFieldUpdateOperationsInput | $Enums.EntityType
+  jurisdiction?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  seedKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdByUserId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -733,6 +797,8 @@ export type WorkflowTemplateUncheckedUpdateWithoutTasksInput = {
   version?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumWorkflowTemplateStatusFieldUpdateOperationsInput | $Enums.WorkflowTemplateStatus
   appliesToEntityType?: Prisma.EnumEntityTypeFieldUpdateOperationsInput | $Enums.EntityType
+  jurisdiction?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  seedKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdByUserId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -747,6 +813,8 @@ export type WorkflowTemplateCreateWithoutRunsInput = {
   version: number
   status?: $Enums.WorkflowTemplateStatus
   appliesToEntityType: $Enums.EntityType
+  jurisdiction?: string | null
+  seedKey?: string | null
   createdByUserId: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -763,6 +831,8 @@ export type WorkflowTemplateUncheckedCreateWithoutRunsInput = {
   version: number
   status?: $Enums.WorkflowTemplateStatus
   appliesToEntityType: $Enums.EntityType
+  jurisdiction?: string | null
+  seedKey?: string | null
   createdByUserId: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -793,6 +863,8 @@ export type WorkflowTemplateUpdateWithoutRunsInput = {
   version?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumWorkflowTemplateStatusFieldUpdateOperationsInput | $Enums.WorkflowTemplateStatus
   appliesToEntityType?: Prisma.EnumEntityTypeFieldUpdateOperationsInput | $Enums.EntityType
+  jurisdiction?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  seedKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdByUserId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -809,6 +881,8 @@ export type WorkflowTemplateUncheckedUpdateWithoutRunsInput = {
   version?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumWorkflowTemplateStatusFieldUpdateOperationsInput | $Enums.WorkflowTemplateStatus
   appliesToEntityType?: Prisma.EnumEntityTypeFieldUpdateOperationsInput | $Enums.EntityType
+  jurisdiction?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  seedKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdByUserId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -823,6 +897,8 @@ export type WorkflowTemplateCreateManyOrganizationInput = {
   version: number
   status?: $Enums.WorkflowTemplateStatus
   appliesToEntityType: $Enums.EntityType
+  jurisdiction?: string | null
+  seedKey?: string | null
   createdByUserId: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -836,6 +912,8 @@ export type WorkflowTemplateUpdateWithoutOrganizationInput = {
   version?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumWorkflowTemplateStatusFieldUpdateOperationsInput | $Enums.WorkflowTemplateStatus
   appliesToEntityType?: Prisma.EnumEntityTypeFieldUpdateOperationsInput | $Enums.EntityType
+  jurisdiction?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  seedKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdByUserId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -851,6 +929,8 @@ export type WorkflowTemplateUncheckedUpdateWithoutOrganizationInput = {
   version?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumWorkflowTemplateStatusFieldUpdateOperationsInput | $Enums.WorkflowTemplateStatus
   appliesToEntityType?: Prisma.EnumEntityTypeFieldUpdateOperationsInput | $Enums.EntityType
+  jurisdiction?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  seedKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdByUserId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -866,6 +946,8 @@ export type WorkflowTemplateUncheckedUpdateManyWithoutOrganizationInput = {
   version?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumWorkflowTemplateStatusFieldUpdateOperationsInput | $Enums.WorkflowTemplateStatus
   appliesToEntityType?: Prisma.EnumEntityTypeFieldUpdateOperationsInput | $Enums.EntityType
+  jurisdiction?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  seedKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdByUserId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -920,6 +1002,8 @@ export type WorkflowTemplateSelect<ExtArgs extends runtime.Types.Extensions.Inte
   version?: boolean
   status?: boolean
   appliesToEntityType?: boolean
+  jurisdiction?: boolean
+  seedKey?: boolean
   createdByUserId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -938,6 +1022,8 @@ export type WorkflowTemplateSelectCreateManyAndReturn<ExtArgs extends runtime.Ty
   version?: boolean
   status?: boolean
   appliesToEntityType?: boolean
+  jurisdiction?: boolean
+  seedKey?: boolean
   createdByUserId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -953,6 +1039,8 @@ export type WorkflowTemplateSelectUpdateManyAndReturn<ExtArgs extends runtime.Ty
   version?: boolean
   status?: boolean
   appliesToEntityType?: boolean
+  jurisdiction?: boolean
+  seedKey?: boolean
   createdByUserId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -968,12 +1056,14 @@ export type WorkflowTemplateSelectScalar = {
   version?: boolean
   status?: boolean
   appliesToEntityType?: boolean
+  jurisdiction?: boolean
+  seedKey?: boolean
   createdByUserId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type WorkflowTemplateOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "name" | "type" | "description" | "version" | "status" | "appliesToEntityType" | "createdByUserId" | "createdAt" | "updatedAt", ExtArgs["result"]["workflowTemplate"]>
+export type WorkflowTemplateOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "name" | "type" | "description" | "version" | "status" | "appliesToEntityType" | "jurisdiction" | "seedKey" | "createdByUserId" | "createdAt" | "updatedAt", ExtArgs["result"]["workflowTemplate"]>
 export type WorkflowTemplateInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   tasks?: boolean | Prisma.WorkflowTemplate$tasksArgs<ExtArgs>
@@ -1003,6 +1093,8 @@ export type $WorkflowTemplatePayload<ExtArgs extends runtime.Types.Extensions.In
     version: number
     status: $Enums.WorkflowTemplateStatus
     appliesToEntityType: $Enums.EntityType
+    jurisdiction: string | null
+    seedKey: string | null
     createdByUserId: string
     createdAt: Date
     updatedAt: Date
@@ -1440,6 +1532,8 @@ export interface WorkflowTemplateFieldRefs {
   readonly version: Prisma.FieldRef<"WorkflowTemplate", 'Int'>
   readonly status: Prisma.FieldRef<"WorkflowTemplate", 'WorkflowTemplateStatus'>
   readonly appliesToEntityType: Prisma.FieldRef<"WorkflowTemplate", 'EntityType'>
+  readonly jurisdiction: Prisma.FieldRef<"WorkflowTemplate", 'String'>
+  readonly seedKey: Prisma.FieldRef<"WorkflowTemplate", 'String'>
   readonly createdByUserId: Prisma.FieldRef<"WorkflowTemplate", 'String'>
   readonly createdAt: Prisma.FieldRef<"WorkflowTemplate", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"WorkflowTemplate", 'DateTime'>

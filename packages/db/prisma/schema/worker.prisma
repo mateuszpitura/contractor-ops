@@ -39,6 +39,11 @@ model Worker {
   leaveLedgerEntries  LeaveLedgerEntry[]
   leaveBalances       LeaveBalance[]
   employeeTimeRecords EmployeeTimeRecord[]
+  // Employee on/offboarding runs + IdP deprovisioning runs keyed to this worker
+  // (present when workerType = EMPLOYEE). Reciprocal of the nullable workerId FK
+  // on WorkflowRun and DeprovisioningRun.
+  workflowRuns        WorkflowRun[]
+  deprovisioningRuns  DeprovisioningRun[]
 
   @@index([organizationId])
   @@index([organizationId, workerType])

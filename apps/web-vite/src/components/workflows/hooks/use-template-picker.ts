@@ -72,7 +72,12 @@ export function useTemplatePicker({
       if (isBulk && contractorIds) {
         const results = await Promise.all(
           contractorIds.map(cId =>
-            startRunMutation.mutateAsync({ templateId, contractorId: cId, contractId }),
+            startRunMutation.mutateAsync({
+              subjectType: 'CONTRACTOR',
+              templateId,
+              contractorId: cId,
+              contractId,
+            }),
           ),
         );
         let total = 0;
@@ -83,6 +88,7 @@ export function useTemplatePicker({
       }
       if (effectiveContractorId) {
         const result = (await startRunMutation.mutateAsync({
+          subjectType: 'CONTRACTOR',
           templateId,
           contractorId: effectiveContractorId,
           contractId,

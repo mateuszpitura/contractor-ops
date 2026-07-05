@@ -50,6 +50,7 @@ export type EmployeeProfileMinAggregateOutputType = {
   saudizationCategory: $Enums.NitaqatBand | null
   etat: runtime.Decimal | null
   employmentStatus: $Enums.EmploymentStatus | null
+  terminatedAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -70,6 +71,7 @@ export type EmployeeProfileMaxAggregateOutputType = {
   saudizationCategory: $Enums.NitaqatBand | null
   etat: runtime.Decimal | null
   employmentStatus: $Enums.EmploymentStatus | null
+  terminatedAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -91,6 +93,7 @@ export type EmployeeProfileCountAggregateOutputType = {
   saudizationCategory: number
   etat: number
   employmentStatus: number
+  terminatedAt: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -121,6 +124,7 @@ export type EmployeeProfileMinAggregateInputType = {
   saudizationCategory?: true
   etat?: true
   employmentStatus?: true
+  terminatedAt?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -141,6 +145,7 @@ export type EmployeeProfileMaxAggregateInputType = {
   saudizationCategory?: true
   etat?: true
   employmentStatus?: true
+  terminatedAt?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -162,6 +167,7 @@ export type EmployeeProfileCountAggregateInputType = {
   saudizationCategory?: true
   etat?: true
   employmentStatus?: true
+  terminatedAt?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -270,6 +276,7 @@ export type EmployeeProfileGroupByOutputType = {
   saudizationCategory: $Enums.NitaqatBand | null
   etat: runtime.Decimal | null
   employmentStatus: $Enums.EmploymentStatus | null
+  terminatedAt: Date | null
   createdAt: Date
   updatedAt: Date
   _count: EmployeeProfileCountAggregateOutputType | null
@@ -314,6 +321,7 @@ export type EmployeeProfileWhereInput = {
   saudizationCategory?: Prisma.EnumNitaqatBandNullableFilter<"EmployeeProfile"> | $Enums.NitaqatBand | null
   etat?: Prisma.DecimalNullableFilter<"EmployeeProfile"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   employmentStatus?: Prisma.EnumEmploymentStatusNullableFilter<"EmployeeProfile"> | $Enums.EmploymentStatus | null
+  terminatedAt?: Prisma.DateTimeNullableFilter<"EmployeeProfile"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"EmployeeProfile"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"EmployeeProfile"> | Date | string
   organization?: Prisma.XOR<Prisma.OrganizationScalarRelationFilter, Prisma.OrganizationWhereInput>
@@ -337,6 +345,7 @@ export type EmployeeProfileOrderByWithRelationInput = {
   saudizationCategory?: Prisma.SortOrderInput | Prisma.SortOrder
   etat?: Prisma.SortOrderInput | Prisma.SortOrder
   employmentStatus?: Prisma.SortOrderInput | Prisma.SortOrder
+  terminatedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   organization?: Prisma.OrganizationOrderByWithRelationInput
@@ -364,6 +373,7 @@ export type EmployeeProfileWhereUniqueInput = Prisma.AtLeast<{
   saudizationCategory?: Prisma.EnumNitaqatBandNullableFilter<"EmployeeProfile"> | $Enums.NitaqatBand | null
   etat?: Prisma.DecimalNullableFilter<"EmployeeProfile"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   employmentStatus?: Prisma.EnumEmploymentStatusNullableFilter<"EmployeeProfile"> | $Enums.EmploymentStatus | null
+  terminatedAt?: Prisma.DateTimeNullableFilter<"EmployeeProfile"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"EmployeeProfile"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"EmployeeProfile"> | Date | string
   organization?: Prisma.XOR<Prisma.OrganizationScalarRelationFilter, Prisma.OrganizationWhereInput>
@@ -387,6 +397,7 @@ export type EmployeeProfileOrderByWithAggregationInput = {
   saudizationCategory?: Prisma.SortOrderInput | Prisma.SortOrder
   etat?: Prisma.SortOrderInput | Prisma.SortOrder
   employmentStatus?: Prisma.SortOrderInput | Prisma.SortOrder
+  terminatedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.EmployeeProfileCountOrderByAggregateInput
@@ -416,6 +427,7 @@ export type EmployeeProfileScalarWhereWithAggregatesInput = {
   saudizationCategory?: Prisma.EnumNitaqatBandNullableWithAggregatesFilter<"EmployeeProfile"> | $Enums.NitaqatBand | null
   etat?: Prisma.DecimalNullableWithAggregatesFilter<"EmployeeProfile"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   employmentStatus?: Prisma.EnumEmploymentStatusNullableWithAggregatesFilter<"EmployeeProfile"> | $Enums.EmploymentStatus | null
+  terminatedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"EmployeeProfile"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"EmployeeProfile"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"EmployeeProfile"> | Date | string
 }
@@ -435,6 +447,7 @@ export type EmployeeProfileCreateInput = {
   saudizationCategory?: $Enums.NitaqatBand | null
   etat?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   employmentStatus?: $Enums.EmploymentStatus | null
+  terminatedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   organization: Prisma.OrganizationCreateNestedOneWithoutEmployeeProfilesInput
@@ -458,6 +471,7 @@ export type EmployeeProfileUncheckedCreateInput = {
   saudizationCategory?: $Enums.NitaqatBand | null
   etat?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   employmentStatus?: $Enums.EmploymentStatus | null
+  terminatedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -477,6 +491,7 @@ export type EmployeeProfileUpdateInput = {
   saudizationCategory?: Prisma.NullableEnumNitaqatBandFieldUpdateOperationsInput | $Enums.NitaqatBand | null
   etat?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   employmentStatus?: Prisma.NullableEnumEmploymentStatusFieldUpdateOperationsInput | $Enums.EmploymentStatus | null
+  terminatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutEmployeeProfilesNestedInput
@@ -500,6 +515,7 @@ export type EmployeeProfileUncheckedUpdateInput = {
   saudizationCategory?: Prisma.NullableEnumNitaqatBandFieldUpdateOperationsInput | $Enums.NitaqatBand | null
   etat?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   employmentStatus?: Prisma.NullableEnumEmploymentStatusFieldUpdateOperationsInput | $Enums.EmploymentStatus | null
+  terminatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -521,6 +537,7 @@ export type EmployeeProfileCreateManyInput = {
   saudizationCategory?: $Enums.NitaqatBand | null
   etat?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   employmentStatus?: $Enums.EmploymentStatus | null
+  terminatedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -540,6 +557,7 @@ export type EmployeeProfileUpdateManyMutationInput = {
   saudizationCategory?: Prisma.NullableEnumNitaqatBandFieldUpdateOperationsInput | $Enums.NitaqatBand | null
   etat?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   employmentStatus?: Prisma.NullableEnumEmploymentStatusFieldUpdateOperationsInput | $Enums.EmploymentStatus | null
+  terminatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -561,6 +579,7 @@ export type EmployeeProfileUncheckedUpdateManyInput = {
   saudizationCategory?: Prisma.NullableEnumNitaqatBandFieldUpdateOperationsInput | $Enums.NitaqatBand | null
   etat?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   employmentStatus?: Prisma.NullableEnumEmploymentStatusFieldUpdateOperationsInput | $Enums.EmploymentStatus | null
+  terminatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -587,6 +606,7 @@ export type EmployeeProfileCountOrderByAggregateInput = {
   saudizationCategory?: Prisma.SortOrder
   etat?: Prisma.SortOrder
   employmentStatus?: Prisma.SortOrder
+  terminatedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -611,6 +631,7 @@ export type EmployeeProfileMaxOrderByAggregateInput = {
   saudizationCategory?: Prisma.SortOrder
   etat?: Prisma.SortOrder
   employmentStatus?: Prisma.SortOrder
+  terminatedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -631,6 +652,7 @@ export type EmployeeProfileMinOrderByAggregateInput = {
   saudizationCategory?: Prisma.SortOrder
   etat?: Prisma.SortOrder
   employmentStatus?: Prisma.SortOrder
+  terminatedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -751,6 +773,7 @@ export type EmployeeProfileCreateWithoutOrganizationInput = {
   saudizationCategory?: $Enums.NitaqatBand | null
   etat?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   employmentStatus?: $Enums.EmploymentStatus | null
+  terminatedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   worker: Prisma.WorkerCreateNestedOneWithoutEmployeeProfileInput
@@ -772,6 +795,7 @@ export type EmployeeProfileUncheckedCreateWithoutOrganizationInput = {
   saudizationCategory?: $Enums.NitaqatBand | null
   etat?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   employmentStatus?: $Enums.EmploymentStatus | null
+  terminatedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -822,6 +846,7 @@ export type EmployeeProfileScalarWhereInput = {
   saudizationCategory?: Prisma.EnumNitaqatBandNullableFilter<"EmployeeProfile"> | $Enums.NitaqatBand | null
   etat?: Prisma.DecimalNullableFilter<"EmployeeProfile"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   employmentStatus?: Prisma.EnumEmploymentStatusNullableFilter<"EmployeeProfile"> | $Enums.EmploymentStatus | null
+  terminatedAt?: Prisma.DateTimeNullableFilter<"EmployeeProfile"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"EmployeeProfile"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"EmployeeProfile"> | Date | string
 }
@@ -841,6 +866,7 @@ export type EmployeeProfileCreateWithoutWorkerInput = {
   saudizationCategory?: $Enums.NitaqatBand | null
   etat?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   employmentStatus?: $Enums.EmploymentStatus | null
+  terminatedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   organization: Prisma.OrganizationCreateNestedOneWithoutEmployeeProfilesInput
@@ -862,6 +888,7 @@ export type EmployeeProfileUncheckedCreateWithoutWorkerInput = {
   saudizationCategory?: $Enums.NitaqatBand | null
   etat?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   employmentStatus?: $Enums.EmploymentStatus | null
+  terminatedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -897,6 +924,7 @@ export type EmployeeProfileUpdateWithoutWorkerInput = {
   saudizationCategory?: Prisma.NullableEnumNitaqatBandFieldUpdateOperationsInput | $Enums.NitaqatBand | null
   etat?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   employmentStatus?: Prisma.NullableEnumEmploymentStatusFieldUpdateOperationsInput | $Enums.EmploymentStatus | null
+  terminatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutEmployeeProfilesNestedInput
@@ -918,6 +946,7 @@ export type EmployeeProfileUncheckedUpdateWithoutWorkerInput = {
   saudizationCategory?: Prisma.NullableEnumNitaqatBandFieldUpdateOperationsInput | $Enums.NitaqatBand | null
   etat?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   employmentStatus?: Prisma.NullableEnumEmploymentStatusFieldUpdateOperationsInput | $Enums.EmploymentStatus | null
+  terminatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -938,6 +967,7 @@ export type EmployeeProfileCreateManyOrganizationInput = {
   saudizationCategory?: $Enums.NitaqatBand | null
   etat?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   employmentStatus?: $Enums.EmploymentStatus | null
+  terminatedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -957,6 +987,7 @@ export type EmployeeProfileUpdateWithoutOrganizationInput = {
   saudizationCategory?: Prisma.NullableEnumNitaqatBandFieldUpdateOperationsInput | $Enums.NitaqatBand | null
   etat?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   employmentStatus?: Prisma.NullableEnumEmploymentStatusFieldUpdateOperationsInput | $Enums.EmploymentStatus | null
+  terminatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   worker?: Prisma.WorkerUpdateOneRequiredWithoutEmployeeProfileNestedInput
@@ -978,6 +1009,7 @@ export type EmployeeProfileUncheckedUpdateWithoutOrganizationInput = {
   saudizationCategory?: Prisma.NullableEnumNitaqatBandFieldUpdateOperationsInput | $Enums.NitaqatBand | null
   etat?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   employmentStatus?: Prisma.NullableEnumEmploymentStatusFieldUpdateOperationsInput | $Enums.EmploymentStatus | null
+  terminatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -998,6 +1030,7 @@ export type EmployeeProfileUncheckedUpdateManyWithoutOrganizationInput = {
   saudizationCategory?: Prisma.NullableEnumNitaqatBandFieldUpdateOperationsInput | $Enums.NitaqatBand | null
   etat?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   employmentStatus?: Prisma.NullableEnumEmploymentStatusFieldUpdateOperationsInput | $Enums.EmploymentStatus | null
+  terminatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1021,6 +1054,7 @@ export type EmployeeProfileSelect<ExtArgs extends runtime.Types.Extensions.Inter
   saudizationCategory?: boolean
   etat?: boolean
   employmentStatus?: boolean
+  terminatedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
@@ -1044,6 +1078,7 @@ export type EmployeeProfileSelectCreateManyAndReturn<ExtArgs extends runtime.Typ
   saudizationCategory?: boolean
   etat?: boolean
   employmentStatus?: boolean
+  terminatedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
@@ -1067,6 +1102,7 @@ export type EmployeeProfileSelectUpdateManyAndReturn<ExtArgs extends runtime.Typ
   saudizationCategory?: boolean
   etat?: boolean
   employmentStatus?: boolean
+  terminatedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
@@ -1090,11 +1126,12 @@ export type EmployeeProfileSelectScalar = {
   saudizationCategory?: boolean
   etat?: boolean
   employmentStatus?: boolean
+  terminatedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type EmployeeProfileOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "workerId" | "countryCode" | "countryFields" | "peselEncrypted" | "peselLast4" | "ssnEncrypted" | "ssnLast4" | "iqamaEncrypted" | "iqamaLast4" | "emiratesIdEncrypted" | "emiratesIdLast4" | "saudizationCategory" | "etat" | "employmentStatus" | "createdAt" | "updatedAt", ExtArgs["result"]["employeeProfile"]>
+export type EmployeeProfileOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "workerId" | "countryCode" | "countryFields" | "peselEncrypted" | "peselLast4" | "ssnEncrypted" | "ssnLast4" | "iqamaEncrypted" | "iqamaLast4" | "emiratesIdEncrypted" | "emiratesIdLast4" | "saudizationCategory" | "etat" | "employmentStatus" | "terminatedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["employeeProfile"]>
 export type EmployeeProfileInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   worker?: boolean | Prisma.WorkerDefaultArgs<ExtArgs>
@@ -1131,6 +1168,7 @@ export type $EmployeeProfilePayload<ExtArgs extends runtime.Types.Extensions.Int
     saudizationCategory: $Enums.NitaqatBand | null
     etat: runtime.Decimal | null
     employmentStatus: $Enums.EmploymentStatus | null
+    terminatedAt: Date | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["employeeProfile"]>
@@ -1574,6 +1612,7 @@ export interface EmployeeProfileFieldRefs {
   readonly saudizationCategory: Prisma.FieldRef<"EmployeeProfile", 'NitaqatBand'>
   readonly etat: Prisma.FieldRef<"EmployeeProfile", 'Decimal'>
   readonly employmentStatus: Prisma.FieldRef<"EmployeeProfile", 'EmploymentStatus'>
+  readonly terminatedAt: Prisma.FieldRef<"EmployeeProfile", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"EmployeeProfile", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"EmployeeProfile", 'DateTime'>
 }

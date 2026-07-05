@@ -42,6 +42,7 @@ export type WorkflowRunMinAggregateOutputType = {
   entityId: string | null
   contractorId: string | null
   contractId: string | null
+  workerId: string | null
   status: $Enums.WorkflowRunStatus | null
   startedByUserId: string | null
   startedAt: Date | null
@@ -65,6 +66,7 @@ export type WorkflowRunMaxAggregateOutputType = {
   entityId: string | null
   contractorId: string | null
   contractId: string | null
+  workerId: string | null
   status: $Enums.WorkflowRunStatus | null
   startedByUserId: string | null
   startedAt: Date | null
@@ -88,6 +90,7 @@ export type WorkflowRunCountAggregateOutputType = {
   entityId: number
   contractorId: number
   contractId: number
+  workerId: number
   status: number
   startedByUserId: number
   startedAt: number
@@ -122,6 +125,7 @@ export type WorkflowRunMinAggregateInputType = {
   entityId?: true
   contractorId?: true
   contractId?: true
+  workerId?: true
   status?: true
   startedByUserId?: true
   startedAt?: true
@@ -145,6 +149,7 @@ export type WorkflowRunMaxAggregateInputType = {
   entityId?: true
   contractorId?: true
   contractId?: true
+  workerId?: true
   status?: true
   startedByUserId?: true
   startedAt?: true
@@ -168,6 +173,7 @@ export type WorkflowRunCountAggregateInputType = {
   entityId?: true
   contractorId?: true
   contractId?: true
+  workerId?: true
   status?: true
   startedByUserId?: true
   startedAt?: true
@@ -279,6 +285,7 @@ export type WorkflowRunGroupByOutputType = {
   entityId: string
   contractorId: string | null
   contractId: string | null
+  workerId: string | null
   status: $Enums.WorkflowRunStatus
   startedByUserId: string
   startedAt: Date
@@ -326,6 +333,7 @@ export type WorkflowRunWhereInput = {
   entityId?: Prisma.StringFilter<"WorkflowRun"> | string
   contractorId?: Prisma.StringNullableFilter<"WorkflowRun"> | string | null
   contractId?: Prisma.StringNullableFilter<"WorkflowRun"> | string | null
+  workerId?: Prisma.StringNullableFilter<"WorkflowRun"> | string | null
   status?: Prisma.EnumWorkflowRunStatusFilter<"WorkflowRun"> | $Enums.WorkflowRunStatus
   startedByUserId?: Prisma.StringFilter<"WorkflowRun"> | string
   startedAt?: Prisma.DateTimeFilter<"WorkflowRun"> | Date | string
@@ -344,6 +352,7 @@ export type WorkflowRunWhereInput = {
   workflowTemplate?: Prisma.XOR<Prisma.WorkflowTemplateScalarRelationFilter, Prisma.WorkflowTemplateWhereInput>
   contractor?: Prisma.XOR<Prisma.ContractorNullableScalarRelationFilter, Prisma.ContractorWhereInput> | null
   contract?: Prisma.XOR<Prisma.ContractNullableScalarRelationFilter, Prisma.ContractWhereInput> | null
+  worker?: Prisma.XOR<Prisma.WorkerNullableScalarRelationFilter, Prisma.WorkerWhereInput> | null
   startedBy?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   tasks?: Prisma.WorkflowTaskRunListRelationFilter
   comments?: Prisma.WorkflowCommentListRelationFilter
@@ -359,6 +368,7 @@ export type WorkflowRunOrderByWithRelationInput = {
   entityId?: Prisma.SortOrder
   contractorId?: Prisma.SortOrderInput | Prisma.SortOrder
   contractId?: Prisma.SortOrderInput | Prisma.SortOrder
+  workerId?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   startedByUserId?: Prisma.SortOrder
   startedAt?: Prisma.SortOrder
@@ -377,6 +387,7 @@ export type WorkflowRunOrderByWithRelationInput = {
   workflowTemplate?: Prisma.WorkflowTemplateOrderByWithRelationInput
   contractor?: Prisma.ContractorOrderByWithRelationInput
   contract?: Prisma.ContractOrderByWithRelationInput
+  worker?: Prisma.WorkerOrderByWithRelationInput
   startedBy?: Prisma.UserOrderByWithRelationInput
   tasks?: Prisma.WorkflowTaskRunOrderByRelationAggregateInput
   comments?: Prisma.WorkflowCommentOrderByRelationAggregateInput
@@ -395,6 +406,7 @@ export type WorkflowRunWhereUniqueInput = Prisma.AtLeast<{
   entityId?: Prisma.StringFilter<"WorkflowRun"> | string
   contractorId?: Prisma.StringNullableFilter<"WorkflowRun"> | string | null
   contractId?: Prisma.StringNullableFilter<"WorkflowRun"> | string | null
+  workerId?: Prisma.StringNullableFilter<"WorkflowRun"> | string | null
   status?: Prisma.EnumWorkflowRunStatusFilter<"WorkflowRun"> | $Enums.WorkflowRunStatus
   startedByUserId?: Prisma.StringFilter<"WorkflowRun"> | string
   startedAt?: Prisma.DateTimeFilter<"WorkflowRun"> | Date | string
@@ -413,6 +425,7 @@ export type WorkflowRunWhereUniqueInput = Prisma.AtLeast<{
   workflowTemplate?: Prisma.XOR<Prisma.WorkflowTemplateScalarRelationFilter, Prisma.WorkflowTemplateWhereInput>
   contractor?: Prisma.XOR<Prisma.ContractorNullableScalarRelationFilter, Prisma.ContractorWhereInput> | null
   contract?: Prisma.XOR<Prisma.ContractNullableScalarRelationFilter, Prisma.ContractWhereInput> | null
+  worker?: Prisma.XOR<Prisma.WorkerNullableScalarRelationFilter, Prisma.WorkerWhereInput> | null
   startedBy?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   tasks?: Prisma.WorkflowTaskRunListRelationFilter
   comments?: Prisma.WorkflowCommentListRelationFilter
@@ -428,6 +441,7 @@ export type WorkflowRunOrderByWithAggregationInput = {
   entityId?: Prisma.SortOrder
   contractorId?: Prisma.SortOrderInput | Prisma.SortOrder
   contractId?: Prisma.SortOrderInput | Prisma.SortOrder
+  workerId?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   startedByUserId?: Prisma.SortOrder
   startedAt?: Prisma.SortOrder
@@ -460,6 +474,7 @@ export type WorkflowRunScalarWhereWithAggregatesInput = {
   entityId?: Prisma.StringWithAggregatesFilter<"WorkflowRun"> | string
   contractorId?: Prisma.StringNullableWithAggregatesFilter<"WorkflowRun"> | string | null
   contractId?: Prisma.StringNullableWithAggregatesFilter<"WorkflowRun"> | string | null
+  workerId?: Prisma.StringNullableWithAggregatesFilter<"WorkflowRun"> | string | null
   status?: Prisma.EnumWorkflowRunStatusWithAggregatesFilter<"WorkflowRun"> | $Enums.WorkflowRunStatus
   startedByUserId?: Prisma.StringWithAggregatesFilter<"WorkflowRun"> | string
   startedAt?: Prisma.DateTimeWithAggregatesFilter<"WorkflowRun"> | Date | string
@@ -497,6 +512,7 @@ export type WorkflowRunCreateInput = {
   workflowTemplate: Prisma.WorkflowTemplateCreateNestedOneWithoutRunsInput
   contractor?: Prisma.ContractorCreateNestedOneWithoutWorkflowRunsInput
   contract?: Prisma.ContractCreateNestedOneWithoutWorkflowRunsInput
+  worker?: Prisma.WorkerCreateNestedOneWithoutWorkflowRunsInput
   startedBy: Prisma.UserCreateNestedOneWithoutStartedWorkflowRunsInput
   tasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutWorkflowRunInput
   comments?: Prisma.WorkflowCommentCreateNestedManyWithoutWorkflowRunInput
@@ -512,6 +528,7 @@ export type WorkflowRunUncheckedCreateInput = {
   entityId: string
   contractorId?: string | null
   contractId?: string | null
+  workerId?: string | null
   status?: $Enums.WorkflowRunStatus
   startedByUserId: string
   startedAt?: Date | string
@@ -553,6 +570,7 @@ export type WorkflowRunUpdateInput = {
   workflowTemplate?: Prisma.WorkflowTemplateUpdateOneRequiredWithoutRunsNestedInput
   contractor?: Prisma.ContractorUpdateOneWithoutWorkflowRunsNestedInput
   contract?: Prisma.ContractUpdateOneWithoutWorkflowRunsNestedInput
+  worker?: Prisma.WorkerUpdateOneWithoutWorkflowRunsNestedInput
   startedBy?: Prisma.UserUpdateOneRequiredWithoutStartedWorkflowRunsNestedInput
   tasks?: Prisma.WorkflowTaskRunUpdateManyWithoutWorkflowRunNestedInput
   comments?: Prisma.WorkflowCommentUpdateManyWithoutWorkflowRunNestedInput
@@ -568,6 +586,7 @@ export type WorkflowRunUncheckedUpdateInput = {
   entityId?: Prisma.StringFieldUpdateOperationsInput | string
   contractorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contractId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumWorkflowRunStatusFieldUpdateOperationsInput | $Enums.WorkflowRunStatus
   startedByUserId?: Prisma.StringFieldUpdateOperationsInput | string
   startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -596,6 +615,7 @@ export type WorkflowRunCreateManyInput = {
   entityId: string
   contractorId?: string | null
   contractId?: string | null
+  workerId?: string | null
   status?: $Enums.WorkflowRunStatus
   startedByUserId: string
   startedAt?: Date | string
@@ -639,6 +659,7 @@ export type WorkflowRunUncheckedUpdateManyInput = {
   entityId?: Prisma.StringFieldUpdateOperationsInput | string
   contractorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contractId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumWorkflowRunStatusFieldUpdateOperationsInput | $Enums.WorkflowRunStatus
   startedByUserId?: Prisma.StringFieldUpdateOperationsInput | string
   startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -673,6 +694,7 @@ export type WorkflowRunCountOrderByAggregateInput = {
   entityId?: Prisma.SortOrder
   contractorId?: Prisma.SortOrder
   contractId?: Prisma.SortOrder
+  workerId?: Prisma.SortOrder
   status?: Prisma.SortOrder
   startedByUserId?: Prisma.SortOrder
   startedAt?: Prisma.SortOrder
@@ -701,6 +723,7 @@ export type WorkflowRunMaxOrderByAggregateInput = {
   entityId?: Prisma.SortOrder
   contractorId?: Prisma.SortOrder
   contractId?: Prisma.SortOrder
+  workerId?: Prisma.SortOrder
   status?: Prisma.SortOrder
   startedByUserId?: Prisma.SortOrder
   startedAt?: Prisma.SortOrder
@@ -724,6 +747,7 @@ export type WorkflowRunMinOrderByAggregateInput = {
   entityId?: Prisma.SortOrder
   contractorId?: Prisma.SortOrder
   contractId?: Prisma.SortOrder
+  workerId?: Prisma.SortOrder
   status?: Prisma.SortOrder
   startedByUserId?: Prisma.SortOrder
   startedAt?: Prisma.SortOrder
@@ -916,6 +940,48 @@ export type WorkflowRunUncheckedUpdateManyWithoutOrganizationNestedInput = {
   deleteMany?: Prisma.WorkflowRunScalarWhereInput | Prisma.WorkflowRunScalarWhereInput[]
 }
 
+export type WorkflowRunCreateNestedManyWithoutWorkerInput = {
+  create?: Prisma.XOR<Prisma.WorkflowRunCreateWithoutWorkerInput, Prisma.WorkflowRunUncheckedCreateWithoutWorkerInput> | Prisma.WorkflowRunCreateWithoutWorkerInput[] | Prisma.WorkflowRunUncheckedCreateWithoutWorkerInput[]
+  connectOrCreate?: Prisma.WorkflowRunCreateOrConnectWithoutWorkerInput | Prisma.WorkflowRunCreateOrConnectWithoutWorkerInput[]
+  createMany?: Prisma.WorkflowRunCreateManyWorkerInputEnvelope
+  connect?: Prisma.WorkflowRunWhereUniqueInput | Prisma.WorkflowRunWhereUniqueInput[]
+}
+
+export type WorkflowRunUncheckedCreateNestedManyWithoutWorkerInput = {
+  create?: Prisma.XOR<Prisma.WorkflowRunCreateWithoutWorkerInput, Prisma.WorkflowRunUncheckedCreateWithoutWorkerInput> | Prisma.WorkflowRunCreateWithoutWorkerInput[] | Prisma.WorkflowRunUncheckedCreateWithoutWorkerInput[]
+  connectOrCreate?: Prisma.WorkflowRunCreateOrConnectWithoutWorkerInput | Prisma.WorkflowRunCreateOrConnectWithoutWorkerInput[]
+  createMany?: Prisma.WorkflowRunCreateManyWorkerInputEnvelope
+  connect?: Prisma.WorkflowRunWhereUniqueInput | Prisma.WorkflowRunWhereUniqueInput[]
+}
+
+export type WorkflowRunUpdateManyWithoutWorkerNestedInput = {
+  create?: Prisma.XOR<Prisma.WorkflowRunCreateWithoutWorkerInput, Prisma.WorkflowRunUncheckedCreateWithoutWorkerInput> | Prisma.WorkflowRunCreateWithoutWorkerInput[] | Prisma.WorkflowRunUncheckedCreateWithoutWorkerInput[]
+  connectOrCreate?: Prisma.WorkflowRunCreateOrConnectWithoutWorkerInput | Prisma.WorkflowRunCreateOrConnectWithoutWorkerInput[]
+  upsert?: Prisma.WorkflowRunUpsertWithWhereUniqueWithoutWorkerInput | Prisma.WorkflowRunUpsertWithWhereUniqueWithoutWorkerInput[]
+  createMany?: Prisma.WorkflowRunCreateManyWorkerInputEnvelope
+  set?: Prisma.WorkflowRunWhereUniqueInput | Prisma.WorkflowRunWhereUniqueInput[]
+  disconnect?: Prisma.WorkflowRunWhereUniqueInput | Prisma.WorkflowRunWhereUniqueInput[]
+  delete?: Prisma.WorkflowRunWhereUniqueInput | Prisma.WorkflowRunWhereUniqueInput[]
+  connect?: Prisma.WorkflowRunWhereUniqueInput | Prisma.WorkflowRunWhereUniqueInput[]
+  update?: Prisma.WorkflowRunUpdateWithWhereUniqueWithoutWorkerInput | Prisma.WorkflowRunUpdateWithWhereUniqueWithoutWorkerInput[]
+  updateMany?: Prisma.WorkflowRunUpdateManyWithWhereWithoutWorkerInput | Prisma.WorkflowRunUpdateManyWithWhereWithoutWorkerInput[]
+  deleteMany?: Prisma.WorkflowRunScalarWhereInput | Prisma.WorkflowRunScalarWhereInput[]
+}
+
+export type WorkflowRunUncheckedUpdateManyWithoutWorkerNestedInput = {
+  create?: Prisma.XOR<Prisma.WorkflowRunCreateWithoutWorkerInput, Prisma.WorkflowRunUncheckedCreateWithoutWorkerInput> | Prisma.WorkflowRunCreateWithoutWorkerInput[] | Prisma.WorkflowRunUncheckedCreateWithoutWorkerInput[]
+  connectOrCreate?: Prisma.WorkflowRunCreateOrConnectWithoutWorkerInput | Prisma.WorkflowRunCreateOrConnectWithoutWorkerInput[]
+  upsert?: Prisma.WorkflowRunUpsertWithWhereUniqueWithoutWorkerInput | Prisma.WorkflowRunUpsertWithWhereUniqueWithoutWorkerInput[]
+  createMany?: Prisma.WorkflowRunCreateManyWorkerInputEnvelope
+  set?: Prisma.WorkflowRunWhereUniqueInput | Prisma.WorkflowRunWhereUniqueInput[]
+  disconnect?: Prisma.WorkflowRunWhereUniqueInput | Prisma.WorkflowRunWhereUniqueInput[]
+  delete?: Prisma.WorkflowRunWhereUniqueInput | Prisma.WorkflowRunWhereUniqueInput[]
+  connect?: Prisma.WorkflowRunWhereUniqueInput | Prisma.WorkflowRunWhereUniqueInput[]
+  update?: Prisma.WorkflowRunUpdateWithWhereUniqueWithoutWorkerInput | Prisma.WorkflowRunUpdateWithWhereUniqueWithoutWorkerInput[]
+  updateMany?: Prisma.WorkflowRunUpdateManyWithWhereWithoutWorkerInput | Prisma.WorkflowRunUpdateManyWithWhereWithoutWorkerInput[]
+  deleteMany?: Prisma.WorkflowRunScalarWhereInput | Prisma.WorkflowRunScalarWhereInput[]
+}
+
 export type WorkflowRunCreateNestedManyWithoutWorkflowTemplateInput = {
   create?: Prisma.XOR<Prisma.WorkflowRunCreateWithoutWorkflowTemplateInput, Prisma.WorkflowRunUncheckedCreateWithoutWorkflowTemplateInput> | Prisma.WorkflowRunCreateWithoutWorkflowTemplateInput[] | Prisma.WorkflowRunUncheckedCreateWithoutWorkflowTemplateInput[]
   connectOrCreate?: Prisma.WorkflowRunCreateOrConnectWithoutWorkflowTemplateInput | Prisma.WorkflowRunCreateOrConnectWithoutWorkflowTemplateInput[]
@@ -1039,6 +1105,7 @@ export type WorkflowRunCreateWithoutStartedByInput = {
   workflowTemplate: Prisma.WorkflowTemplateCreateNestedOneWithoutRunsInput
   contractor?: Prisma.ContractorCreateNestedOneWithoutWorkflowRunsInput
   contract?: Prisma.ContractCreateNestedOneWithoutWorkflowRunsInput
+  worker?: Prisma.WorkerCreateNestedOneWithoutWorkflowRunsInput
   tasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutWorkflowRunInput
   comments?: Prisma.WorkflowCommentCreateNestedManyWithoutWorkflowRunInput
   attachments?: Prisma.WorkflowAttachmentCreateNestedManyWithoutWorkflowRunInput
@@ -1053,6 +1120,7 @@ export type WorkflowRunUncheckedCreateWithoutStartedByInput = {
   entityId: string
   contractorId?: string | null
   contractId?: string | null
+  workerId?: string | null
   status?: $Enums.WorkflowRunStatus
   startedAt?: Date | string
   dueAt?: Date | string | null
@@ -1109,6 +1177,7 @@ export type WorkflowRunScalarWhereInput = {
   entityId?: Prisma.StringFilter<"WorkflowRun"> | string
   contractorId?: Prisma.StringNullableFilter<"WorkflowRun"> | string | null
   contractId?: Prisma.StringNullableFilter<"WorkflowRun"> | string | null
+  workerId?: Prisma.StringNullableFilter<"WorkflowRun"> | string | null
   status?: Prisma.EnumWorkflowRunStatusFilter<"WorkflowRun"> | $Enums.WorkflowRunStatus
   startedByUserId?: Prisma.StringFilter<"WorkflowRun"> | string
   startedAt?: Prisma.DateTimeFilter<"WorkflowRun"> | Date | string
@@ -1145,6 +1214,7 @@ export type WorkflowRunCreateWithoutContractInput = {
   organization: Prisma.OrganizationCreateNestedOneWithoutWorkflowRunsInput
   workflowTemplate: Prisma.WorkflowTemplateCreateNestedOneWithoutRunsInput
   contractor?: Prisma.ContractorCreateNestedOneWithoutWorkflowRunsInput
+  worker?: Prisma.WorkerCreateNestedOneWithoutWorkflowRunsInput
   startedBy: Prisma.UserCreateNestedOneWithoutStartedWorkflowRunsInput
   tasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutWorkflowRunInput
   comments?: Prisma.WorkflowCommentCreateNestedManyWithoutWorkflowRunInput
@@ -1159,6 +1229,7 @@ export type WorkflowRunUncheckedCreateWithoutContractInput = {
   entityType: $Enums.EntityType
   entityId: string
   contractorId?: string | null
+  workerId?: string | null
   status?: $Enums.WorkflowRunStatus
   startedByUserId: string
   startedAt?: Date | string
@@ -1225,6 +1296,7 @@ export type WorkflowRunCreateWithoutContractorInput = {
   organization: Prisma.OrganizationCreateNestedOneWithoutWorkflowRunsInput
   workflowTemplate: Prisma.WorkflowTemplateCreateNestedOneWithoutRunsInput
   contract?: Prisma.ContractCreateNestedOneWithoutWorkflowRunsInput
+  worker?: Prisma.WorkerCreateNestedOneWithoutWorkflowRunsInput
   startedBy: Prisma.UserCreateNestedOneWithoutStartedWorkflowRunsInput
   tasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutWorkflowRunInput
   comments?: Prisma.WorkflowCommentCreateNestedManyWithoutWorkflowRunInput
@@ -1239,6 +1311,7 @@ export type WorkflowRunUncheckedCreateWithoutContractorInput = {
   entityType: $Enums.EntityType
   entityId: string
   contractId?: string | null
+  workerId?: string | null
   status?: $Enums.WorkflowRunStatus
   startedByUserId: string
   startedAt?: Date | string
@@ -1305,6 +1378,7 @@ export type WorkflowRunCreateWithoutOrganizationInput = {
   workflowTemplate: Prisma.WorkflowTemplateCreateNestedOneWithoutRunsInput
   contractor?: Prisma.ContractorCreateNestedOneWithoutWorkflowRunsInput
   contract?: Prisma.ContractCreateNestedOneWithoutWorkflowRunsInput
+  worker?: Prisma.WorkerCreateNestedOneWithoutWorkflowRunsInput
   startedBy: Prisma.UserCreateNestedOneWithoutStartedWorkflowRunsInput
   tasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutWorkflowRunInput
   comments?: Prisma.WorkflowCommentCreateNestedManyWithoutWorkflowRunInput
@@ -1319,6 +1393,7 @@ export type WorkflowRunUncheckedCreateWithoutOrganizationInput = {
   entityId: string
   contractorId?: string | null
   contractId?: string | null
+  workerId?: string | null
   status?: $Enums.WorkflowRunStatus
   startedByUserId: string
   startedAt?: Date | string
@@ -1365,6 +1440,88 @@ export type WorkflowRunUpdateManyWithWhereWithoutOrganizationInput = {
   data: Prisma.XOR<Prisma.WorkflowRunUpdateManyMutationInput, Prisma.WorkflowRunUncheckedUpdateManyWithoutOrganizationInput>
 }
 
+export type WorkflowRunCreateWithoutWorkerInput = {
+  id?: string
+  entityType: $Enums.EntityType
+  entityId: string
+  status?: $Enums.WorkflowRunStatus
+  startedAt?: Date | string
+  dueAt?: Date | string | null
+  completedAt?: Date | string | null
+  cancelledAt?: Date | string | null
+  cancelReason?: string | null
+  progressPercent?: number | null
+  overriddenTemplateId?: string | null
+  overriddenByUserId?: string | null
+  overriddenAt?: Date | string | null
+  overrideMetadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  organization: Prisma.OrganizationCreateNestedOneWithoutWorkflowRunsInput
+  workflowTemplate: Prisma.WorkflowTemplateCreateNestedOneWithoutRunsInput
+  contractor?: Prisma.ContractorCreateNestedOneWithoutWorkflowRunsInput
+  contract?: Prisma.ContractCreateNestedOneWithoutWorkflowRunsInput
+  startedBy: Prisma.UserCreateNestedOneWithoutStartedWorkflowRunsInput
+  tasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutWorkflowRunInput
+  comments?: Prisma.WorkflowCommentCreateNestedManyWithoutWorkflowRunInput
+  attachments?: Prisma.WorkflowAttachmentCreateNestedManyWithoutWorkflowRunInput
+  credentialReferences?: Prisma.CredentialReferenceCreateNestedManyWithoutWorkflowRunInput
+}
+
+export type WorkflowRunUncheckedCreateWithoutWorkerInput = {
+  id?: string
+  organizationId: string
+  workflowTemplateId: string
+  entityType: $Enums.EntityType
+  entityId: string
+  contractorId?: string | null
+  contractId?: string | null
+  status?: $Enums.WorkflowRunStatus
+  startedByUserId: string
+  startedAt?: Date | string
+  dueAt?: Date | string | null
+  completedAt?: Date | string | null
+  cancelledAt?: Date | string | null
+  cancelReason?: string | null
+  progressPercent?: number | null
+  overriddenTemplateId?: string | null
+  overriddenByUserId?: string | null
+  overriddenAt?: Date | string | null
+  overrideMetadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  tasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutWorkflowRunInput
+  comments?: Prisma.WorkflowCommentUncheckedCreateNestedManyWithoutWorkflowRunInput
+  attachments?: Prisma.WorkflowAttachmentUncheckedCreateNestedManyWithoutWorkflowRunInput
+  credentialReferences?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutWorkflowRunInput
+}
+
+export type WorkflowRunCreateOrConnectWithoutWorkerInput = {
+  where: Prisma.WorkflowRunWhereUniqueInput
+  create: Prisma.XOR<Prisma.WorkflowRunCreateWithoutWorkerInput, Prisma.WorkflowRunUncheckedCreateWithoutWorkerInput>
+}
+
+export type WorkflowRunCreateManyWorkerInputEnvelope = {
+  data: Prisma.WorkflowRunCreateManyWorkerInput | Prisma.WorkflowRunCreateManyWorkerInput[]
+  skipDuplicates?: boolean
+}
+
+export type WorkflowRunUpsertWithWhereUniqueWithoutWorkerInput = {
+  where: Prisma.WorkflowRunWhereUniqueInput
+  update: Prisma.XOR<Prisma.WorkflowRunUpdateWithoutWorkerInput, Prisma.WorkflowRunUncheckedUpdateWithoutWorkerInput>
+  create: Prisma.XOR<Prisma.WorkflowRunCreateWithoutWorkerInput, Prisma.WorkflowRunUncheckedCreateWithoutWorkerInput>
+}
+
+export type WorkflowRunUpdateWithWhereUniqueWithoutWorkerInput = {
+  where: Prisma.WorkflowRunWhereUniqueInput
+  data: Prisma.XOR<Prisma.WorkflowRunUpdateWithoutWorkerInput, Prisma.WorkflowRunUncheckedUpdateWithoutWorkerInput>
+}
+
+export type WorkflowRunUpdateManyWithWhereWithoutWorkerInput = {
+  where: Prisma.WorkflowRunScalarWhereInput
+  data: Prisma.XOR<Prisma.WorkflowRunUpdateManyMutationInput, Prisma.WorkflowRunUncheckedUpdateManyWithoutWorkerInput>
+}
+
 export type WorkflowRunCreateWithoutWorkflowTemplateInput = {
   id?: string
   entityType: $Enums.EntityType
@@ -1385,6 +1542,7 @@ export type WorkflowRunCreateWithoutWorkflowTemplateInput = {
   organization: Prisma.OrganizationCreateNestedOneWithoutWorkflowRunsInput
   contractor?: Prisma.ContractorCreateNestedOneWithoutWorkflowRunsInput
   contract?: Prisma.ContractCreateNestedOneWithoutWorkflowRunsInput
+  worker?: Prisma.WorkerCreateNestedOneWithoutWorkflowRunsInput
   startedBy: Prisma.UserCreateNestedOneWithoutStartedWorkflowRunsInput
   tasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutWorkflowRunInput
   comments?: Prisma.WorkflowCommentCreateNestedManyWithoutWorkflowRunInput
@@ -1399,6 +1557,7 @@ export type WorkflowRunUncheckedCreateWithoutWorkflowTemplateInput = {
   entityId: string
   contractorId?: string | null
   contractId?: string | null
+  workerId?: string | null
   status?: $Enums.WorkflowRunStatus
   startedByUserId: string
   startedAt?: Date | string
@@ -1466,6 +1625,7 @@ export type WorkflowRunCreateWithoutTasksInput = {
   workflowTemplate: Prisma.WorkflowTemplateCreateNestedOneWithoutRunsInput
   contractor?: Prisma.ContractorCreateNestedOneWithoutWorkflowRunsInput
   contract?: Prisma.ContractCreateNestedOneWithoutWorkflowRunsInput
+  worker?: Prisma.WorkerCreateNestedOneWithoutWorkflowRunsInput
   startedBy: Prisma.UserCreateNestedOneWithoutStartedWorkflowRunsInput
   comments?: Prisma.WorkflowCommentCreateNestedManyWithoutWorkflowRunInput
   attachments?: Prisma.WorkflowAttachmentCreateNestedManyWithoutWorkflowRunInput
@@ -1480,6 +1640,7 @@ export type WorkflowRunUncheckedCreateWithoutTasksInput = {
   entityId: string
   contractorId?: string | null
   contractId?: string | null
+  workerId?: string | null
   status?: $Enums.WorkflowRunStatus
   startedByUserId: string
   startedAt?: Date | string
@@ -1536,6 +1697,7 @@ export type WorkflowRunUpdateWithoutTasksInput = {
   workflowTemplate?: Prisma.WorkflowTemplateUpdateOneRequiredWithoutRunsNestedInput
   contractor?: Prisma.ContractorUpdateOneWithoutWorkflowRunsNestedInput
   contract?: Prisma.ContractUpdateOneWithoutWorkflowRunsNestedInput
+  worker?: Prisma.WorkerUpdateOneWithoutWorkflowRunsNestedInput
   startedBy?: Prisma.UserUpdateOneRequiredWithoutStartedWorkflowRunsNestedInput
   comments?: Prisma.WorkflowCommentUpdateManyWithoutWorkflowRunNestedInput
   attachments?: Prisma.WorkflowAttachmentUpdateManyWithoutWorkflowRunNestedInput
@@ -1550,6 +1712,7 @@ export type WorkflowRunUncheckedUpdateWithoutTasksInput = {
   entityId?: Prisma.StringFieldUpdateOperationsInput | string
   contractorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contractId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumWorkflowRunStatusFieldUpdateOperationsInput | $Enums.WorkflowRunStatus
   startedByUserId?: Prisma.StringFieldUpdateOperationsInput | string
   startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1590,6 +1753,7 @@ export type WorkflowRunCreateWithoutCommentsInput = {
   workflowTemplate: Prisma.WorkflowTemplateCreateNestedOneWithoutRunsInput
   contractor?: Prisma.ContractorCreateNestedOneWithoutWorkflowRunsInput
   contract?: Prisma.ContractCreateNestedOneWithoutWorkflowRunsInput
+  worker?: Prisma.WorkerCreateNestedOneWithoutWorkflowRunsInput
   startedBy: Prisma.UserCreateNestedOneWithoutStartedWorkflowRunsInput
   tasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutWorkflowRunInput
   attachments?: Prisma.WorkflowAttachmentCreateNestedManyWithoutWorkflowRunInput
@@ -1604,6 +1768,7 @@ export type WorkflowRunUncheckedCreateWithoutCommentsInput = {
   entityId: string
   contractorId?: string | null
   contractId?: string | null
+  workerId?: string | null
   status?: $Enums.WorkflowRunStatus
   startedByUserId: string
   startedAt?: Date | string
@@ -1660,6 +1825,7 @@ export type WorkflowRunUpdateWithoutCommentsInput = {
   workflowTemplate?: Prisma.WorkflowTemplateUpdateOneRequiredWithoutRunsNestedInput
   contractor?: Prisma.ContractorUpdateOneWithoutWorkflowRunsNestedInput
   contract?: Prisma.ContractUpdateOneWithoutWorkflowRunsNestedInput
+  worker?: Prisma.WorkerUpdateOneWithoutWorkflowRunsNestedInput
   startedBy?: Prisma.UserUpdateOneRequiredWithoutStartedWorkflowRunsNestedInput
   tasks?: Prisma.WorkflowTaskRunUpdateManyWithoutWorkflowRunNestedInput
   attachments?: Prisma.WorkflowAttachmentUpdateManyWithoutWorkflowRunNestedInput
@@ -1674,6 +1840,7 @@ export type WorkflowRunUncheckedUpdateWithoutCommentsInput = {
   entityId?: Prisma.StringFieldUpdateOperationsInput | string
   contractorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contractId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumWorkflowRunStatusFieldUpdateOperationsInput | $Enums.WorkflowRunStatus
   startedByUserId?: Prisma.StringFieldUpdateOperationsInput | string
   startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1714,6 +1881,7 @@ export type WorkflowRunCreateWithoutAttachmentsInput = {
   workflowTemplate: Prisma.WorkflowTemplateCreateNestedOneWithoutRunsInput
   contractor?: Prisma.ContractorCreateNestedOneWithoutWorkflowRunsInput
   contract?: Prisma.ContractCreateNestedOneWithoutWorkflowRunsInput
+  worker?: Prisma.WorkerCreateNestedOneWithoutWorkflowRunsInput
   startedBy: Prisma.UserCreateNestedOneWithoutStartedWorkflowRunsInput
   tasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutWorkflowRunInput
   comments?: Prisma.WorkflowCommentCreateNestedManyWithoutWorkflowRunInput
@@ -1728,6 +1896,7 @@ export type WorkflowRunUncheckedCreateWithoutAttachmentsInput = {
   entityId: string
   contractorId?: string | null
   contractId?: string | null
+  workerId?: string | null
   status?: $Enums.WorkflowRunStatus
   startedByUserId: string
   startedAt?: Date | string
@@ -1784,6 +1953,7 @@ export type WorkflowRunUpdateWithoutAttachmentsInput = {
   workflowTemplate?: Prisma.WorkflowTemplateUpdateOneRequiredWithoutRunsNestedInput
   contractor?: Prisma.ContractorUpdateOneWithoutWorkflowRunsNestedInput
   contract?: Prisma.ContractUpdateOneWithoutWorkflowRunsNestedInput
+  worker?: Prisma.WorkerUpdateOneWithoutWorkflowRunsNestedInput
   startedBy?: Prisma.UserUpdateOneRequiredWithoutStartedWorkflowRunsNestedInput
   tasks?: Prisma.WorkflowTaskRunUpdateManyWithoutWorkflowRunNestedInput
   comments?: Prisma.WorkflowCommentUpdateManyWithoutWorkflowRunNestedInput
@@ -1798,6 +1968,7 @@ export type WorkflowRunUncheckedUpdateWithoutAttachmentsInput = {
   entityId?: Prisma.StringFieldUpdateOperationsInput | string
   contractorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contractId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumWorkflowRunStatusFieldUpdateOperationsInput | $Enums.WorkflowRunStatus
   startedByUserId?: Prisma.StringFieldUpdateOperationsInput | string
   startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1838,6 +2009,7 @@ export type WorkflowRunCreateWithoutCredentialReferencesInput = {
   workflowTemplate: Prisma.WorkflowTemplateCreateNestedOneWithoutRunsInput
   contractor?: Prisma.ContractorCreateNestedOneWithoutWorkflowRunsInput
   contract?: Prisma.ContractCreateNestedOneWithoutWorkflowRunsInput
+  worker?: Prisma.WorkerCreateNestedOneWithoutWorkflowRunsInput
   startedBy: Prisma.UserCreateNestedOneWithoutStartedWorkflowRunsInput
   tasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutWorkflowRunInput
   comments?: Prisma.WorkflowCommentCreateNestedManyWithoutWorkflowRunInput
@@ -1852,6 +2024,7 @@ export type WorkflowRunUncheckedCreateWithoutCredentialReferencesInput = {
   entityId: string
   contractorId?: string | null
   contractId?: string | null
+  workerId?: string | null
   status?: $Enums.WorkflowRunStatus
   startedByUserId: string
   startedAt?: Date | string
@@ -1908,6 +2081,7 @@ export type WorkflowRunUpdateWithoutCredentialReferencesInput = {
   workflowTemplate?: Prisma.WorkflowTemplateUpdateOneRequiredWithoutRunsNestedInput
   contractor?: Prisma.ContractorUpdateOneWithoutWorkflowRunsNestedInput
   contract?: Prisma.ContractUpdateOneWithoutWorkflowRunsNestedInput
+  worker?: Prisma.WorkerUpdateOneWithoutWorkflowRunsNestedInput
   startedBy?: Prisma.UserUpdateOneRequiredWithoutStartedWorkflowRunsNestedInput
   tasks?: Prisma.WorkflowTaskRunUpdateManyWithoutWorkflowRunNestedInput
   comments?: Prisma.WorkflowCommentUpdateManyWithoutWorkflowRunNestedInput
@@ -1922,6 +2096,7 @@ export type WorkflowRunUncheckedUpdateWithoutCredentialReferencesInput = {
   entityId?: Prisma.StringFieldUpdateOperationsInput | string
   contractorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contractId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumWorkflowRunStatusFieldUpdateOperationsInput | $Enums.WorkflowRunStatus
   startedByUserId?: Prisma.StringFieldUpdateOperationsInput | string
   startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1949,6 +2124,7 @@ export type WorkflowRunCreateManyStartedByInput = {
   entityId: string
   contractorId?: string | null
   contractId?: string | null
+  workerId?: string | null
   status?: $Enums.WorkflowRunStatus
   startedAt?: Date | string
   dueAt?: Date | string | null
@@ -1985,6 +2161,7 @@ export type WorkflowRunUpdateWithoutStartedByInput = {
   workflowTemplate?: Prisma.WorkflowTemplateUpdateOneRequiredWithoutRunsNestedInput
   contractor?: Prisma.ContractorUpdateOneWithoutWorkflowRunsNestedInput
   contract?: Prisma.ContractUpdateOneWithoutWorkflowRunsNestedInput
+  worker?: Prisma.WorkerUpdateOneWithoutWorkflowRunsNestedInput
   tasks?: Prisma.WorkflowTaskRunUpdateManyWithoutWorkflowRunNestedInput
   comments?: Prisma.WorkflowCommentUpdateManyWithoutWorkflowRunNestedInput
   attachments?: Prisma.WorkflowAttachmentUpdateManyWithoutWorkflowRunNestedInput
@@ -1999,6 +2176,7 @@ export type WorkflowRunUncheckedUpdateWithoutStartedByInput = {
   entityId?: Prisma.StringFieldUpdateOperationsInput | string
   contractorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contractId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumWorkflowRunStatusFieldUpdateOperationsInput | $Enums.WorkflowRunStatus
   startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   dueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2026,6 +2204,7 @@ export type WorkflowRunUncheckedUpdateManyWithoutStartedByInput = {
   entityId?: Prisma.StringFieldUpdateOperationsInput | string
   contractorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contractId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumWorkflowRunStatusFieldUpdateOperationsInput | $Enums.WorkflowRunStatus
   startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   dueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2048,6 +2227,7 @@ export type WorkflowRunCreateManyContractInput = {
   entityType: $Enums.EntityType
   entityId: string
   contractorId?: string | null
+  workerId?: string | null
   status?: $Enums.WorkflowRunStatus
   startedByUserId: string
   startedAt?: Date | string
@@ -2084,6 +2264,7 @@ export type WorkflowRunUpdateWithoutContractInput = {
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutWorkflowRunsNestedInput
   workflowTemplate?: Prisma.WorkflowTemplateUpdateOneRequiredWithoutRunsNestedInput
   contractor?: Prisma.ContractorUpdateOneWithoutWorkflowRunsNestedInput
+  worker?: Prisma.WorkerUpdateOneWithoutWorkflowRunsNestedInput
   startedBy?: Prisma.UserUpdateOneRequiredWithoutStartedWorkflowRunsNestedInput
   tasks?: Prisma.WorkflowTaskRunUpdateManyWithoutWorkflowRunNestedInput
   comments?: Prisma.WorkflowCommentUpdateManyWithoutWorkflowRunNestedInput
@@ -2098,6 +2279,7 @@ export type WorkflowRunUncheckedUpdateWithoutContractInput = {
   entityType?: Prisma.EnumEntityTypeFieldUpdateOperationsInput | $Enums.EntityType
   entityId?: Prisma.StringFieldUpdateOperationsInput | string
   contractorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumWorkflowRunStatusFieldUpdateOperationsInput | $Enums.WorkflowRunStatus
   startedByUserId?: Prisma.StringFieldUpdateOperationsInput | string
   startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2125,6 +2307,7 @@ export type WorkflowRunUncheckedUpdateManyWithoutContractInput = {
   entityType?: Prisma.EnumEntityTypeFieldUpdateOperationsInput | $Enums.EntityType
   entityId?: Prisma.StringFieldUpdateOperationsInput | string
   contractorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumWorkflowRunStatusFieldUpdateOperationsInput | $Enums.WorkflowRunStatus
   startedByUserId?: Prisma.StringFieldUpdateOperationsInput | string
   startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2148,6 +2331,7 @@ export type WorkflowRunCreateManyContractorInput = {
   entityType: $Enums.EntityType
   entityId: string
   contractId?: string | null
+  workerId?: string | null
   status?: $Enums.WorkflowRunStatus
   startedByUserId: string
   startedAt?: Date | string
@@ -2184,6 +2368,7 @@ export type WorkflowRunUpdateWithoutContractorInput = {
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutWorkflowRunsNestedInput
   workflowTemplate?: Prisma.WorkflowTemplateUpdateOneRequiredWithoutRunsNestedInput
   contract?: Prisma.ContractUpdateOneWithoutWorkflowRunsNestedInput
+  worker?: Prisma.WorkerUpdateOneWithoutWorkflowRunsNestedInput
   startedBy?: Prisma.UserUpdateOneRequiredWithoutStartedWorkflowRunsNestedInput
   tasks?: Prisma.WorkflowTaskRunUpdateManyWithoutWorkflowRunNestedInput
   comments?: Prisma.WorkflowCommentUpdateManyWithoutWorkflowRunNestedInput
@@ -2198,6 +2383,7 @@ export type WorkflowRunUncheckedUpdateWithoutContractorInput = {
   entityType?: Prisma.EnumEntityTypeFieldUpdateOperationsInput | $Enums.EntityType
   entityId?: Prisma.StringFieldUpdateOperationsInput | string
   contractId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumWorkflowRunStatusFieldUpdateOperationsInput | $Enums.WorkflowRunStatus
   startedByUserId?: Prisma.StringFieldUpdateOperationsInput | string
   startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2225,6 +2411,7 @@ export type WorkflowRunUncheckedUpdateManyWithoutContractorInput = {
   entityType?: Prisma.EnumEntityTypeFieldUpdateOperationsInput | $Enums.EntityType
   entityId?: Prisma.StringFieldUpdateOperationsInput | string
   contractId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumWorkflowRunStatusFieldUpdateOperationsInput | $Enums.WorkflowRunStatus
   startedByUserId?: Prisma.StringFieldUpdateOperationsInput | string
   startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2248,6 +2435,7 @@ export type WorkflowRunCreateManyOrganizationInput = {
   entityId: string
   contractorId?: string | null
   contractId?: string | null
+  workerId?: string | null
   status?: $Enums.WorkflowRunStatus
   startedByUserId: string
   startedAt?: Date | string
@@ -2284,6 +2472,7 @@ export type WorkflowRunUpdateWithoutOrganizationInput = {
   workflowTemplate?: Prisma.WorkflowTemplateUpdateOneRequiredWithoutRunsNestedInput
   contractor?: Prisma.ContractorUpdateOneWithoutWorkflowRunsNestedInput
   contract?: Prisma.ContractUpdateOneWithoutWorkflowRunsNestedInput
+  worker?: Prisma.WorkerUpdateOneWithoutWorkflowRunsNestedInput
   startedBy?: Prisma.UserUpdateOneRequiredWithoutStartedWorkflowRunsNestedInput
   tasks?: Prisma.WorkflowTaskRunUpdateManyWithoutWorkflowRunNestedInput
   comments?: Prisma.WorkflowCommentUpdateManyWithoutWorkflowRunNestedInput
@@ -2293,6 +2482,111 @@ export type WorkflowRunUpdateWithoutOrganizationInput = {
 
 export type WorkflowRunUncheckedUpdateWithoutOrganizationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  workflowTemplateId?: Prisma.StringFieldUpdateOperationsInput | string
+  entityType?: Prisma.EnumEntityTypeFieldUpdateOperationsInput | $Enums.EntityType
+  entityId?: Prisma.StringFieldUpdateOperationsInput | string
+  contractorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contractId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumWorkflowRunStatusFieldUpdateOperationsInput | $Enums.WorkflowRunStatus
+  startedByUserId?: Prisma.StringFieldUpdateOperationsInput | string
+  startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  dueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  progressPercent?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  overriddenTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  overriddenByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  overriddenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  overrideMetadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  tasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutWorkflowRunNestedInput
+  comments?: Prisma.WorkflowCommentUncheckedUpdateManyWithoutWorkflowRunNestedInput
+  attachments?: Prisma.WorkflowAttachmentUncheckedUpdateManyWithoutWorkflowRunNestedInput
+  credentialReferences?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutWorkflowRunNestedInput
+}
+
+export type WorkflowRunUncheckedUpdateManyWithoutOrganizationInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  workflowTemplateId?: Prisma.StringFieldUpdateOperationsInput | string
+  entityType?: Prisma.EnumEntityTypeFieldUpdateOperationsInput | $Enums.EntityType
+  entityId?: Prisma.StringFieldUpdateOperationsInput | string
+  contractorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contractId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumWorkflowRunStatusFieldUpdateOperationsInput | $Enums.WorkflowRunStatus
+  startedByUserId?: Prisma.StringFieldUpdateOperationsInput | string
+  startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  dueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  progressPercent?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  overriddenTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  overriddenByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  overriddenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  overrideMetadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type WorkflowRunCreateManyWorkerInput = {
+  id?: string
+  organizationId: string
+  workflowTemplateId: string
+  entityType: $Enums.EntityType
+  entityId: string
+  contractorId?: string | null
+  contractId?: string | null
+  status?: $Enums.WorkflowRunStatus
+  startedByUserId: string
+  startedAt?: Date | string
+  dueAt?: Date | string | null
+  completedAt?: Date | string | null
+  cancelledAt?: Date | string | null
+  cancelReason?: string | null
+  progressPercent?: number | null
+  overriddenTemplateId?: string | null
+  overriddenByUserId?: string | null
+  overriddenAt?: Date | string | null
+  overrideMetadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type WorkflowRunUpdateWithoutWorkerInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  entityType?: Prisma.EnumEntityTypeFieldUpdateOperationsInput | $Enums.EntityType
+  entityId?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumWorkflowRunStatusFieldUpdateOperationsInput | $Enums.WorkflowRunStatus
+  startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  dueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  progressPercent?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  overriddenTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  overriddenByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  overriddenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  overrideMetadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  organization?: Prisma.OrganizationUpdateOneRequiredWithoutWorkflowRunsNestedInput
+  workflowTemplate?: Prisma.WorkflowTemplateUpdateOneRequiredWithoutRunsNestedInput
+  contractor?: Prisma.ContractorUpdateOneWithoutWorkflowRunsNestedInput
+  contract?: Prisma.ContractUpdateOneWithoutWorkflowRunsNestedInput
+  startedBy?: Prisma.UserUpdateOneRequiredWithoutStartedWorkflowRunsNestedInput
+  tasks?: Prisma.WorkflowTaskRunUpdateManyWithoutWorkflowRunNestedInput
+  comments?: Prisma.WorkflowCommentUpdateManyWithoutWorkflowRunNestedInput
+  attachments?: Prisma.WorkflowAttachmentUpdateManyWithoutWorkflowRunNestedInput
+  credentialReferences?: Prisma.CredentialReferenceUpdateManyWithoutWorkflowRunNestedInput
+}
+
+export type WorkflowRunUncheckedUpdateWithoutWorkerInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   workflowTemplateId?: Prisma.StringFieldUpdateOperationsInput | string
   entityType?: Prisma.EnumEntityTypeFieldUpdateOperationsInput | $Enums.EntityType
   entityId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2318,8 +2612,9 @@ export type WorkflowRunUncheckedUpdateWithoutOrganizationInput = {
   credentialReferences?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutWorkflowRunNestedInput
 }
 
-export type WorkflowRunUncheckedUpdateManyWithoutOrganizationInput = {
+export type WorkflowRunUncheckedUpdateManyWithoutWorkerInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   workflowTemplateId?: Prisma.StringFieldUpdateOperationsInput | string
   entityType?: Prisma.EnumEntityTypeFieldUpdateOperationsInput | $Enums.EntityType
   entityId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2348,6 +2643,7 @@ export type WorkflowRunCreateManyWorkflowTemplateInput = {
   entityId: string
   contractorId?: string | null
   contractId?: string | null
+  workerId?: string | null
   status?: $Enums.WorkflowRunStatus
   startedByUserId: string
   startedAt?: Date | string
@@ -2384,6 +2680,7 @@ export type WorkflowRunUpdateWithoutWorkflowTemplateInput = {
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutWorkflowRunsNestedInput
   contractor?: Prisma.ContractorUpdateOneWithoutWorkflowRunsNestedInput
   contract?: Prisma.ContractUpdateOneWithoutWorkflowRunsNestedInput
+  worker?: Prisma.WorkerUpdateOneWithoutWorkflowRunsNestedInput
   startedBy?: Prisma.UserUpdateOneRequiredWithoutStartedWorkflowRunsNestedInput
   tasks?: Prisma.WorkflowTaskRunUpdateManyWithoutWorkflowRunNestedInput
   comments?: Prisma.WorkflowCommentUpdateManyWithoutWorkflowRunNestedInput
@@ -2398,6 +2695,7 @@ export type WorkflowRunUncheckedUpdateWithoutWorkflowTemplateInput = {
   entityId?: Prisma.StringFieldUpdateOperationsInput | string
   contractorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contractId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumWorkflowRunStatusFieldUpdateOperationsInput | $Enums.WorkflowRunStatus
   startedByUserId?: Prisma.StringFieldUpdateOperationsInput | string
   startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2425,6 +2723,7 @@ export type WorkflowRunUncheckedUpdateManyWithoutWorkflowTemplateInput = {
   entityId?: Prisma.StringFieldUpdateOperationsInput | string
   contractorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contractId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumWorkflowRunStatusFieldUpdateOperationsInput | $Enums.WorkflowRunStatus
   startedByUserId?: Prisma.StringFieldUpdateOperationsInput | string
   startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2507,6 +2806,7 @@ export type WorkflowRunSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   entityId?: boolean
   contractorId?: boolean
   contractId?: boolean
+  workerId?: boolean
   status?: boolean
   startedByUserId?: boolean
   startedAt?: boolean
@@ -2525,6 +2825,7 @@ export type WorkflowRunSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   workflowTemplate?: boolean | Prisma.WorkflowTemplateDefaultArgs<ExtArgs>
   contractor?: boolean | Prisma.WorkflowRun$contractorArgs<ExtArgs>
   contract?: boolean | Prisma.WorkflowRun$contractArgs<ExtArgs>
+  worker?: boolean | Prisma.WorkflowRun$workerArgs<ExtArgs>
   startedBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   tasks?: boolean | Prisma.WorkflowRun$tasksArgs<ExtArgs>
   comments?: boolean | Prisma.WorkflowRun$commentsArgs<ExtArgs>
@@ -2541,6 +2842,7 @@ export type WorkflowRunSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   entityId?: boolean
   contractorId?: boolean
   contractId?: boolean
+  workerId?: boolean
   status?: boolean
   startedByUserId?: boolean
   startedAt?: boolean
@@ -2559,6 +2861,7 @@ export type WorkflowRunSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   workflowTemplate?: boolean | Prisma.WorkflowTemplateDefaultArgs<ExtArgs>
   contractor?: boolean | Prisma.WorkflowRun$contractorArgs<ExtArgs>
   contract?: boolean | Prisma.WorkflowRun$contractArgs<ExtArgs>
+  worker?: boolean | Prisma.WorkflowRun$workerArgs<ExtArgs>
   startedBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["workflowRun"]>
 
@@ -2570,6 +2873,7 @@ export type WorkflowRunSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   entityId?: boolean
   contractorId?: boolean
   contractId?: boolean
+  workerId?: boolean
   status?: boolean
   startedByUserId?: boolean
   startedAt?: boolean
@@ -2588,6 +2892,7 @@ export type WorkflowRunSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   workflowTemplate?: boolean | Prisma.WorkflowTemplateDefaultArgs<ExtArgs>
   contractor?: boolean | Prisma.WorkflowRun$contractorArgs<ExtArgs>
   contract?: boolean | Prisma.WorkflowRun$contractArgs<ExtArgs>
+  worker?: boolean | Prisma.WorkflowRun$workerArgs<ExtArgs>
   startedBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["workflowRun"]>
 
@@ -2599,6 +2904,7 @@ export type WorkflowRunSelectScalar = {
   entityId?: boolean
   contractorId?: boolean
   contractId?: boolean
+  workerId?: boolean
   status?: boolean
   startedByUserId?: boolean
   startedAt?: boolean
@@ -2615,12 +2921,13 @@ export type WorkflowRunSelectScalar = {
   updatedAt?: boolean
 }
 
-export type WorkflowRunOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "workflowTemplateId" | "entityType" | "entityId" | "contractorId" | "contractId" | "status" | "startedByUserId" | "startedAt" | "dueAt" | "completedAt" | "cancelledAt" | "cancelReason" | "progressPercent" | "overriddenTemplateId" | "overriddenByUserId" | "overriddenAt" | "overrideMetadata" | "createdAt" | "updatedAt", ExtArgs["result"]["workflowRun"]>
+export type WorkflowRunOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "workflowTemplateId" | "entityType" | "entityId" | "contractorId" | "contractId" | "workerId" | "status" | "startedByUserId" | "startedAt" | "dueAt" | "completedAt" | "cancelledAt" | "cancelReason" | "progressPercent" | "overriddenTemplateId" | "overriddenByUserId" | "overriddenAt" | "overrideMetadata" | "createdAt" | "updatedAt", ExtArgs["result"]["workflowRun"]>
 export type WorkflowRunInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   workflowTemplate?: boolean | Prisma.WorkflowTemplateDefaultArgs<ExtArgs>
   contractor?: boolean | Prisma.WorkflowRun$contractorArgs<ExtArgs>
   contract?: boolean | Prisma.WorkflowRun$contractArgs<ExtArgs>
+  worker?: boolean | Prisma.WorkflowRun$workerArgs<ExtArgs>
   startedBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   tasks?: boolean | Prisma.WorkflowRun$tasksArgs<ExtArgs>
   comments?: boolean | Prisma.WorkflowRun$commentsArgs<ExtArgs>
@@ -2633,6 +2940,7 @@ export type WorkflowRunIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.
   workflowTemplate?: boolean | Prisma.WorkflowTemplateDefaultArgs<ExtArgs>
   contractor?: boolean | Prisma.WorkflowRun$contractorArgs<ExtArgs>
   contract?: boolean | Prisma.WorkflowRun$contractArgs<ExtArgs>
+  worker?: boolean | Prisma.WorkflowRun$workerArgs<ExtArgs>
   startedBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
 export type WorkflowRunIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2640,6 +2948,7 @@ export type WorkflowRunIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.
   workflowTemplate?: boolean | Prisma.WorkflowTemplateDefaultArgs<ExtArgs>
   contractor?: boolean | Prisma.WorkflowRun$contractorArgs<ExtArgs>
   contract?: boolean | Prisma.WorkflowRun$contractArgs<ExtArgs>
+  worker?: boolean | Prisma.WorkflowRun$workerArgs<ExtArgs>
   startedBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
 
@@ -2650,6 +2959,7 @@ export type $WorkflowRunPayload<ExtArgs extends runtime.Types.Extensions.Interna
     workflowTemplate: Prisma.$WorkflowTemplatePayload<ExtArgs>
     contractor: Prisma.$ContractorPayload<ExtArgs> | null
     contract: Prisma.$ContractPayload<ExtArgs> | null
+    worker: Prisma.$WorkerPayload<ExtArgs> | null
     startedBy: Prisma.$UserPayload<ExtArgs>
     tasks: Prisma.$WorkflowTaskRunPayload<ExtArgs>[]
     comments: Prisma.$WorkflowCommentPayload<ExtArgs>[]
@@ -2664,6 +2974,7 @@ export type $WorkflowRunPayload<ExtArgs extends runtime.Types.Extensions.Interna
     entityId: string
     contractorId: string | null
     contractId: string | null
+    workerId: string | null
     status: $Enums.WorkflowRunStatus
     startedByUserId: string
     startedAt: Date
@@ -3076,6 +3387,7 @@ export interface Prisma__WorkflowRunClient<T, Null = never, ExtArgs extends runt
   workflowTemplate<T extends Prisma.WorkflowTemplateDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.WorkflowTemplateDefaultArgs<ExtArgs>>): Prisma.Prisma__WorkflowTemplateClient<runtime.Types.Result.GetResult<Prisma.$WorkflowTemplatePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   contractor<T extends Prisma.WorkflowRun$contractorArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.WorkflowRun$contractorArgs<ExtArgs>>): Prisma.Prisma__ContractorClient<runtime.Types.Result.GetResult<Prisma.$ContractorPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   contract<T extends Prisma.WorkflowRun$contractArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.WorkflowRun$contractArgs<ExtArgs>>): Prisma.Prisma__ContractClient<runtime.Types.Result.GetResult<Prisma.$ContractPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  worker<T extends Prisma.WorkflowRun$workerArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.WorkflowRun$workerArgs<ExtArgs>>): Prisma.Prisma__WorkerClient<runtime.Types.Result.GetResult<Prisma.$WorkerPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   startedBy<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   tasks<T extends Prisma.WorkflowRun$tasksArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.WorkflowRun$tasksArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WorkflowTaskRunPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   comments<T extends Prisma.WorkflowRun$commentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.WorkflowRun$commentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WorkflowCommentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -3117,6 +3429,7 @@ export interface WorkflowRunFieldRefs {
   readonly entityId: Prisma.FieldRef<"WorkflowRun", 'String'>
   readonly contractorId: Prisma.FieldRef<"WorkflowRun", 'String'>
   readonly contractId: Prisma.FieldRef<"WorkflowRun", 'String'>
+  readonly workerId: Prisma.FieldRef<"WorkflowRun", 'String'>
   readonly status: Prisma.FieldRef<"WorkflowRun", 'WorkflowRunStatus'>
   readonly startedByUserId: Prisma.FieldRef<"WorkflowRun", 'String'>
   readonly startedAt: Prisma.FieldRef<"WorkflowRun", 'DateTime'>
@@ -3567,6 +3880,25 @@ export type WorkflowRun$contractArgs<ExtArgs extends runtime.Types.Extensions.In
    */
   include?: Prisma.ContractInclude<ExtArgs> | null
   where?: Prisma.ContractWhereInput
+}
+
+/**
+ * WorkflowRun.worker
+ */
+export type WorkflowRun$workerArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Worker
+   */
+  select?: Prisma.WorkerSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Worker
+   */
+  omit?: Prisma.WorkerOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.WorkerInclude<ExtArgs> | null
+  where?: Prisma.WorkerWhereInput
 }
 
 /**

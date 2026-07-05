@@ -25,6 +25,9 @@ export interface UseStartDeprovisioningInput {
   assignmentId?: string;
   /** Task-card path: resolve the assignment server-side from the contractor. */
   contractorId?: string;
+  /** Employee path: deprovision by worker id (no assignment; server keys the
+   * cooldown off EmployeeProfile.terminatedAt). Passed straight through. */
+  workerId?: string;
 }
 
 const IDEMPOTENCY_PREFIX = 'deprov:';
@@ -44,6 +47,7 @@ export function deriveIdempotencyKey(assignmentId: string): string {
 export function useStartDeprovisioning({
   assignmentId: directAssignmentId,
   contractorId,
+  workerId,
 }: UseStartDeprovisioningInput) {
   const trpc = useTRPC();
   const t = useTranslations('Idp.trigger');
@@ -68,10 +72,11 @@ export function useStartDeprovisioning({
     enabled: !!assignmentId,
   });
 
-  const idempotencyKey = useMemo(
-    () => (assignmentId ? deriveIdempotencyKey(assignmentId) : null),
-    [assignmentId],
-  );
+  const idempotencyKey = useMemo(() => {
+    if (assignmentId) return deriveIdempotencyKey(assignmentId);
+    if (workerId) return deriveIdempotencyKey(workerId);
+    return null;
+  }, [assignmentId, workerId]);
 
   const startMutation = useMutation(
     trpc.deprovisioning.startDeprovisioningRun.mutationOptions({
@@ -92,9 +97,15 @@ export function useStartDeprovisioning({
   );
 
   const start = useCallback(() => {
-    if (!(assignmentId && idempotencyKey) || startMutation.isPending) return;
-    startMutation.mutate({ assignmentId, idempotencyKey });
-  }, [assignmentId, idempotencyKey, startMutation]);
+    if (!idempotencyKey || startMutation.isPending) return;
+    if (workerId) {
+      startMutation.mutate({ subjectType: 'EMPLOYEE', workerId, idempotencyKey });
+      return;
+    }
+    if (assignmentId) {
+      startMutation.mutate({ subjectType: 'CONTRACTOR', assignmentId, idempotencyKey });
+    }
+  }, [assignmentId, workerId, idempotencyKey, startMutation]);
 
   const eligibility = eligibilityQuery.data;
   const resolvedToNull =
@@ -112,7 +123,9 @@ export function useStartDeprovisioning({
       void eligibilityQuery.refetch();
     },
     isUnresolved: resolvedToNull,
-    allowed: eligibility?.allowed ?? false,
+    // Employees have no client-side cooldown query — the panel gates on the
+    // termination date and the server re-runs canStartDeprovisioning at start.
+    allowed: workerId ? true : (eligibility?.allowed ?? false),
     earliestDate: eligibility?.earliestDate ?? null,
     reason: eligibility?.reason ?? null,
     startedRunId,

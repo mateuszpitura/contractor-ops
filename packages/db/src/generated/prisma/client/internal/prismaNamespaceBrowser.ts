@@ -100,6 +100,7 @@ export const ModelName = {
   PeppolCapabilityCache: 'PeppolCapabilityCache',
   EmployeeTimeRecord: 'EmployeeTimeRecord',
   EmployeeProfile: 'EmployeeProfile',
+  StatutoryCertificate: 'StatutoryCertificate',
   Equipment: 'Equipment',
   EquipmentAssignment: 'EquipmentAssignment',
   Shipment: 'Shipment',
@@ -1138,11 +1139,28 @@ export const EmployeeProfileScalarFieldEnum = {
   saudizationCategory: 'saudizationCategory',
   etat: 'etat',
   employmentStatus: 'employmentStatus',
+  terminatedAt: 'terminatedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
 export type EmployeeProfileScalarFieldEnum = (typeof EmployeeProfileScalarFieldEnum)[keyof typeof EmployeeProfileScalarFieldEnum]
+
+
+export const StatutoryCertificateScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  workflowRunId: 'workflowRunId',
+  workerId: 'workerId',
+  certType: 'certType',
+  jurisdiction: 'jurisdiction',
+  status: 'status',
+  snapshotJson: 'snapshotJson',
+  pdfArchiveKey: 'pdfArchiveKey',
+  createdAt: 'createdAt'
+} as const
+
+export type StatutoryCertificateScalarFieldEnum = (typeof StatutoryCertificateScalarFieldEnum)[keyof typeof StatutoryCertificateScalarFieldEnum]
 
 
 export const EquipmentScalarFieldEnum = {
@@ -1491,6 +1509,7 @@ export const DeprovisioningRunScalarFieldEnum = {
   organizationId: 'organizationId',
   contractorId: 'contractorId',
   assignmentId: 'assignmentId',
+  workerId: 'workerId',
   status: 'status',
   startedAt: 'startedAt',
   finishedAt: 'finishedAt',
@@ -2737,6 +2756,8 @@ export const WorkflowTemplateScalarFieldEnum = {
   version: 'version',
   status: 'status',
   appliesToEntityType: 'appliesToEntityType',
+  jurisdiction: 'jurisdiction',
+  seedKey: 'seedKey',
   createdByUserId: 'createdByUserId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -2815,6 +2836,7 @@ export const WorkflowRunScalarFieldEnum = {
   entityId: 'entityId',
   contractorId: 'contractorId',
   contractId: 'contractId',
+  workerId: 'workerId',
   status: 'status',
   startedByUserId: 'startedByUserId',
   startedAt: 'startedAt',

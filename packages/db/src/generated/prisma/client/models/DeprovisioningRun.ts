@@ -29,6 +29,7 @@ export type DeprovisioningRunMinAggregateOutputType = {
   organizationId: string | null
   contractorId: string | null
   assignmentId: string | null
+  workerId: string | null
   status: $Enums.DeprovisioningRunStatus | null
   startedAt: Date | null
   finishedAt: Date | null
@@ -41,6 +42,7 @@ export type DeprovisioningRunMaxAggregateOutputType = {
   organizationId: string | null
   contractorId: string | null
   assignmentId: string | null
+  workerId: string | null
   status: $Enums.DeprovisioningRunStatus | null
   startedAt: Date | null
   finishedAt: Date | null
@@ -53,6 +55,7 @@ export type DeprovisioningRunCountAggregateOutputType = {
   organizationId: number
   contractorId: number
   assignmentId: number
+  workerId: number
   status: number
   startedAt: number
   finishedAt: number
@@ -67,6 +70,7 @@ export type DeprovisioningRunMinAggregateInputType = {
   organizationId?: true
   contractorId?: true
   assignmentId?: true
+  workerId?: true
   status?: true
   startedAt?: true
   finishedAt?: true
@@ -79,6 +83,7 @@ export type DeprovisioningRunMaxAggregateInputType = {
   organizationId?: true
   contractorId?: true
   assignmentId?: true
+  workerId?: true
   status?: true
   startedAt?: true
   finishedAt?: true
@@ -91,6 +96,7 @@ export type DeprovisioningRunCountAggregateInputType = {
   organizationId?: true
   contractorId?: true
   assignmentId?: true
+  workerId?: true
   status?: true
   startedAt?: true
   finishedAt?: true
@@ -174,8 +180,9 @@ export type DeprovisioningRunGroupByArgs<ExtArgs extends runtime.Types.Extension
 export type DeprovisioningRunGroupByOutputType = {
   id: string
   organizationId: string
-  contractorId: string
-  assignmentId: string
+  contractorId: string | null
+  assignmentId: string | null
+  workerId: string | null
   status: $Enums.DeprovisioningRunStatus
   startedAt: Date
   finishedAt: Date | null
@@ -207,16 +214,18 @@ export type DeprovisioningRunWhereInput = {
   NOT?: Prisma.DeprovisioningRunWhereInput | Prisma.DeprovisioningRunWhereInput[]
   id?: Prisma.StringFilter<"DeprovisioningRun"> | string
   organizationId?: Prisma.StringFilter<"DeprovisioningRun"> | string
-  contractorId?: Prisma.StringFilter<"DeprovisioningRun"> | string
-  assignmentId?: Prisma.StringFilter<"DeprovisioningRun"> | string
+  contractorId?: Prisma.StringNullableFilter<"DeprovisioningRun"> | string | null
+  assignmentId?: Prisma.StringNullableFilter<"DeprovisioningRun"> | string | null
+  workerId?: Prisma.StringNullableFilter<"DeprovisioningRun"> | string | null
   status?: Prisma.EnumDeprovisioningRunStatusFilter<"DeprovisioningRun"> | $Enums.DeprovisioningRunStatus
   startedAt?: Prisma.DateTimeFilter<"DeprovisioningRun"> | Date | string
   finishedAt?: Prisma.DateTimeNullableFilter<"DeprovisioningRun"> | Date | string | null
   triggeredByUserId?: Prisma.StringFilter<"DeprovisioningRun"> | string
   idempotencyKey?: Prisma.StringFilter<"DeprovisioningRun"> | string
   organization?: Prisma.XOR<Prisma.OrganizationScalarRelationFilter, Prisma.OrganizationWhereInput>
-  contractor?: Prisma.XOR<Prisma.ContractorScalarRelationFilter, Prisma.ContractorWhereInput>
-  assignment?: Prisma.XOR<Prisma.ContractorAssignmentScalarRelationFilter, Prisma.ContractorAssignmentWhereInput>
+  contractor?: Prisma.XOR<Prisma.ContractorNullableScalarRelationFilter, Prisma.ContractorWhereInput> | null
+  assignment?: Prisma.XOR<Prisma.ContractorAssignmentNullableScalarRelationFilter, Prisma.ContractorAssignmentWhereInput> | null
+  worker?: Prisma.XOR<Prisma.WorkerNullableScalarRelationFilter, Prisma.WorkerWhereInput> | null
   triggeredByUser?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   steps?: Prisma.DeprovisioningStepListRelationFilter
 }
@@ -224,8 +233,9 @@ export type DeprovisioningRunWhereInput = {
 export type DeprovisioningRunOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   organizationId?: Prisma.SortOrder
-  contractorId?: Prisma.SortOrder
-  assignmentId?: Prisma.SortOrder
+  contractorId?: Prisma.SortOrderInput | Prisma.SortOrder
+  assignmentId?: Prisma.SortOrderInput | Prisma.SortOrder
+  workerId?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   startedAt?: Prisma.SortOrder
   finishedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -234,6 +244,7 @@ export type DeprovisioningRunOrderByWithRelationInput = {
   organization?: Prisma.OrganizationOrderByWithRelationInput
   contractor?: Prisma.ContractorOrderByWithRelationInput
   assignment?: Prisma.ContractorAssignmentOrderByWithRelationInput
+  worker?: Prisma.WorkerOrderByWithRelationInput
   triggeredByUser?: Prisma.UserOrderByWithRelationInput
   steps?: Prisma.DeprovisioningStepOrderByRelationAggregateInput
 }
@@ -245,16 +256,18 @@ export type DeprovisioningRunWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.DeprovisioningRunWhereInput[]
   NOT?: Prisma.DeprovisioningRunWhereInput | Prisma.DeprovisioningRunWhereInput[]
   organizationId?: Prisma.StringFilter<"DeprovisioningRun"> | string
-  contractorId?: Prisma.StringFilter<"DeprovisioningRun"> | string
-  assignmentId?: Prisma.StringFilter<"DeprovisioningRun"> | string
+  contractorId?: Prisma.StringNullableFilter<"DeprovisioningRun"> | string | null
+  assignmentId?: Prisma.StringNullableFilter<"DeprovisioningRun"> | string | null
+  workerId?: Prisma.StringNullableFilter<"DeprovisioningRun"> | string | null
   status?: Prisma.EnumDeprovisioningRunStatusFilter<"DeprovisioningRun"> | $Enums.DeprovisioningRunStatus
   startedAt?: Prisma.DateTimeFilter<"DeprovisioningRun"> | Date | string
   finishedAt?: Prisma.DateTimeNullableFilter<"DeprovisioningRun"> | Date | string | null
   triggeredByUserId?: Prisma.StringFilter<"DeprovisioningRun"> | string
   idempotencyKey?: Prisma.StringFilter<"DeprovisioningRun"> | string
   organization?: Prisma.XOR<Prisma.OrganizationScalarRelationFilter, Prisma.OrganizationWhereInput>
-  contractor?: Prisma.XOR<Prisma.ContractorScalarRelationFilter, Prisma.ContractorWhereInput>
-  assignment?: Prisma.XOR<Prisma.ContractorAssignmentScalarRelationFilter, Prisma.ContractorAssignmentWhereInput>
+  contractor?: Prisma.XOR<Prisma.ContractorNullableScalarRelationFilter, Prisma.ContractorWhereInput> | null
+  assignment?: Prisma.XOR<Prisma.ContractorAssignmentNullableScalarRelationFilter, Prisma.ContractorAssignmentWhereInput> | null
+  worker?: Prisma.XOR<Prisma.WorkerNullableScalarRelationFilter, Prisma.WorkerWhereInput> | null
   triggeredByUser?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   steps?: Prisma.DeprovisioningStepListRelationFilter
 }, "id" | "organizationId_idempotencyKey">
@@ -262,8 +275,9 @@ export type DeprovisioningRunWhereUniqueInput = Prisma.AtLeast<{
 export type DeprovisioningRunOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   organizationId?: Prisma.SortOrder
-  contractorId?: Prisma.SortOrder
-  assignmentId?: Prisma.SortOrder
+  contractorId?: Prisma.SortOrderInput | Prisma.SortOrder
+  assignmentId?: Prisma.SortOrderInput | Prisma.SortOrder
+  workerId?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   startedAt?: Prisma.SortOrder
   finishedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -280,8 +294,9 @@ export type DeprovisioningRunScalarWhereWithAggregatesInput = {
   NOT?: Prisma.DeprovisioningRunScalarWhereWithAggregatesInput | Prisma.DeprovisioningRunScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"DeprovisioningRun"> | string
   organizationId?: Prisma.StringWithAggregatesFilter<"DeprovisioningRun"> | string
-  contractorId?: Prisma.StringWithAggregatesFilter<"DeprovisioningRun"> | string
-  assignmentId?: Prisma.StringWithAggregatesFilter<"DeprovisioningRun"> | string
+  contractorId?: Prisma.StringNullableWithAggregatesFilter<"DeprovisioningRun"> | string | null
+  assignmentId?: Prisma.StringNullableWithAggregatesFilter<"DeprovisioningRun"> | string | null
+  workerId?: Prisma.StringNullableWithAggregatesFilter<"DeprovisioningRun"> | string | null
   status?: Prisma.EnumDeprovisioningRunStatusWithAggregatesFilter<"DeprovisioningRun"> | $Enums.DeprovisioningRunStatus
   startedAt?: Prisma.DateTimeWithAggregatesFilter<"DeprovisioningRun"> | Date | string
   finishedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"DeprovisioningRun"> | Date | string | null
@@ -296,8 +311,9 @@ export type DeprovisioningRunCreateInput = {
   finishedAt?: Date | string | null
   idempotencyKey: string
   organization: Prisma.OrganizationCreateNestedOneWithoutDeprovisioningRunsInput
-  contractor: Prisma.ContractorCreateNestedOneWithoutDeprovisioningRunsInput
-  assignment: Prisma.ContractorAssignmentCreateNestedOneWithoutDeprovisioningRunsInput
+  contractor?: Prisma.ContractorCreateNestedOneWithoutDeprovisioningRunsInput
+  assignment?: Prisma.ContractorAssignmentCreateNestedOneWithoutDeprovisioningRunsInput
+  worker?: Prisma.WorkerCreateNestedOneWithoutDeprovisioningRunsInput
   triggeredByUser: Prisma.UserCreateNestedOneWithoutTriggeredDeprovisioningRunsInput
   steps?: Prisma.DeprovisioningStepCreateNestedManyWithoutRunInput
 }
@@ -305,8 +321,9 @@ export type DeprovisioningRunCreateInput = {
 export type DeprovisioningRunUncheckedCreateInput = {
   id?: string
   organizationId: string
-  contractorId: string
-  assignmentId: string
+  contractorId?: string | null
+  assignmentId?: string | null
+  workerId?: string | null
   status?: $Enums.DeprovisioningRunStatus
   startedAt?: Date | string
   finishedAt?: Date | string | null
@@ -322,8 +339,9 @@ export type DeprovisioningRunUpdateInput = {
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutDeprovisioningRunsNestedInput
-  contractor?: Prisma.ContractorUpdateOneRequiredWithoutDeprovisioningRunsNestedInput
-  assignment?: Prisma.ContractorAssignmentUpdateOneRequiredWithoutDeprovisioningRunsNestedInput
+  contractor?: Prisma.ContractorUpdateOneWithoutDeprovisioningRunsNestedInput
+  assignment?: Prisma.ContractorAssignmentUpdateOneWithoutDeprovisioningRunsNestedInput
+  worker?: Prisma.WorkerUpdateOneWithoutDeprovisioningRunsNestedInput
   triggeredByUser?: Prisma.UserUpdateOneRequiredWithoutTriggeredDeprovisioningRunsNestedInput
   steps?: Prisma.DeprovisioningStepUpdateManyWithoutRunNestedInput
 }
@@ -331,8 +349,9 @@ export type DeprovisioningRunUpdateInput = {
 export type DeprovisioningRunUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   organizationId?: Prisma.StringFieldUpdateOperationsInput | string
-  contractorId?: Prisma.StringFieldUpdateOperationsInput | string
-  assignmentId?: Prisma.StringFieldUpdateOperationsInput | string
+  contractorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assignmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumDeprovisioningRunStatusFieldUpdateOperationsInput | $Enums.DeprovisioningRunStatus
   startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -344,8 +363,9 @@ export type DeprovisioningRunUncheckedUpdateInput = {
 export type DeprovisioningRunCreateManyInput = {
   id?: string
   organizationId: string
-  contractorId: string
-  assignmentId: string
+  contractorId?: string | null
+  assignmentId?: string | null
+  workerId?: string | null
   status?: $Enums.DeprovisioningRunStatus
   startedAt?: Date | string
   finishedAt?: Date | string | null
@@ -364,8 +384,9 @@ export type DeprovisioningRunUpdateManyMutationInput = {
 export type DeprovisioningRunUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   organizationId?: Prisma.StringFieldUpdateOperationsInput | string
-  contractorId?: Prisma.StringFieldUpdateOperationsInput | string
-  assignmentId?: Prisma.StringFieldUpdateOperationsInput | string
+  contractorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assignmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumDeprovisioningRunStatusFieldUpdateOperationsInput | $Enums.DeprovisioningRunStatus
   startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -393,6 +414,7 @@ export type DeprovisioningRunCountOrderByAggregateInput = {
   organizationId?: Prisma.SortOrder
   contractorId?: Prisma.SortOrder
   assignmentId?: Prisma.SortOrder
+  workerId?: Prisma.SortOrder
   status?: Prisma.SortOrder
   startedAt?: Prisma.SortOrder
   finishedAt?: Prisma.SortOrder
@@ -405,6 +427,7 @@ export type DeprovisioningRunMaxOrderByAggregateInput = {
   organizationId?: Prisma.SortOrder
   contractorId?: Prisma.SortOrder
   assignmentId?: Prisma.SortOrder
+  workerId?: Prisma.SortOrder
   status?: Prisma.SortOrder
   startedAt?: Prisma.SortOrder
   finishedAt?: Prisma.SortOrder
@@ -417,6 +440,7 @@ export type DeprovisioningRunMinOrderByAggregateInput = {
   organizationId?: Prisma.SortOrder
   contractorId?: Prisma.SortOrder
   assignmentId?: Prisma.SortOrder
+  workerId?: Prisma.SortOrder
   status?: Prisma.SortOrder
   startedAt?: Prisma.SortOrder
   finishedAt?: Prisma.SortOrder
@@ -615,6 +639,48 @@ export type DeprovisioningRunUncheckedUpdateManyWithoutOrganizationNestedInput =
   deleteMany?: Prisma.DeprovisioningRunScalarWhereInput | Prisma.DeprovisioningRunScalarWhereInput[]
 }
 
+export type DeprovisioningRunCreateNestedManyWithoutWorkerInput = {
+  create?: Prisma.XOR<Prisma.DeprovisioningRunCreateWithoutWorkerInput, Prisma.DeprovisioningRunUncheckedCreateWithoutWorkerInput> | Prisma.DeprovisioningRunCreateWithoutWorkerInput[] | Prisma.DeprovisioningRunUncheckedCreateWithoutWorkerInput[]
+  connectOrCreate?: Prisma.DeprovisioningRunCreateOrConnectWithoutWorkerInput | Prisma.DeprovisioningRunCreateOrConnectWithoutWorkerInput[]
+  createMany?: Prisma.DeprovisioningRunCreateManyWorkerInputEnvelope
+  connect?: Prisma.DeprovisioningRunWhereUniqueInput | Prisma.DeprovisioningRunWhereUniqueInput[]
+}
+
+export type DeprovisioningRunUncheckedCreateNestedManyWithoutWorkerInput = {
+  create?: Prisma.XOR<Prisma.DeprovisioningRunCreateWithoutWorkerInput, Prisma.DeprovisioningRunUncheckedCreateWithoutWorkerInput> | Prisma.DeprovisioningRunCreateWithoutWorkerInput[] | Prisma.DeprovisioningRunUncheckedCreateWithoutWorkerInput[]
+  connectOrCreate?: Prisma.DeprovisioningRunCreateOrConnectWithoutWorkerInput | Prisma.DeprovisioningRunCreateOrConnectWithoutWorkerInput[]
+  createMany?: Prisma.DeprovisioningRunCreateManyWorkerInputEnvelope
+  connect?: Prisma.DeprovisioningRunWhereUniqueInput | Prisma.DeprovisioningRunWhereUniqueInput[]
+}
+
+export type DeprovisioningRunUpdateManyWithoutWorkerNestedInput = {
+  create?: Prisma.XOR<Prisma.DeprovisioningRunCreateWithoutWorkerInput, Prisma.DeprovisioningRunUncheckedCreateWithoutWorkerInput> | Prisma.DeprovisioningRunCreateWithoutWorkerInput[] | Prisma.DeprovisioningRunUncheckedCreateWithoutWorkerInput[]
+  connectOrCreate?: Prisma.DeprovisioningRunCreateOrConnectWithoutWorkerInput | Prisma.DeprovisioningRunCreateOrConnectWithoutWorkerInput[]
+  upsert?: Prisma.DeprovisioningRunUpsertWithWhereUniqueWithoutWorkerInput | Prisma.DeprovisioningRunUpsertWithWhereUniqueWithoutWorkerInput[]
+  createMany?: Prisma.DeprovisioningRunCreateManyWorkerInputEnvelope
+  set?: Prisma.DeprovisioningRunWhereUniqueInput | Prisma.DeprovisioningRunWhereUniqueInput[]
+  disconnect?: Prisma.DeprovisioningRunWhereUniqueInput | Prisma.DeprovisioningRunWhereUniqueInput[]
+  delete?: Prisma.DeprovisioningRunWhereUniqueInput | Prisma.DeprovisioningRunWhereUniqueInput[]
+  connect?: Prisma.DeprovisioningRunWhereUniqueInput | Prisma.DeprovisioningRunWhereUniqueInput[]
+  update?: Prisma.DeprovisioningRunUpdateWithWhereUniqueWithoutWorkerInput | Prisma.DeprovisioningRunUpdateWithWhereUniqueWithoutWorkerInput[]
+  updateMany?: Prisma.DeprovisioningRunUpdateManyWithWhereWithoutWorkerInput | Prisma.DeprovisioningRunUpdateManyWithWhereWithoutWorkerInput[]
+  deleteMany?: Prisma.DeprovisioningRunScalarWhereInput | Prisma.DeprovisioningRunScalarWhereInput[]
+}
+
+export type DeprovisioningRunUncheckedUpdateManyWithoutWorkerNestedInput = {
+  create?: Prisma.XOR<Prisma.DeprovisioningRunCreateWithoutWorkerInput, Prisma.DeprovisioningRunUncheckedCreateWithoutWorkerInput> | Prisma.DeprovisioningRunCreateWithoutWorkerInput[] | Prisma.DeprovisioningRunUncheckedCreateWithoutWorkerInput[]
+  connectOrCreate?: Prisma.DeprovisioningRunCreateOrConnectWithoutWorkerInput | Prisma.DeprovisioningRunCreateOrConnectWithoutWorkerInput[]
+  upsert?: Prisma.DeprovisioningRunUpsertWithWhereUniqueWithoutWorkerInput | Prisma.DeprovisioningRunUpsertWithWhereUniqueWithoutWorkerInput[]
+  createMany?: Prisma.DeprovisioningRunCreateManyWorkerInputEnvelope
+  set?: Prisma.DeprovisioningRunWhereUniqueInput | Prisma.DeprovisioningRunWhereUniqueInput[]
+  disconnect?: Prisma.DeprovisioningRunWhereUniqueInput | Prisma.DeprovisioningRunWhereUniqueInput[]
+  delete?: Prisma.DeprovisioningRunWhereUniqueInput | Prisma.DeprovisioningRunWhereUniqueInput[]
+  connect?: Prisma.DeprovisioningRunWhereUniqueInput | Prisma.DeprovisioningRunWhereUniqueInput[]
+  update?: Prisma.DeprovisioningRunUpdateWithWhereUniqueWithoutWorkerInput | Prisma.DeprovisioningRunUpdateWithWhereUniqueWithoutWorkerInput[]
+  updateMany?: Prisma.DeprovisioningRunUpdateManyWithWhereWithoutWorkerInput | Prisma.DeprovisioningRunUpdateManyWithWhereWithoutWorkerInput[]
+  deleteMany?: Prisma.DeprovisioningRunScalarWhereInput | Prisma.DeprovisioningRunScalarWhereInput[]
+}
+
 export type DeprovisioningRunCreateWithoutTriggeredByUserInput = {
   id?: string
   status?: $Enums.DeprovisioningRunStatus
@@ -622,16 +688,18 @@ export type DeprovisioningRunCreateWithoutTriggeredByUserInput = {
   finishedAt?: Date | string | null
   idempotencyKey: string
   organization: Prisma.OrganizationCreateNestedOneWithoutDeprovisioningRunsInput
-  contractor: Prisma.ContractorCreateNestedOneWithoutDeprovisioningRunsInput
-  assignment: Prisma.ContractorAssignmentCreateNestedOneWithoutDeprovisioningRunsInput
+  contractor?: Prisma.ContractorCreateNestedOneWithoutDeprovisioningRunsInput
+  assignment?: Prisma.ContractorAssignmentCreateNestedOneWithoutDeprovisioningRunsInput
+  worker?: Prisma.WorkerCreateNestedOneWithoutDeprovisioningRunsInput
   steps?: Prisma.DeprovisioningStepCreateNestedManyWithoutRunInput
 }
 
 export type DeprovisioningRunUncheckedCreateWithoutTriggeredByUserInput = {
   id?: string
   organizationId: string
-  contractorId: string
-  assignmentId: string
+  contractorId?: string | null
+  assignmentId?: string | null
+  workerId?: string | null
   status?: $Enums.DeprovisioningRunStatus
   startedAt?: Date | string
   finishedAt?: Date | string | null
@@ -671,8 +739,9 @@ export type DeprovisioningRunScalarWhereInput = {
   NOT?: Prisma.DeprovisioningRunScalarWhereInput | Prisma.DeprovisioningRunScalarWhereInput[]
   id?: Prisma.StringFilter<"DeprovisioningRun"> | string
   organizationId?: Prisma.StringFilter<"DeprovisioningRun"> | string
-  contractorId?: Prisma.StringFilter<"DeprovisioningRun"> | string
-  assignmentId?: Prisma.StringFilter<"DeprovisioningRun"> | string
+  contractorId?: Prisma.StringNullableFilter<"DeprovisioningRun"> | string | null
+  assignmentId?: Prisma.StringNullableFilter<"DeprovisioningRun"> | string | null
+  workerId?: Prisma.StringNullableFilter<"DeprovisioningRun"> | string | null
   status?: Prisma.EnumDeprovisioningRunStatusFilter<"DeprovisioningRun"> | $Enums.DeprovisioningRunStatus
   startedAt?: Prisma.DateTimeFilter<"DeprovisioningRun"> | Date | string
   finishedAt?: Prisma.DateTimeNullableFilter<"DeprovisioningRun"> | Date | string | null
@@ -687,7 +756,8 @@ export type DeprovisioningRunCreateWithoutContractorInput = {
   finishedAt?: Date | string | null
   idempotencyKey: string
   organization: Prisma.OrganizationCreateNestedOneWithoutDeprovisioningRunsInput
-  assignment: Prisma.ContractorAssignmentCreateNestedOneWithoutDeprovisioningRunsInput
+  assignment?: Prisma.ContractorAssignmentCreateNestedOneWithoutDeprovisioningRunsInput
+  worker?: Prisma.WorkerCreateNestedOneWithoutDeprovisioningRunsInput
   triggeredByUser: Prisma.UserCreateNestedOneWithoutTriggeredDeprovisioningRunsInput
   steps?: Prisma.DeprovisioningStepCreateNestedManyWithoutRunInput
 }
@@ -695,7 +765,8 @@ export type DeprovisioningRunCreateWithoutContractorInput = {
 export type DeprovisioningRunUncheckedCreateWithoutContractorInput = {
   id?: string
   organizationId: string
-  assignmentId: string
+  assignmentId?: string | null
+  workerId?: string | null
   status?: $Enums.DeprovisioningRunStatus
   startedAt?: Date | string
   finishedAt?: Date | string | null
@@ -737,7 +808,8 @@ export type DeprovisioningRunCreateWithoutAssignmentInput = {
   finishedAt?: Date | string | null
   idempotencyKey: string
   organization: Prisma.OrganizationCreateNestedOneWithoutDeprovisioningRunsInput
-  contractor: Prisma.ContractorCreateNestedOneWithoutDeprovisioningRunsInput
+  contractor?: Prisma.ContractorCreateNestedOneWithoutDeprovisioningRunsInput
+  worker?: Prisma.WorkerCreateNestedOneWithoutDeprovisioningRunsInput
   triggeredByUser: Prisma.UserCreateNestedOneWithoutTriggeredDeprovisioningRunsInput
   steps?: Prisma.DeprovisioningStepCreateNestedManyWithoutRunInput
 }
@@ -745,7 +817,8 @@ export type DeprovisioningRunCreateWithoutAssignmentInput = {
 export type DeprovisioningRunUncheckedCreateWithoutAssignmentInput = {
   id?: string
   organizationId: string
-  contractorId: string
+  contractorId?: string | null
+  workerId?: string | null
   status?: $Enums.DeprovisioningRunStatus
   startedAt?: Date | string
   finishedAt?: Date | string | null
@@ -787,16 +860,18 @@ export type DeprovisioningRunCreateWithoutStepsInput = {
   finishedAt?: Date | string | null
   idempotencyKey: string
   organization: Prisma.OrganizationCreateNestedOneWithoutDeprovisioningRunsInput
-  contractor: Prisma.ContractorCreateNestedOneWithoutDeprovisioningRunsInput
-  assignment: Prisma.ContractorAssignmentCreateNestedOneWithoutDeprovisioningRunsInput
+  contractor?: Prisma.ContractorCreateNestedOneWithoutDeprovisioningRunsInput
+  assignment?: Prisma.ContractorAssignmentCreateNestedOneWithoutDeprovisioningRunsInput
+  worker?: Prisma.WorkerCreateNestedOneWithoutDeprovisioningRunsInput
   triggeredByUser: Prisma.UserCreateNestedOneWithoutTriggeredDeprovisioningRunsInput
 }
 
 export type DeprovisioningRunUncheckedCreateWithoutStepsInput = {
   id?: string
   organizationId: string
-  contractorId: string
-  assignmentId: string
+  contractorId?: string | null
+  assignmentId?: string | null
+  workerId?: string | null
   status?: $Enums.DeprovisioningRunStatus
   startedAt?: Date | string
   finishedAt?: Date | string | null
@@ -827,16 +902,18 @@ export type DeprovisioningRunUpdateWithoutStepsInput = {
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutDeprovisioningRunsNestedInput
-  contractor?: Prisma.ContractorUpdateOneRequiredWithoutDeprovisioningRunsNestedInput
-  assignment?: Prisma.ContractorAssignmentUpdateOneRequiredWithoutDeprovisioningRunsNestedInput
+  contractor?: Prisma.ContractorUpdateOneWithoutDeprovisioningRunsNestedInput
+  assignment?: Prisma.ContractorAssignmentUpdateOneWithoutDeprovisioningRunsNestedInput
+  worker?: Prisma.WorkerUpdateOneWithoutDeprovisioningRunsNestedInput
   triggeredByUser?: Prisma.UserUpdateOneRequiredWithoutTriggeredDeprovisioningRunsNestedInput
 }
 
 export type DeprovisioningRunUncheckedUpdateWithoutStepsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   organizationId?: Prisma.StringFieldUpdateOperationsInput | string
-  contractorId?: Prisma.StringFieldUpdateOperationsInput | string
-  assignmentId?: Prisma.StringFieldUpdateOperationsInput | string
+  contractorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assignmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumDeprovisioningRunStatusFieldUpdateOperationsInput | $Enums.DeprovisioningRunStatus
   startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -850,16 +927,18 @@ export type DeprovisioningRunCreateWithoutOrganizationInput = {
   startedAt?: Date | string
   finishedAt?: Date | string | null
   idempotencyKey: string
-  contractor: Prisma.ContractorCreateNestedOneWithoutDeprovisioningRunsInput
-  assignment: Prisma.ContractorAssignmentCreateNestedOneWithoutDeprovisioningRunsInput
+  contractor?: Prisma.ContractorCreateNestedOneWithoutDeprovisioningRunsInput
+  assignment?: Prisma.ContractorAssignmentCreateNestedOneWithoutDeprovisioningRunsInput
+  worker?: Prisma.WorkerCreateNestedOneWithoutDeprovisioningRunsInput
   triggeredByUser: Prisma.UserCreateNestedOneWithoutTriggeredDeprovisioningRunsInput
   steps?: Prisma.DeprovisioningStepCreateNestedManyWithoutRunInput
 }
 
 export type DeprovisioningRunUncheckedCreateWithoutOrganizationInput = {
   id?: string
-  contractorId: string
-  assignmentId: string
+  contractorId?: string | null
+  assignmentId?: string | null
+  workerId?: string | null
   status?: $Enums.DeprovisioningRunStatus
   startedAt?: Date | string
   finishedAt?: Date | string | null
@@ -894,11 +973,64 @@ export type DeprovisioningRunUpdateManyWithWhereWithoutOrganizationInput = {
   data: Prisma.XOR<Prisma.DeprovisioningRunUpdateManyMutationInput, Prisma.DeprovisioningRunUncheckedUpdateManyWithoutOrganizationInput>
 }
 
+export type DeprovisioningRunCreateWithoutWorkerInput = {
+  id?: string
+  status?: $Enums.DeprovisioningRunStatus
+  startedAt?: Date | string
+  finishedAt?: Date | string | null
+  idempotencyKey: string
+  organization: Prisma.OrganizationCreateNestedOneWithoutDeprovisioningRunsInput
+  contractor?: Prisma.ContractorCreateNestedOneWithoutDeprovisioningRunsInput
+  assignment?: Prisma.ContractorAssignmentCreateNestedOneWithoutDeprovisioningRunsInput
+  triggeredByUser: Prisma.UserCreateNestedOneWithoutTriggeredDeprovisioningRunsInput
+  steps?: Prisma.DeprovisioningStepCreateNestedManyWithoutRunInput
+}
+
+export type DeprovisioningRunUncheckedCreateWithoutWorkerInput = {
+  id?: string
+  organizationId: string
+  contractorId?: string | null
+  assignmentId?: string | null
+  status?: $Enums.DeprovisioningRunStatus
+  startedAt?: Date | string
+  finishedAt?: Date | string | null
+  triggeredByUserId: string
+  idempotencyKey: string
+  steps?: Prisma.DeprovisioningStepUncheckedCreateNestedManyWithoutRunInput
+}
+
+export type DeprovisioningRunCreateOrConnectWithoutWorkerInput = {
+  where: Prisma.DeprovisioningRunWhereUniqueInput
+  create: Prisma.XOR<Prisma.DeprovisioningRunCreateWithoutWorkerInput, Prisma.DeprovisioningRunUncheckedCreateWithoutWorkerInput>
+}
+
+export type DeprovisioningRunCreateManyWorkerInputEnvelope = {
+  data: Prisma.DeprovisioningRunCreateManyWorkerInput | Prisma.DeprovisioningRunCreateManyWorkerInput[]
+  skipDuplicates?: boolean
+}
+
+export type DeprovisioningRunUpsertWithWhereUniqueWithoutWorkerInput = {
+  where: Prisma.DeprovisioningRunWhereUniqueInput
+  update: Prisma.XOR<Prisma.DeprovisioningRunUpdateWithoutWorkerInput, Prisma.DeprovisioningRunUncheckedUpdateWithoutWorkerInput>
+  create: Prisma.XOR<Prisma.DeprovisioningRunCreateWithoutWorkerInput, Prisma.DeprovisioningRunUncheckedCreateWithoutWorkerInput>
+}
+
+export type DeprovisioningRunUpdateWithWhereUniqueWithoutWorkerInput = {
+  where: Prisma.DeprovisioningRunWhereUniqueInput
+  data: Prisma.XOR<Prisma.DeprovisioningRunUpdateWithoutWorkerInput, Prisma.DeprovisioningRunUncheckedUpdateWithoutWorkerInput>
+}
+
+export type DeprovisioningRunUpdateManyWithWhereWithoutWorkerInput = {
+  where: Prisma.DeprovisioningRunScalarWhereInput
+  data: Prisma.XOR<Prisma.DeprovisioningRunUpdateManyMutationInput, Prisma.DeprovisioningRunUncheckedUpdateManyWithoutWorkerInput>
+}
+
 export type DeprovisioningRunCreateManyTriggeredByUserInput = {
   id?: string
   organizationId: string
-  contractorId: string
-  assignmentId: string
+  contractorId?: string | null
+  assignmentId?: string | null
+  workerId?: string | null
   status?: $Enums.DeprovisioningRunStatus
   startedAt?: Date | string
   finishedAt?: Date | string | null
@@ -912,16 +1044,18 @@ export type DeprovisioningRunUpdateWithoutTriggeredByUserInput = {
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutDeprovisioningRunsNestedInput
-  contractor?: Prisma.ContractorUpdateOneRequiredWithoutDeprovisioningRunsNestedInput
-  assignment?: Prisma.ContractorAssignmentUpdateOneRequiredWithoutDeprovisioningRunsNestedInput
+  contractor?: Prisma.ContractorUpdateOneWithoutDeprovisioningRunsNestedInput
+  assignment?: Prisma.ContractorAssignmentUpdateOneWithoutDeprovisioningRunsNestedInput
+  worker?: Prisma.WorkerUpdateOneWithoutDeprovisioningRunsNestedInput
   steps?: Prisma.DeprovisioningStepUpdateManyWithoutRunNestedInput
 }
 
 export type DeprovisioningRunUncheckedUpdateWithoutTriggeredByUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   organizationId?: Prisma.StringFieldUpdateOperationsInput | string
-  contractorId?: Prisma.StringFieldUpdateOperationsInput | string
-  assignmentId?: Prisma.StringFieldUpdateOperationsInput | string
+  contractorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assignmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumDeprovisioningRunStatusFieldUpdateOperationsInput | $Enums.DeprovisioningRunStatus
   startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -932,8 +1066,9 @@ export type DeprovisioningRunUncheckedUpdateWithoutTriggeredByUserInput = {
 export type DeprovisioningRunUncheckedUpdateManyWithoutTriggeredByUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   organizationId?: Prisma.StringFieldUpdateOperationsInput | string
-  contractorId?: Prisma.StringFieldUpdateOperationsInput | string
-  assignmentId?: Prisma.StringFieldUpdateOperationsInput | string
+  contractorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assignmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumDeprovisioningRunStatusFieldUpdateOperationsInput | $Enums.DeprovisioningRunStatus
   startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -943,7 +1078,8 @@ export type DeprovisioningRunUncheckedUpdateManyWithoutTriggeredByUserInput = {
 export type DeprovisioningRunCreateManyContractorInput = {
   id?: string
   organizationId: string
-  assignmentId: string
+  assignmentId?: string | null
+  workerId?: string | null
   status?: $Enums.DeprovisioningRunStatus
   startedAt?: Date | string
   finishedAt?: Date | string | null
@@ -958,7 +1094,8 @@ export type DeprovisioningRunUpdateWithoutContractorInput = {
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutDeprovisioningRunsNestedInput
-  assignment?: Prisma.ContractorAssignmentUpdateOneRequiredWithoutDeprovisioningRunsNestedInput
+  assignment?: Prisma.ContractorAssignmentUpdateOneWithoutDeprovisioningRunsNestedInput
+  worker?: Prisma.WorkerUpdateOneWithoutDeprovisioningRunsNestedInput
   triggeredByUser?: Prisma.UserUpdateOneRequiredWithoutTriggeredDeprovisioningRunsNestedInput
   steps?: Prisma.DeprovisioningStepUpdateManyWithoutRunNestedInput
 }
@@ -966,7 +1103,8 @@ export type DeprovisioningRunUpdateWithoutContractorInput = {
 export type DeprovisioningRunUncheckedUpdateWithoutContractorInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   organizationId?: Prisma.StringFieldUpdateOperationsInput | string
-  assignmentId?: Prisma.StringFieldUpdateOperationsInput | string
+  assignmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumDeprovisioningRunStatusFieldUpdateOperationsInput | $Enums.DeprovisioningRunStatus
   startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -978,7 +1116,8 @@ export type DeprovisioningRunUncheckedUpdateWithoutContractorInput = {
 export type DeprovisioningRunUncheckedUpdateManyWithoutContractorInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   organizationId?: Prisma.StringFieldUpdateOperationsInput | string
-  assignmentId?: Prisma.StringFieldUpdateOperationsInput | string
+  assignmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumDeprovisioningRunStatusFieldUpdateOperationsInput | $Enums.DeprovisioningRunStatus
   startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -989,7 +1128,8 @@ export type DeprovisioningRunUncheckedUpdateManyWithoutContractorInput = {
 export type DeprovisioningRunCreateManyAssignmentInput = {
   id?: string
   organizationId: string
-  contractorId: string
+  contractorId?: string | null
+  workerId?: string | null
   status?: $Enums.DeprovisioningRunStatus
   startedAt?: Date | string
   finishedAt?: Date | string | null
@@ -1004,7 +1144,8 @@ export type DeprovisioningRunUpdateWithoutAssignmentInput = {
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutDeprovisioningRunsNestedInput
-  contractor?: Prisma.ContractorUpdateOneRequiredWithoutDeprovisioningRunsNestedInput
+  contractor?: Prisma.ContractorUpdateOneWithoutDeprovisioningRunsNestedInput
+  worker?: Prisma.WorkerUpdateOneWithoutDeprovisioningRunsNestedInput
   triggeredByUser?: Prisma.UserUpdateOneRequiredWithoutTriggeredDeprovisioningRunsNestedInput
   steps?: Prisma.DeprovisioningStepUpdateManyWithoutRunNestedInput
 }
@@ -1012,7 +1153,8 @@ export type DeprovisioningRunUpdateWithoutAssignmentInput = {
 export type DeprovisioningRunUncheckedUpdateWithoutAssignmentInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   organizationId?: Prisma.StringFieldUpdateOperationsInput | string
-  contractorId?: Prisma.StringFieldUpdateOperationsInput | string
+  contractorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumDeprovisioningRunStatusFieldUpdateOperationsInput | $Enums.DeprovisioningRunStatus
   startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1024,7 +1166,8 @@ export type DeprovisioningRunUncheckedUpdateWithoutAssignmentInput = {
 export type DeprovisioningRunUncheckedUpdateManyWithoutAssignmentInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   organizationId?: Prisma.StringFieldUpdateOperationsInput | string
-  contractorId?: Prisma.StringFieldUpdateOperationsInput | string
+  contractorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumDeprovisioningRunStatusFieldUpdateOperationsInput | $Enums.DeprovisioningRunStatus
   startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1034,8 +1177,9 @@ export type DeprovisioningRunUncheckedUpdateManyWithoutAssignmentInput = {
 
 export type DeprovisioningRunCreateManyOrganizationInput = {
   id?: string
-  contractorId: string
-  assignmentId: string
+  contractorId?: string | null
+  assignmentId?: string | null
+  workerId?: string | null
   status?: $Enums.DeprovisioningRunStatus
   startedAt?: Date | string
   finishedAt?: Date | string | null
@@ -1049,16 +1193,18 @@ export type DeprovisioningRunUpdateWithoutOrganizationInput = {
   startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
-  contractor?: Prisma.ContractorUpdateOneRequiredWithoutDeprovisioningRunsNestedInput
-  assignment?: Prisma.ContractorAssignmentUpdateOneRequiredWithoutDeprovisioningRunsNestedInput
+  contractor?: Prisma.ContractorUpdateOneWithoutDeprovisioningRunsNestedInput
+  assignment?: Prisma.ContractorAssignmentUpdateOneWithoutDeprovisioningRunsNestedInput
+  worker?: Prisma.WorkerUpdateOneWithoutDeprovisioningRunsNestedInput
   triggeredByUser?: Prisma.UserUpdateOneRequiredWithoutTriggeredDeprovisioningRunsNestedInput
   steps?: Prisma.DeprovisioningStepUpdateManyWithoutRunNestedInput
 }
 
 export type DeprovisioningRunUncheckedUpdateWithoutOrganizationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  contractorId?: Prisma.StringFieldUpdateOperationsInput | string
-  assignmentId?: Prisma.StringFieldUpdateOperationsInput | string
+  contractorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assignmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumDeprovisioningRunStatusFieldUpdateOperationsInput | $Enums.DeprovisioningRunStatus
   startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1069,8 +1215,59 @@ export type DeprovisioningRunUncheckedUpdateWithoutOrganizationInput = {
 
 export type DeprovisioningRunUncheckedUpdateManyWithoutOrganizationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  contractorId?: Prisma.StringFieldUpdateOperationsInput | string
-  assignmentId?: Prisma.StringFieldUpdateOperationsInput | string
+  contractorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assignmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumDeprovisioningRunStatusFieldUpdateOperationsInput | $Enums.DeprovisioningRunStatus
+  startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  triggeredByUserId?: Prisma.StringFieldUpdateOperationsInput | string
+  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
+}
+
+export type DeprovisioningRunCreateManyWorkerInput = {
+  id?: string
+  organizationId: string
+  contractorId?: string | null
+  assignmentId?: string | null
+  status?: $Enums.DeprovisioningRunStatus
+  startedAt?: Date | string
+  finishedAt?: Date | string | null
+  triggeredByUserId: string
+  idempotencyKey: string
+}
+
+export type DeprovisioningRunUpdateWithoutWorkerInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumDeprovisioningRunStatusFieldUpdateOperationsInput | $Enums.DeprovisioningRunStatus
+  startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
+  organization?: Prisma.OrganizationUpdateOneRequiredWithoutDeprovisioningRunsNestedInput
+  contractor?: Prisma.ContractorUpdateOneWithoutDeprovisioningRunsNestedInput
+  assignment?: Prisma.ContractorAssignmentUpdateOneWithoutDeprovisioningRunsNestedInput
+  triggeredByUser?: Prisma.UserUpdateOneRequiredWithoutTriggeredDeprovisioningRunsNestedInput
+  steps?: Prisma.DeprovisioningStepUpdateManyWithoutRunNestedInput
+}
+
+export type DeprovisioningRunUncheckedUpdateWithoutWorkerInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  organizationId?: Prisma.StringFieldUpdateOperationsInput | string
+  contractorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assignmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumDeprovisioningRunStatusFieldUpdateOperationsInput | $Enums.DeprovisioningRunStatus
+  startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  triggeredByUserId?: Prisma.StringFieldUpdateOperationsInput | string
+  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
+  steps?: Prisma.DeprovisioningStepUncheckedUpdateManyWithoutRunNestedInput
+}
+
+export type DeprovisioningRunUncheckedUpdateManyWithoutWorkerInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  organizationId?: Prisma.StringFieldUpdateOperationsInput | string
+  contractorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assignmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumDeprovisioningRunStatusFieldUpdateOperationsInput | $Enums.DeprovisioningRunStatus
   startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1114,14 +1311,16 @@ export type DeprovisioningRunSelect<ExtArgs extends runtime.Types.Extensions.Int
   organizationId?: boolean
   contractorId?: boolean
   assignmentId?: boolean
+  workerId?: boolean
   status?: boolean
   startedAt?: boolean
   finishedAt?: boolean
   triggeredByUserId?: boolean
   idempotencyKey?: boolean
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
-  contractor?: boolean | Prisma.ContractorDefaultArgs<ExtArgs>
-  assignment?: boolean | Prisma.ContractorAssignmentDefaultArgs<ExtArgs>
+  contractor?: boolean | Prisma.DeprovisioningRun$contractorArgs<ExtArgs>
+  assignment?: boolean | Prisma.DeprovisioningRun$assignmentArgs<ExtArgs>
+  worker?: boolean | Prisma.DeprovisioningRun$workerArgs<ExtArgs>
   triggeredByUser?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   steps?: boolean | Prisma.DeprovisioningRun$stepsArgs<ExtArgs>
   _count?: boolean | Prisma.DeprovisioningRunCountOutputTypeDefaultArgs<ExtArgs>
@@ -1132,14 +1331,16 @@ export type DeprovisioningRunSelectCreateManyAndReturn<ExtArgs extends runtime.T
   organizationId?: boolean
   contractorId?: boolean
   assignmentId?: boolean
+  workerId?: boolean
   status?: boolean
   startedAt?: boolean
   finishedAt?: boolean
   triggeredByUserId?: boolean
   idempotencyKey?: boolean
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
-  contractor?: boolean | Prisma.ContractorDefaultArgs<ExtArgs>
-  assignment?: boolean | Prisma.ContractorAssignmentDefaultArgs<ExtArgs>
+  contractor?: boolean | Prisma.DeprovisioningRun$contractorArgs<ExtArgs>
+  assignment?: boolean | Prisma.DeprovisioningRun$assignmentArgs<ExtArgs>
+  worker?: boolean | Prisma.DeprovisioningRun$workerArgs<ExtArgs>
   triggeredByUser?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["deprovisioningRun"]>
 
@@ -1148,14 +1349,16 @@ export type DeprovisioningRunSelectUpdateManyAndReturn<ExtArgs extends runtime.T
   organizationId?: boolean
   contractorId?: boolean
   assignmentId?: boolean
+  workerId?: boolean
   status?: boolean
   startedAt?: boolean
   finishedAt?: boolean
   triggeredByUserId?: boolean
   idempotencyKey?: boolean
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
-  contractor?: boolean | Prisma.ContractorDefaultArgs<ExtArgs>
-  assignment?: boolean | Prisma.ContractorAssignmentDefaultArgs<ExtArgs>
+  contractor?: boolean | Prisma.DeprovisioningRun$contractorArgs<ExtArgs>
+  assignment?: boolean | Prisma.DeprovisioningRun$assignmentArgs<ExtArgs>
+  worker?: boolean | Prisma.DeprovisioningRun$workerArgs<ExtArgs>
   triggeredByUser?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["deprovisioningRun"]>
 
@@ -1164,6 +1367,7 @@ export type DeprovisioningRunSelectScalar = {
   organizationId?: boolean
   contractorId?: boolean
   assignmentId?: boolean
+  workerId?: boolean
   status?: boolean
   startedAt?: boolean
   finishedAt?: boolean
@@ -1171,25 +1375,28 @@ export type DeprovisioningRunSelectScalar = {
   idempotencyKey?: boolean
 }
 
-export type DeprovisioningRunOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "contractorId" | "assignmentId" | "status" | "startedAt" | "finishedAt" | "triggeredByUserId" | "idempotencyKey", ExtArgs["result"]["deprovisioningRun"]>
+export type DeprovisioningRunOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "contractorId" | "assignmentId" | "workerId" | "status" | "startedAt" | "finishedAt" | "triggeredByUserId" | "idempotencyKey", ExtArgs["result"]["deprovisioningRun"]>
 export type DeprovisioningRunInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
-  contractor?: boolean | Prisma.ContractorDefaultArgs<ExtArgs>
-  assignment?: boolean | Prisma.ContractorAssignmentDefaultArgs<ExtArgs>
+  contractor?: boolean | Prisma.DeprovisioningRun$contractorArgs<ExtArgs>
+  assignment?: boolean | Prisma.DeprovisioningRun$assignmentArgs<ExtArgs>
+  worker?: boolean | Prisma.DeprovisioningRun$workerArgs<ExtArgs>
   triggeredByUser?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   steps?: boolean | Prisma.DeprovisioningRun$stepsArgs<ExtArgs>
   _count?: boolean | Prisma.DeprovisioningRunCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type DeprovisioningRunIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
-  contractor?: boolean | Prisma.ContractorDefaultArgs<ExtArgs>
-  assignment?: boolean | Prisma.ContractorAssignmentDefaultArgs<ExtArgs>
+  contractor?: boolean | Prisma.DeprovisioningRun$contractorArgs<ExtArgs>
+  assignment?: boolean | Prisma.DeprovisioningRun$assignmentArgs<ExtArgs>
+  worker?: boolean | Prisma.DeprovisioningRun$workerArgs<ExtArgs>
   triggeredByUser?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
 export type DeprovisioningRunIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
-  contractor?: boolean | Prisma.ContractorDefaultArgs<ExtArgs>
-  assignment?: boolean | Prisma.ContractorAssignmentDefaultArgs<ExtArgs>
+  contractor?: boolean | Prisma.DeprovisioningRun$contractorArgs<ExtArgs>
+  assignment?: boolean | Prisma.DeprovisioningRun$assignmentArgs<ExtArgs>
+  worker?: boolean | Prisma.DeprovisioningRun$workerArgs<ExtArgs>
   triggeredByUser?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
 
@@ -1197,16 +1404,18 @@ export type $DeprovisioningRunPayload<ExtArgs extends runtime.Types.Extensions.I
   name: "DeprovisioningRun"
   objects: {
     organization: Prisma.$OrganizationPayload<ExtArgs>
-    contractor: Prisma.$ContractorPayload<ExtArgs>
-    assignment: Prisma.$ContractorAssignmentPayload<ExtArgs>
+    contractor: Prisma.$ContractorPayload<ExtArgs> | null
+    assignment: Prisma.$ContractorAssignmentPayload<ExtArgs> | null
+    worker: Prisma.$WorkerPayload<ExtArgs> | null
     triggeredByUser: Prisma.$UserPayload<ExtArgs>
     steps: Prisma.$DeprovisioningStepPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     organizationId: string
-    contractorId: string
-    assignmentId: string
+    contractorId: string | null
+    assignmentId: string | null
+    workerId: string | null
     status: $Enums.DeprovisioningRunStatus
     startedAt: Date
     finishedAt: Date | null
@@ -1607,8 +1816,9 @@ readonly fields: DeprovisioningRunFieldRefs;
 export interface Prisma__DeprovisioningRunClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   organization<T extends Prisma.OrganizationDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.OrganizationDefaultArgs<ExtArgs>>): Prisma.Prisma__OrganizationClient<runtime.Types.Result.GetResult<Prisma.$OrganizationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-  contractor<T extends Prisma.ContractorDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ContractorDefaultArgs<ExtArgs>>): Prisma.Prisma__ContractorClient<runtime.Types.Result.GetResult<Prisma.$ContractorPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-  assignment<T extends Prisma.ContractorAssignmentDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ContractorAssignmentDefaultArgs<ExtArgs>>): Prisma.Prisma__ContractorAssignmentClient<runtime.Types.Result.GetResult<Prisma.$ContractorAssignmentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  contractor<T extends Prisma.DeprovisioningRun$contractorArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DeprovisioningRun$contractorArgs<ExtArgs>>): Prisma.Prisma__ContractorClient<runtime.Types.Result.GetResult<Prisma.$ContractorPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  assignment<T extends Prisma.DeprovisioningRun$assignmentArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DeprovisioningRun$assignmentArgs<ExtArgs>>): Prisma.Prisma__ContractorAssignmentClient<runtime.Types.Result.GetResult<Prisma.$ContractorAssignmentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  worker<T extends Prisma.DeprovisioningRun$workerArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DeprovisioningRun$workerArgs<ExtArgs>>): Prisma.Prisma__WorkerClient<runtime.Types.Result.GetResult<Prisma.$WorkerPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   triggeredByUser<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   steps<T extends Prisma.DeprovisioningRun$stepsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DeprovisioningRun$stepsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DeprovisioningStepPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
@@ -1644,6 +1854,7 @@ export interface DeprovisioningRunFieldRefs {
   readonly organizationId: Prisma.FieldRef<"DeprovisioningRun", 'String'>
   readonly contractorId: Prisma.FieldRef<"DeprovisioningRun", 'String'>
   readonly assignmentId: Prisma.FieldRef<"DeprovisioningRun", 'String'>
+  readonly workerId: Prisma.FieldRef<"DeprovisioningRun", 'String'>
   readonly status: Prisma.FieldRef<"DeprovisioningRun", 'DeprovisioningRunStatus'>
   readonly startedAt: Prisma.FieldRef<"DeprovisioningRun", 'DateTime'>
   readonly finishedAt: Prisma.FieldRef<"DeprovisioningRun", 'DateTime'>
@@ -2047,6 +2258,63 @@ export type DeprovisioningRunDeleteManyArgs<ExtArgs extends runtime.Types.Extens
    * Limit how many DeprovisioningRuns to delete.
    */
   limit?: number
+}
+
+/**
+ * DeprovisioningRun.contractor
+ */
+export type DeprovisioningRun$contractorArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Contractor
+   */
+  select?: Prisma.ContractorSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Contractor
+   */
+  omit?: Prisma.ContractorOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ContractorInclude<ExtArgs> | null
+  where?: Prisma.ContractorWhereInput
+}
+
+/**
+ * DeprovisioningRun.assignment
+ */
+export type DeprovisioningRun$assignmentArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ContractorAssignment
+   */
+  select?: Prisma.ContractorAssignmentSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ContractorAssignment
+   */
+  omit?: Prisma.ContractorAssignmentOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ContractorAssignmentInclude<ExtArgs> | null
+  where?: Prisma.ContractorAssignmentWhereInput
+}
+
+/**
+ * DeprovisioningRun.worker
+ */
+export type DeprovisioningRun$workerArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Worker
+   */
+  select?: Prisma.WorkerSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Worker
+   */
+  omit?: Prisma.WorkerOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.WorkerInclude<ExtArgs> | null
+  where?: Prisma.WorkerWhereInput
 }
 
 /**

@@ -25,6 +25,10 @@ The TIN-match → 1099-NEC → IRIS e-file → state-filing loop lives in
 `Tax1099Threshold` table; TIN mismatch never blocks; CORRECTED = supersede; Copy B
 only; reuse `module.iris-efile` (no new flag).
 
+## Worker on/offboarding (employee lifecycle)
+
+Employee on/offboarding = **extend the generic run + worker-key the coupled saga, never duplicate**. Single `startWorkflowRun` helper (`workflow-execution-runs.ts`) owns the only `workflowRun.create`; `startRunSchema` + `startDeprovisioningRun` are `CONTRACTOR|EMPLOYEE` discriminated unions. `EmployeeProfile.terminatedAt` arms the 14-day IdP cooldown (mirrors `ContractorAssignment.endedAt`). Per-market DRAFT templates = `@contractor-ops/employee-templates` on `@@unique([organizationId, jurisdiction, type, seedKey])`. Statutory certs = `statutory-cert-pdf.ts` (snapshot `*Last4`-only + CAS → `emp-cert/<org>/<id>.pdf`, LOCKED `CERT_ADVISER_VERIFY_*`). Gov interactions = network-free `{source:'STUB'}` seams. Router: `employeeLifecycle.*`. Detail: [[domains/worker-onboarding-offboarding]].
+
 ## Agent delegation (subagent-first)
 
 Prefer **Task subagents** over ad-hoc bulk shell scripts on source files.

@@ -96,3 +96,10 @@ ls packages/api/src/services/
 
 - 200-line business rules inline in router handler
 - Duplicating compliance-gate checks outside `compliance-payment-gate.ts`
+
+## Employee on/offboarding services (Phase 93)
+
+- **`statutory-cert-pdf.ts`** — DRAFT statutory-cert render + archive, mirrors `form-1099-nec-pdf`: `renderStatutoryCert(snapshot)` (recursive `sanitizeCertSnapshot` strips full pesel/ssn/nino/steuerId/iqama/emiratesId → `*Last4` only; lazy react-pdf + per-cert template) and `renderAndArchiveStatutoryCert(db, certId)` (CAS `updateMany where pdfArchiveKey:null` → R2 `emp-cert/<orgId>/<id>.pdf`). Templates on `pdf-templates/statutory-cert-shell.tsx` (DRAFT band + LOCKED `CERT_ADVISER_VERIFY_*` footer): swiadectwo-pracy, pit-11, arbeitszeugnis-simple, lohnsteuerbescheinigung, p45, w2.
+- **Gov stub seams** — `{i9-everify,zus-zwua,abmeldung-sv,hmrc-rti,pit-filing}-stub.ts` (+ shared `gov-stub-types.ts` `GovStubResult`/`maskLast2`): typed, network-free `{source:'STUB',available:false,note}` with PII last-2; mirror `elstam-stub`. Steuer-ID reuses `lookupElstam`.
+- **`@contractor-ops/employee-templates`** — `upsertEmployeeMarketTemplates(prisma, orgId)` boot-upserts 8 per-market DRAFT `WorkflowTemplate` seeds (register-on-import `content/{pl,de,uk,us}.ts`) on the compound unique; wired fail-soft into `post-org-create-hook.ts` alongside the KT seeds.
+- **`startWorkflowRun`** (in `workflow-execution-runs.ts`) — the single subject-agnostic run-create helper both `workflow.startRun` and `employeeLifecycleRouter` delegate to. Detail: [[domains/worker-onboarding-offboarding]].

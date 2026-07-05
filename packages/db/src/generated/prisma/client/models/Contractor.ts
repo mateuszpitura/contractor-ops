@@ -1668,10 +1668,12 @@ export type ContractorCreateNestedOneWithoutDeprovisioningRunsInput = {
   connect?: Prisma.ContractorWhereUniqueInput
 }
 
-export type ContractorUpdateOneRequiredWithoutDeprovisioningRunsNestedInput = {
+export type ContractorUpdateOneWithoutDeprovisioningRunsNestedInput = {
   create?: Prisma.XOR<Prisma.ContractorCreateWithoutDeprovisioningRunsInput, Prisma.ContractorUncheckedCreateWithoutDeprovisioningRunsInput>
   connectOrCreate?: Prisma.ContractorCreateOrConnectWithoutDeprovisioningRunsInput
   upsert?: Prisma.ContractorUpsertWithoutDeprovisioningRunsInput
+  disconnect?: Prisma.ContractorWhereInput | boolean
+  delete?: Prisma.ContractorWhereInput | boolean
   connect?: Prisma.ContractorWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.ContractorUpdateToOneWithWhereWithoutDeprovisioningRunsInput, Prisma.ContractorUpdateWithoutDeprovisioningRunsInput>, Prisma.ContractorUncheckedUpdateWithoutDeprovisioningRunsInput>
 }

@@ -137,13 +137,18 @@ function formatEarliest(earliestDate: Date | string | null): string | null {
   return d.toISOString().slice(0, 10);
 }
 
-export type DeprovisioningTriggerWiredProps = UseStartDeprovisioningInput;
+export type DeprovisioningTriggerWiredProps = UseStartDeprovisioningInput & {
+  /** For the employee path: a reason the trigger is not yet actionable (e.g.
+   * no termination recorded). When set, the button is disabled with a tooltip. */
+  disabledReason?: string | null;
+};
 
 export function DeprovisioningTriggerWired(props: DeprovisioningTriggerWiredProps) {
   const t = useTranslations('Idp.trigger');
   const permissions = usePermissions();
   const canStart = permissions.can('idp', ['start_run']);
   const state = useStartDeprovisioning(props);
+  const isWorker = !!props.workerId;
 
   if (!canStart) return null;
 
@@ -162,7 +167,9 @@ export function DeprovisioningTriggerWired(props: DeprovisioningTriggerWiredProp
     );
   }
 
-  if (state.isUnresolved || !state.assignmentId) {
+  // The assignment-resolution guard is contractor-only; the employee path keys
+  // directly off workerId (no assignment).
+  if (!isWorker && (state.isUnresolved || !state.assignmentId)) {
     return (
       <p className="text-sm text-muted-foreground" role="status">
         {t('notConfigured')}
@@ -182,25 +189,30 @@ export function DeprovisioningTriggerWired(props: DeprovisioningTriggerWiredProp
   }
 
   const earliest = formatEarliest(state.earliestDate);
-  const disabled = !state.allowed || state.isStarting;
+  const disabled = isWorker
+    ? !!props.disabledReason || state.isStarting
+    : !state.allowed || state.isStarting;
+  const disabledTooltip = isWorker
+    ? (props.disabledReason ?? null)
+    : state.allowed
+      ? null
+      : earliest
+        ? t('cooldownTooltip', { date: earliest })
+        : t('cooldownTooltipGeneric');
 
   return (
     <DeprovisioningTrigger
       disabled={disabled}
-      disabledTooltip={
-        state.allowed
-          ? null
-          : earliest
-            ? t('cooldownTooltip', { date: earliest })
-            : t('cooldownTooltipGeneric')
-      }
+      disabledTooltip={disabledTooltip}
       confirmOpen={state.confirmOpen}
       onOpenConfirm={state.openConfirm}
       onCloseConfirm={state.closeConfirm}
       onConfirmStart={state.start}
       starting={state.isStarting}
       previewSlot={
-        <ImpactPreviewPanelWired assignmentId={state.assignmentId} provider="GOOGLE_WORKSPACE" />
+        !isWorker && state.assignmentId ? (
+          <ImpactPreviewPanelWired assignmentId={state.assignmentId} provider="GOOGLE_WORKSPACE" />
+        ) : null
       }
     />
   );

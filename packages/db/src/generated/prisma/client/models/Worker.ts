@@ -222,6 +222,8 @@ export type WorkerWhereInput = {
   leaveLedgerEntries?: Prisma.LeaveLedgerEntryListRelationFilter
   leaveBalances?: Prisma.LeaveBalanceListRelationFilter
   employeeTimeRecords?: Prisma.EmployeeTimeRecordListRelationFilter
+  workflowRuns?: Prisma.WorkflowRunListRelationFilter
+  deprovisioningRuns?: Prisma.DeprovisioningRunListRelationFilter
 }
 
 export type WorkerOrderByWithRelationInput = {
@@ -242,6 +244,8 @@ export type WorkerOrderByWithRelationInput = {
   leaveLedgerEntries?: Prisma.LeaveLedgerEntryOrderByRelationAggregateInput
   leaveBalances?: Prisma.LeaveBalanceOrderByRelationAggregateInput
   employeeTimeRecords?: Prisma.EmployeeTimeRecordOrderByRelationAggregateInput
+  workflowRuns?: Prisma.WorkflowRunOrderByRelationAggregateInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunOrderByRelationAggregateInput
 }
 
 export type WorkerWhereUniqueInput = Prisma.AtLeast<{
@@ -265,6 +269,8 @@ export type WorkerWhereUniqueInput = Prisma.AtLeast<{
   leaveLedgerEntries?: Prisma.LeaveLedgerEntryListRelationFilter
   leaveBalances?: Prisma.LeaveBalanceListRelationFilter
   employeeTimeRecords?: Prisma.EmployeeTimeRecordListRelationFilter
+  workflowRuns?: Prisma.WorkflowRunListRelationFilter
+  deprovisioningRuns?: Prisma.DeprovisioningRunListRelationFilter
 }, "id">
 
 export type WorkerOrderByWithAggregationInput = {
@@ -314,6 +320,8 @@ export type WorkerCreateInput = {
   leaveLedgerEntries?: Prisma.LeaveLedgerEntryCreateNestedManyWithoutWorkerInput
   leaveBalances?: Prisma.LeaveBalanceCreateNestedManyWithoutWorkerInput
   employeeTimeRecords?: Prisma.EmployeeTimeRecordCreateNestedManyWithoutWorkerInput
+  workflowRuns?: Prisma.WorkflowRunCreateNestedManyWithoutWorkerInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutWorkerInput
 }
 
 export type WorkerUncheckedCreateInput = {
@@ -333,6 +341,8 @@ export type WorkerUncheckedCreateInput = {
   leaveLedgerEntries?: Prisma.LeaveLedgerEntryUncheckedCreateNestedManyWithoutWorkerInput
   leaveBalances?: Prisma.LeaveBalanceUncheckedCreateNestedManyWithoutWorkerInput
   employeeTimeRecords?: Prisma.EmployeeTimeRecordUncheckedCreateNestedManyWithoutWorkerInput
+  workflowRuns?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutWorkerInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutWorkerInput
 }
 
 export type WorkerUpdateInput = {
@@ -352,6 +362,8 @@ export type WorkerUpdateInput = {
   leaveLedgerEntries?: Prisma.LeaveLedgerEntryUpdateManyWithoutWorkerNestedInput
   leaveBalances?: Prisma.LeaveBalanceUpdateManyWithoutWorkerNestedInput
   employeeTimeRecords?: Prisma.EmployeeTimeRecordUpdateManyWithoutWorkerNestedInput
+  workflowRuns?: Prisma.WorkflowRunUpdateManyWithoutWorkerNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutWorkerNestedInput
 }
 
 export type WorkerUncheckedUpdateInput = {
@@ -371,6 +383,8 @@ export type WorkerUncheckedUpdateInput = {
   leaveLedgerEntries?: Prisma.LeaveLedgerEntryUncheckedUpdateManyWithoutWorkerNestedInput
   leaveBalances?: Prisma.LeaveBalanceUncheckedUpdateManyWithoutWorkerNestedInput
   employeeTimeRecords?: Prisma.EmployeeTimeRecordUncheckedUpdateManyWithoutWorkerNestedInput
+  workflowRuns?: Prisma.WorkflowRunUncheckedUpdateManyWithoutWorkerNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutWorkerNestedInput
 }
 
 export type WorkerCreateManyInput = {
@@ -411,6 +425,11 @@ export type WorkerUncheckedUpdateManyInput = {
 export type WorkerScalarRelationFilter = {
   is?: Prisma.WorkerWhereInput
   isNot?: Prisma.WorkerWhereInput
+}
+
+export type WorkerNullableScalarRelationFilter = {
+  is?: Prisma.WorkerWhereInput | null
+  isNot?: Prisma.WorkerWhereInput | null
 }
 
 export type WorkerListRelationFilter = {
@@ -499,6 +518,22 @@ export type WorkerUpdateOneRequiredWithoutEmployeeProfileNestedInput = {
   upsert?: Prisma.WorkerUpsertWithoutEmployeeProfileInput
   connect?: Prisma.WorkerWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.WorkerUpdateToOneWithWhereWithoutEmployeeProfileInput, Prisma.WorkerUpdateWithoutEmployeeProfileInput>, Prisma.WorkerUncheckedUpdateWithoutEmployeeProfileInput>
+}
+
+export type WorkerCreateNestedOneWithoutDeprovisioningRunsInput = {
+  create?: Prisma.XOR<Prisma.WorkerCreateWithoutDeprovisioningRunsInput, Prisma.WorkerUncheckedCreateWithoutDeprovisioningRunsInput>
+  connectOrCreate?: Prisma.WorkerCreateOrConnectWithoutDeprovisioningRunsInput
+  connect?: Prisma.WorkerWhereUniqueInput
+}
+
+export type WorkerUpdateOneWithoutDeprovisioningRunsNestedInput = {
+  create?: Prisma.XOR<Prisma.WorkerCreateWithoutDeprovisioningRunsInput, Prisma.WorkerUncheckedCreateWithoutDeprovisioningRunsInput>
+  connectOrCreate?: Prisma.WorkerCreateOrConnectWithoutDeprovisioningRunsInput
+  upsert?: Prisma.WorkerUpsertWithoutDeprovisioningRunsInput
+  disconnect?: Prisma.WorkerWhereInput | boolean
+  delete?: Prisma.WorkerWhereInput | boolean
+  connect?: Prisma.WorkerWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.WorkerUpdateToOneWithWhereWithoutDeprovisioningRunsInput, Prisma.WorkerUpdateWithoutDeprovisioningRunsInput>, Prisma.WorkerUncheckedUpdateWithoutDeprovisioningRunsInput>
 }
 
 export type WorkerCreateNestedOneWithoutLeaveRequestsInput = {
@@ -603,6 +638,22 @@ export type EnumWorkerTypeFieldUpdateOperationsInput = {
   set?: $Enums.WorkerType
 }
 
+export type WorkerCreateNestedOneWithoutWorkflowRunsInput = {
+  create?: Prisma.XOR<Prisma.WorkerCreateWithoutWorkflowRunsInput, Prisma.WorkerUncheckedCreateWithoutWorkflowRunsInput>
+  connectOrCreate?: Prisma.WorkerCreateOrConnectWithoutWorkflowRunsInput
+  connect?: Prisma.WorkerWhereUniqueInput
+}
+
+export type WorkerUpdateOneWithoutWorkflowRunsNestedInput = {
+  create?: Prisma.XOR<Prisma.WorkerCreateWithoutWorkflowRunsInput, Prisma.WorkerUncheckedCreateWithoutWorkflowRunsInput>
+  connectOrCreate?: Prisma.WorkerCreateOrConnectWithoutWorkflowRunsInput
+  upsert?: Prisma.WorkerUpsertWithoutWorkflowRunsInput
+  disconnect?: Prisma.WorkerWhereInput | boolean
+  delete?: Prisma.WorkerWhereInput | boolean
+  connect?: Prisma.WorkerWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.WorkerUpdateToOneWithWhereWithoutWorkflowRunsInput, Prisma.WorkerUpdateWithoutWorkflowRunsInput>, Prisma.WorkerUncheckedUpdateWithoutWorkflowRunsInput>
+}
+
 export type WorkerCreateWithoutContractorInput = {
   id?: string
   workerType?: $Enums.WorkerType
@@ -619,6 +670,8 @@ export type WorkerCreateWithoutContractorInput = {
   leaveLedgerEntries?: Prisma.LeaveLedgerEntryCreateNestedManyWithoutWorkerInput
   leaveBalances?: Prisma.LeaveBalanceCreateNestedManyWithoutWorkerInput
   employeeTimeRecords?: Prisma.EmployeeTimeRecordCreateNestedManyWithoutWorkerInput
+  workflowRuns?: Prisma.WorkflowRunCreateNestedManyWithoutWorkerInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutWorkerInput
 }
 
 export type WorkerUncheckedCreateWithoutContractorInput = {
@@ -637,6 +690,8 @@ export type WorkerUncheckedCreateWithoutContractorInput = {
   leaveLedgerEntries?: Prisma.LeaveLedgerEntryUncheckedCreateNestedManyWithoutWorkerInput
   leaveBalances?: Prisma.LeaveBalanceUncheckedCreateNestedManyWithoutWorkerInput
   employeeTimeRecords?: Prisma.EmployeeTimeRecordUncheckedCreateNestedManyWithoutWorkerInput
+  workflowRuns?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutWorkerInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutWorkerInput
 }
 
 export type WorkerCreateOrConnectWithoutContractorInput = {
@@ -671,6 +726,8 @@ export type WorkerUpdateWithoutContractorInput = {
   leaveLedgerEntries?: Prisma.LeaveLedgerEntryUpdateManyWithoutWorkerNestedInput
   leaveBalances?: Prisma.LeaveBalanceUpdateManyWithoutWorkerNestedInput
   employeeTimeRecords?: Prisma.EmployeeTimeRecordUpdateManyWithoutWorkerNestedInput
+  workflowRuns?: Prisma.WorkflowRunUpdateManyWithoutWorkerNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutWorkerNestedInput
 }
 
 export type WorkerUncheckedUpdateWithoutContractorInput = {
@@ -689,6 +746,8 @@ export type WorkerUncheckedUpdateWithoutContractorInput = {
   leaveLedgerEntries?: Prisma.LeaveLedgerEntryUncheckedUpdateManyWithoutWorkerNestedInput
   leaveBalances?: Prisma.LeaveBalanceUncheckedUpdateManyWithoutWorkerNestedInput
   employeeTimeRecords?: Prisma.EmployeeTimeRecordUncheckedUpdateManyWithoutWorkerNestedInput
+  workflowRuns?: Prisma.WorkflowRunUncheckedUpdateManyWithoutWorkerNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutWorkerNestedInput
 }
 
 export type WorkerCreateWithoutEmployeeTimeRecordsInput = {
@@ -707,6 +766,8 @@ export type WorkerCreateWithoutEmployeeTimeRecordsInput = {
   leaveRequests?: Prisma.LeaveRequestCreateNestedManyWithoutWorkerInput
   leaveLedgerEntries?: Prisma.LeaveLedgerEntryCreateNestedManyWithoutWorkerInput
   leaveBalances?: Prisma.LeaveBalanceCreateNestedManyWithoutWorkerInput
+  workflowRuns?: Prisma.WorkflowRunCreateNestedManyWithoutWorkerInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutWorkerInput
 }
 
 export type WorkerUncheckedCreateWithoutEmployeeTimeRecordsInput = {
@@ -725,6 +786,8 @@ export type WorkerUncheckedCreateWithoutEmployeeTimeRecordsInput = {
   leaveRequests?: Prisma.LeaveRequestUncheckedCreateNestedManyWithoutWorkerInput
   leaveLedgerEntries?: Prisma.LeaveLedgerEntryUncheckedCreateNestedManyWithoutWorkerInput
   leaveBalances?: Prisma.LeaveBalanceUncheckedCreateNestedManyWithoutWorkerInput
+  workflowRuns?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutWorkerInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutWorkerInput
 }
 
 export type WorkerCreateOrConnectWithoutEmployeeTimeRecordsInput = {
@@ -759,6 +822,8 @@ export type WorkerUpdateWithoutEmployeeTimeRecordsInput = {
   leaveRequests?: Prisma.LeaveRequestUpdateManyWithoutWorkerNestedInput
   leaveLedgerEntries?: Prisma.LeaveLedgerEntryUpdateManyWithoutWorkerNestedInput
   leaveBalances?: Prisma.LeaveBalanceUpdateManyWithoutWorkerNestedInput
+  workflowRuns?: Prisma.WorkflowRunUpdateManyWithoutWorkerNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutWorkerNestedInput
 }
 
 export type WorkerUncheckedUpdateWithoutEmployeeTimeRecordsInput = {
@@ -777,6 +842,8 @@ export type WorkerUncheckedUpdateWithoutEmployeeTimeRecordsInput = {
   leaveRequests?: Prisma.LeaveRequestUncheckedUpdateManyWithoutWorkerNestedInput
   leaveLedgerEntries?: Prisma.LeaveLedgerEntryUncheckedUpdateManyWithoutWorkerNestedInput
   leaveBalances?: Prisma.LeaveBalanceUncheckedUpdateManyWithoutWorkerNestedInput
+  workflowRuns?: Prisma.WorkflowRunUncheckedUpdateManyWithoutWorkerNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutWorkerNestedInput
 }
 
 export type WorkerCreateWithoutEmployeeProfileInput = {
@@ -795,6 +862,8 @@ export type WorkerCreateWithoutEmployeeProfileInput = {
   leaveLedgerEntries?: Prisma.LeaveLedgerEntryCreateNestedManyWithoutWorkerInput
   leaveBalances?: Prisma.LeaveBalanceCreateNestedManyWithoutWorkerInput
   employeeTimeRecords?: Prisma.EmployeeTimeRecordCreateNestedManyWithoutWorkerInput
+  workflowRuns?: Prisma.WorkflowRunCreateNestedManyWithoutWorkerInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutWorkerInput
 }
 
 export type WorkerUncheckedCreateWithoutEmployeeProfileInput = {
@@ -813,6 +882,8 @@ export type WorkerUncheckedCreateWithoutEmployeeProfileInput = {
   leaveLedgerEntries?: Prisma.LeaveLedgerEntryUncheckedCreateNestedManyWithoutWorkerInput
   leaveBalances?: Prisma.LeaveBalanceUncheckedCreateNestedManyWithoutWorkerInput
   employeeTimeRecords?: Prisma.EmployeeTimeRecordUncheckedCreateNestedManyWithoutWorkerInput
+  workflowRuns?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutWorkerInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutWorkerInput
 }
 
 export type WorkerCreateOrConnectWithoutEmployeeProfileInput = {
@@ -847,6 +918,8 @@ export type WorkerUpdateWithoutEmployeeProfileInput = {
   leaveLedgerEntries?: Prisma.LeaveLedgerEntryUpdateManyWithoutWorkerNestedInput
   leaveBalances?: Prisma.LeaveBalanceUpdateManyWithoutWorkerNestedInput
   employeeTimeRecords?: Prisma.EmployeeTimeRecordUpdateManyWithoutWorkerNestedInput
+  workflowRuns?: Prisma.WorkflowRunUpdateManyWithoutWorkerNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutWorkerNestedInput
 }
 
 export type WorkerUncheckedUpdateWithoutEmployeeProfileInput = {
@@ -865,6 +938,104 @@ export type WorkerUncheckedUpdateWithoutEmployeeProfileInput = {
   leaveLedgerEntries?: Prisma.LeaveLedgerEntryUncheckedUpdateManyWithoutWorkerNestedInput
   leaveBalances?: Prisma.LeaveBalanceUncheckedUpdateManyWithoutWorkerNestedInput
   employeeTimeRecords?: Prisma.EmployeeTimeRecordUncheckedUpdateManyWithoutWorkerNestedInput
+  workflowRuns?: Prisma.WorkflowRunUncheckedUpdateManyWithoutWorkerNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutWorkerNestedInput
+}
+
+export type WorkerCreateWithoutDeprovisioningRunsInput = {
+  id?: string
+  workerType?: $Enums.WorkerType
+  displayName: string
+  email?: string | null
+  status?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  organization: Prisma.OrganizationCreateNestedOneWithoutWorkersInput
+  contractor?: Prisma.ContractorCreateNestedOneWithoutWorkerInput
+  employeeProfile?: Prisma.EmployeeProfileCreateNestedOneWithoutWorkerInput
+  personnelFile?: Prisma.PersonnelFileCreateNestedOneWithoutWorkerInput
+  leaveRequests?: Prisma.LeaveRequestCreateNestedManyWithoutWorkerInput
+  leaveLedgerEntries?: Prisma.LeaveLedgerEntryCreateNestedManyWithoutWorkerInput
+  leaveBalances?: Prisma.LeaveBalanceCreateNestedManyWithoutWorkerInput
+  employeeTimeRecords?: Prisma.EmployeeTimeRecordCreateNestedManyWithoutWorkerInput
+  workflowRuns?: Prisma.WorkflowRunCreateNestedManyWithoutWorkerInput
+}
+
+export type WorkerUncheckedCreateWithoutDeprovisioningRunsInput = {
+  id?: string
+  organizationId: string
+  workerType?: $Enums.WorkerType
+  displayName: string
+  email?: string | null
+  status?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  contractor?: Prisma.ContractorUncheckedCreateNestedOneWithoutWorkerInput
+  employeeProfile?: Prisma.EmployeeProfileUncheckedCreateNestedOneWithoutWorkerInput
+  personnelFile?: Prisma.PersonnelFileUncheckedCreateNestedOneWithoutWorkerInput
+  leaveRequests?: Prisma.LeaveRequestUncheckedCreateNestedManyWithoutWorkerInput
+  leaveLedgerEntries?: Prisma.LeaveLedgerEntryUncheckedCreateNestedManyWithoutWorkerInput
+  leaveBalances?: Prisma.LeaveBalanceUncheckedCreateNestedManyWithoutWorkerInput
+  employeeTimeRecords?: Prisma.EmployeeTimeRecordUncheckedCreateNestedManyWithoutWorkerInput
+  workflowRuns?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutWorkerInput
+}
+
+export type WorkerCreateOrConnectWithoutDeprovisioningRunsInput = {
+  where: Prisma.WorkerWhereUniqueInput
+  create: Prisma.XOR<Prisma.WorkerCreateWithoutDeprovisioningRunsInput, Prisma.WorkerUncheckedCreateWithoutDeprovisioningRunsInput>
+}
+
+export type WorkerUpsertWithoutDeprovisioningRunsInput = {
+  update: Prisma.XOR<Prisma.WorkerUpdateWithoutDeprovisioningRunsInput, Prisma.WorkerUncheckedUpdateWithoutDeprovisioningRunsInput>
+  create: Prisma.XOR<Prisma.WorkerCreateWithoutDeprovisioningRunsInput, Prisma.WorkerUncheckedCreateWithoutDeprovisioningRunsInput>
+  where?: Prisma.WorkerWhereInput
+}
+
+export type WorkerUpdateToOneWithWhereWithoutDeprovisioningRunsInput = {
+  where?: Prisma.WorkerWhereInput
+  data: Prisma.XOR<Prisma.WorkerUpdateWithoutDeprovisioningRunsInput, Prisma.WorkerUncheckedUpdateWithoutDeprovisioningRunsInput>
+}
+
+export type WorkerUpdateWithoutDeprovisioningRunsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  workerType?: Prisma.EnumWorkerTypeFieldUpdateOperationsInput | $Enums.WorkerType
+  displayName?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  organization?: Prisma.OrganizationUpdateOneRequiredWithoutWorkersNestedInput
+  contractor?: Prisma.ContractorUpdateOneWithoutWorkerNestedInput
+  employeeProfile?: Prisma.EmployeeProfileUpdateOneWithoutWorkerNestedInput
+  personnelFile?: Prisma.PersonnelFileUpdateOneWithoutWorkerNestedInput
+  leaveRequests?: Prisma.LeaveRequestUpdateManyWithoutWorkerNestedInput
+  leaveLedgerEntries?: Prisma.LeaveLedgerEntryUpdateManyWithoutWorkerNestedInput
+  leaveBalances?: Prisma.LeaveBalanceUpdateManyWithoutWorkerNestedInput
+  employeeTimeRecords?: Prisma.EmployeeTimeRecordUpdateManyWithoutWorkerNestedInput
+  workflowRuns?: Prisma.WorkflowRunUpdateManyWithoutWorkerNestedInput
+}
+
+export type WorkerUncheckedUpdateWithoutDeprovisioningRunsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  organizationId?: Prisma.StringFieldUpdateOperationsInput | string
+  workerType?: Prisma.EnumWorkerTypeFieldUpdateOperationsInput | $Enums.WorkerType
+  displayName?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  contractor?: Prisma.ContractorUncheckedUpdateOneWithoutWorkerNestedInput
+  employeeProfile?: Prisma.EmployeeProfileUncheckedUpdateOneWithoutWorkerNestedInput
+  personnelFile?: Prisma.PersonnelFileUncheckedUpdateOneWithoutWorkerNestedInput
+  leaveRequests?: Prisma.LeaveRequestUncheckedUpdateManyWithoutWorkerNestedInput
+  leaveLedgerEntries?: Prisma.LeaveLedgerEntryUncheckedUpdateManyWithoutWorkerNestedInput
+  leaveBalances?: Prisma.LeaveBalanceUncheckedUpdateManyWithoutWorkerNestedInput
+  employeeTimeRecords?: Prisma.EmployeeTimeRecordUncheckedUpdateManyWithoutWorkerNestedInput
+  workflowRuns?: Prisma.WorkflowRunUncheckedUpdateManyWithoutWorkerNestedInput
 }
 
 export type WorkerCreateWithoutLeaveRequestsInput = {
@@ -883,6 +1054,8 @@ export type WorkerCreateWithoutLeaveRequestsInput = {
   leaveLedgerEntries?: Prisma.LeaveLedgerEntryCreateNestedManyWithoutWorkerInput
   leaveBalances?: Prisma.LeaveBalanceCreateNestedManyWithoutWorkerInput
   employeeTimeRecords?: Prisma.EmployeeTimeRecordCreateNestedManyWithoutWorkerInput
+  workflowRuns?: Prisma.WorkflowRunCreateNestedManyWithoutWorkerInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutWorkerInput
 }
 
 export type WorkerUncheckedCreateWithoutLeaveRequestsInput = {
@@ -901,6 +1074,8 @@ export type WorkerUncheckedCreateWithoutLeaveRequestsInput = {
   leaveLedgerEntries?: Prisma.LeaveLedgerEntryUncheckedCreateNestedManyWithoutWorkerInput
   leaveBalances?: Prisma.LeaveBalanceUncheckedCreateNestedManyWithoutWorkerInput
   employeeTimeRecords?: Prisma.EmployeeTimeRecordUncheckedCreateNestedManyWithoutWorkerInput
+  workflowRuns?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutWorkerInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutWorkerInput
 }
 
 export type WorkerCreateOrConnectWithoutLeaveRequestsInput = {
@@ -935,6 +1110,8 @@ export type WorkerUpdateWithoutLeaveRequestsInput = {
   leaveLedgerEntries?: Prisma.LeaveLedgerEntryUpdateManyWithoutWorkerNestedInput
   leaveBalances?: Prisma.LeaveBalanceUpdateManyWithoutWorkerNestedInput
   employeeTimeRecords?: Prisma.EmployeeTimeRecordUpdateManyWithoutWorkerNestedInput
+  workflowRuns?: Prisma.WorkflowRunUpdateManyWithoutWorkerNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutWorkerNestedInput
 }
 
 export type WorkerUncheckedUpdateWithoutLeaveRequestsInput = {
@@ -953,6 +1130,8 @@ export type WorkerUncheckedUpdateWithoutLeaveRequestsInput = {
   leaveLedgerEntries?: Prisma.LeaveLedgerEntryUncheckedUpdateManyWithoutWorkerNestedInput
   leaveBalances?: Prisma.LeaveBalanceUncheckedUpdateManyWithoutWorkerNestedInput
   employeeTimeRecords?: Prisma.EmployeeTimeRecordUncheckedUpdateManyWithoutWorkerNestedInput
+  workflowRuns?: Prisma.WorkflowRunUncheckedUpdateManyWithoutWorkerNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutWorkerNestedInput
 }
 
 export type WorkerCreateWithoutLeaveLedgerEntriesInput = {
@@ -971,6 +1150,8 @@ export type WorkerCreateWithoutLeaveLedgerEntriesInput = {
   leaveRequests?: Prisma.LeaveRequestCreateNestedManyWithoutWorkerInput
   leaveBalances?: Prisma.LeaveBalanceCreateNestedManyWithoutWorkerInput
   employeeTimeRecords?: Prisma.EmployeeTimeRecordCreateNestedManyWithoutWorkerInput
+  workflowRuns?: Prisma.WorkflowRunCreateNestedManyWithoutWorkerInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutWorkerInput
 }
 
 export type WorkerUncheckedCreateWithoutLeaveLedgerEntriesInput = {
@@ -989,6 +1170,8 @@ export type WorkerUncheckedCreateWithoutLeaveLedgerEntriesInput = {
   leaveRequests?: Prisma.LeaveRequestUncheckedCreateNestedManyWithoutWorkerInput
   leaveBalances?: Prisma.LeaveBalanceUncheckedCreateNestedManyWithoutWorkerInput
   employeeTimeRecords?: Prisma.EmployeeTimeRecordUncheckedCreateNestedManyWithoutWorkerInput
+  workflowRuns?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutWorkerInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutWorkerInput
 }
 
 export type WorkerCreateOrConnectWithoutLeaveLedgerEntriesInput = {
@@ -1023,6 +1206,8 @@ export type WorkerUpdateWithoutLeaveLedgerEntriesInput = {
   leaveRequests?: Prisma.LeaveRequestUpdateManyWithoutWorkerNestedInput
   leaveBalances?: Prisma.LeaveBalanceUpdateManyWithoutWorkerNestedInput
   employeeTimeRecords?: Prisma.EmployeeTimeRecordUpdateManyWithoutWorkerNestedInput
+  workflowRuns?: Prisma.WorkflowRunUpdateManyWithoutWorkerNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutWorkerNestedInput
 }
 
 export type WorkerUncheckedUpdateWithoutLeaveLedgerEntriesInput = {
@@ -1041,6 +1226,8 @@ export type WorkerUncheckedUpdateWithoutLeaveLedgerEntriesInput = {
   leaveRequests?: Prisma.LeaveRequestUncheckedUpdateManyWithoutWorkerNestedInput
   leaveBalances?: Prisma.LeaveBalanceUncheckedUpdateManyWithoutWorkerNestedInput
   employeeTimeRecords?: Prisma.EmployeeTimeRecordUncheckedUpdateManyWithoutWorkerNestedInput
+  workflowRuns?: Prisma.WorkflowRunUncheckedUpdateManyWithoutWorkerNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutWorkerNestedInput
 }
 
 export type WorkerCreateWithoutLeaveBalancesInput = {
@@ -1059,6 +1246,8 @@ export type WorkerCreateWithoutLeaveBalancesInput = {
   leaveRequests?: Prisma.LeaveRequestCreateNestedManyWithoutWorkerInput
   leaveLedgerEntries?: Prisma.LeaveLedgerEntryCreateNestedManyWithoutWorkerInput
   employeeTimeRecords?: Prisma.EmployeeTimeRecordCreateNestedManyWithoutWorkerInput
+  workflowRuns?: Prisma.WorkflowRunCreateNestedManyWithoutWorkerInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutWorkerInput
 }
 
 export type WorkerUncheckedCreateWithoutLeaveBalancesInput = {
@@ -1077,6 +1266,8 @@ export type WorkerUncheckedCreateWithoutLeaveBalancesInput = {
   leaveRequests?: Prisma.LeaveRequestUncheckedCreateNestedManyWithoutWorkerInput
   leaveLedgerEntries?: Prisma.LeaveLedgerEntryUncheckedCreateNestedManyWithoutWorkerInput
   employeeTimeRecords?: Prisma.EmployeeTimeRecordUncheckedCreateNestedManyWithoutWorkerInput
+  workflowRuns?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutWorkerInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutWorkerInput
 }
 
 export type WorkerCreateOrConnectWithoutLeaveBalancesInput = {
@@ -1111,6 +1302,8 @@ export type WorkerUpdateWithoutLeaveBalancesInput = {
   leaveRequests?: Prisma.LeaveRequestUpdateManyWithoutWorkerNestedInput
   leaveLedgerEntries?: Prisma.LeaveLedgerEntryUpdateManyWithoutWorkerNestedInput
   employeeTimeRecords?: Prisma.EmployeeTimeRecordUpdateManyWithoutWorkerNestedInput
+  workflowRuns?: Prisma.WorkflowRunUpdateManyWithoutWorkerNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutWorkerNestedInput
 }
 
 export type WorkerUncheckedUpdateWithoutLeaveBalancesInput = {
@@ -1129,6 +1322,8 @@ export type WorkerUncheckedUpdateWithoutLeaveBalancesInput = {
   leaveRequests?: Prisma.LeaveRequestUncheckedUpdateManyWithoutWorkerNestedInput
   leaveLedgerEntries?: Prisma.LeaveLedgerEntryUncheckedUpdateManyWithoutWorkerNestedInput
   employeeTimeRecords?: Prisma.EmployeeTimeRecordUncheckedUpdateManyWithoutWorkerNestedInput
+  workflowRuns?: Prisma.WorkflowRunUncheckedUpdateManyWithoutWorkerNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutWorkerNestedInput
 }
 
 export type WorkerCreateWithoutOrganizationInput = {
@@ -1147,6 +1342,8 @@ export type WorkerCreateWithoutOrganizationInput = {
   leaveLedgerEntries?: Prisma.LeaveLedgerEntryCreateNestedManyWithoutWorkerInput
   leaveBalances?: Prisma.LeaveBalanceCreateNestedManyWithoutWorkerInput
   employeeTimeRecords?: Prisma.EmployeeTimeRecordCreateNestedManyWithoutWorkerInput
+  workflowRuns?: Prisma.WorkflowRunCreateNestedManyWithoutWorkerInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutWorkerInput
 }
 
 export type WorkerUncheckedCreateWithoutOrganizationInput = {
@@ -1165,6 +1362,8 @@ export type WorkerUncheckedCreateWithoutOrganizationInput = {
   leaveLedgerEntries?: Prisma.LeaveLedgerEntryUncheckedCreateNestedManyWithoutWorkerInput
   leaveBalances?: Prisma.LeaveBalanceUncheckedCreateNestedManyWithoutWorkerInput
   employeeTimeRecords?: Prisma.EmployeeTimeRecordUncheckedCreateNestedManyWithoutWorkerInput
+  workflowRuns?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutWorkerInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutWorkerInput
 }
 
 export type WorkerCreateOrConnectWithoutOrganizationInput = {
@@ -1224,6 +1423,8 @@ export type WorkerCreateWithoutPersonnelFileInput = {
   leaveLedgerEntries?: Prisma.LeaveLedgerEntryCreateNestedManyWithoutWorkerInput
   leaveBalances?: Prisma.LeaveBalanceCreateNestedManyWithoutWorkerInput
   employeeTimeRecords?: Prisma.EmployeeTimeRecordCreateNestedManyWithoutWorkerInput
+  workflowRuns?: Prisma.WorkflowRunCreateNestedManyWithoutWorkerInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutWorkerInput
 }
 
 export type WorkerUncheckedCreateWithoutPersonnelFileInput = {
@@ -1242,6 +1443,8 @@ export type WorkerUncheckedCreateWithoutPersonnelFileInput = {
   leaveLedgerEntries?: Prisma.LeaveLedgerEntryUncheckedCreateNestedManyWithoutWorkerInput
   leaveBalances?: Prisma.LeaveBalanceUncheckedCreateNestedManyWithoutWorkerInput
   employeeTimeRecords?: Prisma.EmployeeTimeRecordUncheckedCreateNestedManyWithoutWorkerInput
+  workflowRuns?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutWorkerInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutWorkerInput
 }
 
 export type WorkerCreateOrConnectWithoutPersonnelFileInput = {
@@ -1276,6 +1479,8 @@ export type WorkerUpdateWithoutPersonnelFileInput = {
   leaveLedgerEntries?: Prisma.LeaveLedgerEntryUpdateManyWithoutWorkerNestedInput
   leaveBalances?: Prisma.LeaveBalanceUpdateManyWithoutWorkerNestedInput
   employeeTimeRecords?: Prisma.EmployeeTimeRecordUpdateManyWithoutWorkerNestedInput
+  workflowRuns?: Prisma.WorkflowRunUpdateManyWithoutWorkerNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutWorkerNestedInput
 }
 
 export type WorkerUncheckedUpdateWithoutPersonnelFileInput = {
@@ -1294,6 +1499,104 @@ export type WorkerUncheckedUpdateWithoutPersonnelFileInput = {
   leaveLedgerEntries?: Prisma.LeaveLedgerEntryUncheckedUpdateManyWithoutWorkerNestedInput
   leaveBalances?: Prisma.LeaveBalanceUncheckedUpdateManyWithoutWorkerNestedInput
   employeeTimeRecords?: Prisma.EmployeeTimeRecordUncheckedUpdateManyWithoutWorkerNestedInput
+  workflowRuns?: Prisma.WorkflowRunUncheckedUpdateManyWithoutWorkerNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutWorkerNestedInput
+}
+
+export type WorkerCreateWithoutWorkflowRunsInput = {
+  id?: string
+  workerType?: $Enums.WorkerType
+  displayName: string
+  email?: string | null
+  status?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  organization: Prisma.OrganizationCreateNestedOneWithoutWorkersInput
+  contractor?: Prisma.ContractorCreateNestedOneWithoutWorkerInput
+  employeeProfile?: Prisma.EmployeeProfileCreateNestedOneWithoutWorkerInput
+  personnelFile?: Prisma.PersonnelFileCreateNestedOneWithoutWorkerInput
+  leaveRequests?: Prisma.LeaveRequestCreateNestedManyWithoutWorkerInput
+  leaveLedgerEntries?: Prisma.LeaveLedgerEntryCreateNestedManyWithoutWorkerInput
+  leaveBalances?: Prisma.LeaveBalanceCreateNestedManyWithoutWorkerInput
+  employeeTimeRecords?: Prisma.EmployeeTimeRecordCreateNestedManyWithoutWorkerInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutWorkerInput
+}
+
+export type WorkerUncheckedCreateWithoutWorkflowRunsInput = {
+  id?: string
+  organizationId: string
+  workerType?: $Enums.WorkerType
+  displayName: string
+  email?: string | null
+  status?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  contractor?: Prisma.ContractorUncheckedCreateNestedOneWithoutWorkerInput
+  employeeProfile?: Prisma.EmployeeProfileUncheckedCreateNestedOneWithoutWorkerInput
+  personnelFile?: Prisma.PersonnelFileUncheckedCreateNestedOneWithoutWorkerInput
+  leaveRequests?: Prisma.LeaveRequestUncheckedCreateNestedManyWithoutWorkerInput
+  leaveLedgerEntries?: Prisma.LeaveLedgerEntryUncheckedCreateNestedManyWithoutWorkerInput
+  leaveBalances?: Prisma.LeaveBalanceUncheckedCreateNestedManyWithoutWorkerInput
+  employeeTimeRecords?: Prisma.EmployeeTimeRecordUncheckedCreateNestedManyWithoutWorkerInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutWorkerInput
+}
+
+export type WorkerCreateOrConnectWithoutWorkflowRunsInput = {
+  where: Prisma.WorkerWhereUniqueInput
+  create: Prisma.XOR<Prisma.WorkerCreateWithoutWorkflowRunsInput, Prisma.WorkerUncheckedCreateWithoutWorkflowRunsInput>
+}
+
+export type WorkerUpsertWithoutWorkflowRunsInput = {
+  update: Prisma.XOR<Prisma.WorkerUpdateWithoutWorkflowRunsInput, Prisma.WorkerUncheckedUpdateWithoutWorkflowRunsInput>
+  create: Prisma.XOR<Prisma.WorkerCreateWithoutWorkflowRunsInput, Prisma.WorkerUncheckedCreateWithoutWorkflowRunsInput>
+  where?: Prisma.WorkerWhereInput
+}
+
+export type WorkerUpdateToOneWithWhereWithoutWorkflowRunsInput = {
+  where?: Prisma.WorkerWhereInput
+  data: Prisma.XOR<Prisma.WorkerUpdateWithoutWorkflowRunsInput, Prisma.WorkerUncheckedUpdateWithoutWorkflowRunsInput>
+}
+
+export type WorkerUpdateWithoutWorkflowRunsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  workerType?: Prisma.EnumWorkerTypeFieldUpdateOperationsInput | $Enums.WorkerType
+  displayName?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  organization?: Prisma.OrganizationUpdateOneRequiredWithoutWorkersNestedInput
+  contractor?: Prisma.ContractorUpdateOneWithoutWorkerNestedInput
+  employeeProfile?: Prisma.EmployeeProfileUpdateOneWithoutWorkerNestedInput
+  personnelFile?: Prisma.PersonnelFileUpdateOneWithoutWorkerNestedInput
+  leaveRequests?: Prisma.LeaveRequestUpdateManyWithoutWorkerNestedInput
+  leaveLedgerEntries?: Prisma.LeaveLedgerEntryUpdateManyWithoutWorkerNestedInput
+  leaveBalances?: Prisma.LeaveBalanceUpdateManyWithoutWorkerNestedInput
+  employeeTimeRecords?: Prisma.EmployeeTimeRecordUpdateManyWithoutWorkerNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutWorkerNestedInput
+}
+
+export type WorkerUncheckedUpdateWithoutWorkflowRunsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  organizationId?: Prisma.StringFieldUpdateOperationsInput | string
+  workerType?: Prisma.EnumWorkerTypeFieldUpdateOperationsInput | $Enums.WorkerType
+  displayName?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  contractor?: Prisma.ContractorUncheckedUpdateOneWithoutWorkerNestedInput
+  employeeProfile?: Prisma.EmployeeProfileUncheckedUpdateOneWithoutWorkerNestedInput
+  personnelFile?: Prisma.PersonnelFileUncheckedUpdateOneWithoutWorkerNestedInput
+  leaveRequests?: Prisma.LeaveRequestUncheckedUpdateManyWithoutWorkerNestedInput
+  leaveLedgerEntries?: Prisma.LeaveLedgerEntryUncheckedUpdateManyWithoutWorkerNestedInput
+  leaveBalances?: Prisma.LeaveBalanceUncheckedUpdateManyWithoutWorkerNestedInput
+  employeeTimeRecords?: Prisma.EmployeeTimeRecordUncheckedUpdateManyWithoutWorkerNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutWorkerNestedInput
 }
 
 export type WorkerCreateManyOrganizationInput = {
@@ -1323,6 +1626,8 @@ export type WorkerUpdateWithoutOrganizationInput = {
   leaveLedgerEntries?: Prisma.LeaveLedgerEntryUpdateManyWithoutWorkerNestedInput
   leaveBalances?: Prisma.LeaveBalanceUpdateManyWithoutWorkerNestedInput
   employeeTimeRecords?: Prisma.EmployeeTimeRecordUpdateManyWithoutWorkerNestedInput
+  workflowRuns?: Prisma.WorkflowRunUpdateManyWithoutWorkerNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutWorkerNestedInput
 }
 
 export type WorkerUncheckedUpdateWithoutOrganizationInput = {
@@ -1341,6 +1646,8 @@ export type WorkerUncheckedUpdateWithoutOrganizationInput = {
   leaveLedgerEntries?: Prisma.LeaveLedgerEntryUncheckedUpdateManyWithoutWorkerNestedInput
   leaveBalances?: Prisma.LeaveBalanceUncheckedUpdateManyWithoutWorkerNestedInput
   employeeTimeRecords?: Prisma.EmployeeTimeRecordUncheckedUpdateManyWithoutWorkerNestedInput
+  workflowRuns?: Prisma.WorkflowRunUncheckedUpdateManyWithoutWorkerNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutWorkerNestedInput
 }
 
 export type WorkerUncheckedUpdateManyWithoutOrganizationInput = {
@@ -1364,6 +1671,8 @@ export type WorkerCountOutputType = {
   leaveLedgerEntries: number
   leaveBalances: number
   employeeTimeRecords: number
+  workflowRuns: number
+  deprovisioningRuns: number
 }
 
 export type WorkerCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1371,6 +1680,8 @@ export type WorkerCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions
   leaveLedgerEntries?: boolean | WorkerCountOutputTypeCountLeaveLedgerEntriesArgs
   leaveBalances?: boolean | WorkerCountOutputTypeCountLeaveBalancesArgs
   employeeTimeRecords?: boolean | WorkerCountOutputTypeCountEmployeeTimeRecordsArgs
+  workflowRuns?: boolean | WorkerCountOutputTypeCountWorkflowRunsArgs
+  deprovisioningRuns?: boolean | WorkerCountOutputTypeCountDeprovisioningRunsArgs
 }
 
 /**
@@ -1411,6 +1722,20 @@ export type WorkerCountOutputTypeCountEmployeeTimeRecordsArgs<ExtArgs extends ru
   where?: Prisma.EmployeeTimeRecordWhereInput
 }
 
+/**
+ * WorkerCountOutputType without action
+ */
+export type WorkerCountOutputTypeCountWorkflowRunsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.WorkflowRunWhereInput
+}
+
+/**
+ * WorkerCountOutputType without action
+ */
+export type WorkerCountOutputTypeCountDeprovisioningRunsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.DeprovisioningRunWhereInput
+}
+
 
 export type WorkerSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1430,6 +1755,8 @@ export type WorkerSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   leaveLedgerEntries?: boolean | Prisma.Worker$leaveLedgerEntriesArgs<ExtArgs>
   leaveBalances?: boolean | Prisma.Worker$leaveBalancesArgs<ExtArgs>
   employeeTimeRecords?: boolean | Prisma.Worker$employeeTimeRecordsArgs<ExtArgs>
+  workflowRuns?: boolean | Prisma.Worker$workflowRunsArgs<ExtArgs>
+  deprovisioningRuns?: boolean | Prisma.Worker$deprovisioningRunsArgs<ExtArgs>
   _count?: boolean | Prisma.WorkerCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["worker"]>
 
@@ -1481,6 +1808,8 @@ export type WorkerInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   leaveLedgerEntries?: boolean | Prisma.Worker$leaveLedgerEntriesArgs<ExtArgs>
   leaveBalances?: boolean | Prisma.Worker$leaveBalancesArgs<ExtArgs>
   employeeTimeRecords?: boolean | Prisma.Worker$employeeTimeRecordsArgs<ExtArgs>
+  workflowRuns?: boolean | Prisma.Worker$workflowRunsArgs<ExtArgs>
+  deprovisioningRuns?: boolean | Prisma.Worker$deprovisioningRunsArgs<ExtArgs>
   _count?: boolean | Prisma.WorkerCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type WorkerIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1501,6 +1830,8 @@ export type $WorkerPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     leaveLedgerEntries: Prisma.$LeaveLedgerEntryPayload<ExtArgs>[]
     leaveBalances: Prisma.$LeaveBalancePayload<ExtArgs>[]
     employeeTimeRecords: Prisma.$EmployeeTimeRecordPayload<ExtArgs>[]
+    workflowRuns: Prisma.$WorkflowRunPayload<ExtArgs>[]
+    deprovisioningRuns: Prisma.$DeprovisioningRunPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1914,6 +2245,8 @@ export interface Prisma__WorkerClient<T, Null = never, ExtArgs extends runtime.T
   leaveLedgerEntries<T extends Prisma.Worker$leaveLedgerEntriesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Worker$leaveLedgerEntriesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$LeaveLedgerEntryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   leaveBalances<T extends Prisma.Worker$leaveBalancesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Worker$leaveBalancesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$LeaveBalancePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   employeeTimeRecords<T extends Prisma.Worker$employeeTimeRecordsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Worker$employeeTimeRecordsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EmployeeTimeRecordPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  workflowRuns<T extends Prisma.Worker$workflowRunsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Worker$workflowRunsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WorkflowRunPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  deprovisioningRuns<T extends Prisma.Worker$deprovisioningRunsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Worker$deprovisioningRunsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DeprovisioningRunPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2503,6 +2836,54 @@ export type Worker$employeeTimeRecordsArgs<ExtArgs extends runtime.Types.Extensi
   take?: number
   skip?: number
   distinct?: Prisma.EmployeeTimeRecordScalarFieldEnum | Prisma.EmployeeTimeRecordScalarFieldEnum[]
+}
+
+/**
+ * Worker.workflowRuns
+ */
+export type Worker$workflowRunsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the WorkflowRun
+   */
+  select?: Prisma.WorkflowRunSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the WorkflowRun
+   */
+  omit?: Prisma.WorkflowRunOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.WorkflowRunInclude<ExtArgs> | null
+  where?: Prisma.WorkflowRunWhereInput
+  orderBy?: Prisma.WorkflowRunOrderByWithRelationInput | Prisma.WorkflowRunOrderByWithRelationInput[]
+  cursor?: Prisma.WorkflowRunWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.WorkflowRunScalarFieldEnum | Prisma.WorkflowRunScalarFieldEnum[]
+}
+
+/**
+ * Worker.deprovisioningRuns
+ */
+export type Worker$deprovisioningRunsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the DeprovisioningRun
+   */
+  select?: Prisma.DeprovisioningRunSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the DeprovisioningRun
+   */
+  omit?: Prisma.DeprovisioningRunOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.DeprovisioningRunInclude<ExtArgs> | null
+  where?: Prisma.DeprovisioningRunWhereInput
+  orderBy?: Prisma.DeprovisioningRunOrderByWithRelationInput | Prisma.DeprovisioningRunOrderByWithRelationInput[]
+  cursor?: Prisma.DeprovisioningRunWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.DeprovisioningRunScalarFieldEnum | Prisma.DeprovisioningRunScalarFieldEnum[]
 }
 
 /**

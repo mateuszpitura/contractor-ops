@@ -108,6 +108,32 @@ export const SOFTWARE_NOT_LEGAL_ADVICE_DE =
   'gesetzlichen Formel, die zugrundeliegenden Rechtsansprüche bleiben jedoch ' +
   'Verantwortung des Nutzers.';
 
+// Statutory termination-certificate adviser-verify watermark. Rendered
+// prominently on every draft cert PDF (świadectwo pracy, PIT-11, Arbeitszeugnis,
+// Lohnsteuerbescheinigung, P45, W-2). PENDING jurisdiction legal/tax-adviser
+// sign-off — a generated cert is never presented as adviser-approved.
+export const CERT_ADVISER_VERIFY_EN =
+  'DRAFT — NOT ADVISER-VERIFIED. This document was generated for administrative ' +
+  'convenience and has not been reviewed by a legal or tax adviser in the relevant ' +
+  'jurisdiction. It does not constitute legal, tax, or professional advice. Have a ' +
+  'qualified adviser verify its content and legal sufficiency before issuing it to an ' +
+  'employee or any authority.';
+
+export const CERT_ADVISER_VERIFY_DE =
+  'ENTWURF — NICHT FACHLICH GEPRÜFT. Dieses Dokument wurde zur administrativen ' +
+  'Vereinfachung erstellt und wurde nicht von einer Steuerberatung oder einer ' +
+  'Rechtsanwältin/einem Rechtsanwalt der zuständigen Jurisdiktion geprüft. Es stellt ' +
+  'keine Rechts-, Steuer- oder sonstige fachliche Beratung dar. Lassen Sie den Inhalt ' +
+  'und die rechtliche Hinlänglichkeit vor der Ausstellung an eine Mitarbeiterin/einen ' +
+  'Mitarbeiter oder eine Behörde durch eine qualifizierte Fachperson prüfen.';
+
+export const CERT_ADVISER_VERIFY_PL =
+  'PROJEKT — NIEZWERYFIKOWANY PRZEZ DORADCĘ. Ten dokument został wygenerowany dla ' +
+  'wygody administracyjnej i nie został sprawdzony przez doradcę prawnego ani ' +
+  'podatkowego we właściwej jurysdykcji. Nie stanowi porady prawnej, podatkowej ani ' +
+  'żadnej innej porady profesjonalnej. Przed wydaniem pracownikowi lub organowi zleć ' +
+  'weryfikację treści i wystarczalności prawnej wykwalifikowanemu doradcy.';
+
 export const RESERVED_DISCLAIMER_KEYS = [
   'DISCLAIMER_IR35_BODY',
   'DISCLAIMER_IR35_ACKNOWLEDGEMENT',
@@ -121,6 +147,9 @@ export const RESERVED_DISCLAIMER_KEYS = [
   'DRV_UNVERIFIED_ENTRY_DISCLAIMER_DE',
   'SOFTWARE_NOT_LEGAL_ADVICE_EN',
   'SOFTWARE_NOT_LEGAL_ADVICE_DE',
+  'CERT_ADVISER_VERIFY_EN',
+  'CERT_ADVISER_VERIFY_DE',
+  'CERT_ADVISER_VERIFY_PL',
 ] as const;
 
 export const LOCKED_DISCLAIMERS = {
@@ -136,6 +165,9 @@ export const LOCKED_DISCLAIMERS = {
   DRV_UNVERIFIED_ENTRY_DISCLAIMER_DE,
   SOFTWARE_NOT_LEGAL_ADVICE_EN,
   SOFTWARE_NOT_LEGAL_ADVICE_DE,
+  CERT_ADVISER_VERIFY_EN,
+  CERT_ADVISER_VERIFY_DE,
+  CERT_ADVISER_VERIFY_PL,
 } as const;
 
 export type LockedDisclaimerKey = keyof typeof LOCKED_DISCLAIMERS;

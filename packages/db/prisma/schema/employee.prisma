@@ -43,6 +43,10 @@ model EmployeeProfile {
   saudizationCategory NitaqatBand?
   etat                Decimal?          @db.Decimal(3, 2)
   employmentStatus    EmploymentStatus?
+  // Administrative termination instant (distinct from a calendar end date);
+  // drives the 14-day IdP deprovisioning cooldown. Mirrors
+  // ContractorAssignment.endedAt. Written when transitioning to TERMINATED.
+  terminatedAt        DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -60,4 +64,37 @@ enum EmploymentStatus {
   ON_LEAVE
   SUSPENDED
   TERMINATED
+}
+
+// Draft statutory termination-paperwork certificate (świadectwo pracy, PIT-11,
+// Arbeitszeugnis, Lohnsteuerbescheinigung, P45, W-2, …). Mirrors the Form1099Nec
+// immutable-snapshot + CAS-archive shape: `snapshotJson` holds values-as-of-
+// generation (national identifiers reduced to *Last4 only, never full), and the
+// render CAS-claims `pdfArchiveKey` before any I/O so a retry cannot re-render.
+//
+// Tenant-owning: absent from `globalModels`, inherits withTenantScope. The run
+// and worker are referenced by id (scalar) — linkage for UI download rides the
+// existing WorkflowAttachment/Document rail, org scope guards every read.
+model StatutoryCertificate {
+  id             String                     @id @default(cuid())
+  organizationId String
+  workflowRunId  String
+  workerId       String
+  certType       String
+  jurisdiction   String
+  status         StatutoryCertificateStatus @default(DRAFT)
+  snapshotJson   Json
+  pdfArchiveKey  String?
+  createdAt      DateTime                   @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId, workflowRunId])
+  @@index([organizationId, workerId])
+}
+
+enum StatutoryCertificateStatus {
+  DRAFT
+  ISSUED
+  VOID
 }

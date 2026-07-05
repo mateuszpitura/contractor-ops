@@ -323,7 +323,9 @@ export const EntityType = {
   USER: 'USER',
   RETURN_REQUEST: 'RETURN_REQUEST',
   LEAVE_REQUEST: 'LEAVE_REQUEST',
-  EMPLOYEE_TIME_RECORD: 'EMPLOYEE_TIME_RECORD'
+  EMPLOYEE_TIME_RECORD: 'EMPLOYEE_TIME_RECORD',
+  WORKER: 'WORKER',
+  EMPLOYEE: 'EMPLOYEE'
 } as const
 
 export type EntityType = (typeof EntityType)[keyof typeof EntityType]
@@ -525,6 +527,15 @@ export const EmploymentStatus = {
 } as const
 
 export type EmploymentStatus = (typeof EmploymentStatus)[keyof typeof EmploymentStatus]
+
+
+export const StatutoryCertificateStatus = {
+  DRAFT: 'DRAFT',
+  ISSUED: 'ISSUED',
+  VOID: 'VOID'
+} as const
+
+export type StatutoryCertificateStatus = (typeof StatutoryCertificateStatus)[keyof typeof StatutoryCertificateStatus]
 
 
 export const EquipmentType = {

@@ -433,6 +433,7 @@ export const ModelName = {
   PeppolCapabilityCache: 'PeppolCapabilityCache',
   EmployeeTimeRecord: 'EmployeeTimeRecord',
   EmployeeProfile: 'EmployeeProfile',
+  StatutoryCertificate: 'StatutoryCertificate',
   Equipment: 'Equipment',
   EquipmentAssignment: 'EquipmentAssignment',
   Shipment: 'Shipment',
@@ -547,7 +548,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "organizationApiKey" | "apiKeyIpEvent" | "approvalChainConfig" | "approvalFlow" | "approvalStep" | "approvalDecision" | "auditLog" | "user" | "userPinnedView" | "session" | "account" | "verification" | "subscription" | "ocrCreditLedger" | "stripeEvent" | "classificationAssessment" | "classificationDocument" | "ir35ChainParticipant" | "ir35OtherClientAttestation" | "economicDependencyAlertState" | "reassessmentTrigger" | "cronScanState" | "statusfeststellungsverfahren" | "classificationEscalationEvent" | "sdsApproval" | "consentRecord" | "privacyNotice" | "consentEvent" | "contract" | "contractAmendment" | "contractRatePeriod" | "document" | "documentLink" | "contractHealthCheckRun" | "contractor" | "contractorContact" | "contractorBillingProfile" | "contractorAssignment" | "contractorTag" | "contractorTagLink" | "complianceRequirementTemplate" | "contractorComplianceItem" | "contractorComplianceReminderState" | "leitwegId" | "eInvoiceLifecycle" | "eInvoiceLifecycleEvent" | "peppolCapabilityCache" | "employeeTimeRecord" | "employeeProfile" | "equipment" | "equipmentAssignment" | "shipment" | "shipmentEvent" | "returnRequest" | "courierConfig" | "signingEnvelope" | "signingRecipient" | "signingEvent" | "ewidencjaSnapshot" | "exchangeRate" | "export" | "boEBaseRateHistory" | "skontoTerm" | "skontoSnapshot" | "skontoApplication" | "govApiAuditLog" | "freeZoneAssignment" | "saudizationConfig" | "saudiHeadcount" | "uaeFreeZone" | "deprovisioningRun" | "deprovisioningStep" | "idpChangeProvenance" | "integrationConnection" | "externalLink" | "integrationSyncLog" | "webhookDelivery" | "invoice" | "invoiceFile" | "invoiceLine" | "invoiceMatchResult" | "invoiceIntakeRequest" | "invoicePayment" | "invoiceInterestCompensation" | "invoiceInterestWaiver" | "invoiceInterestClaim" | "leaveType" | "blackoutPeriod" | "leaveRequest" | "leaveLedgerEntry" | "leaveBalance" | "notification" | "userNotificationPreference" | "comment" | "reminderRule" | "reminderInstance" | "notificationCronDedup" | "oAuthChallenge" | "ocrExtraction" | "organization" | "member" | "invitation" | "team" | "project" | "pendingProjectMerge" | "projectExternalLink" | "costCenter" | "outboxEvent" | "paymentRun" | "paymentRunItem" | "paymentExport" | "paymentRunComplianceCheck" | "peppolParticipant" | "peppolTransmission" | "personnelFile" | "personnelFileDocument" | "portalSession" | "portalMagicToken" | "contractorChangeRequest" | "contractorNotificationPreference" | "pendingUpload" | "publicHoliday" | "taxRate" | "withholdingTaxRate" | "whtCertificate" | "taxFormSubmission" | "form1099Nec" | "irisSubmission" | "irisAck" | "tax1099Threshold" | "stateFilingConfig" | "form1042S" | "form1099KTrackerState" | "tax1099KThreshold" | "taxIdValidation" | "timesheet" | "timeEntry" | "worker" | "workflowTemplate" | "workflowTaskTemplate" | "workflowRoleTemplate" | "workflowRoleTaskTemplate" | "workflowRun" | "workflowTaskRun" | "workflowComment" | "workflowAttachment" | "credentialReference" | "zatcaInvoiceChain"
+    modelProps: "organizationApiKey" | "apiKeyIpEvent" | "approvalChainConfig" | "approvalFlow" | "approvalStep" | "approvalDecision" | "auditLog" | "user" | "userPinnedView" | "session" | "account" | "verification" | "subscription" | "ocrCreditLedger" | "stripeEvent" | "classificationAssessment" | "classificationDocument" | "ir35ChainParticipant" | "ir35OtherClientAttestation" | "economicDependencyAlertState" | "reassessmentTrigger" | "cronScanState" | "statusfeststellungsverfahren" | "classificationEscalationEvent" | "sdsApproval" | "consentRecord" | "privacyNotice" | "consentEvent" | "contract" | "contractAmendment" | "contractRatePeriod" | "document" | "documentLink" | "contractHealthCheckRun" | "contractor" | "contractorContact" | "contractorBillingProfile" | "contractorAssignment" | "contractorTag" | "contractorTagLink" | "complianceRequirementTemplate" | "contractorComplianceItem" | "contractorComplianceReminderState" | "leitwegId" | "eInvoiceLifecycle" | "eInvoiceLifecycleEvent" | "peppolCapabilityCache" | "employeeTimeRecord" | "employeeProfile" | "statutoryCertificate" | "equipment" | "equipmentAssignment" | "shipment" | "shipmentEvent" | "returnRequest" | "courierConfig" | "signingEnvelope" | "signingRecipient" | "signingEvent" | "ewidencjaSnapshot" | "exchangeRate" | "export" | "boEBaseRateHistory" | "skontoTerm" | "skontoSnapshot" | "skontoApplication" | "govApiAuditLog" | "freeZoneAssignment" | "saudizationConfig" | "saudiHeadcount" | "uaeFreeZone" | "deprovisioningRun" | "deprovisioningStep" | "idpChangeProvenance" | "integrationConnection" | "externalLink" | "integrationSyncLog" | "webhookDelivery" | "invoice" | "invoiceFile" | "invoiceLine" | "invoiceMatchResult" | "invoiceIntakeRequest" | "invoicePayment" | "invoiceInterestCompensation" | "invoiceInterestWaiver" | "invoiceInterestClaim" | "leaveType" | "blackoutPeriod" | "leaveRequest" | "leaveLedgerEntry" | "leaveBalance" | "notification" | "userNotificationPreference" | "comment" | "reminderRule" | "reminderInstance" | "notificationCronDedup" | "oAuthChallenge" | "ocrExtraction" | "organization" | "member" | "invitation" | "team" | "project" | "pendingProjectMerge" | "projectExternalLink" | "costCenter" | "outboxEvent" | "paymentRun" | "paymentRunItem" | "paymentExport" | "paymentRunComplianceCheck" | "peppolParticipant" | "peppolTransmission" | "personnelFile" | "personnelFileDocument" | "portalSession" | "portalMagicToken" | "contractorChangeRequest" | "contractorNotificationPreference" | "pendingUpload" | "publicHoliday" | "taxRate" | "withholdingTaxRate" | "whtCertificate" | "taxFormSubmission" | "form1099Nec" | "irisSubmission" | "irisAck" | "tax1099Threshold" | "stateFilingConfig" | "form1042S" | "form1099KTrackerState" | "tax1099KThreshold" | "taxIdValidation" | "timesheet" | "timeEntry" | "worker" | "workflowTemplate" | "workflowTaskTemplate" | "workflowRoleTemplate" | "workflowRoleTaskTemplate" | "workflowRun" | "workflowTaskRun" | "workflowComment" | "workflowAttachment" | "credentialReference" | "zatcaInvoiceChain"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -4174,6 +4175,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.EmployeeProfileCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.EmployeeProfileCountAggregateOutputType> | number
+        }
+      }
+    }
+    StatutoryCertificate: {
+      payload: Prisma.$StatutoryCertificatePayload<ExtArgs>
+      fields: Prisma.StatutoryCertificateFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.StatutoryCertificateFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StatutoryCertificatePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.StatutoryCertificateFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StatutoryCertificatePayload>
+        }
+        findFirst: {
+          args: Prisma.StatutoryCertificateFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StatutoryCertificatePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.StatutoryCertificateFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StatutoryCertificatePayload>
+        }
+        findMany: {
+          args: Prisma.StatutoryCertificateFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StatutoryCertificatePayload>[]
+        }
+        create: {
+          args: Prisma.StatutoryCertificateCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StatutoryCertificatePayload>
+        }
+        createMany: {
+          args: Prisma.StatutoryCertificateCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.StatutoryCertificateCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StatutoryCertificatePayload>[]
+        }
+        delete: {
+          args: Prisma.StatutoryCertificateDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StatutoryCertificatePayload>
+        }
+        update: {
+          args: Prisma.StatutoryCertificateUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StatutoryCertificatePayload>
+        }
+        deleteMany: {
+          args: Prisma.StatutoryCertificateDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.StatutoryCertificateUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.StatutoryCertificateUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StatutoryCertificatePayload>[]
+        }
+        upsert: {
+          args: Prisma.StatutoryCertificateUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StatutoryCertificatePayload>
+        }
+        aggregate: {
+          args: Prisma.StatutoryCertificateAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateStatutoryCertificate>
+        }
+        groupBy: {
+          args: Prisma.StatutoryCertificateGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.StatutoryCertificateGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.StatutoryCertificateCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.StatutoryCertificateCountAggregateOutputType> | number
         }
       }
     }
@@ -12463,11 +12538,28 @@ export const EmployeeProfileScalarFieldEnum = {
   saudizationCategory: 'saudizationCategory',
   etat: 'etat',
   employmentStatus: 'employmentStatus',
+  terminatedAt: 'terminatedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
 export type EmployeeProfileScalarFieldEnum = (typeof EmployeeProfileScalarFieldEnum)[keyof typeof EmployeeProfileScalarFieldEnum]
+
+
+export const StatutoryCertificateScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  workflowRunId: 'workflowRunId',
+  workerId: 'workerId',
+  certType: 'certType',
+  jurisdiction: 'jurisdiction',
+  status: 'status',
+  snapshotJson: 'snapshotJson',
+  pdfArchiveKey: 'pdfArchiveKey',
+  createdAt: 'createdAt'
+} as const
+
+export type StatutoryCertificateScalarFieldEnum = (typeof StatutoryCertificateScalarFieldEnum)[keyof typeof StatutoryCertificateScalarFieldEnum]
 
 
 export const EquipmentScalarFieldEnum = {
@@ -12816,6 +12908,7 @@ export const DeprovisioningRunScalarFieldEnum = {
   organizationId: 'organizationId',
   contractorId: 'contractorId',
   assignmentId: 'assignmentId',
+  workerId: 'workerId',
   status: 'status',
   startedAt: 'startedAt',
   finishedAt: 'finishedAt',
@@ -14062,6 +14155,8 @@ export const WorkflowTemplateScalarFieldEnum = {
   version: 'version',
   status: 'status',
   appliesToEntityType: 'appliesToEntityType',
+  jurisdiction: 'jurisdiction',
+  seedKey: 'seedKey',
   createdByUserId: 'createdByUserId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -14140,6 +14235,7 @@ export const WorkflowRunScalarFieldEnum = {
   entityId: 'entityId',
   contractorId: 'contractorId',
   contractId: 'contractId',
+  workerId: 'workerId',
   status: 'status',
   startedByUserId: 'startedByUserId',
   startedAt: 'startedAt',
@@ -15095,6 +15191,20 @@ export type EnumEmploymentStatusFieldRefInput<$PrismaModel> = FieldRefInputType<
  * Reference to a field of type 'EmploymentStatus[]'
  */
 export type ListEnumEmploymentStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EmploymentStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'StatutoryCertificateStatus'
+ */
+export type EnumStatutoryCertificateStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'StatutoryCertificateStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'StatutoryCertificateStatus[]'
+ */
+export type ListEnumStatutoryCertificateStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'StatutoryCertificateStatus[]'>
     
 
 
@@ -16460,6 +16570,7 @@ export type GlobalOmitConfig = {
   peppolCapabilityCache?: Prisma.PeppolCapabilityCacheOmit
   employeeTimeRecord?: Prisma.EmployeeTimeRecordOmit
   employeeProfile?: Prisma.EmployeeProfileOmit
+  statutoryCertificate?: Prisma.StatutoryCertificateOmit
   equipment?: Prisma.EquipmentOmit
   equipmentAssignment?: Prisma.EquipmentAssignmentOmit
   shipment?: Prisma.ShipmentOmit

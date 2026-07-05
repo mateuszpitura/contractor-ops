@@ -44,7 +44,9 @@ export type AuditEntityType =
   | 'RETURN_REQUEST'
   | 'LEAVE_REQUEST'
   | 'EMPLOYEE_TIME_RECORD'
-  | 'EWIDENCJA_SNAPSHOT';
+  | 'EWIDENCJA_SNAPSHOT'
+  | 'WORKER'
+  | 'EMPLOYEE';
 
 /**
  * Thin shape accepted for `tx` — any Prisma client (base or transactional)

@@ -1,4 +1,59 @@
 {
+  "EmployeeLifecycle": {
+    "subtitle": "الإلحاق/إنهاء الخدمة، والشهادات القانونية، وإنهاء العمل",
+    "unknownEmployee": "موظف",
+    "status": {
+      "ACTIVE": "نشط",
+      "ON_LEAVE": "في إجازة",
+      "SUSPENDED": "موقوف",
+      "TERMINATED": "منتهٍ"
+    },
+    "runs": {
+      "heading": "عمليات دورة الحياة",
+      "empty": "لم تبدأ أي عملية إلحاق/إنهاء خدمة بعد.",
+      "viewRun": "عرض العملية"
+    },
+    "actions": {
+      "startOnboarding": "بدء الإلحاق",
+      "startOffboarding": "بدء إنهاء الخدمة"
+    },
+    "cert": {
+      "heading": "الشهادة القانونية",
+      "typeLabel": "نوع الشهادة",
+      "generate": "إنشاء مسودة",
+      "needsRun": "ابدأ عملية قبل إنشاء الشهادة.",
+      "download": "تنزيل مسودة الشهادة"
+    },
+    "certTypes": {
+      "SWIADECTWO_PRACY": "Świadectwo pracy (PL)",
+      "PIT_11": "PIT-11 (PL)",
+      "ARBEITSZEUGNIS_SIMPLE": "Arbeitszeugnis — بسيط (DE)",
+      "LOHNSTEUERBESCHEINIGUNG": "Lohnsteuerbescheinigung (DE)",
+      "P45": "P45 (UK)",
+      "W2": "W-2 (US)"
+    },
+    "termination": {
+      "heading": "إنهاء العمل",
+      "dateLabel": "تاريخ الإنهاء",
+      "record": "تسجيل الإنهاء",
+      "recorded": "تم تسجيل تاريخ الإنهاء."
+    },
+    "idp": {
+      "heading": "إلغاء توفير موفّر الهوية",
+      "notEligibleUntilTermination": "سجّل تاريخ الإنهاء قبل إلغاء التوفير."
+    },
+    "toasts": {
+      "onboardingStarted": "بدأت عملية الإلحاق.",
+      "offboardingStarted": "بدأت عملية إنهاء الخدمة.",
+      "terminationRecorded": "تم تسجيل تاريخ الإنهاء.",
+      "certGenerated": "تم إنشاء مسودة الشهادة."
+    },
+    "errors": {
+      "generic": "حدث خطأ ما. يرجى المحاولة مرة أخرى.",
+      "load": "تعذّر تحميل دورة حياة الموظف.",
+      "retry": "إعادة المحاولة"
+    }
+  },
   "Admin": {
     "BoeRate": {
       "pageTitle": "سجل المعدّل الأساسي لبنك إنجلترا",

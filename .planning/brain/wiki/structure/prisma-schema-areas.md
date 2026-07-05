@@ -84,3 +84,14 @@ pnpm typecheck --filter=@contractor-ops/db
 
 - Trusting client `organizationId` without session middleware
 - Raw SQL without tenant scope — `pnpm lint:raw-sql`
+
+## Worker on/offboarding (Phase 93 — `__phase93_worker_lifecycle`, un-applied)
+
+Additive, drift-safe, authored un-applied (per-region apply is a deferred human gate):
+
+- `EntityType += WORKER, EMPLOYEE` (and `AuditEntityType` mirror in `audit-writer.ts`).
+- `WorkflowRun.workerId?` (+ `worker Worker?` relation + `@@index([organizationId, workerId])`) — the employee-run subject, mutually exclusive with `contractorId` (defence-in-depth CHECK `contractor XOR worker`).
+- `WorkflowTemplate.jurisdiction? + seedKey? + @@unique([organizationId, jurisdiction, type, seedKey])` — the idempotent per-market boot-upsert key (employee-templates seeds).
+- `DeprovisioningRun`: `contractorId`/`assignmentId` relaxed to nullable + `workerId?` (+ relation + index + CHECK) — an employee run keys off `workerId`; DROP NOT NULL is non-destructive.
+- `EmployeeProfile.terminatedAt?` — the dated termination signal feeding the 14-day IdP cooldown (mirrors `ContractorAssignment.endedAt`).
+- New tenant-owning `StatutoryCertificate` (`organizationId`, `workflowRunId`, `workerId`, `certType`, `jurisdiction`, `status StatutoryCertificateStatus DRAFT`, `snapshotJson`, `pdfArchiveKey?`) — mirrors the `Form1099Nec` snapshot+CAS shape; absent from `globalModels`. Detail: [[domains/worker-onboarding-offboarding]].

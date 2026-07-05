@@ -257,6 +257,7 @@
     "@contractor-ops/compliance-policy": "workspace:*",
     "@contractor-ops/db": "workspace:*",
     "@contractor-ops/einvoice": "workspace:*",
+    "@contractor-ops/employee-templates": "workspace:*",
     "@contractor-ops/feature-flags": "workspace:*",
     "@contractor-ops/gov-api": "workspace:*",
     "@contractor-ops/idp-saga": "workspace:*",
