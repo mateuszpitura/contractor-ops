@@ -91,8 +91,11 @@ function chap3WithheldMinor(box2GrossMinor: number, ratePercent: number): number
 
 export const form1042sRouter = router({
   /**
-   * List filed 1042-S forms for a tax year — status / figures only, never a full
-   * FTIN. Scoped to the staff tenant org.
+   * List filed 1042-S forms for a tax year — status / figures + the recipient's
+   * legal name and FTIN last-4 for the staff review surface. The full foreign TIN
+   * is never selected here; the last-4 is the only recipient-identifier fragment
+   * that leaves the server on this path (the gated full reveal is a separate
+   * procedure). Scoped to the staff tenant org.
    */
   list: tenantProcedure
     .use(requirePermission({ contractor: ['read'] }))
@@ -119,6 +122,7 @@ export const form1042sRouter = router({
           currency: true,
           pdfArchiveKey: true,
           createdAt: true,
+          recipient: { select: { legalName: true, ssnLast4: true } },
         },
         orderBy: [{ createdAt: 'desc' }],
         take: 500,
