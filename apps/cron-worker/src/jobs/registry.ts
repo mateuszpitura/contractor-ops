@@ -7,6 +7,7 @@
  * rows with Sentry events.
  */
 
+import { apiKeyLeakAlarmHandler } from './handlers/api-key-leak-alarm.js';
 import { boeRatePollHandler } from './handlers/boe-rate-poll.js';
 import { classificationEconomicDependencyHandler } from './handlers/classification-economic-dependency.js';
 import { classificationReassessmentTriggersHandler } from './handlers/classification-reassessment-triggers.js';
@@ -39,6 +40,7 @@ export function getJobDefinitions(env: {
   CRON_FORM_1099K_TRACKER_SCHEDULE: string;
   CRON_INPOST_STATUS_POLL_SCHEDULE: string;
   CRON_JOB_HEALTH_SCHEDULE: string;
+  CRON_API_KEY_LEAK_ALARM_SCHEDULE: string;
   CRON_LATE_INTEREST_PDF_REAPER_SCHEDULE: string;
   CRON_TRIAL_NOTIFICATIONS_SCHEDULE: string;
   CRON_REMINDERS_SCHEDULE: string;
@@ -96,6 +98,10 @@ export function getJobDefinitions(env: {
     {
       meta: { name: 'job-health', schedule: env.CRON_JOB_HEALTH_SCHEDULE },
       handler: jobHealthHandler,
+    },
+    {
+      meta: { name: 'api-key-leak-alarm', schedule: env.CRON_API_KEY_LEAK_ALARM_SCHEDULE },
+      handler: apiKeyLeakAlarmHandler,
     },
     {
       meta: {

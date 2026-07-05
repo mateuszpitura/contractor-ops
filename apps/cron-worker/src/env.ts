@@ -49,6 +49,7 @@ const envSchema = z.object({
   CRON_FORM_1099K_TRACKER_SCHEDULE: z.string().default('0 5 * * *'),
   CRON_INPOST_STATUS_POLL_SCHEDULE: z.string().default('0 * * * *'),
   CRON_JOB_HEALTH_SCHEDULE: z.string().default('*/5 * * * *'),
+  CRON_API_KEY_LEAK_ALARM_SCHEDULE: z.string().default('0 * * * *'),
   CRON_LATE_INTEREST_PDF_REAPER_SCHEDULE: z.string().default('*/5 * * * *'),
   CRON_TRIAL_NOTIFICATIONS_SCHEDULE: z.string().default('0 9 * * *'),
   CRON_REMINDERS_SCHEDULE: z.string().default('0 9 * * *'),
