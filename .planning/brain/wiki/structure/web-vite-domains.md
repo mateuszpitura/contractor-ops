@@ -2,7 +2,7 @@
 title: web-vite UI domains
 type: structure
 tags: [structure, web-vite, ui]
-source_commit: 5d6e26a17
+source_commit: 1e41c29d6
 verify_with:
   - apps/web-vite/src/components/
   - apps/web-vite/ARCHITECTURE.md
@@ -69,6 +69,7 @@ Routes: `apps/web-vite/src/router/dashboard-routes.tsx`, `portal-routes.tsx`.
 | `ocr/` | [[domains/documents-and-ocr]] |
 | `einvoice/`, `peppol/`, `zatca/` | [[integrations/_index]] |
 | `saudization/` | [[domains/gulf-saudization]] |
+| `hr-dashboard/` | [[domains/hr-dashboard]] — STAFF read-only HR command view at `/dashboard/hr` (`pages/dashboard/hr.tsx` → `HrDashboardPageContent`, flag `module.hr-dashboard` + the four HR roles via `lib/hr-roles.ts`; `can('employee','read')` is a client no-op — the HR roles are not in the `MemberRole` union). Six wired sections (header + headcount + utilization + doc-expiry + probation + nationalisation), each over a `hooks/use-hr-*.ts` sole tRPC boundary → `*View`; watchlists use the canonical `WorkbenchDataTable`. Doc-expiry renders only the server's section-filtered set; the Gulf rollup shows "record manual headcount" when absent (never a derived rate). `HrDashboard` i18n en/en-US/de/pl/ar; nav `Navigation.hr` gated by the additive `NavItem.roles` predicate |
 | `wht/` | [[domains/tax-and-wht]] |
 | `wizard/` | [[domains/contracts-lifecycle]] |
 | `auth/` | [[patterns/better-auth-staff]] |

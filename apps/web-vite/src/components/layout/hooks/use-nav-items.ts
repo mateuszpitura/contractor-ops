@@ -109,7 +109,7 @@ const NAV_BADGE_BY_ITEM_KEY: Partial<Record<string, NavBadgeKey>> = {
 };
 
 export function useNavItems(pathname: string, searchParams: URLSearchParams) {
-  const { can } = usePermissions();
+  const { can, role } = usePermissions();
   const flagBag = useFlagBag();
   const t = useTranslations('Navigation');
   const tSettingsTabs = useTranslations('Settings.tabs');
@@ -141,6 +141,7 @@ export function useNavItems(pathname: string, searchParams: URLSearchParams) {
     for (const group of navigationGroups) {
       const visibleItems = group.items.filter(item => {
         if (item.flag && !flagBag[item.flag]) return false;
+        if (item.roles && !(role != null && item.roles.includes(role))) return false;
         if (!item.permission) return true;
         return can(item.permission.resource, item.permission.actions);
       });
@@ -163,7 +164,7 @@ export function useNavItems(pathname: string, searchParams: URLSearchParams) {
     }
 
     return result;
-  }, [can, flagBag, pathname, searchParams, t, pinnedKeys, visiblePinnedTabs]);
+  }, [can, role, flagBag, pathname, searchParams, t, pinnedKeys, visiblePinnedTabs]);
 
   return { groups } as const;
 }

@@ -4813,7 +4813,162 @@
       "accepting": "Akzeptanz wird gespeichert..."
     }
   },
+  "HrDashboard": {
+    "title": "HR-Dashboard",
+    "subtitle": "Eine schreibgeschützte Übersicht Ihrer Belegschaft — Personalbestand, Urlaub, Dokumente, Probezeit und Nationalisierung am Golf.",
+    "loadError": {
+      "heading": "Abschnitt konnte nicht geladen werden",
+      "body": "Beim Laden der Daten ist ein Fehler aufgetreten. Versuchen Sie es erneut.",
+      "retry": "Erneut versuchen"
+    },
+    "header": {
+      "title": "Überblick",
+      "totalHeadcount": "Gesamtpersonalbestand",
+      "underUtilized": "Ungenutzter Urlaub",
+      "probationDue": "Probezeit endet bald",
+      "expiringDocs": "Ablaufende Dokumente",
+      "empty": {
+        "heading": "Noch keine Personaldaten",
+        "body": "Sobald Mitarbeitende erfasst sind, erscheinen ihre Kennzahlen hier."
+      }
+    },
+    "headcount": {
+      "title": "Personalbestand",
+      "description": "Aktive Belegschaft nach Abteilung, Rechtsraum, Beschäftigungsart und Vertragsende.",
+      "total": "Aktiver Personalbestand",
+      "noBreakdown": "Keine Daten",
+      "unspecified": "Nicht angegeben",
+      "byDepartment": "Nach Abteilung",
+      "byJurisdiction": "Nach Rechtsraum",
+      "byEmploymentType": "Nach Beschäftigungsart",
+      "byContractEnd": "Nach Vertragsende",
+      "employmentType": {
+        "FULL_TIME": "Vollzeit",
+        "PART_TIME": "Teilzeit",
+        "FIXED_TERM": "Befristet",
+        "TEMPORARY": "Aushilfe",
+        "APPRENTICE": "Auszubildende",
+        "SEASONAL": "Saisonal"
+      },
+      "contractEnd": {
+        "expiredOrPast": "Beendet oder überfällig",
+        "soon30": "Endet in 30 Tagen",
+        "soon90": "Endet in 90 Tagen",
+        "later": "Später",
+        "none": "Kein Enddatum"
+      },
+      "empty": {
+        "heading": "Keine aktiven Mitarbeitenden",
+        "body": "Erfassen Sie Mitarbeitende, um die Aufschlüsselung zu sehen."
+      }
+    },
+    "utilization": {
+      "title": "Urlaubsnutzung",
+      "description": "Genommener gegenüber zustehendem Urlaub je Mitarbeitendem, mit Kennzeichnung geringer Nutzung zum Jahresende.",
+      "underUtilized": {
+        "count": "{count, plural, one {# Mitarbeitende(r) nutzt Urlaub kaum} other {# Mitarbeitende nutzen Urlaub kaum}}",
+        "body": "Diese Mitarbeitenden haben zum Jahresende noch mehr als 10 ungenutzte Tage.",
+        "none": "Derzeit nutzt niemand seinen Urlaub zu wenig."
+      },
+      "degraded": {
+        "heading": "Noch keine Urlaubskonten",
+        "body": "Sobald die Urlaubsverwaltung Konten erfasst, erscheint die Nutzung hier."
+      },
+      "table": {
+        "worker": "Mitarbeitende(r)",
+        "year": "Jahr",
+        "taken": "Genommen (Tage)",
+        "entitled": "Anspruch (Tage)",
+        "unused": "Ungenutzt (Tage)",
+        "entityLabel": "{count, plural, one {# Mitarbeitende(r)} other {# Mitarbeitende}}",
+        "empty": "Keine Urlaubskonten",
+        "noResults": "Keine Treffer"
+      }
+    },
+    "docExpiry": {
+      "title": "Dokumentenablauf",
+      "description": "Ablaufende Mitarbeiterdokumente, nach Dringlichkeit und Kategorie gruppiert.",
+      "sectionNote": "Es werden nur Dokumente aus den Personalakten-Abschnitten angezeigt, auf die Sie zugreifen dürfen.",
+      "bands": {
+        "expired": "Abgelaufen",
+        "soon30": "In 30 Tagen",
+        "soon60": "In 60 Tagen",
+        "soon90": "In 90 Tagen",
+        "later": "Später"
+      },
+      "categories": {
+        "VISA": "Visum",
+        "WORK_PERMIT": "Arbeitserlaubnis",
+        "CONTRACT_RENEWAL": "Vertragsverlängerung",
+        "MEDICAL_CERT": "Ärztliches Attest",
+        "TRAINING_CERT": "Schulungsnachweis",
+        "OTHER": "Sonstiges"
+      },
+      "empty": {
+        "heading": "Keine ablaufenden Dokumente",
+        "body": "Keine zugänglichen Dokumente haben ein bevorstehendes Ablaufdatum."
+      },
+      "table": {
+        "worker": "Mitarbeitende(r)",
+        "category": "Kategorie",
+        "expiresAt": "Läuft ab",
+        "daysUntil": "Tage übrig",
+        "band": "Dringlichkeit",
+        "entityLabel": "{count, plural, one {# Dokument} other {# Dokumente}}",
+        "empty": "Keine ablaufenden Dokumente",
+        "noResults": "Keine Treffer"
+      }
+    },
+    "probation": {
+      "title": "Probezeit-Beobachtung",
+      "description": "Mitarbeitende, deren Probezeit in den nächsten 14 Tagen endet.",
+      "buckets": {
+        "dueToday": "Heute fällig",
+        "dueWithin7": "In 7 Tagen",
+        "dueWithin14": "In 14 Tagen"
+      },
+      "empty": {
+        "heading": "Keine Probezeiten enden bald",
+        "body": "Keine Probezeit endet in den nächsten 14 Tagen."
+      },
+      "table": {
+        "worker": "Mitarbeitende(r)",
+        "probationEnds": "Probezeit endet",
+        "daysRemaining": "Tage übrig",
+        "severity": "Dringlichkeit",
+        "entityLabel": "{count, plural, one {# Mitarbeitende(r)} other {# Mitarbeitende}}",
+        "empty": "Nichts fällig",
+        "noResults": "Keine Treffer"
+      }
+    },
+    "nationalisation": {
+      "title": "Nationalisierung am Golf",
+      "description": "Saudisierungs- und Emiratisierungsquoten aus Ihrem erfassten manuellen Personalbestand.",
+      "ksa": {
+        "title": "Saudisierung (KSA)"
+      },
+      "uae": {
+        "title": "Emiratisierung (VAE)"
+      },
+      "rate": "Nationalisierungsquote",
+      "rateNotAvailable": "Nicht verfügbar",
+      "band": "Stufe",
+      "bandNotSet": "Nicht festgelegt",
+      "totalHeadcount": "Gesamtbelegschaft",
+      "nationalHeadcount": "Inländische Mitarbeitende",
+      "recordPrompt": {
+        "heading": "Manuellen Personalbestand erfassen",
+        "body": "Geben Sie Ihren Gesamt- und inländischen Personalbestand ein, um die Nationalisierungsquote zu sehen. Die Plattform berechnet sie nie für Sie."
+      },
+      "iqama": {
+        "tracked": "Erfasste Genehmigungen",
+        "expired": "Abgelaufen",
+        "expiringSoon": "Läuft bald ab"
+      }
+    }
+  },
   "Navigation": {
+    "hr": "Personal",
     "dashboard": "Dashboard",
     "contractors": "Auftragnehmer",
     "contracts": "Verträge",

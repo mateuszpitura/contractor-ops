@@ -17,7 +17,10 @@ import {
   Settings,
   ShieldCheck,
   Users,
+  UsersRound,
 } from 'lucide-react';
+
+import { HR_DASHBOARD_ROLE_LIST } from './hr-roles.js';
 
 export type NavItemKey = string;
 export type NavGroupKey = string;
@@ -29,6 +32,12 @@ export interface NavItem {
   icon: LucideIcon;
   permission: { resource: string; actions: string[] } | null;
   flag?: FlagKey;
+  /**
+   * Raw active-member roles allowed to see this entry, when the surface is
+   * gated by a role that the client `MemberRole` permission matrix does not
+   * model (e.g. the worker-model HR roles). Omit for permission/flag-only entries.
+   */
+  roles?: readonly string[];
 }
 
 export interface NavGroup {
@@ -87,6 +96,15 @@ export const navigationGroups: NavGroup[] = [
         icon: ShieldCheck,
         permission: { resource: 'contractor', actions: ['read'] },
         flag: 'module.classification-engine',
+      },
+      {
+        key: 'hr',
+        label: 'HR',
+        href: '/dashboard/hr',
+        icon: UsersRound,
+        permission: null,
+        flag: 'module.hr-dashboard',
+        roles: HR_DASHBOARD_ROLE_LIST,
       },
     ],
   },
