@@ -2,16 +2,20 @@
 title: Hot cache
 type: hot-cache
 updated: 2026-07-05
-source_commit: a264e82032ff13d5460ffa408419104ee40287d3
+source_commit: 3126586be
 ---
 
 # Hot cache
 
 Discovery shortcuts for agents — not a changelog. History lives in `wiki/log.md` and git.
 
-## Public API keys / scopes / rate limits / write surface (Theme C, double-dark)
+## Public API keys / scopes / rate limits / write surface (Theme C)
 
-Full surface: [[domains/public-api-surface]]. Read = 9 entities live behind `module.public-api`; WRITE = 6 entities built but **double-dark** (flag off + `hide:true`) until Phase 100. Code: `apps/public-api/src/routes/*` (Hono, `hide:true` writes) + `packages/api/src/routers/public-api/*` (tRPC procedures + `write-shared.ts`), `middleware/api-key-auth.ts` (chain: apiKeyAuth → `publicApiFlagGate` → `requireTier` → `enforceApiTierQuota` → `demoReadOnly`), `services/api-key-service.ts` (HMAC + grace-aware `resolveByPrefix` + `appendApiKeyIpEvent`), `routers/core/api-key.ts` (create/rotate/ipLog/usage + `actingUserId` guard), `middleware/api-tier-quota.ts` + `lib/api-tier-limits.ts` + `services/api-quota-counter.ts`. Invariants: `actingUserId` is attribution-only (scopes authorize); every write carries a mandatory `requirePermission` scope; rotation grace default 24h/max 168h; per-tier monthly quota composes with the pre-auth burst limiter; **do NOT flip `module.public-api` or un-hide** (Phase 100). See [[patterns/rate-limit]], [[patterns/tenant-and-audit]].
+Full surface: [[domains/public-api-surface]]. Read = 9 entities; WRITE = 6 entities (contractor/invoice/payment/paymentRun/workflow/workflowTask). **Phase 100 passed the OWASP gate and UN-HID the 11 write routes** (now in the spec/SDK); the per-org `module.public-api` flag gate still 404s a non-granted org — the grant is a manual Unleash act. `_initiatePayoutForRun` stays deferred. Code: `apps/public-api/src/routes/*` (Hono) + `packages/api/src/routers/public-api/*` (tRPC + `write-shared.ts`), `middleware/api-key-auth.ts` (chain: apiKeyAuth → `publicApiFlagGate` → `requireTier` → `enforceApiTierQuota` → `demoReadOnly`), `services/api-key-service.ts` (HMAC + grace-aware `resolveByPrefix` + `appendApiKeyIpEvent`), `routers/core/api-key.ts` (create/rotate/ipLog/usage + `actingUserId` guard). Invariants: `actingUserId` is attribution-only (scopes authorize); every write carries a mandatory `requirePermission` scope; rotation grace default 24h/max 168h; per-tier monthly quota composes with the pre-auth burst limiter. See [[patterns/rate-limit]], [[patterns/tenant-and-audit]].
+
+## Outbound webhooks + integration security (Theme C, Phase 100)
+
+Signed, PII-safe, SSRF-guarded event delivery. Full surface: [[domains/outbound-webhooks]]. Producer `enqueueWebhookEvent` → `integration.webhook.publish` OutboxEvent → shared `/outbox/_drain` fan-out (`webhooks/fan-out.ts`, redact-per-sub, poison-isolated, NO network I/O) → dedicated `/webhooks-outbound/_deliver` drain (`webhooks/dispatcher.ts`: kill-switch → 100/min limit → `assertWebhookUrlSafe` → sign → POST, backoff `[1m,5m,30m,2h,12h,24h]` max 6 → `webhook_failures` DLQ). Controls in `packages/api/src/services/webhooks/{ssrf-guard,signer,redact,secret-store,rate-limit}.ts`. Models `packages/db/prisma/schema/webhook.prisma` (name-distinct from inbound `WebhookDelivery`). Router `webhookSubscription` + Settings → Developer → Webhooks UI + `webhooks:manage` scope. Cron `api-key-leak-alarm` (>3 IPs/24h). Live dispatch gated behind default-off `module.outbound-webhooks`; SSRF is a hard control. Invariants: SSRF-check BOTH gates; redact-before-persist; secret encrypted (recoverable), not one-way hashed. See [[patterns/rate-limit]], [[patterns/tenant-and-audit]], [[structure/cron-jobs]].
 
 ## US tax year-end filing (Theme A, flag-dark)
 

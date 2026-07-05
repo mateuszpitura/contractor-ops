@@ -5,6 +5,16 @@ type: log
 
 # Wiki log (append only)
 
+## 2026-07-05 — Outbound webhooks + integration security (Phase 100)
+
+New [[domains/outbound-webhooks]]: signed (`X-CO-Signature` HMAC + 5-min replay), PII-safe (redact-before-persist),
+SSRF/DNS-rebind-guarded (both gates, hand-rolled `lookup` hook — no new dep), DLQ-backed (`webhook_failures`,
+backoff `[1m,5m,30m,2h,12h,24h]` max 6) event delivery. Fan-out reuses the OutboxEvent outbox; per-delivery
+retry is a dedicated `/webhooks-outbound/_deliver` drain. New `webhookSubscription` router + Settings → Developer →
+Webhooks UI + `webhooks:manage` scope. API-key leak alarm cron (>3 IPs/24h). The INTEG-SEC-04 OWASP gate passed
+→ the P99 write routes were un-hidden into the spec/SDK (per-org `module.public-api` grant stays manual).
+Updated [[structure/api-routers-catalog]], [[domains/public-api-surface]].
+
 ## 2026-07-05 — Transactional outbox WIRED (INT-1-1, reliability S1)
 
 - The outbox (`services/outbox/`) was built-correct but completely unwired: zero production callers of `enqueueOutboxEvent`, no QStash schedule polling `/outbox/_drain`. Notifications went out post-commit fire-and-forget (`dispatch().catch()`) = at-most-once, lost on a crash between commit and dispatch.

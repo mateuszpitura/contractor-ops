@@ -1,9 +1,9 @@
 ---
 phase: 100
 slug: theme-c-outbound-webhooks-integration-security
-status: draft
+status: complete
 nyquist_compliant: true
-wave_0_complete: false
+wave_0_complete: true
 created: 2026-07-05
 ---
 
@@ -105,12 +105,13 @@ deferral.
 
 ## Validation Sign-Off
 
-- [ ] All requirements have an automated verify command or a Wave 0 RED dependency
-- [ ] No 3 consecutive tasks without an automated verify
-- [ ] Wave 0 covers all NEW security files (SSRF, HMAC, redaction, dispatch/DLQ, rate-limit, leak-alarm,
+- [x] All requirements have an automated verify command or a Wave 0 RED dependency
+- [x] No 3 consecutive tasks without an automated verify
+- [x] Wave 0 covers all NEW security files (SSRF, HMAC, redaction, dispatch/DLQ, rate-limit, leak-alarm,
       OWASP gate) + the write-routes-dark hold
-- [ ] No watch-mode flags (scoped `vitest run` only)
-- [ ] `nyquist_compliant: true` set after 100-01 lands the RED stubs
-- [ ] `wave_0_complete: true` set after 100-10 verifies the whole surface + the gated flip
+- [x] No watch-mode flags (scoped `vitest run` only)
+- [x] `nyquist_compliant: true` set after 100-01 lands the RED stubs
+- [x] `wave_0_complete: true` set after 100-10 verifies the whole surface + the gated flip
 
-**Approval:** pending
+**Approval:** complete — all INTEG-WEBHOOK-01..07 + INTEG-SEC-01..05 rows GREEN; the P99 write routes are
+un-hidden behind the passed OWASP gate; nothing dispatches without `module.outbound-webhooks`.
