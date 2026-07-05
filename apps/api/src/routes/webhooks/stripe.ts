@@ -71,9 +71,7 @@ const SUBSCRIPTION_LIFECYCLE_EVENT_TYPES = new Set<string>([
 ]);
 
 function isAgeGateExempt(eventType: string): boolean {
-  return (
-    SETTLEMENT_EVENT_TYPES.has(eventType) || SUBSCRIPTION_LIFECYCLE_EVENT_TYPES.has(eventType)
-  );
+  return SETTLEMENT_EVENT_TYPES.has(eventType) || SUBSCRIPTION_LIFECYCLE_EVENT_TYPES.has(eventType);
 }
 
 const MAX_AGE_SECONDS = 24 * 60 * 60;
