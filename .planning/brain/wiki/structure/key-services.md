@@ -103,3 +103,8 @@ ls packages/api/src/services/
 - **Gov stub seams** — `{i9-everify,zus-zwua,abmeldung-sv,hmrc-rti,pit-filing}-stub.ts` (+ shared `gov-stub-types.ts` `GovStubResult`/`maskLast2`): typed, network-free `{source:'STUB',available:false,note}` with PII last-2; mirror `elstam-stub`. Steuer-ID reuses `lookupElstam`.
 - **`@contractor-ops/employee-templates`** — `upsertEmployeeMarketTemplates(prisma, orgId)` boot-upserts 8 per-market DRAFT `WorkflowTemplate` seeds (register-on-import `content/{pl,de,uk,us}.ts`) on the compound unique; wired fail-soft into `post-org-create-hook.ts` alongside the KT seeds.
 - **`startWorkflowRun`** (in `workflow-execution-runs.ts`) — the single subject-agnostic run-create helper both `workflow.startRun` and `employeeLifecycleRouter` delegate to. Detail: [[domains/worker-onboarding-offboarding]].
+
+## Payroll export services (Phase 94)
+
+- **`payroll-feed.ts`** — `buildPayrollFeed(db, organizationId, employeeIds)`: joins `Worker` → `EmployeeProfile` → `PersonnelFile` (hire/termination anchors on **PersonnelFile**, not EmployeeProfile), masks national IDs to last-4 per market (PL pesel / US ssn / SA iqama / AE emiratesId; DE svNummer + GB niNumber stay market refs in `countryFields`), formats `etat` to 2dp, validates with `payrollFeedSchema`. `organizationId` is injected into the `where` (defense-in-depth over `withTenantScope`). The PII-masked feed the `@contractor-ops/payroll` profiles map from.
+- **`register-payroll-profiles.ts`** — `registerAllPayrollProfiles()` boot hook (idempotent) registering the 10 user-facing export targets (`gusto-csv`/`quickbooks-csv` are internal bridge fallbacks, not separate targets). Detail: [[domains/payroll-export]].

@@ -118,7 +118,7 @@ Gated by `module.us-expansion` (or `QA_DEFAULT_ORG_ID`) in `root.ts`; each proce
 
 When flag OFF: runtime `METHOD_NOT_FOUND`; the portal W-form + 1099 procedures throw `FORBIDDEN`.
 
-## Conditional workforce (6 namespaces)
+## Conditional workforce (8 namespaces)
 
 Gated by `module.workforce-employees` (or `QA_DEFAULT_ORG_ID`) in `root.ts`; each procedure also re-checks the flag per request (`assertWorkforceEnabled` in `middleware/require-workforce-flag.ts`):
 
@@ -131,6 +131,7 @@ Gated by `module.workforce-employees` (or `QA_DEFAULT_ORG_ID`) in `root.ts`; eac
 | `leave` | employee leave: `submitLeaveRequest` (routes through the generic approval chain — `createApprovalFlow` `resourceType='LEAVE_REQUEST'`; approve/reject is the shared resourceType-gated procedure, not a fork), `recordSickAbsence` (direct negative `DEDUCTION` ledger row + `LEAVE_SICK_RECORDED` dispatch, zero ApprovalFlow), `getBalance` (Σ append-only `LeaveLedgerEntry`), `listRequests`, `listTeamCalendar` (per-team day buckets + ≥2-overlap conflict + seeded `PublicHoliday`), `leaveType.*`, `blackout.*`. All `employee` RBAC + `assertWorkforceEnabled`. Full model + flow: [[domains/leave-and-time]] |
 | `employeeTime` | day-grain statutory time: `upsertRecord` (one row per worker/`workDate` on the DISTINCT `EmployeeTimeRecord`, returns `{ record, findings }` — the sync `checkWtLimits` breach is a NON-blocking advisory, never a throw), `listRecords`, `weekSummary`. Never the contractor `time.*`. Full model + flow: [[domains/leave-and-time]] |
 | `ewidencja` | PL KP §149 working-time register: `generate` (INSERT-only via `buildEwidencjaSnapshot` + `supersedeAndInsertEwidencja` — regenerating INSERTs `version+1` + `previousSnapshotId`; a `BEFORE UPDATE` trigger `app.reject_ewidencja_update` rejects any UPDATE), `list`, `get` (highest-version = current). No edit/delete. Full model + flow: [[domains/leave-and-time]] |
+| `payrollExport` | per-market payroll export adapters (`payroll-export-router.ts`), `employee:read`-gated + `assertWorkforceEnabled` + per-target `evaluate(payroll.*)` FORBIDDEN gate: `listTargets` (the 10 registered targets, each annotated with the org's per-adapter flag state), `export` (`.strict()` `{targetId, employeeIds, format?}` → `buildPayrollFeed` PII-masked feed → `engine.generate` → `writeAuditLog('payroll.export', resourceType:'EMPLOYEE')` → `fileBase64`), `connectNative` (Gusto/QuickBooks OAuth entry point). Gusto/QuickBooks native push is flag-deferred (CSV is the shipping path). Full model + flow: [[domains/payroll-export]] |
 
 `contractor.*` is **not** gated — it is the always-on existing surface; the split adds `worker`/`employee` without changing the contractor route shape (locked by `contractor-contract-snapshot.test.ts`).
 

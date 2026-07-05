@@ -2,12 +2,18 @@
 title: Hot cache
 type: hot-cache
 updated: 2026-07-05
-source_commit: a264e82032ff13d5460ffa408419104ee40287d3
+source_commit: 13abc6a56
 ---
 
 # Hot cache
 
 Discovery shortcuts for agents — not a changelog. History lives in `wiki/log.md` and git.
+
+## Payroll export adapters (Theme B, dark)
+
+- Package `@contractor-ops/payroll` — payroll EXPORT profile-registry (clone of `einvoice`, NOT the payment-run factory). `PayrollExportProfile`/`PayrollFeed`/registry/engine in `packages/payroll/src/{types,registry,engine}`; 10 targets in `profiles/*` (PL Symfonia/Comarch/Enova, DE DATEV/Sage-DE, UK RTI FPS/EPS, US ADP/Gusto/QuickBooks + native bridges).
+- Feed = `Worker`+`EmployeeProfile`+`PersonnelFile` join in `services/payroll-feed.ts` (`buildPayrollFeed`); hire/`terminatedAt` on **PersonnelFile**, national IDs last-4 only. Router `routers/workforce/payroll-export-router.ts` (`payrollExport.*`) dark in `conditionalWorkforceRouters` + per-target `payroll.*` flag. UI `apps/web-vite/src/components/payroll/`.
+- Native Gusto/QuickBooks OAuth adapters in `packages/integrations/src/adapters/{gusto,quickbooks}-adapter.ts` (flag-deferred; CSV is the shipping path). Detail: [[domains/payroll-export]].
 
 ## Public API keys / scopes / rate limits / write surface (Theme C, double-dark)
 
