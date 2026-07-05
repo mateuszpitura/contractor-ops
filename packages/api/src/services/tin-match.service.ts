@@ -5,6 +5,11 @@ import { writeAuditLog } from './audit-writer';
 
 // IRS TIN-Matching service.
 //
+// Deferred seam: `matchRecipientTin` and `createBackupWithholdingFlagWriter`
+// have no production callers yet — they are wired in with the year-end 1099
+// batch. Built and tested ahead of that phase, so this reads as complete but is
+// currently unreachable, not dead code.
+//
 // Owns the policy around the TinMatchClient seam: a 24h result cache, a bounded
 // retry on transient client failures, and the mismatch handler. The client
 // itself is injected (the deterministic mock by default; the live e-Services

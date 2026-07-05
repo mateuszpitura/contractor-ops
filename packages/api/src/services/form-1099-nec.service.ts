@@ -2,11 +2,19 @@ import type { Prisma } from '@contractor-ops/db';
 
 import { clear, complete, reserve } from '../lib/idempotency';
 import { writeAuditLog } from './audit-writer';
-import { convertAmount } from './exchange-rate';
+import { convertAmount, FX_CONVERSION_MAX_AGE_DAYS } from './exchange-rate';
 import type { DbClient } from './types';
 
 // ---------------------------------------------------------------------------
 // 1099-NEC year-end generation engine.
+//
+// Deferred seam: this pipeline has no production callers yet — it is wired in
+// when the IRS e-file transmit path ships. It is built and unit-tested ahead of
+// that phase, so it reads as complete but is currently unreachable, not dead
+// code. When it is wired, the synchronous `isAboveThreshold` gate must resolve
+// its figure from the `Tax1099Threshold` config table (as the batch path
+// already does via `getBox1ThresholdMinor`), never the local
+// `SEEDED_THRESHOLDS_MINOR` constant that only backs the sync gate today.
 //
 // Box-1 nonemployee compensation is aggregated by payment (settlement) date
 // within the calendar tax year, FX-converted to USD at the payment-date rate,
@@ -134,6 +142,9 @@ export async function aggregateBox1Async(
       payment.currency,
       USD,
       payment.paymentDate instanceof Date ? payment.paymentDate : new Date(payment.paymentDate),
+      // Box-1 totals feed a filed information return — a stale FX rate throws
+      // (StaleExchangeRateError) rather than silently understating/overstating.
+      FX_CONVERSION_MAX_AGE_DAYS,
     );
     if (!conversion) {
       throw new Error(

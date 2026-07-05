@@ -42,7 +42,7 @@ sequenceDiagram
 |---------|------|--------|
 | `exchange-rates.ts` | ECB daily rates | [[integrations/einvoice-profiles]] |
 | `boe-rate-poll.ts` | BoE base rate | [[domains/payments-and-bank-files]] |
-| `compliance-reminder.ts` | compliance renewals | [[domains/compliance-dashboard]] |
+| `compliance-reminder.ts` | compliance renewals — shared scan entry (`executeComplianceReminderScan`) run via the `reminders` fan-out, not a standalone registered job | [[domains/compliance-dashboard]] |
 | `classification-economic-dependency.ts` | §2 SGB VI scan | [[domains/classification-ir35]] |
 | `form-1099k-tracker.ts` | informational 1099-K band scan (`module.us-expansion`; never files) | [[domains/us-tax-forms]] |
 | `year-end-1099-reminder.ts` | notify-only 1099-NEC batch-due reminder (`module.us-expansion`; **never generates or transmits**; mid-January, deduped per tax year) | [[domains/us-tax-year-end-filing]] |
