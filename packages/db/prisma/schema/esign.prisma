@@ -65,6 +65,13 @@ model SigningEvent {
   organization    Organization    @relation(fields: [organizationId], references: [id])
   signingEnvelope SigningEnvelope @relation(fields: [signingEnvelopeId], references: [id])
 
+  // At most one SIGNED_PDF_SAVED event per envelope — the DB backstop for the
+  // completion-idempotency guard. Concurrent double-delivery of a provider
+  // "completed" webhook races to persist the signed PDF and append this terminal
+  // event; the partial unique makes the second writer fail with P2002, which the
+  // service handles as an idempotent no-op (no duplicate signed Document). Other
+  // eventType rows are unconstrained because the WHERE clause excludes them.
+  @@unique([signingEnvelopeId], map: "signing_event_signed_pdf_saved_key", where: raw("(\"eventType\" = 'SIGNED_PDF_SAVED'::\"SigningEventType\")"))
   @@index([organizationId, signingEnvelopeId, occurredAt])
 }
 

@@ -362,8 +362,13 @@ model InvoiceInterestClaim {
   createdAt                 DateTime                      @default(now())
 
   // One late-interest claim per invoice — the DB backstop for the concurrent
-  // double-claim guard (P2002 handled as a conflict). A claim is never voided,
-  // so a plain unique correctly caps it at one row (and one LPC-* secondary invoice).
+  // double-claim guard (P2002 handled as a conflict). A claim currently has no
+  // void/withdraw lifecycle: there is no status column that marks a row inactive,
+  // so a plain (full) unique correctly caps it at one row (and one LPC-* secondary
+  // invoice). A partial "one ACTIVE claim per invoice" predicate is intentionally
+  // NOT expressed here because no column yet distinguishes an active from a voided
+  // claim; if a void/re-claim path is ever added (e.g. a ClaimStatus column), this
+  // must become a partial unique WHERE status = 'ACTIVE' so a re-claim is allowed.
   @@unique([invoiceId])
   @@index([organizationId, invoiceId])
   @@index([pdfStatus, createdAt])

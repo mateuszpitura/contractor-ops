@@ -243,11 +243,11 @@ export type SigningEventOrderByWithRelationInput = {
 
 export type SigningEventWhereUniqueInput = Prisma.AtLeast<{
   id?: string
+  signingEnvelopeId?: string
   AND?: Prisma.SigningEventWhereInput | Prisma.SigningEventWhereInput[]
   OR?: Prisma.SigningEventWhereInput[]
   NOT?: Prisma.SigningEventWhereInput | Prisma.SigningEventWhereInput[]
   organizationId?: Prisma.StringFilter<"SigningEvent"> | string
-  signingEnvelopeId?: Prisma.StringFilter<"SigningEvent"> | string
   eventType?: Prisma.EnumSigningEventTypeFilter<"SigningEvent"> | $Enums.SigningEventType
   actorName?: Prisma.StringNullableFilter<"SigningEvent"> | string | null
   actorEmail?: Prisma.StringNullableFilter<"SigningEvent"> | string | null
@@ -257,7 +257,7 @@ export type SigningEventWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"SigningEvent"> | Date | string
   organization?: Prisma.XOR<Prisma.OrganizationScalarRelationFilter, Prisma.OrganizationWhereInput>
   signingEnvelope?: Prisma.XOR<Prisma.SigningEnvelopeScalarRelationFilter, Prisma.SigningEnvelopeWhereInput>
-}, "id">
+}, "id" | "signingEnvelopeId">
 
 export type SigningEventOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
