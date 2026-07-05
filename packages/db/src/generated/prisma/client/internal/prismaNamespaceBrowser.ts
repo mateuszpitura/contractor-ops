@@ -111,6 +111,7 @@ export const ModelName = {
   SigningEnvelope: 'SigningEnvelope',
   SigningRecipient: 'SigningRecipient',
   SigningEvent: 'SigningEvent',
+  EsignEnvelopeIntent: 'EsignEnvelopeIntent',
   EwidencjaSnapshot: 'EwidencjaSnapshot',
   ExchangeRate: 'ExchangeRate',
   Export: 'Export',
@@ -1346,6 +1347,22 @@ export const SigningEventScalarFieldEnum = {
 } as const
 
 export type SigningEventScalarFieldEnum = (typeof SigningEventScalarFieldEnum)[keyof typeof SigningEventScalarFieldEnum]
+
+
+export const EsignEnvelopeIntentScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  documentId: 'documentId',
+  contractId: 'contractId',
+  provider: 'provider',
+  integrationConnectionId: 'integrationConnectionId',
+  signerSetHash: 'signerSetHash',
+  externalEnvelopeId: 'externalEnvelopeId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type EsignEnvelopeIntentScalarFieldEnum = (typeof EsignEnvelopeIntentScalarFieldEnum)[keyof typeof EsignEnvelopeIntentScalarFieldEnum]
 
 
 export const EwidencjaSnapshotScalarFieldEnum = {

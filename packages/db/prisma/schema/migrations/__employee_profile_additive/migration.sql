@@ -20,6 +20,15 @@
 -- CreateEnum
 CREATE TYPE "EmploymentStatus" AS ENUM ('ACTIVE', 'ON_LEAVE', 'SUSPENDED', 'TERMINATED');
 
+-- CreateEnum
+-- NitaqatBand is a Gulf (KSA) enum first referenced HERE, as the type of
+-- EmployeeProfile.saudizationCategory. The Gulf domain tables that also use it
+-- (SaudizationConfig.band in gulf.prisma) are managed out-of-band via db push and
+-- have no migration of their own, so this additive step is the first — and only —
+-- migration to reference the type; it must therefore create it before the
+-- EmployeeProfile table below. Values mirror `enum NitaqatBand` in the schema.
+CREATE TYPE "NitaqatBand" AS ENUM ('PLATINUM', 'HIGH_GREEN', 'MID_GREEN', 'LOW_GREEN', 'YELLOW', 'RED');
+
 -- CreateTable
 CREATE TABLE "EmployeeProfile" (
     "id" TEXT NOT NULL,

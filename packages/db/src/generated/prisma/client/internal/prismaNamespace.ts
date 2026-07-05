@@ -442,6 +442,7 @@ export const ModelName = {
   SigningEnvelope: 'SigningEnvelope',
   SigningRecipient: 'SigningRecipient',
   SigningEvent: 'SigningEvent',
+  EsignEnvelopeIntent: 'EsignEnvelopeIntent',
   EwidencjaSnapshot: 'EwidencjaSnapshot',
   ExchangeRate: 'ExchangeRate',
   Export: 'Export',
@@ -548,7 +549,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "organizationApiKey" | "approvalChainConfig" | "approvalFlow" | "approvalStep" | "approvalDecision" | "auditLog" | "user" | "userPinnedView" | "session" | "account" | "verification" | "subscription" | "ocrCreditLedger" | "stripeEvent" | "classificationAssessment" | "classificationDocument" | "ir35ChainParticipant" | "ir35OtherClientAttestation" | "economicDependencyAlertState" | "reassessmentTrigger" | "cronScanState" | "statusfeststellungsverfahren" | "classificationEscalationEvent" | "sdsApproval" | "consentRecord" | "privacyNotice" | "consentEvent" | "contract" | "contractAmendment" | "contractRatePeriod" | "document" | "documentLink" | "contractHealthCheckRun" | "contractor" | "contractorContact" | "contractorBillingProfile" | "contractorAssignment" | "contractorTag" | "contractorTagLink" | "complianceRequirementTemplate" | "contractorComplianceItem" | "contractorComplianceReminderState" | "cronJobRunState" | "leitwegId" | "eInvoiceLifecycle" | "eInvoiceLifecycleEvent" | "peppolCapabilityCache" | "employeeTimeRecord" | "employeeProfile" | "equipment" | "equipmentAssignment" | "shipment" | "shipmentEvent" | "returnRequest" | "courierConfig" | "signingEnvelope" | "signingRecipient" | "signingEvent" | "ewidencjaSnapshot" | "exchangeRate" | "export" | "boEBaseRateHistory" | "skontoTerm" | "skontoSnapshot" | "skontoApplication" | "govApiAuditLog" | "freeZoneAssignment" | "saudizationConfig" | "saudiHeadcount" | "uaeFreeZone" | "deprovisioningRun" | "deprovisioningStep" | "idpChangeProvenance" | "integrationConnection" | "externalLink" | "integrationSyncLog" | "webhookDelivery" | "invoice" | "invoiceFile" | "invoiceLine" | "invoiceMatchResult" | "invoiceIntakeRequest" | "invoicePayment" | "invoiceInterestCompensation" | "invoiceInterestWaiver" | "invoiceInterestClaim" | "leaveType" | "blackoutPeriod" | "leaveRequest" | "leaveLedgerEntry" | "leaveBalance" | "notification" | "userNotificationPreference" | "comment" | "reminderRule" | "reminderInstance" | "notificationCronDedup" | "oAuthChallenge" | "ocrExtraction" | "organization" | "member" | "invitation" | "team" | "project" | "pendingProjectMerge" | "projectExternalLink" | "costCenter" | "outboxEvent" | "paymentRun" | "paymentRunItem" | "paymentExport" | "paymentRunComplianceCheck" | "achReturnLedgerEntry" | "peppolParticipant" | "peppolTransmission" | "personnelFile" | "personnelFileDocument" | "portalSession" | "portalMagicToken" | "contractorChangeRequest" | "contractorNotificationPreference" | "pendingUpload" | "publicHoliday" | "taxRate" | "withholdingTaxRate" | "whtCertificate" | "taxFormSubmission" | "form1099Nec" | "irisSubmission" | "irisAck" | "tax1099Threshold" | "stateFilingConfig" | "form1042S" | "form1099KTrackerState" | "tax1099KThreshold" | "taxIdValidation" | "timesheet" | "timeEntry" | "worker" | "workflowTemplate" | "workflowTaskTemplate" | "workflowRoleTemplate" | "workflowRoleTaskTemplate" | "workflowRun" | "workflowTaskRun" | "workflowComment" | "workflowAttachment" | "credentialReference" | "zatcaInvoiceChain"
+    modelProps: "organizationApiKey" | "approvalChainConfig" | "approvalFlow" | "approvalStep" | "approvalDecision" | "auditLog" | "user" | "userPinnedView" | "session" | "account" | "verification" | "subscription" | "ocrCreditLedger" | "stripeEvent" | "classificationAssessment" | "classificationDocument" | "ir35ChainParticipant" | "ir35OtherClientAttestation" | "economicDependencyAlertState" | "reassessmentTrigger" | "cronScanState" | "statusfeststellungsverfahren" | "classificationEscalationEvent" | "sdsApproval" | "consentRecord" | "privacyNotice" | "consentEvent" | "contract" | "contractAmendment" | "contractRatePeriod" | "document" | "documentLink" | "contractHealthCheckRun" | "contractor" | "contractorContact" | "contractorBillingProfile" | "contractorAssignment" | "contractorTag" | "contractorTagLink" | "complianceRequirementTemplate" | "contractorComplianceItem" | "contractorComplianceReminderState" | "cronJobRunState" | "leitwegId" | "eInvoiceLifecycle" | "eInvoiceLifecycleEvent" | "peppolCapabilityCache" | "employeeTimeRecord" | "employeeProfile" | "equipment" | "equipmentAssignment" | "shipment" | "shipmentEvent" | "returnRequest" | "courierConfig" | "signingEnvelope" | "signingRecipient" | "signingEvent" | "esignEnvelopeIntent" | "ewidencjaSnapshot" | "exchangeRate" | "export" | "boEBaseRateHistory" | "skontoTerm" | "skontoSnapshot" | "skontoApplication" | "govApiAuditLog" | "freeZoneAssignment" | "saudizationConfig" | "saudiHeadcount" | "uaeFreeZone" | "deprovisioningRun" | "deprovisioningStep" | "idpChangeProvenance" | "integrationConnection" | "externalLink" | "integrationSyncLog" | "webhookDelivery" | "invoice" | "invoiceFile" | "invoiceLine" | "invoiceMatchResult" | "invoiceIntakeRequest" | "invoicePayment" | "invoiceInterestCompensation" | "invoiceInterestWaiver" | "invoiceInterestClaim" | "leaveType" | "blackoutPeriod" | "leaveRequest" | "leaveLedgerEntry" | "leaveBalance" | "notification" | "userNotificationPreference" | "comment" | "reminderRule" | "reminderInstance" | "notificationCronDedup" | "oAuthChallenge" | "ocrExtraction" | "organization" | "member" | "invitation" | "team" | "project" | "pendingProjectMerge" | "projectExternalLink" | "costCenter" | "outboxEvent" | "paymentRun" | "paymentRunItem" | "paymentExport" | "paymentRunComplianceCheck" | "achReturnLedgerEntry" | "peppolParticipant" | "peppolTransmission" | "personnelFile" | "personnelFileDocument" | "portalSession" | "portalMagicToken" | "contractorChangeRequest" | "contractorNotificationPreference" | "pendingUpload" | "publicHoliday" | "taxRate" | "withholdingTaxRate" | "whtCertificate" | "taxFormSubmission" | "form1099Nec" | "irisSubmission" | "irisAck" | "tax1099Threshold" | "stateFilingConfig" | "form1042S" | "form1099KTrackerState" | "tax1099KThreshold" | "taxIdValidation" | "timesheet" | "timeEntry" | "worker" | "workflowTemplate" | "workflowTaskTemplate" | "workflowRoleTemplate" | "workflowRoleTaskTemplate" | "workflowRun" | "workflowTaskRun" | "workflowComment" | "workflowAttachment" | "credentialReference" | "zatcaInvoiceChain"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -4841,6 +4842,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.SigningEventCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.SigningEventCountAggregateOutputType> | number
+        }
+      }
+    }
+    EsignEnvelopeIntent: {
+      payload: Prisma.$EsignEnvelopeIntentPayload<ExtArgs>
+      fields: Prisma.EsignEnvelopeIntentFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.EsignEnvelopeIntentFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EsignEnvelopeIntentPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.EsignEnvelopeIntentFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EsignEnvelopeIntentPayload>
+        }
+        findFirst: {
+          args: Prisma.EsignEnvelopeIntentFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EsignEnvelopeIntentPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.EsignEnvelopeIntentFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EsignEnvelopeIntentPayload>
+        }
+        findMany: {
+          args: Prisma.EsignEnvelopeIntentFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EsignEnvelopeIntentPayload>[]
+        }
+        create: {
+          args: Prisma.EsignEnvelopeIntentCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EsignEnvelopeIntentPayload>
+        }
+        createMany: {
+          args: Prisma.EsignEnvelopeIntentCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.EsignEnvelopeIntentCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EsignEnvelopeIntentPayload>[]
+        }
+        delete: {
+          args: Prisma.EsignEnvelopeIntentDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EsignEnvelopeIntentPayload>
+        }
+        update: {
+          args: Prisma.EsignEnvelopeIntentUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EsignEnvelopeIntentPayload>
+        }
+        deleteMany: {
+          args: Prisma.EsignEnvelopeIntentDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.EsignEnvelopeIntentUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.EsignEnvelopeIntentUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EsignEnvelopeIntentPayload>[]
+        }
+        upsert: {
+          args: Prisma.EsignEnvelopeIntentUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EsignEnvelopeIntentPayload>
+        }
+        aggregate: {
+          args: Prisma.EsignEnvelopeIntentAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateEsignEnvelopeIntent>
+        }
+        groupBy: {
+          args: Prisma.EsignEnvelopeIntentGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.EsignEnvelopeIntentGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.EsignEnvelopeIntentCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.EsignEnvelopeIntentCountAggregateOutputType> | number
         }
       }
     }
@@ -12701,6 +12776,22 @@ export const SigningEventScalarFieldEnum = {
 export type SigningEventScalarFieldEnum = (typeof SigningEventScalarFieldEnum)[keyof typeof SigningEventScalarFieldEnum]
 
 
+export const EsignEnvelopeIntentScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  documentId: 'documentId',
+  contractId: 'contractId',
+  provider: 'provider',
+  integrationConnectionId: 'integrationConnectionId',
+  signerSetHash: 'signerSetHash',
+  externalEnvelopeId: 'externalEnvelopeId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type EsignEnvelopeIntentScalarFieldEnum = (typeof EsignEnvelopeIntentScalarFieldEnum)[keyof typeof EsignEnvelopeIntentScalarFieldEnum]
+
+
 export const EwidencjaSnapshotScalarFieldEnum = {
   id: 'id',
   organizationId: 'organizationId',
@@ -16576,6 +16667,7 @@ export type GlobalOmitConfig = {
   signingEnvelope?: Prisma.SigningEnvelopeOmit
   signingRecipient?: Prisma.SigningRecipientOmit
   signingEvent?: Prisma.SigningEventOmit
+  esignEnvelopeIntent?: Prisma.EsignEnvelopeIntentOmit
   ewidencjaSnapshot?: Prisma.EwidencjaSnapshotOmit
   exchangeRate?: Prisma.ExchangeRateOmit
   export?: Prisma.ExportOmit

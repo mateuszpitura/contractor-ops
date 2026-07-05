@@ -68,6 +68,37 @@ model SigningEvent {
   @@index([organizationId, signingEnvelopeId, occurredAt])
 }
 
+// Pre-provider idempotency ledger for envelope creation. The orchestrator creates
+// the provider envelope BEFORE the local DB transaction; if that transaction rolls
+// back, a retry would re-issue the provider call and duplicate the process. DocuSign
+// is protected by its server-honored X-DocuSign-Idempotency-Key, but Autenti's
+// POST /document-processes accepts no idempotency header or client reference, so the
+// dedup must live on our side: the service writes an intent row keyed on the
+// deterministic business key BEFORE the provider call and short-circuits when one
+// already exists, recording externalEnvelopeId once the provider create returns.
+model EsignEnvelopeIntent {
+  id                      String              @id @default(cuid())
+  organizationId          String
+  documentId              String
+  contractId              String?
+  provider                IntegrationProvider
+  integrationConnectionId String
+  // Service-computed digest of the logical signer set (e.g. sorted signer emails +
+  // roles/routing) that, together with org + document, identifies one logical send.
+  signerSetHash           String
+  // Provider process/envelope id, written once the provider create succeeds; null
+  // while the create is in-flight or after a failed attempt (so a retry re-drives).
+  externalEnvelopeId      String?
+  createdAt               DateTime            @default(now())
+  updatedAt               DateTime            @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@unique([organizationId, documentId, signerSetHash], map: "esign_envelope_intent_dedup_key")
+  @@index([organizationId])
+  @@index([organizationId, documentId])
+}
+
 // --- Enums ---
 
 enum SigningEnvelopeStatus {

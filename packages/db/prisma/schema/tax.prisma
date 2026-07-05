@@ -171,6 +171,11 @@ model Form1099Nec {
   supersededBy Form1099Nec? @relation("Form1099Supersede", fields: [supersededById], references: [id])
   supersedes   Form1099Nec? @relation("Form1099Supersede")
 
+  // At most one ACTIVE return per (payer, recipient, tax year) — the DB backstop
+  // for the batch-generation idempotency guard (P2002 handled as a skip). DRAFT
+  // and SUPERSEDED rows are unconstrained (partial index excludes them). Mirrors
+  // Form1042S_active_key.
+  @@unique([organizationId, payerOrgId, recipientId, taxYear], map: "Form1099Nec_active_key", where: raw("(status = 'ACTIVE'::\"Form1099Status\")"))
   @@index([organizationId, payerOrgId, recipientId, taxYear, status])
   @@index([organizationId, taxYear, status])
 }

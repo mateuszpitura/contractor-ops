@@ -342,6 +342,11 @@ export type SigningRecipient = Prisma.SigningRecipientModel
  */
 export type SigningEvent = Prisma.SigningEventModel
 /**
+ * Model EsignEnvelopeIntent
+ * 
+ */
+export type EsignEnvelopeIntent = Prisma.EsignEnvelopeIntentModel
+/**
  * Model EwidencjaSnapshot
  * 
  */

@@ -120,6 +120,7 @@ model Organization {
   reminderInstances              ReminderInstance[]
   signingEnvelopes               SigningEnvelope[]
   signingEvents                  SigningEvent[]
+  esignEnvelopeIntents           EsignEnvelopeIntent[]
   ocrExtractions                 OcrExtraction[]
   timesheets                     Timesheet[]
   timeEntries                    TimeEntry[]

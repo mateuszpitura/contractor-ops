@@ -340,6 +340,7 @@ export type Form1099NecOrderByWithRelationInput = {
 export type Form1099NecWhereUniqueInput = Prisma.AtLeast<{
   id?: string
   supersededById?: string
+  organizationId_payerOrgId_recipientId_taxYear?: Prisma.Form1099NecOrganizationIdPayerOrgIdRecipientIdTaxYearCompoundUniqueInput
   AND?: Prisma.Form1099NecWhereInput | Prisma.Form1099NecWhereInput[]
   OR?: Prisma.Form1099NecWhereInput[]
   NOT?: Prisma.Form1099NecWhereInput | Prisma.Form1099NecWhereInput[]
@@ -361,7 +362,7 @@ export type Form1099NecWhereUniqueInput = Prisma.AtLeast<{
   recipient?: Prisma.XOR<Prisma.ContractorScalarRelationFilter, Prisma.ContractorWhereInput>
   supersededBy?: Prisma.XOR<Prisma.Form1099NecNullableScalarRelationFilter, Prisma.Form1099NecWhereInput> | null
   supersedes?: Prisma.XOR<Prisma.Form1099NecNullableScalarRelationFilter, Prisma.Form1099NecWhereInput> | null
-}, "id" | "supersededById">
+}, "id" | "supersededById" | "organizationId_payerOrgId_recipientId_taxYear">
 
 export type Form1099NecOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -556,6 +557,13 @@ export type Form1099NecOrderByRelationAggregateInput = {
 export type Form1099NecNullableScalarRelationFilter = {
   is?: Prisma.Form1099NecWhereInput | null
   isNot?: Prisma.Form1099NecWhereInput | null
+}
+
+export type Form1099NecOrganizationIdPayerOrgIdRecipientIdTaxYearCompoundUniqueInput = {
+  organizationId: string
+  payerOrgId: string
+  recipientId: string
+  taxYear: number
 }
 
 export type Form1099NecCountOrderByAggregateInput = {
