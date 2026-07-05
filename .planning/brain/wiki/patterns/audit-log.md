@@ -2,7 +2,7 @@
 title: Audit log mutations
 type: pattern
 tags: [audit, compliance, lint]
-source_commit: 105a8ccf64b34c611493215eb3519e8922343839
+source_commit: 2832af75dda044f0eda4c54a3797234dd89b21f6
 verify_with:
   - packages/api/src/services/audit-writer.ts
   - scripts/lint-audit-log.mjs
@@ -10,7 +10,7 @@ verify_with:
   - packages/db/src/rls.ts
   - packages/api/src/routers/core/personnel-file/erasure.ts
   - packages/api/src/routers/core/personnel-file/classify.ts
-updated: 2026-07-01
+updated: 2026-07-05
 ---
 
 # Audit log mutations
@@ -56,7 +56,7 @@ flowchart LR
 - Prefer `auditMutationCtx(ctx)` + `auditedMutation(..., async tx => { ... })` so mutation + audit share one `$transaction`
 - Migrated callers (2026-06-10): contract CRUD + expiry reminders; equipment shipments/returns/couriers; project/team/cost-center/settings; workflow task complete/skip; org `setKleinunternehmer`
 - Same-tx audit rows also on: approval `approve`/`reject` (`approval.approve` / `approval.reject`, `approval-queue.ts`); reassessment `acknowledge`/`dismiss` (`reassessment.acknowledge` / `reassessment.dismiss`, `compliance/reassessment-trigger.ts` — `resourceType: CONTRACTOR`); portal contact update (`portal.contact.update`, `portal/portal-profile-router.ts`)
-- **Personnel-file (akta) audits** ([[domains/personnel-file]]): erasure records `personnel_file.erasure_retained_under_statute` (`resourceType: 'USER'`, `resourceId = workerId`, `metadata.retainedUnderStatute = { section → citation }`) passing `tx` so the audit row joins the erasure transaction — written **whenever any section is retained under a hold**; the classify-step audits `classify_approved` / `classify_rejected` (in-tx) + `personnel_file.document.attached` (on attach). `allowAuditPurge` stays **exclusive to the org-grain GDPR erasure path** — the per-employee personnel erasure only soft-deletes documents, it never purges audit rows
+- **Personnel-file (akta) audits** ([[domains/personnel-file]]): **every** erasure request records `personnel_file.erasure_requested` (`resourceType: 'USER'`, `resourceId = workerId`, `metadata = { dispositions: { section → 'erased' | 'retained' }, fullErasureClaimed }`) passing `tx` so the audit row joins the erasure transaction — written on **both** the fully-erased success path and the retention-blocked path, so the erased-success mutation is never unauditable; a retention-blocked request **additionally** records `personnel_file.erasure_retained_under_statute` (`metadata.retainedUnderStatute = { section → citation }`) with the citations. The classify-step audits `classify_approved` / `classify_rejected` (in-tx) + `personnel_file.document.attached` (on attach). `allowAuditPurge` stays **exclusive to the org-grain GDPR erasure path** — the per-employee personnel erasure only soft-deletes documents, it never purges audit rows
 - When already inside `ctx.db.$transaction`, pass `tx` as 4th arg to `auditedMutation`
 - Run `pnpm lint:audit-log` when touching listed Prisma models
 

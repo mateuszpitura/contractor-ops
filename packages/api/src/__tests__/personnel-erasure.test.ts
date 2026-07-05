@@ -365,4 +365,39 @@ describe('per-section erasure — all sections past their window', () => {
     expect(result.fullErasureClaimed).toBe(true);
     expect(result.sections.every(s => s.disposition === 'erased')).toBe(true);
   });
+
+  it('writes the erasure_requested audit entry on the fully-erased success path', async () => {
+    const caller = makeCaller('hr_admin');
+    await caller.personnelFile.requestErasure({ workerId: WORKER_FULLY_ERASABLE });
+
+    expect(writeAuditLog).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: 'personnel_file.erasure_requested',
+        resourceType: 'USER',
+        resourceId: WORKER_FULLY_ERASABLE,
+        metadata: expect.objectContaining({ fullErasureClaimed: true }),
+      }),
+    );
+    // The success path carries no active hold, so the retained-under-statute
+    // audit must NOT fire — only the erasure_requested row.
+    expect(writeAuditLog).not.toHaveBeenCalledWith(
+      expect.objectContaining({ action: 'personnel_file.erasure_retained_under_statute' }),
+    );
+  });
+});
+
+describe('per-section erasure — every request is audited', () => {
+  it('writes the erasure_requested audit entry even when a section is held', async () => {
+    const caller = makeCaller('hr_admin');
+    await caller.personnelFile.requestErasure({ workerId: WORKER_UNDER_HOLD });
+
+    expect(writeAuditLog).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: 'personnel_file.erasure_requested',
+        resourceType: 'USER',
+        resourceId: WORKER_UNDER_HOLD,
+        metadata: expect.objectContaining({ fullErasureClaimed: false }),
+      }),
+    );
+  });
 });

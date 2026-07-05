@@ -2,7 +2,7 @@
 title: Personnel file (akta osobowe / Personalakte)
 type: domain
 tags: [personnel-file, akta-osobowe, personalakte, rbac, retention, gdpr, rodo, classifier, feature-flags]
-source_commit: 105a8ccf64b34c611493215eb3519e8922343839
+source_commit: 2832af75dda044f0eda4c54a3797234dd89b21f6
 verify_with:
   - packages/db/prisma/schema/personnel.prisma
   - packages/compliance-policy/src/personnel-registry.ts
@@ -18,7 +18,7 @@ verify_with:
   - packages/auth/src/roles.ts
   - packages/feature-flags/src/flags-core.ts
   - apps/web-vite/src/components/employees/personnel-file/hooks/use-personnel-file.ts
-updated: 2026-07-01
+updated: 2026-07-05
 ---
 
 # Personnel file (akta osobowe / Personalakte)
@@ -155,8 +155,11 @@ idiom to **per-employee + per-section + per-jurisdiction**: erasable sections so
 their documents (the windowed hard purge stays the cron's job), in-window sections are
 retained with citation + `retainUntil`. `fullErasureClaimed` is the plain fact
 `retained.length === 0` — **never true while any hold is active** (a single retained
-section forces `false`). Every retention-blocked erasure writes
-`personnel_file.erasure_retained_under_statute` in the same transaction; `allowAuditPurge`
+section forces `false`). **Every** erasure request — the fully-erased success path
+included — writes `personnel_file.erasure_requested` (metadata: per-section disposition
+map + `fullErasureClaimed`) in the same transaction as the soft-deletes, so no erasure is
+a silent unauditable mutation; a retention-blocked request additionally writes
+`personnel_file.erasure_retained_under_statute` with the citations. `allowAuditPurge`
 stays exclusive to the org-grain GDPR path. Detail: [[patterns/audit-log]].
 
 ## Classifier
@@ -226,6 +229,7 @@ pnpm --filter @contractor-ops/api test personnel-erasure personnel-classifier pe
 - App-filtering sections instead of deciding the lock at the permission layer (`hasSectionPermission` before any query) — a locked section must return no document payload or count
 - Building a parallel retention engine instead of registering tokens on the shared `RETENTION_YEARS` map + `getPersonnelRetentionCutoff` resolver
 - Claiming full erasure while a hold is active — `fullErasureClaimed` is `retained.length === 0`, never a recomputed count
+- Soft-deleting the erased sections without an audit row — every erasure request writes `personnel_file.erasure_requested` in the same transaction, the fully-erased success path included (only the retention-blocked branch previously audited)
 - Adding `PersonnelFile` / `PersonnelFileDocument` to `globalModels` (tenant-owning — IDOR landmine)
 - Adding `employeeFileA..D` to the owner `allPermissions` duplicate (breaks the BFLA fence)
 - Blocking the upload on the classifier — kill-switch off / AI failure / low confidence routes to the `PENDING_REVIEW` admin step; the bytes are already persisted

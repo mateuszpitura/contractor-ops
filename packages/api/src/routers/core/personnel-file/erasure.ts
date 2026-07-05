@@ -27,10 +27,12 @@ import { PERSONNEL_FILE_SECTIONS, sectionToShortCode } from './section-access';
 // the data-purge cron finalises the removal after the tenant-wide window.
 //
 // The response NEVER claims full erasure while any section is under a hold:
-// fullErasureClaimed is the plain fact `retained.length === 0`. When any hold is
-// active the mutation writes an audit row so the retention-blocked attempt is
-// never repudiable — mirroring the org-grain statutory-hold audit on the GDPR
-// erasure path, lifted here to per-employee + per-section + per-jurisdiction.
+// fullErasureClaimed is the plain fact `retained.length === 0`. Every erasure
+// request — success or retention-blocked — writes a `personnel_file.erasure_requested`
+// audit row carrying the per-section dispositions, so the request is never
+// repudiable; an active hold adds a second `..._retained_under_statute` row with
+// the citations. Both mirror the org-grain audits on the GDPR erasure path,
+// lifted here to per-employee + per-section + per-jurisdiction.
 // ---------------------------------------------------------------------------
 
 const requestErasureInput = z.object({ workerId: z.string() }).strict();
@@ -129,6 +131,37 @@ async function auditRetainedUnderStatute(
   });
 }
 
+/**
+ * Audit every erasure request — including the fully-erased success path — in the
+ * same transaction as the soft-deletes, so no request (erased or held) is ever
+ * repudiable. Carries the per-section disposition map and whether full erasure
+ * was claimed. Mirrors the org-grain `organization.erasure_requested` audit on
+ * the GDPR path, lifted to per-employee + per-section grain.
+ */
+async function auditErasureRequested(
+  tx: AuditWriterClient,
+  ctx: ErasureAuditContext,
+  workerId: string,
+  dispositions: SectionDisposition[],
+  fullErasureClaimed: boolean,
+): Promise<void> {
+  const perSection = Object.fromEntries(dispositions.map(d => [d.section, d.disposition]));
+  await writeAuditLog({
+    tx,
+    organizationId: ctx.organizationId,
+    action: 'personnel_file.erasure_requested',
+    actorType: 'USER',
+    actorId: ctx.user?.id ?? null,
+    actorName: ctx.user?.name ?? ctx.user?.email ?? null,
+    resourceType: 'USER',
+    resourceId: workerId,
+    resourceName: 'Personnel File Erasure Request',
+    metadata: { dispositions: perSection, fullErasureClaimed },
+    ipAddress: ctx.headers.get('x-forwarded-for')?.split(',')[0] ?? null,
+    userAgent: ctx.headers.get('user-agent') ?? null,
+  });
+}
+
 export const erasureRouter = router({
   /**
    * Request erasure of a worker's personnel file. Each of the four sections is
@@ -203,7 +236,13 @@ export const erasureRouter = router({
           dispositions.push(disposition);
         }
 
-        if (Object.keys(retained).length > 0) {
+        const fullErasureClaimed = Object.keys(retained).length === 0;
+
+        // Always audit the request itself — the erased-success path included —
+        // so an erasure is never a silent, unauditable mutation.
+        await auditErasureRequested(tx, ctx, file.workerId, dispositions, fullErasureClaimed);
+
+        if (!fullErasureClaimed) {
           await auditRetainedUnderStatute(tx, ctx, file.workerId, retained);
         }
 
