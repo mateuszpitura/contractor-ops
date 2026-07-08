@@ -237,6 +237,7 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
 // ---------------------------------------------------------------------------
 
 import { createCallerFactory } from '../../init';
+import { enqueueNotificationOutboxEvent } from '../../services/outbox';
 import { workflowExecutionRouter } from '../workflow/workflow-execution';
 
 // ---------------------------------------------------------------------------
@@ -645,15 +646,13 @@ describe('workflowExecutionRouter', () => {
 
       // The notification is enqueued into the transactional outbox INSIDE the
       // reassignment tx (delivered exactly-once by the drain) rather than a
-      // post-commit fire-and-forget dispatch. Assert the OutboxEvent INSERT.
-      const outboxCall = mockPrisma.$executeRawUnsafe.mock.calls.find((c: unknown[]) =>
-        String(c[0]).includes('INSERT INTO "OutboxEvent"'),
-      );
-      expect(outboxCall).toBeDefined();
-      expect(outboxCall?.[2]).toBe(ORG_ID);
-      expect(outboxCall?.[3]).toBe('notification.dispatch');
-      const payload = JSON.parse(String(outboxCall?.[6]));
-      expect(payload).toMatchObject({
+      // post-commit fire-and-forget dispatch. The outbox module is mocked, so
+      // assert the producer was invoked in-tx with the TASK_ASSIGNED event.
+      const enqueueMock = vi.mocked(enqueueNotificationOutboxEvent);
+      expect(enqueueMock).toHaveBeenCalledTimes(1);
+      const enqueueArg = enqueueMock.mock.calls[0]?.[0];
+      expect(enqueueArg?.tx).toBeDefined();
+      expect(enqueueArg?.event).toMatchObject({
         organizationId: ORG_ID,
         type: 'TASK_ASSIGNED',
         recipientUserIds: ['new-user-1'],
