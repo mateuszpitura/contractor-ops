@@ -164,7 +164,7 @@ vi.mock('../notification-service', () => ({
 }));
 
 vi.mock('../outbox', () => ({
-  enqueueNotificationDispatch: mockEnqueue,
+  enqueueNotificationOutboxEvent: mockEnqueue,
 }));
 
 vi.mock('../rbac-recipients', () => ({

@@ -21,6 +21,7 @@ import {
   autoCompleteRunIfTerminal,
   groupInvoicesByCurrency,
   loadEligibleInvoices,
+  persistExportSettlements,
   seedRunItems,
   VALID_TRANSITIONS,
   validateInvoicesForRun,
@@ -241,9 +242,12 @@ export const publicPaymentRunRouter = router({
       const { orgBank, transferTitleTemplate } = await ctx.db.$transaction(tx =>
         _resolveOrgBankInfo(tx, ctx.organizationId),
       );
-      const exportItems = await _buildExportItems(ctx.db, run.items, transferTitleTemplate, {
-        paymentDate: new Date(),
-      });
+      const { items: exportItems, settlements } = await _buildExportItems(
+        ctx.db,
+        run.items,
+        transferTitleTemplate,
+        { paymentDate: new Date() },
+      );
       const { fileBuffer, ext } = await _generateExportFileForFormat(
         input.format,
         exportItems,
@@ -274,6 +278,8 @@ export const publicPaymentRunRouter = router({
         });
         return result;
       });
+
+      await persistExportSettlements(ctx.db, settlements);
 
       return {
         run: updated,

@@ -6,7 +6,7 @@ import type { BillingCreditDenialReason } from '@contractor-ops/validators';
 import { billingCreditDenialReason } from '@contractor-ops/validators';
 import { TIER_CREDIT_ALLOWANCE, TRIAL_CREDIT_ALLOWANCE } from './billing-constants';
 import { CacheKeys, CacheTTL, cached, invalidate } from './cache';
-import { enqueueNotificationDispatch } from './outbox';
+import { enqueueNotificationOutboxEvent } from './outbox';
 import { stripe } from './stripe-client';
 
 const log = createLogger({ service: 'credit-service' });
@@ -316,7 +316,7 @@ async function enqueueCreditExhaustedNotification(
   const adminUserIds = adminMembers.map(m => m.userId);
   if (adminUserIds.length === 0) return;
 
-  await enqueueNotificationDispatch({
+  await enqueueNotificationOutboxEvent({
     tx,
     event: {
       organizationId,

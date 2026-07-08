@@ -46,7 +46,7 @@ import { prisma, prismaRaw } from '@contractor-ops/db';
 import { pLimit } from '@contractor-ops/integrations/services/concurrency';
 import { createCronLogger } from '@contractor-ops/logger';
 import { metrics } from '@contractor-ops/logger/metrics';
-import { enqueueNotificationDispatch } from './outbox';
+import { enqueueNotificationOutboxEvent } from './outbox';
 import { resolveRbacRecipients } from './rbac-recipients';
 
 const log = createCronLogger('classification-economic-dependency');
@@ -393,7 +393,7 @@ export async function runEconomicDependencyScan(now: Date = new Date()): Promise
                   percent,
                 );
 
-                await enqueueNotificationDispatch({
+                await enqueueNotificationOutboxEvent({
                   tx,
                   event: {
                     organizationId: assignment.organizationId,

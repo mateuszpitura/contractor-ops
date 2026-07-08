@@ -41,7 +41,7 @@ vi.mock('../rbac-recipients', () => ({
 }));
 
 vi.mock('../outbox', () => ({
-  enqueueNotificationDispatch: vi.fn(async () => 'oxe_test_1'),
+  enqueueNotificationOutboxEvent: vi.fn(async () => 'oxe_test_1'),
 }));
 
 vi.mock('@contractor-ops/logger/metrics', () => ({
@@ -54,7 +54,7 @@ import {
   runForm1099KTrackerScan,
   updateTrackerBandState,
 } from '../form-1099k-tracker.service';
-import { enqueueNotificationDispatch } from '../outbox';
+import { enqueueNotificationOutboxEvent } from '../outbox';
 import { resolveRbacRecipients } from '../rbac-recipients';
 
 // OBBBA TY2026 threshold config: $20,000 gross AND 200 transactions.
@@ -160,8 +160,8 @@ describe('runForm1099KTrackerScan — heads-up rides inside the tracker-state tx
     // The band-state upsert ran on the tx client.
     expect(txClient.form1099KTrackerState.upsert).toHaveBeenCalledOnce();
     // The heads-up was enqueued on the SAME tx client — atomic with the upsert.
-    expect(enqueueNotificationDispatch).toHaveBeenCalledOnce();
-    const enqueueArg = vi.mocked(enqueueNotificationDispatch).mock.calls[0]?.[0];
+    expect(enqueueNotificationOutboxEvent).toHaveBeenCalledOnce();
+    const enqueueArg = vi.mocked(enqueueNotificationOutboxEvent).mock.calls[0]?.[0];
     expect(enqueueArg?.tx).toBe(txClient);
     expect(enqueueArg?.event).toMatchObject({
       type: 'tax.form_1099k_over',
@@ -184,6 +184,6 @@ describe('runForm1099KTrackerScan — heads-up rides inside the tracker-state tx
     await runForm1099KTrackerScan(NOW);
 
     expect(txClient.form1099KTrackerState.upsert).toHaveBeenCalledOnce();
-    expect(enqueueNotificationDispatch).not.toHaveBeenCalled();
+    expect(enqueueNotificationOutboxEvent).not.toHaveBeenCalled();
   });
 });

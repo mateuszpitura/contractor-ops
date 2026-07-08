@@ -38,7 +38,7 @@ import {
 } from '../../services/compliance-dashboard';
 import { onComplianceItemSatisfied } from '../../services/compliance-recovery';
 import type { OutboxTransactionalClient } from '../../services/outbox';
-import { enqueueNotificationDispatch } from '../../services/outbox';
+import { enqueueNotificationOutboxEvent } from '../../services/outbox';
 import { resolveRbacRecipients } from '../../services/rbac-recipients';
 
 // Shared cuid validator — mirrors the idiom in sibling compliance routers.
@@ -86,7 +86,7 @@ async function enqueueComplianceUploadOutcome(
     payload.type === 'compliance.upload.rejected'
       ? `/portal/compliance/upload-replacement?itemId=${payload.itemId}&policyRuleId=${payload.policyRuleId ?? ''}`
       : undefined;
-  await enqueueNotificationDispatch({
+  await enqueueNotificationOutboxEvent({
     tx,
     event: {
       organizationId,

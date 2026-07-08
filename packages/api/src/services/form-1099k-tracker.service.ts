@@ -29,7 +29,7 @@ import { createCronLogger } from '@contractor-ops/logger';
 import { metrics } from '@contractor-ops/logger/metrics';
 import type { NotificationType } from '@contractor-ops/validators';
 import type { NotificationEvent } from './notification-service';
-import { enqueueNotificationDispatch } from './outbox';
+import { enqueueNotificationOutboxEvent } from './outbox';
 import { resolveRbacRecipients } from './rbac-recipients';
 
 const log = createCronLogger('form-1099k-tracker');
@@ -338,7 +338,7 @@ async function processContractor(
     });
 
     if (headsUpEvent) {
-      await enqueueNotificationDispatch({ tx, event: headsUpEvent });
+      await enqueueNotificationOutboxEvent({ tx, event: headsUpEvent });
     }
   });
 

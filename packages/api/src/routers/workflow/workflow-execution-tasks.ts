@@ -17,7 +17,7 @@ import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
 import { writeAuditLog } from '../../services/audit-writer';
 import { CacheKeys, invalidateByPrefix } from '../../services/cache';
-import { enqueueNotificationDispatch } from '../../services/outbox';
+import { enqueueNotificationOutboxEvent } from '../../services/outbox';
 import { syncTaskToExternalSystems } from './workflow-execution-shared';
 import { unblockDependentsAndRecomputeRun, validateTransition } from './workflow-shared';
 
@@ -297,7 +297,7 @@ export const workflowExecutionTasksRouter = router({
 
         // Enqueue TASK_ASSIGNED durably inside the tx so the new assignee is
         // notified iff the reassignment commits (drain delivers exactly-once).
-        await enqueueNotificationDispatch({
+        await enqueueNotificationOutboxEvent({
           tx,
           event: {
             organizationId: ctx.organizationId,
