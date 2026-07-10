@@ -68,8 +68,10 @@ flowchart TB
   (`DETERMINISTIC/AI/MANUAL/PENDING`) records how each document reached its section.
 - **Retention clock reads two seams.** `hireDate DateTime? @db.Date` is the hire anchor;
   `terminatedAt DateTime?` is the termination anchor (**null → active → retain
-  indefinitely**). A later phase (offboarding) populates `terminatedAt`; P91 consumes it
-  where present.
+  indefinitely**). **`employee.register` creates the file** (`countryCode` snapshot +
+  `hireDate`); `recordTermination` mirrors `terminatedAt` on both `EmployeeProfile` and
+  `PersonnelFile` in one tx; HRIS pull upserts `PersonnelFile` and mirrors termination to
+  `EmployeeProfile`.
 - **Upload → taxonomy → AI(kill-switch) → admin.** `attachDocument` links a persisted,
   virus-scanned `Document`, then runs the hybrid classifier: deterministic taxonomy first
   (no model call), a `killswitch.ai-personnel-classifier`-gated Claude-Vision fallback on

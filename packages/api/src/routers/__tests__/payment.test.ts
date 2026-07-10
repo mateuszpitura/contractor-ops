@@ -110,6 +110,12 @@ const { mockPrisma } = vi.hoisted(() => {
     },
     member: {
       findFirst: vi.fn(async () => ({ role: 'admin' })),
+      findMany: vi.fn(async () => []),
+    },
+    invoicePayment: {
+      create: vi.fn(async () => ({ id: 'invpay-1' })),
+      aggregate: vi.fn(async () => ({ _sum: { amountMinor: 100000 } })),
+      deleteMany: vi.fn(async () => ({ count: 0 })),
     },
     // payment-block gate queries this; default to no BLOCKING/EXPIRED
     // items so contractors are eligible and payment flows proceed.
@@ -204,6 +210,7 @@ vi.mock('../../services/invoice-matching', () => ({
 
 vi.mock('../../services/bank-account-crypto', () => ({
   encryptBankAccount: vi.fn((v: string) => `encrypted:${v}`),
+  decryptBankAccount: vi.fn((v: string) => v.replace(/^encrypted:/, '')),
 }));
 
 vi.mock('../../services/sanitize', () => ({
@@ -237,15 +244,11 @@ vi.mock('../../services/billing-service', () => ({
   syncSeatCountForOrg: vi.fn(async () => undefined),
 }));
 
-vi.mock('../../services/cache', () => ({
-  cacheKey: vi.fn((...s: string[]) => s.join(':')),
-  cachedSingleflight: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  cached: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  invalidate: vi.fn(async () => undefined),
-  invalidateByPrefix: vi.fn(async () => undefined),
-  CacheKeys: { approvalChains: (orgId: string) => `approval-chains:${orgId}` },
-  CacheTTL: { APPROVAL_CHAINS: 300 },
-}));
+vi.mock('../../services/cache', async importOriginal => {
+  const actual = await importOriginal<typeof import('../../services/cache')>();
+  const { createPassthroughCacheMock } = await import('../../__tests__/__mocks__/cache-service');
+  return createPassthroughCacheMock(actual);
+});
 
 vi.mock('../../services/mime-validator', () => ({
   isAllowedMimeType: vi.fn(() => true),
@@ -289,9 +292,24 @@ vi.mock('../../services/payment-export', () => ({
 }));
 
 vi.mock('../../services/bank-statement', () => ({
-  parseBankStatement: vi.fn(() => [{ amount: 100000, iban: 'PL1234', reference: 'FV/2025/001' }]),
+  parseBankStatement: vi.fn(() => [
+    {
+      amount: 100000,
+      currency: 'PLN',
+      description: 'FV/2025/001',
+      iban: 'PL1234',
+      date: new Date('2025-06-01'),
+      reference: 'FV/2025/001',
+    },
+  ]),
   matchStatementToRun: vi.fn(() => [
-    { itemId: 'clitem00000000000000000001', transactionIndex: 0, confidence: 1 },
+    {
+      paymentRunItemId: 'clitem00000000000000000001',
+      transactionIndex: 0,
+      confidence: 'exact',
+      amountMatched: true,
+      ibanMatched: true,
+    },
   ]),
 }));
 
@@ -467,7 +485,8 @@ function makeItem(overrides: Record<string, unknown> = {}) {
     amountMinor: 100000,
     currency: 'PLN',
     status: 'PENDING',
-    paymentRun: makeRun(),
+    paymentRun: makeRun({ status: 'EXPORTED' }),
+    invoice: { id: INVOICE_ID_1, invoiceNumber: 'FV/2025/001', currency: 'PLN' },
     ...overrides,
   };
 }
@@ -491,12 +510,20 @@ beforeEach(() => {
   mockPrisma.invoice.findMany.mockReset().mockResolvedValue([]);
   mockPrisma.invoice.findFirst.mockReset().mockResolvedValue(null);
   mockPrisma.paymentRun.findFirst.mockReset().mockResolvedValue(null);
+  mockPrisma.paymentRun.findMany.mockReset().mockResolvedValue([]);
   mockPrisma.paymentRun.findUnique.mockReset().mockResolvedValue(null);
   mockPrisma.paymentRunItem.findFirst.mockReset().mockResolvedValue(null);
   mockPrisma.paymentRunItem.findMany.mockReset().mockResolvedValue([]);
   mockPrisma.paymentRunItem.count.mockReset().mockResolvedValue(0);
   mockPrisma.paymentRunItem.aggregate.mockReset().mockResolvedValue({ _sum: { amountMinor: 0 } });
   mockPrisma.member.findFirst.mockReset().mockResolvedValue({ role: 'admin' });
+  mockPrisma.member.findMany.mockReset().mockResolvedValue([]);
+  mockPrisma.invoice.findUnique.mockReset().mockResolvedValue({ amountToPayMinor: 100000 });
+  mockPrisma.invoicePayment.create.mockReset().mockResolvedValue({ id: 'invpay-1' });
+  mockPrisma.invoicePayment.aggregate
+    .mockReset()
+    .mockResolvedValue({ _sum: { amountMinor: 100000 } });
+  mockPrisma.paymentRunItem.updateMany.mockReset().mockResolvedValue({ count: 1 });
 });
 
 // ===========================================================================
@@ -563,7 +590,7 @@ describe('payment router', () => {
       // fetch) before the main loadEligibleInvoices fetch — persistent mock
       // serves both calls.
       mockPrisma.invoice.findMany.mockResolvedValue([invoice1, invoice2]);
-      mockPrisma.paymentRun.findFirst.mockResolvedValueOnce(null); // no existing runs
+      mockPrisma.paymentRun.findMany.mockResolvedValueOnce([]); // no existing runs
 
       await caller.payment.create({
         invoiceIds: [INVOICE_ID_1, INVOICE_ID_2],
@@ -589,9 +616,9 @@ describe('payment router', () => {
     it('generates run number with year prefix PR-{year}-{seq}', async () => {
       const invoice = makeInvoice();
       mockPrisma.invoice.findMany.mockResolvedValue([invoice]);
-      mockPrisma.paymentRun.findFirst.mockResolvedValueOnce({
-        runNumber: `PR-${new Date().getFullYear()}-005`,
-      });
+      mockPrisma.paymentRun.findMany.mockResolvedValueOnce([
+        { runNumber: `PR-${new Date().getFullYear()}-005` },
+      ]);
 
       await caller.payment.create({ invoiceIds: [INVOICE_ID_1] });
 
@@ -607,7 +634,7 @@ describe('payment router', () => {
       // rollback churn under contention.
       const invoice = makeInvoice();
       mockPrisma.invoice.findMany.mockResolvedValue([invoice]);
-      mockPrisma.paymentRun.findFirst.mockResolvedValueOnce(null);
+      mockPrisma.paymentRun.findMany.mockResolvedValueOnce([]);
 
       await caller.payment.create({ invoiceIds: [INVOICE_ID_1] });
 
@@ -628,7 +655,7 @@ describe('payment router', () => {
       // than an opaque 500.
       const invoice = makeInvoice();
       mockPrisma.invoice.findMany.mockResolvedValue([invoice]);
-      mockPrisma.paymentRun.findFirst.mockResolvedValueOnce(null);
+      mockPrisma.paymentRun.findMany.mockResolvedValueOnce([]);
 
       const p2002 = Object.assign(new Error('Unique constraint failed'), {
         code: 'P2002',
@@ -661,8 +688,8 @@ describe('payment router', () => {
       });
 
       mockPrisma.invoice.findMany.mockResolvedValue([invoicePLN, invoiceEUR]);
-      // First findFirst for PLN run number, second for EUR run number
-      mockPrisma.paymentRun.findFirst.mockResolvedValueOnce(null).mockResolvedValueOnce(null);
+      // First findMany for PLN run number, second for EUR run number
+      mockPrisma.paymentRun.findMany.mockResolvedValueOnce([]).mockResolvedValueOnce([]);
 
       await caller.payment.create({
         invoiceIds: [INVOICE_ID_1, INVOICE_ID_2],
@@ -779,6 +806,7 @@ describe('payment router', () => {
             contractor: { legalName: 'Acme', taxId: '1234567890', currency: 'PLN' },
             billingProfile: {
               bankAccountMasked: 'PL12345678901234567890123456',
+              bankAccountEncrypted: 'encrypted:PL12345678901234567890123456',
               swiftBic: 'BREXPLPW',
               bankName: 'Test Bank',
             },
@@ -838,6 +866,60 @@ describe('payment router', () => {
         message: 'paymentRunInvalidStatus',
       });
     });
+
+    it('idempotent replay of an already-EXPORTED run leaks no billing ciphertext or taxId', async () => {
+      // Prepare-tx findFirst returns the include-loaded run: billing-profile
+      // ciphertext + contractor.taxId are present for the file builder.
+      const leakyRun = makeRun({
+        status: 'EXPORTED',
+        items: [
+          {
+            id: ITEM_ID,
+            amountMinor: 100000,
+            currency: 'PLN',
+            contractor: { legalName: 'Acme', taxId: '1234567890', currency: 'PLN' },
+            billingProfile: {
+              bankAccountMasked: 'PL12345678901234567890123456',
+              bankAccountEncrypted: 'encrypted:SUPER_SECRET',
+              swiftBic: 'BREXPLPW',
+              bankName: 'Test Bank',
+              usRoutingNumberEncrypted: 'encrypted:ROUTING',
+              usAccountNumberEncrypted: 'encrypted:ACCOUNT',
+            },
+          },
+        ],
+      });
+      // The idempotent branch re-selects the bare, public-safe run (no items /
+      // no billing ciphertext) before returning.
+      const safeRun = {
+        id: RUN_ID,
+        organizationId: ORG_ID,
+        runNumber: 'PR-2025-001',
+        status: 'EXPORTED',
+        currency: 'PLN',
+        totalMinor: 100000,
+        invoiceCount: 1,
+      };
+      mockPrisma.paymentRun.findFirst.mockResolvedValueOnce(leakyRun);
+      mockPrisma.paymentRun.findFirstOrThrow.mockResolvedValueOnce(safeRun);
+
+      const result = await caller.payment.lockAndExport({
+        runId: RUN_ID,
+        exportFormat: 'CSV',
+      });
+
+      expect(result.idempotent).toBe(true);
+      expect(result.fileBase64).toBeNull();
+
+      const serialized = JSON.stringify(result);
+      expect(serialized).not.toContain('encrypted:');
+      expect(serialized).not.toContain('bankAccountEncrypted');
+      expect(serialized).not.toContain('1234567890');
+
+      // No winning transition or export rows on an idempotent replay.
+      expect(mockPrisma.paymentRun.updateMany).not.toHaveBeenCalled();
+      expect(mockPrisma.paymentExport.create).not.toHaveBeenCalled();
+    });
   });
 
   // =========================================================================
@@ -867,7 +949,8 @@ describe('payment router', () => {
       });
       expect(itemUpdate.data.markedPaidAt).toBeInstanceOf(Date);
 
-      // Invoice updated to PAID
+      // Invoice payment recorded and invoice marked PAID
+      expect(mockPrisma.invoicePayment.create).toHaveBeenCalledTimes(1);
       const invoiceUpdate = mockPrisma.invoice.update.mock.calls[0][0];
       expect(invoiceUpdate.where).toEqual({ id: INVOICE_ID_1 });
       expect(invoiceUpdate.data).toMatchObject({ paymentStatus: 'PAID' });
@@ -942,12 +1025,9 @@ describe('payment router', () => {
       });
       expect(itemUpdate.data.markedPaidAt).toBeInstanceOf(Date);
 
-      // Invoices batch-updated to PAID via updateMany
-      expect(mockPrisma.invoice.updateMany).toHaveBeenCalledTimes(1);
-      const invUpdate = mockPrisma.invoice.updateMany.mock.calls[0][0];
-      expect(invUpdate.where.id.in).toEqual([INVOICE_ID_1, INVOICE_ID_2]);
-      expect(invUpdate.data).toMatchObject({ paymentStatus: 'PAID' });
-      expect(invUpdate.data.paidAt).toBeInstanceOf(Date);
+      // Each invoice gets a payment row via applyInvoicePaymentOutcome
+      expect(mockPrisma.invoicePayment.create).toHaveBeenCalledTimes(2);
+      expect(mockPrisma.invoice.update).toHaveBeenCalled();
     });
 
     it('sets run status to COMPLETED', async () => {
@@ -1096,15 +1176,19 @@ describe('payment router', () => {
   // =========================================================================
 
   describe('confirmStatementMatches', () => {
+    const statementRunItem = {
+      id: ITEM_ID,
+      invoiceId: INVOICE_ID_1,
+      amountMinor: 100000,
+      status: 'PENDING',
+      billingProfile: { bankAccountMasked: 'PL1234' },
+      invoice: { invoiceNumber: 'FV/2025/001', currency: 'PLN' },
+    };
+
     it('marks matched items as PAID and updates invoices', async () => {
-      const run = makeRun({ status: 'EXPORTED' });
-      const item = makeItem();
+      const run = makeRun({ status: 'EXPORTED', items: [statementRunItem] });
 
       mockPrisma.paymentRun.findFirst.mockResolvedValueOnce(run);
-      mockPrisma.paymentRunItem.findFirst.mockResolvedValueOnce(item);
-      mockPrisma.paymentRunItem.findMany.mockResolvedValueOnce([
-        { id: ITEM_ID, invoiceId: INVOICE_ID_1 },
-      ]);
       // After marking paid: 0 remaining -> auto-complete
       mockPrisma.paymentRunItem.count
         .mockResolvedValueOnce(0) // remaining pending/exported
@@ -1112,11 +1196,13 @@ describe('payment router', () => {
       mockPrisma.paymentRun.findUnique.mockResolvedValueOnce({
         ...run,
         status: 'COMPLETED',
-        items: [{ ...item, status: 'PAID' }],
+        items: [{ ...statementRunItem, status: 'PAID' }],
       });
 
       await caller.payment.confirmStatementMatches({
         runId: RUN_ID,
+        fileContent: 'MT940-content-here',
+        fileName: 'statement.mt940',
         matches: [{ itemId: ITEM_ID, transactionIndex: 0 }],
       });
 
@@ -1125,17 +1211,16 @@ describe('payment router', () => {
       expect(itemUpdate.data).toMatchObject({ status: 'PAID' });
       expect(itemUpdate.data.markedPaidAt).toBeInstanceOf(Date);
 
-      // Invoice batch-updated to PAID
-      const invoiceUpdate = mockPrisma.invoice.updateMany.mock.calls[0]?.[0];
+      // Invoice payment recorded and invoice marked PAID
+      expect(mockPrisma.invoicePayment.create).toHaveBeenCalledTimes(1);
+      const invoiceUpdate = mockPrisma.invoice.update.mock.calls[0]?.[0];
       expect(invoiceUpdate.data).toMatchObject({ paymentStatus: 'PAID' });
     });
 
     it('auto-completes run when all items are terminal', async () => {
-      const run = makeRun({ status: 'EXPORTED' });
-      const item = makeItem();
+      const run = makeRun({ status: 'EXPORTED', items: [statementRunItem] });
 
       mockPrisma.paymentRun.findFirst.mockResolvedValueOnce(run);
-      mockPrisma.paymentRunItem.findFirst.mockResolvedValueOnce(item);
       // 0 remaining -> triggers auto-complete
       mockPrisma.paymentRunItem.count
         .mockResolvedValueOnce(0) // remaining
@@ -1143,11 +1228,13 @@ describe('payment router', () => {
       mockPrisma.paymentRun.findUnique.mockResolvedValueOnce({
         ...run,
         status: 'COMPLETED',
-        items: [{ ...item, status: 'PAID' }],
+        items: [{ ...statementRunItem, status: 'PAID' }],
       });
 
       await caller.payment.confirmStatementMatches({
         runId: RUN_ID,
+        fileContent: 'MT940-content-here',
+        fileName: 'statement.mt940',
         matches: [{ itemId: ITEM_ID, transactionIndex: 0 }],
       });
 

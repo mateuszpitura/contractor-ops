@@ -9,8 +9,11 @@ import { metrics } from '@contractor-ops/logger/metrics';
 import type { BillingCreditDenialReason } from '@contractor-ops/validators';
 import { billingCreditDenialReason, getServerEnv } from '@contractor-ops/validators';
 import * as Sentry from '@sentry/node';
+import { TRPCError } from '@trpc/server';
+import { DOCUMENT_NOT_IN_STORAGE } from '../errors';
 import { checkAndDeductCredit } from './credit-service';
-import { createPresignedDownloadUrl } from './r2';
+import { createRegionalPresignedDownloadUrl } from './regional-storage';
+import type { DbClient } from './types';
 
 const log = createLogger({ service: 'ocr' });
 
@@ -27,11 +30,23 @@ const log = createLogger({ service: 'ocr' });
  * @returns The newly created extraction ID
  */
 export async function triggerOcrExtraction(params: {
+  db: DbClient;
   organizationId: string;
   documentId: string;
-  storageKey: string;
   invoiceId?: string;
 }): Promise<{ extractionId: string } | { error: BillingCreditDenialReason; remaining: number }> {
+  const document = await params.db.document.findFirst({
+    where: {
+      id: params.documentId,
+      organizationId: params.organizationId,
+    },
+    select: { storageKey: true },
+  });
+
+  if (!document?.storageKey) {
+    throw new TRPCError({ code: 'NOT_FOUND', message: DOCUMENT_NOT_IN_STORAGE });
+  }
+
   // Credit check per BILL-06 -- hard-block when exhausted
   const creditResult = await checkAndDeductCredit(params.organizationId);
   if (!creditResult.allowed) {
@@ -41,7 +56,7 @@ export async function triggerOcrExtraction(params: {
     };
   }
 
-  const extraction = await prisma.ocrExtraction.create({
+  const extraction = await params.db.ocrExtraction.create({
     data: {
       organizationId: params.organizationId,
       documentId: params.documentId,
@@ -57,7 +72,7 @@ export async function triggerOcrExtraction(params: {
     body: {
       extractionId: extraction.id,
       organizationId: params.organizationId,
-      storageKey: params.storageKey,
+      storageKey: document.storageKey,
     },
     // Stable per-extraction dedup id so a QStash re-publish (or a duplicate
     // trigger) collapses to a single in-flight job — a second delivery would
@@ -163,7 +178,7 @@ export async function processOcrExtraction(params: {
     }
 
     // Fetch PDF from R2
-    const downloadUrl = await createPresignedDownloadUrl(params.storageKey);
+    const downloadUrl = await createRegionalPresignedDownloadUrl(params.storageKey, 900, region);
     // PDFs can be large — give the body read headroom.
     const pdfResponse = await fetchWithTimeout(downloadUrl, undefined, { timeoutMs: 60_000 });
 

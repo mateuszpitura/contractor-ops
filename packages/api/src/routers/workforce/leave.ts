@@ -14,8 +14,11 @@
 // the `employee` resource (the HR roles — never invoice:approve), takes a Zod
 // input, and audit-logs its mutations inside the caller transaction.
 
+import { createLogger } from '@contractor-ops/logger';
 import {
   blackoutPeriodUpsertInput,
+  entityIdSchema,
+  leaveAdjustmentInput,
   leaveTypeUpsertInput,
   recordSickAbsenceInput,
   submitLeaveRequestInput,
@@ -24,14 +27,19 @@ import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import * as E from '../../errors';
 import { router } from '../../init';
-import { requirePermission } from '../../middleware/rbac';
-import { assertWorkforceEnabled } from '../../middleware/require-workforce-flag';
-import { tenantProcedure } from '../../middleware/tenant';
+import {
+  workforceReadProcedure,
+  workforceWriteProcedure,
+} from '../../middleware/workforce-procedures';
 import type { TxClient } from '../../services/approval-engine';
 import { createApprovalFlow, routeToLeaveChain } from '../../services/approval-engine';
+import { resolveApprovalFlowCreatorUserId } from '../../services/approval-flow-creator';
 import { writeAuditLog } from '../../services/audit-writer';
+import { applyLeaveAdjustment } from '../../services/leave-accrual';
 import { computeLeaveBalance, recomputeBalanceCache } from '../../services/leave-balance';
 import { dispatch } from '../../services/notification-service';
+
+const log = createLogger({ service: 'leave-router' });
 
 // The org member roles that hold `employee:approve_leave` (mirrors
 // packages/auth/src/roles.ts). A recorded sick absence notifies these users;
@@ -68,9 +76,6 @@ function deriveLeaveTypeCode(name: string): string {
   return slug.length > 0 ? slug : 'LEAVE_TYPE';
 }
 
-const workforceReadProcedure = tenantProcedure.use(requirePermission({ employee: ['read'] }));
-const workforceWriteProcedure = tenantProcedure.use(requirePermission({ employee: ['update'] }));
-
 const getBalanceInput = z
   .object({
     workerId: z.string().min(1),
@@ -103,14 +108,12 @@ const teamCalendarInput = z
     { message: 'calendar span too large', path: ['to'] },
   );
 
-const idInput = z.object({ id: z.string().min(1) }).strict();
+const idInput = entityIdSchema;
 
 export const leaveRouter = router({
   submitLeaveRequest: workforceWriteProcedure
     .input(submitLeaveRequestInput)
     .mutation(async ({ ctx, input }) => {
-      assertWorkforceEnabled(ctx.organizationId, ctx.region);
-
       const startDate = new Date(input.startDate);
       const endDate = new Date(input.endDate);
 
@@ -152,11 +155,16 @@ export const leaveRouter = router({
           throw new TRPCError({ code: 'BAD_REQUEST', message: E.LEAVE_BLACKOUT_OVERLAP });
         }
 
+        const leaveYear = startDate.getUTCFullYear();
         const ledgerRows = await tx.leaveLedgerEntry.findMany({
           where: {
             organizationId: ctx.organizationId,
             workerId: input.workerId,
             leaveTypeId: input.leaveTypeId,
+            effectiveDate: {
+              gte: new Date(Date.UTC(leaveYear, 0, 1)),
+              lt: new Date(Date.UTC(leaveYear + 1, 0, 1)),
+            },
           },
           select: { minutes: true },
         });
@@ -184,12 +192,18 @@ export const leaveRouter = router({
           select: { id: true, teamId: true },
         });
 
+        const createdByUserId = await resolveApprovalFlowCreatorUserId(
+          tx as TxClient,
+          ctx.organizationId,
+          ctx.user?.id,
+        );
+
         const flow = await createApprovalFlow(tx as TxClient, {
           organizationId: ctx.organizationId,
           resourceType: 'LEAVE_REQUEST',
           resourceId: leaveRequest.id,
           chainConfig,
-          createdByUserId: ctx.user?.id ?? '',
+          createdByUserId,
         });
 
         const updated = await tx.leaveRequest.update({
@@ -231,8 +245,11 @@ export const leaveRouter = router({
             flowId: result.flowId,
             slaDeadline: firstStep.slaDeadline ? firstStep.slaDeadline.toISOString() : '',
           },
-        }).catch(() => {
-          /* fire-and-forget */
+        }).catch(err => {
+          log.error(
+            { err, organizationId: ctx.organizationId, requestId: result.request.id },
+            'leave submit: approval notification failed',
+          );
         });
       }
 
@@ -242,8 +259,6 @@ export const leaveRouter = router({
   recordSickAbsence: workforceWriteProcedure
     .input(recordSickAbsenceInput)
     .mutation(async ({ ctx, input }) => {
-      assertWorkforceEnabled(ctx.organizationId, ctx.region);
-
       const startDate = new Date(input.startDate);
 
       const ledgerEntry = await ctx.db.$transaction(async tx => {
@@ -300,10 +315,10 @@ export const leaveRouter = router({
           actorType: 'USER',
           actorId: ctx.user?.id ?? null,
           action: 'leave.sick.recorded',
-          resourceType: 'LEAVE_REQUEST',
-          resourceId: entry.id,
+          resourceType: 'WORKER',
+          resourceId: input.workerId,
           metadata: {
-            workerId: input.workerId,
+            ledgerEntryId: entry.id,
             minutes: input.minutes,
             leaveTypeId: sickType.id,
           },
@@ -332,17 +347,75 @@ export const leaveRouter = router({
           entityType: 'LEAVE_REQUEST',
           entityId: ledgerEntry.id,
           metadata: { workerId: input.workerId, minutes: input.minutes },
-        }).catch(() => {
-          /* fire-and-forget */
+        }).catch(err => {
+          log.error(
+            { err, organizationId: ctx.organizationId, workerId: input.workerId },
+            'leave sick: notification failed',
+          );
         });
       }
 
       return plain(ledgerEntry);
     }),
 
-  getBalance: workforceReadProcedure.input(getBalanceInput).query(async ({ ctx, input }) => {
-    assertWorkforceEnabled(ctx.organizationId, ctx.region);
+  adjustBalance: workforceWriteProcedure
+    .input(leaveAdjustmentInput)
+    .mutation(async ({ ctx, input }) => {
+      const entry = await ctx.db.$transaction(async tx => {
+        const worker = await tx.worker.findFirst({
+          where: {
+            id: input.workerId,
+            organizationId: ctx.organizationId,
+            workerType: 'EMPLOYEE',
+            deletedAt: null,
+          },
+          select: { id: true },
+        });
+        if (!worker) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: E.LEAVE_WORKER_NOT_FOUND });
+        }
 
+        const leaveType = await tx.leaveType.findFirst({
+          where: { id: input.leaveTypeId, organizationId: ctx.organizationId, active: true },
+          select: { id: true },
+        });
+        if (!leaveType) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: E.LEAVE_TYPE_NOT_FOUND });
+        }
+
+        const { entryId } = await applyLeaveAdjustment(tx as TxClient, {
+          organizationId: ctx.organizationId,
+          workerId: input.workerId,
+          leaveTypeId: input.leaveTypeId,
+          minutes: input.minutes,
+          reason: input.reason,
+          effectiveDate: input.effectiveDate,
+          userId: ctx.user?.id ?? null,
+        });
+
+        await writeAuditLog({
+          organizationId: ctx.organizationId,
+          actorType: 'USER',
+          actorId: ctx.user?.id ?? null,
+          action: 'leave.balance.adjusted',
+          resourceType: 'WORKER',
+          resourceId: input.workerId,
+          metadata: {
+            ledgerEntryId: entryId,
+            leaveTypeId: input.leaveTypeId,
+            minutes: input.minutes,
+            reason: input.reason,
+          },
+          tx,
+        });
+
+        return { id: entryId };
+      });
+
+      return plain(entry);
+    }),
+
+  getBalance: workforceReadProcedure.input(getBalanceInput).query(async ({ ctx, input }) => {
     const where: {
       organizationId: string;
       workerId: string;
@@ -369,8 +442,6 @@ export const leaveRouter = router({
   }),
 
   listRequests: workforceReadProcedure.input(listRequestsInput).query(async ({ ctx, input }) => {
-    assertWorkforceEnabled(ctx.organizationId, ctx.region);
-
     const where = {
       organizationId: ctx.organizationId,
       ...(input.workerId ? { workerId: input.workerId } : {}),
@@ -392,7 +463,6 @@ export const leaveRouter = router({
 
   leaveType: router({
     list: workforceReadProcedure.query(async ({ ctx }) => {
-      assertWorkforceEnabled(ctx.organizationId, ctx.region);
       const rows = await ctx.db.leaveType.findMany({
         where: { organizationId: ctx.organizationId },
         orderBy: { name: 'asc' },
@@ -401,8 +471,6 @@ export const leaveRouter = router({
     }),
 
     upsert: workforceWriteProcedure.input(leaveTypeUpsertInput).mutation(async ({ ctx, input }) => {
-      assertWorkforceEnabled(ctx.organizationId, ctx.region);
-
       const data = {
         name: input.name,
         code: deriveLeaveTypeCode(input.name),
@@ -435,8 +503,8 @@ export const leaveRouter = router({
           actorId: ctx.user?.id ?? null,
           action: input.id ? 'leave.type.updated' : 'leave.type.created',
           resourceType: 'ORGANIZATION',
-          resourceId: row.id,
-          metadata: { code: data.code, kind: data.kind },
+          resourceId: ctx.organizationId,
+          metadata: { leaveTypeId: row.id, code: data.code, kind: data.kind },
           tx,
         });
 
@@ -447,8 +515,6 @@ export const leaveRouter = router({
     }),
 
     archive: workforceWriteProcedure.input(idInput).mutation(async ({ ctx, input }) => {
-      assertWorkforceEnabled(ctx.organizationId, ctx.region);
-
       const saved = await ctx.db.$transaction(async tx => {
         const existing = await tx.leaveType.findFirst({
           where: { id: input.id, organizationId: ctx.organizationId },
@@ -467,7 +533,8 @@ export const leaveRouter = router({
           actorId: ctx.user?.id ?? null,
           action: 'leave.type.archived',
           resourceType: 'ORGANIZATION',
-          resourceId: input.id,
+          resourceId: ctx.organizationId,
+          metadata: { leaveTypeId: input.id },
           tx,
         });
         return row;
@@ -479,7 +546,6 @@ export const leaveRouter = router({
 
   blackout: router({
     list: workforceReadProcedure.query(async ({ ctx }) => {
-      assertWorkforceEnabled(ctx.organizationId, ctx.region);
       const rows = await ctx.db.blackoutPeriod.findMany({
         where: { organizationId: ctx.organizationId },
         orderBy: { startDate: 'asc' },
@@ -490,8 +556,6 @@ export const leaveRouter = router({
     upsert: workforceWriteProcedure
       .input(blackoutPeriodUpsertInput)
       .mutation(async ({ ctx, input }) => {
-        assertWorkforceEnabled(ctx.organizationId, ctx.region);
-
         const data = {
           startDate: new Date(input.startDate),
           endDate: new Date(input.endDate),
@@ -522,8 +586,8 @@ export const leaveRouter = router({
             actorId: ctx.user?.id ?? null,
             action: input.id ? 'leave.blackout.updated' : 'leave.blackout.created',
             resourceType: 'ORGANIZATION',
-            resourceId: row.id,
-            metadata: { name: input.name },
+            resourceId: ctx.organizationId,
+            metadata: { blackoutPeriodId: row.id, name: input.name },
             tx,
           });
 
@@ -534,8 +598,6 @@ export const leaveRouter = router({
       }),
 
     delete: workforceWriteProcedure.input(idInput).mutation(async ({ ctx, input }) => {
-      assertWorkforceEnabled(ctx.organizationId, ctx.region);
-
       await ctx.db.$transaction(async tx => {
         const existing = await tx.blackoutPeriod.findFirst({
           where: { id: input.id, organizationId: ctx.organizationId },
@@ -551,7 +613,8 @@ export const leaveRouter = router({
           actorId: ctx.user?.id ?? null,
           action: 'leave.blackout.deleted',
           resourceType: 'ORGANIZATION',
-          resourceId: input.id,
+          resourceId: ctx.organizationId,
+          metadata: { blackoutPeriodId: input.id },
           tx,
         });
       });
@@ -563,8 +626,6 @@ export const leaveRouter = router({
   listTeamCalendar: workforceReadProcedure
     .input(teamCalendarInput)
     .query(async ({ ctx, input }) => {
-      assertWorkforceEnabled(ctx.organizationId, ctx.region);
-
       const from = new Date(input.from);
       const to = new Date(input.to);
 

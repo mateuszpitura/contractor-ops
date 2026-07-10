@@ -132,7 +132,7 @@ describe('runHrisPull', () => {
     });
     expect(res.errors).toBe(1);
     expect(res.applied).toBe(1);
-    expect(res.status).toBe('SUCCESS');
+    expect(res.status).toBe('FAILED');
   });
 
   it('releases the advisory lock even after a successful run', async () => {

@@ -20,6 +20,7 @@ updated: 2026-06-09
 | [[trpc-procedure-stack]] | public → authed → tenant → rbac |
 | [[validators-boundaries]] | Zod everywhere; no bare `as` on external payloads |
 | [[agent-delegation]] | Subagent-first; cavecrew default; no ad-hoc bulk shell edits |
+| [[business-logic-shield]] | Domain composition gate (S1–S7, T1–T7); `[shield]` hooks before logic edits |
 | [[ui-skills-routing]] | frontend-design → semble → impeccable / design-taste stack |
 | [[money-rounding]] | Integer minor units; HALF-UP default, skonto FLOOR, interest HALF-UP |
 

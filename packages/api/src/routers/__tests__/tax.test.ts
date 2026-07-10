@@ -49,7 +49,7 @@ const {
       findUnique: vi.fn(),
     },
     paymentRunItem: {
-      aggregate: vi.fn(async () => ({ _sum: { whtAmountMinor: 0 }, _count: 0 })),
+      findMany: vi.fn(async () => []),
     },
     contractor: { count: vi.fn(async () => 0) },
     member: { findFirst: vi.fn(async () => ({ role: 'admin' })) },
@@ -109,21 +109,11 @@ vi.mock('../../services/wht-certificate.service', () => ({
   listWhtCertificates: mockListWhtCertificates,
 }));
 
-vi.mock('../../services/cache', () => ({
-  cacheKey: vi.fn((...s: string[]) => s.join(':')),
-  cachedSingleflight: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  cached: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  invalidate: vi.fn(async () => undefined),
-  invalidateByPrefix: vi.fn(async () => undefined),
-  CacheKeys: {
-    orgSettings: (orgId: string) => `org-settings:${orgId}`,
-    orgSettingsJson: (orgId: string, key: string) => `org-settings-json:${orgId}:${key}`,
-    orgBranding: (orgId: string) => `org-branding:${orgId}`,
-    settingsPrefix: (orgId: string) => `org-settings:${orgId}`,
-    approvalChains: (orgId: string) => `approval-chains:${orgId}`,
-  },
-  CacheTTL: { ORG_SETTINGS: 300, ORG_SETTINGS_JSON: 300, ORG_BRANDING: 300, APPROVAL_CHAINS: 300 },
-}));
+vi.mock('../../services/cache', async importOriginal => {
+  const actual = await importOriginal<typeof import('../../services/cache')>();
+  const { createPassthroughCacheMock } = await import('../../__tests__/__mocks__/cache-service');
+  return createPassthroughCacheMock(actual);
+});
 
 vi.mock('../../services/notification-service', () => ({
   dispatch: vi.fn(async () => undefined),
@@ -467,6 +457,7 @@ describe('tax.generateWhtCertificate', () => {
       organizationId: ORG_ID,
       paymentRunItemId: 'pri-1',
       generatedByUserId: USER_ID,
+      db: expect.anything(),
     });
     expect(result).toEqual(cert);
   });
@@ -479,7 +470,7 @@ describe('tax.listWhtCertificates', () => {
 
     const result = await caller.tax.listWhtCertificates();
 
-    expect(mockListWhtCertificates).toHaveBeenCalledWith(ORG_ID);
+    expect(mockListWhtCertificates).toHaveBeenCalledWith(ORG_ID, mockPrisma);
     expect(result).toEqual(certs);
   });
 });
@@ -515,14 +506,15 @@ describe('tax.taxSummary', () => {
     mockPrisma.invoice.aggregate
       .mockResolvedValueOnce({ _sum: { vatAmountMinor: 5000 } })
       .mockResolvedValueOnce({ _sum: { vatAmountMinor: 2000 } });
-    mockPrisma.whtCertificate.findMany.mockResolvedValueOnce([
-      { whtAmountMinor: 1000 },
-      { whtAmountMinor: 500 },
+    mockPrisma.whtCertificate.findMany
+      .mockResolvedValueOnce([{ whtAmountMinor: 1000 }, { whtAmountMinor: 500 }])
+      .mockResolvedValueOnce([{ paymentRunItemId: 'item-1' }, { paymentRunItemId: 'item-2' }]);
+    mockPrisma.paymentRunItem.findMany.mockResolvedValueOnce([
+      { id: 'item-1', whtAmountMinor: 500 },
+      { id: 'item-2', whtAmountMinor: 1000 },
+      { id: 'item-3', whtAmountMinor: 800 },
+      { id: 'item-4', whtAmountMinor: 700 },
     ]);
-    mockPrisma.paymentRunItem.aggregate.mockResolvedValueOnce({
-      _sum: { whtAmountMinor: 3000 },
-      _count: 5,
-    });
 
     const result = await caller.tax.taxSummary();
 
@@ -531,8 +523,8 @@ describe('tax.taxSummary', () => {
     expect(result.vatNetMinor).toBe(3000);
     expect(result.whtWithheldMinor).toBe(1500);
     expect(result.whtCertCount).toBe(2);
-    expect(result.whtPendingMinor).toBe(1500); // 3000 - 1500
-    expect(result.whtPendingCount).toBe(3); // max(0, 5 - 2)
+    expect(result.whtPendingMinor).toBe(1500);
+    expect(result.whtPendingCount).toBe(2);
     expect(result.periodStart).toBeDefined();
     expect(result.periodEnd).toBeDefined();
   });
@@ -542,10 +534,7 @@ describe('tax.taxSummary', () => {
       .mockResolvedValueOnce({ _sum: { vatAmountMinor: null } })
       .mockResolvedValueOnce({ _sum: { vatAmountMinor: null } });
     mockPrisma.whtCertificate.findMany.mockResolvedValueOnce([]);
-    mockPrisma.paymentRunItem.aggregate.mockResolvedValueOnce({
-      _sum: { whtAmountMinor: null },
-      _count: 0,
-    });
+    mockPrisma.paymentRunItem.findMany.mockResolvedValueOnce([]);
 
     const result = await caller.tax.taxSummary();
 

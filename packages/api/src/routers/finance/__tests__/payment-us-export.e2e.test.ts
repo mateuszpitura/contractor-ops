@@ -27,7 +27,7 @@ const RUN_ID = 'clrun000000000000000000001';
 const ITEM_ID = 'clitem00000000000000000001';
 
 // Synthetic US bank details — never real routing/account numbers.
-const US_ROUTING = '123456789';
+const US_ROUTING = '123456780';
 const US_ACCOUNT = '000987654321';
 
 // ---------------------------------------------------------------------------
@@ -196,15 +196,11 @@ vi.mock('../../../services/billing-service', () => ({
   syncSeatCountForOrg: vi.fn(async () => undefined),
 }));
 
-vi.mock('../../../services/cache', () => ({
-  cacheKey: vi.fn((...s: string[]) => s.join(':')),
-  cachedSingleflight: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  cached: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  invalidate: vi.fn(async () => undefined),
-  invalidateByPrefix: vi.fn(async () => undefined),
-  CacheKeys: { approvalChains: (orgId: string) => `approval-chains:${orgId}` },
-  CacheTTL: { APPROVAL_CHAINS: 300 },
-}));
+vi.mock('../../../services/cache', async importOriginal => {
+  const actual = await importOriginal<typeof import('../../../services/cache')>();
+  const { createPassthroughCacheMock } = await import('../../../__tests__/__mocks__/cache-service');
+  return createPassthroughCacheMock(actual);
+});
 
 vi.mock('../../../services/mime-validator', () => ({
   isAllowedMimeType: vi.fn(() => true),

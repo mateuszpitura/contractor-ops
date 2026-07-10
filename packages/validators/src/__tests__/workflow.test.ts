@@ -122,10 +122,19 @@ describe('templateUpdateSchema', () => {
 describe('startRunSchema', () => {
   it('accepts template + contractor', () => {
     const r = startRunSchema.safeParse({
+      subjectType: 'CONTRACTOR',
       templateId: 't1',
       contractorId: 'c1',
     });
     expect(r.success).toBe(true);
+  });
+
+  it('rejects a contractor payload without subjectType discriminator', () => {
+    const r = startRunSchema.safeParse({
+      templateId: 't1',
+      contractorId: 'c1',
+    });
+    expect(r.success).toBe(false);
   });
 });
 

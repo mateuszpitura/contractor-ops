@@ -83,6 +83,7 @@ describe('useSpendTeamReport', () => {
           },
         ],
         total: 2,
+        grandTotalMinor: 2300,
       }),
       'report.spendByTeamChart': () => [
         { teamId: null, teamName: null, totalMinor: 300 },

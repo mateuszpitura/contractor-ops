@@ -71,6 +71,12 @@ export class PersonioAdapter extends BaseAdapter {
   readonly supportsOAuth = false;
   readonly supportsWebhooks = false;
 
+  // Deliberately NO `refreshToken` handler: Personio bearers are minted fresh
+  // from the client-credentials pair on demand (see `bearer`), so there is no
+  // stored refresh token to rotate. The proactive token-refresh cron keys off
+  // the presence of this handler, so leaving it undefined is what makes the
+  // cron skip Personio instead of failing it into REAUTH_REQUIRED.
+
   private readonly fetchImpl: FetchLike;
   private readonly limiter: RateLimiter;
   private readonly apiBaseUrl: string;
@@ -139,7 +145,9 @@ export class PersonioAdapter extends BaseAdapter {
       const res = await this.fetchImpl(`${this.apiBaseUrl}/v2/persons?${params.toString()}`, {
         headers: { Authorization: `Bearer ${bearer}`, Accept: 'application/json' },
       });
-      if (!res.ok) break;
+      if (!res.ok) {
+        throw new Error(`Personio list failed with status ${res.status}`);
+      }
 
       const page = normalizePersonioPersons(await res.json());
       results.push(...page);
@@ -158,7 +166,9 @@ export class PersonioAdapter extends BaseAdapter {
    * granted.
    */
   async pushEmployeeEvent(creds: CredentialBlob, input: HrisPushInput): Promise<void> {
-    if (!input.externalId) return;
+    if (!input.externalId) {
+      throw new Error('Personio push requires a linked HRIS external id');
+    }
     const bearer = await this.bearer(creds);
     await this.limiter.acquire();
     const res = await this.fetchImpl(

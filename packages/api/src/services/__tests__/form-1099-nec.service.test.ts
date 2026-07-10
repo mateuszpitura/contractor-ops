@@ -64,12 +64,16 @@ function makeRollbackPersist(createImpl: (data: unknown) => Promise<{ id: string
   const persist = {
     $transaction: async <T>(
       fn: (tx: {
-        form1099Nec: { create: (a: { data: unknown }) => Promise<{ id: string }> };
+        form1099Nec: {
+          create: (a: { data: unknown }) => Promise<{ id: string }>;
+          updateMany: () => Promise<{ count: number }>;
+        };
       }) => Promise<T>,
     ): Promise<T> => {
       const staged: unknown[] = [];
       const tx = {
         form1099Nec: {
+          updateMany: vi.fn(async () => ({ count: 1 })),
           create: async ({ data }: { data: unknown }) => {
             const res = await createImpl(data);
             staged.push(data);
@@ -244,14 +248,14 @@ describe('form-1099-nec.service — box-4 backup withholding', () => {
     ).toBe(5_000);
   });
 
-  it('is zero when neither the flag nor a mismatch is present', () => {
+  it('reports prior backup withholding when the flag was cleared before year-end', () => {
     expect(
       computeBox4Minor({
         backupWithholdingFlagged: false,
         tinMismatch: false,
         recordedBackupWithholdingMinor: 9_999,
       }),
-    ).toBe(0);
+    ).toBe(9_999);
   });
 });
 

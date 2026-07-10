@@ -45,7 +45,7 @@ export interface JobRegistry {
   'zatca.submit': {
     organizationId: string;
     invoiceId: string;
-    submissionId: string;
+    attempt?: number;
   };
   'outbox.drain': Record<string, never>;
   'webhook.deliver': { attemptId: string };

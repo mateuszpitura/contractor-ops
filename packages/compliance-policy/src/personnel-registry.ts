@@ -53,8 +53,16 @@ export function getPersonnelSections(jurisdiction: Jurisdiction): PersonnelSecti
 export function getPersonnelRetentionRules(
   jurisdiction: Jurisdiction,
   section: PersonnelFileSection,
+  hireDate?: Date | null,
 ): PersonnelRetentionRule[] {
-  return sections.get(sectionKey(jurisdiction, section))?.retentionRules ?? [];
+  const rules = sections.get(sectionKey(jurisdiction, section))?.retentionRules ?? [];
+  if (jurisdiction !== 'PL') return rules;
+
+  const legacyCutoff = new Date('2019-01-01T00:00:00.000Z');
+  const useLegacy = hireDate == null || hireDate < legacyCutoff;
+  return rules.filter(rule =>
+    useLegacy ? rule.recordType === 'pl-akta-legacy' : rule.recordType === 'pl-akta-post2019',
+  );
 }
 
 /**

@@ -51,11 +51,12 @@ function toBuckets(rows: readonly { _count: { _all: number } }[], column: string
 }
 
 export const hrDashboardRouter = router({
-  /** HR-DASH-01 — headcount total + breakdowns (all over the active workforce). */
+  /** Headcount total + breakdowns (all over the active workforce). */
   getHeadcount: hrDashboardProcedure.input(emptyInput).query(async ({ ctx }) => {
     const activeWhere = {
       organizationId: ctx.organizationId,
-      employmentStatus: { not: 'TERMINATED' as const },
+      OR: [{ employmentStatus: null }, { employmentStatus: { not: 'TERMINATED' as const } }],
+      worker: { deletedAt: null, workerType: 'EMPLOYEE' as const },
     };
 
     const [total, byDepartmentRows, byJurisdictionRows, byEmploymentTypeRows, contractEndRows] =
@@ -105,13 +106,14 @@ export const hrDashboardRouter = router({
     };
   }),
 
-  /** HR-DASH-02 — vacation utilization from the LeaveBalance cache (no ledger re-sum). */
+  /** Vacation utilization from the LeaveBalance cache (no ledger re-sum). */
   getVacationUtilization: hrDashboardProcedure
     .input(z.object({ year: z.number().int().optional() }).strict())
     .query(async ({ ctx, input }) => {
       const balances = await ctx.db.leaveBalance.findMany({
         where: {
           organizationId: ctx.organizationId,
+          leaveType: { kind: 'ANNUAL' },
           ...(input.year === undefined ? {} : { year: input.year }),
         },
         select: {
@@ -125,7 +127,7 @@ export const hrDashboardRouter = router({
       return deriveVacationUtilization(balances satisfies LeaveBalanceRow[], new Date());
     }),
 
-  /** HR-DASH-03 — document expiry via the F1 compliance-policy math, section-filtered. */
+  /** Document expiry via the shared compliance-policy expiry math, section-filtered. */
   getDocumentExpiry: hrDashboardProcedure.input(emptyInput).query(async ({ ctx }) => {
     const rows = await ctx.db.personnelFileDocument.findMany({
       where: {
@@ -165,7 +167,7 @@ export const hrDashboardRouter = router({
     return deriveEmployeeDocExpiry(visible, new Date());
   }),
 
-  /** HR-DASH-04 — probation watchlist over the indexed probationEndsAt window. */
+  /** Probation watchlist over the indexed probationEndsAt window. */
   getProbationWatchlist: hrDashboardProcedure.input(emptyInput).query(async ({ ctx }) => {
     const now = new Date();
     const startOfToday = new Date(
@@ -178,7 +180,8 @@ export const hrDashboardRouter = router({
     const rows = await ctx.db.employeeProfile.findMany({
       where: {
         organizationId: ctx.organizationId,
-        employmentStatus: { not: 'TERMINATED' },
+        OR: [{ employmentStatus: null }, { employmentStatus: { not: 'TERMINATED' } }],
+        worker: { deletedAt: null, workerType: 'EMPLOYEE' },
         probationEndsAt: { gte: startOfToday, lte: windowEnd },
       },
       select: {
@@ -201,7 +204,7 @@ export const hrDashboardRouter = router({
     return deriveProbationWatchlist(probationRows, now);
   }),
 
-  /** HR-DASH-05 — per-country nationalisation rollup (KSA Saudization + UAE Emiratisation). */
+  /** Per-country nationalisation rollup (KSA Saudization + UAE Emiratisation). */
   getNationalisationRollup: hrDashboardProcedure.input(emptyInput).query(async ({ ctx }) => {
     const [headcount, config] = await Promise.all([
       ctx.db.saudiHeadcount.findFirst({
@@ -250,12 +253,25 @@ export const hrDashboardRouter = router({
       startOfToday.getTime() + PROBATION_WINDOW_DAYS * 24 * 60 * 60 * 1000,
     );
 
-    const [totalHeadcount, balances, probationDueCount, expiringDocCount] = await Promise.all([
+    const [
+      totalHeadcount,
+      balances,
+      probationDueCount,
+      expiringDocCount,
+      degradedEntitlementCount,
+    ] = await Promise.all([
       ctx.db.employeeProfile.count({
-        where: { organizationId: ctx.organizationId, employmentStatus: { not: 'TERMINATED' } },
+        where: {
+          organizationId: ctx.organizationId,
+          OR: [{ employmentStatus: null }, { employmentStatus: { not: 'TERMINATED' } }],
+          worker: { deletedAt: null, workerType: 'EMPLOYEE' },
+        },
       }),
       ctx.db.leaveBalance.findMany({
-        where: { organizationId: ctx.organizationId },
+        where: {
+          organizationId: ctx.organizationId,
+          leaveType: { kind: 'ANNUAL' },
+        },
         select: {
           workerId: true,
           year: true,
@@ -267,7 +283,8 @@ export const hrDashboardRouter = router({
       ctx.db.employeeProfile.count({
         where: {
           organizationId: ctx.organizationId,
-          employmentStatus: { not: 'TERMINATED' },
+          OR: [{ employmentStatus: null }, { employmentStatus: { not: 'TERMINATED' } }],
+          worker: { deletedAt: null, workerType: 'EMPLOYEE' },
           probationEndsAt: { gte: startOfToday, lte: windowEnd },
         },
       }),
@@ -281,6 +298,17 @@ export const hrDashboardRouter = router({
           },
         },
       }),
+      ctx.db.employeeProfile.count({
+        where: {
+          organizationId: ctx.organizationId,
+          OR: [{ employmentStatus: null }, { employmentStatus: { not: 'TERMINATED' } }],
+          worker: {
+            deletedAt: null,
+            workerType: 'EMPLOYEE',
+            OR: [{ personnelFile: null }, { personnelFile: { hireDate: null } }],
+          },
+        },
+      }),
     ]);
 
     const { underUtilizedCount } = deriveVacationUtilization(
@@ -288,7 +316,13 @@ export const hrDashboardRouter = router({
       now,
     );
 
-    return { totalHeadcount, underUtilizedCount, probationDueCount, expiringDocCount };
+    return {
+      totalHeadcount,
+      underUtilizedCount,
+      probationDueCount,
+      expiringDocCount,
+      degradedEntitlementCount,
+    };
   }),
 });
 

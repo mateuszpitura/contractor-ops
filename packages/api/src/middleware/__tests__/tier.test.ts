@@ -105,15 +105,11 @@ vi.mock('@contractor-ops/db', () => ({
 // minimalServerEnv sets placeholder Upstash URL/token so the real client
 // tries an HTTP call and hangs the test. Bypass cache → fn() to keep
 // tests fast and deterministic.
-vi.mock('../../services/cache', () => ({
-  cacheKey: vi.fn((...s: string[]) => s.join(':')),
-  cached: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  cachedSingleflight: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  invalidate: vi.fn(async () => undefined),
-  invalidateByPrefix: vi.fn(async () => undefined),
-  CacheKeys: {},
-  CacheTTL: {},
-}));
+vi.mock('../../services/cache', async importOriginal => {
+  const actual = await importOriginal<typeof import('../../services/cache')>();
+  const { createPassthroughCacheMock } = await import('../../__tests__/__mocks__/cache-service');
+  return createPassthroughCacheMock(actual);
+});
 
 import { t } from '../../init';
 import { tenantProcedure } from '../tenant';

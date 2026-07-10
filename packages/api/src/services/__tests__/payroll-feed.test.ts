@@ -58,7 +58,7 @@ const anna: WorkerRow = {
 
 describe('buildPayrollFeed', () => {
   it('joins Worker+EmployeeProfile+PersonnelFile and masks the national ID to last-4', async () => {
-    const feed = await buildPayrollFeed(fakeDb([anna]) as never, ORG_A, ['wrk-pl-001']);
+    const { feed } = await buildPayrollFeed(fakeDb([anna]) as never, ORG_A, ['wrk-pl-001']);
 
     expect(feed.organizationId).toBe(ORG_A);
     expect(feed.employees).toHaveLength(1);
@@ -83,7 +83,7 @@ describe('buildPayrollFeed', () => {
         terminatedAt: new Date('2025-03-31T00:00:00.000Z'),
       },
     };
-    const feed = await buildPayrollFeed(fakeDb([terminated]) as never, ORG_A, ['wrk-pl-002']);
+    const { feed } = await buildPayrollFeed(fakeDb([terminated]) as never, ORG_A, ['wrk-pl-002']);
     expect(feed.employees[0].terminatedAt).toContain('2025-03-31');
   });
 });

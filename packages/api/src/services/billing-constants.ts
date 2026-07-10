@@ -61,3 +61,18 @@ export const KNOWN_TOPUP_PRICE_IDS = new Set(Object.keys(TOPUP_PRICE_TO_CREDITS)
 export function resolveTopUpCredits(priceId: string): number | null {
   return TOPUP_PRICE_TO_CREDITS[priceId] ?? null;
 }
+
+/** Monthly OCR allowance for an active/trialing subscription, or null when tier is unknown. */
+export function resolveOcrCreditAllowance(subscription: {
+  status: string;
+  tier: string;
+}): number | null {
+  if (subscription.status === 'TRIALING') {
+    return TRIAL_CREDIT_ALLOWANCE;
+  }
+  if (subscription.status !== 'ACTIVE') {
+    return null;
+  }
+  const tier = subscription.tier as SubscriptionTier;
+  return tier in TIER_CREDIT_ALLOWANCE ? TIER_CREDIT_ALLOWANCE[tier] : null;
+}

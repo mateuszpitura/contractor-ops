@@ -134,11 +134,18 @@ function addYears(date: Date, years: number): Date {
   return next;
 }
 
-function anchorDateFor(anchor: RetentionAnchor, dates: PersonnelRetentionDates): Date | null {
+function anchorDateFor(
+  anchor: RetentionAnchor,
+  dates: PersonnelRetentionDates,
+  rule?: PersonnelRetentionRuleInput,
+): Date | null {
   switch (anchor) {
     case 'HIRE_DATE':
       return dates.hireDate;
     case 'TERMINATION_DATE':
+      if (dates.terminationDate && rule?.recordType.startsWith('pl-akta')) {
+        return new Date(Date.UTC(dates.terminationDate.getUTCFullYear(), 11, 31));
+      }
       return dates.terminationDate;
     case 'DOCUMENT_DATE':
       return dates.documentDate;
@@ -177,7 +184,7 @@ export function getPersonnelRetentionCutoff(
   let binding: { retainUntil: Date; citation: string } | null = null;
 
   for (const rule of rules) {
-    const anchorDate = anchorDateFor(rule.anchor, dates);
+    const anchorDate = anchorDateFor(rule.anchor, dates, rule);
     if (anchorDate === null) {
       return { erasable: false, retainUntil: null, citation: rule.citation };
     }

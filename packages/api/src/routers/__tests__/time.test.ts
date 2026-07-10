@@ -177,15 +177,11 @@ vi.mock('../../services/billing-service', () => ({
   syncSeatCountForOrg: vi.fn(async () => undefined),
 }));
 
-vi.mock('../../services/cache', () => ({
-  cacheKey: vi.fn((...s: string[]) => s.join(':')),
-  cachedSingleflight: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  cached: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  invalidate: vi.fn(async () => undefined),
-  invalidateByPrefix: vi.fn(async () => undefined),
-  CacheKeys: { approvalChains: (orgId: string) => `approval-chains:${orgId}` },
-  CacheTTL: { APPROVAL_CHAINS: 300 },
-}));
+vi.mock('../../services/cache', async importOriginal => {
+  const actual = await importOriginal<typeof import('../../services/cache')>();
+  const { createPassthroughCacheMock } = await import('../../__tests__/__mocks__/cache-service');
+  return createPassthroughCacheMock(actual);
+});
 
 vi.mock('../../services/mime-validator', () => ({
   isAllowedMimeType: vi.fn(() => true),
@@ -353,6 +349,11 @@ function makeCaller(userId: string, orgId: string) {
 }
 
 const caller = makeCaller(USER_ID, ORG_ID);
+const EXPECTED_TIMESHEET_AUDIT = {
+  actorName: 'Test User',
+  ipAddress: null,
+  userAgent: null,
+};
 
 // ---------------------------------------------------------------------------
 // Reset mocks
@@ -532,6 +533,7 @@ describe('time router', () => {
         ORG_ID,
         TIMESHEET_ID_1,
         USER_ID,
+        EXPECTED_TIMESHEET_AUDIT,
       );
     });
   });
@@ -553,6 +555,7 @@ describe('time router', () => {
         TIMESHEET_ID_1,
         USER_ID,
         'Hours do not match contract',
+        EXPECTED_TIMESHEET_AUDIT,
       );
     });
   });
@@ -567,7 +570,13 @@ describe('time router', () => {
 
       const result = await caller.time.bulkApprove({ timesheetIds: ids });
 
-      expect(mockBulkApproveTimesheets).toHaveBeenCalledWith(mockPrisma, ORG_ID, ids, USER_ID);
+      expect(mockBulkApproveTimesheets).toHaveBeenCalledWith(
+        mockPrisma,
+        ORG_ID,
+        ids,
+        USER_ID,
+        EXPECTED_TIMESHEET_AUDIT,
+      );
       expect(result).toEqual({ count: 2 });
     });
   });
@@ -591,6 +600,7 @@ describe('time router', () => {
         ids,
         USER_ID,
         'Incorrect hours reported',
+        EXPECTED_TIMESHEET_AUDIT,
       );
       expect(result).toEqual({ count: 2 });
     });

@@ -8,8 +8,8 @@ export const PINT_AE_CUSTOMIZATION_ID = 'urn:peppol:pint:billing-1@uae-1.0';
 /** Standard Peppol BIS Billing 3.0 profile ID */
 export const PINT_AE_PROFILE_ID = 'urn:peppol:bis:billing';
 
-/** ISO 6523 ICD for UAE Tax Registration Number */
-export const UAE_SCHEME_ID = '0192';
+/** ISO 6523 ICD for UAE Tax Registration Number (PINT-AE / Peppol) */
+export const UAE_SCHEME_ID = '0235';
 
 /** Full Peppol document type identifier for PINT-AE invoices */
 export const PINT_AE_DOCUMENT_TYPE_ID =

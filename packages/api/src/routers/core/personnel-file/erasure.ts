@@ -132,6 +132,33 @@ async function auditRetainedUnderStatute(
 }
 
 /**
+ * Audit the actual data-deletion branch — sections past retention whose documents
+ * were soft-deleted — in the same transaction so erasure is never repudiable.
+ */
+async function auditErased(
+  tx: AuditWriterClient,
+  ctx: ErasureAuditContext,
+  workerId: string,
+  erasedSections: Record<string, number>,
+): Promise<void> {
+  const totalDocumentsErased = Object.values(erasedSections).reduce((sum, count) => sum + count, 0);
+  await writeAuditLog({
+    tx,
+    organizationId: ctx.organizationId,
+    action: 'personnel_file.erased',
+    actorType: 'USER',
+    actorId: ctx.user?.id ?? null,
+    actorName: ctx.user?.name ?? ctx.user?.email ?? null,
+    resourceType: 'USER',
+    resourceId: workerId,
+    resourceName: 'Personnel File Erasure — Data Deleted',
+    metadata: { erasedSections, totalDocumentsErased },
+    ipAddress: ctx.headers.get('x-forwarded-for')?.split(',')[0] ?? null,
+    userAgent: ctx.headers.get('user-agent') ?? null,
+  });
+}
+
+/**
  * Audit every erasure request — including the fully-erased success path — in the
  * same transaction as the soft-deletes, so no request (erased or held) is ever
  * repudiable. Carries the per-section disposition map and whether full erasure
@@ -197,9 +224,12 @@ export const erasureRouter = router({
       const { sections, retainedUnderStatute } = await ctx.db.$transaction(async tx => {
         const dispositions: SectionDisposition[] = [];
         const retained: Record<string, string> = {};
+        const erasedSections: Record<string, number> = {};
 
         for (const section of PERSONNEL_FILE_SECTIONS) {
-          const rules = jurisdiction ? getPersonnelRetentionRules(jurisdiction, section) : [];
+          const rules = jurisdiction
+            ? getPersonnelRetentionRules(jurisdiction, section, file.hireDate ?? null)
+            : [];
 
           const sectionWhere = {
             personnelFileId: file.id,
@@ -225,10 +255,13 @@ export const erasureRouter = router({
           if (disposition.disposition === 'erased') {
             // Past its window (or no statutory hold): soft-delete the section's
             // documents. The windowed hard purge stays the data-purge cron's job.
-            await tx.personnelFileDocument.updateMany({
+            const erased = await tx.personnelFileDocument.updateMany({
               where: sectionWhere,
               data: { deletedAt: now },
             });
+            if (erased.count > 0) {
+              erasedSections[disposition.section] = erased.count;
+            }
           } else if (disposition.citation) {
             retained[disposition.section] = disposition.citation;
           }
@@ -236,11 +269,32 @@ export const erasureRouter = router({
           dispositions.push(disposition);
         }
 
+        const unsectionedErased = await tx.personnelFileDocument.updateMany({
+          where: {
+            personnelFileId: file.id,
+            organizationId: ctx.organizationId,
+            section: null,
+            deletedAt: null,
+          },
+          data: { deletedAt: now },
+        });
+        if (unsectionedErased.count > 0) {
+          erasedSections.unsectioned = unsectionedErased.count;
+          dispositions.push({
+            section: 'unsectioned',
+            disposition: 'erased',
+          });
+        }
+
         const fullErasureClaimed = Object.keys(retained).length === 0;
 
         // Always audit the request itself — the erased-success path included —
         // so an erasure is never a silent, unauditable mutation.
         await auditErasureRequested(tx, ctx, file.workerId, dispositions, fullErasureClaimed);
+
+        if (Object.keys(erasedSections).length > 0) {
+          await auditErased(tx, ctx, file.workerId, erasedSections);
+        }
 
         if (!fullErasureClaimed) {
           await auditRetainedUnderStatute(tx, ctx, file.workerId, retained);

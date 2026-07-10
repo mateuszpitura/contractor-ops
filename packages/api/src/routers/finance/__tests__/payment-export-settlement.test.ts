@@ -10,7 +10,15 @@
 // `_generateExportFileForFormat` must emit the hand-rolled NACHA buffer for
 // ACH_NACHA and the pacs.008 XML for FEDWIRE.
 
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+
+vi.mock('../../../services/bank-account-crypto', () => ({
+  decryptBankAccount: vi.fn((encrypted: string) => {
+    if (encrypted === 'test-iban-encrypted') return 'PL61109010140000071219812874';
+    return encrypted;
+  }),
+}));
+
 import type { ExportItem, OrgBankInfo } from '../../../services/payment-export';
 import {
   _buildExportItems,
@@ -64,7 +72,12 @@ function makeRunItem(overrides: Partial<RunItem> = {}): RunItem {
       servicePeriodEnd: null,
     },
     contractor: { legalName: 'Jan Kowalski', taxId: '1234567890', currency: 'PLN' },
-    billingProfile: { bankAccountMasked: '****1234', swiftBic: 'BREXPLPW', bankName: 'mBank' },
+    billingProfile: {
+      bankAccountMasked: '****1234',
+      bankAccountEncrypted: 'test-iban-encrypted',
+      swiftBic: 'BREXPLPW',
+      bankName: 'mBank',
+    },
     ...overrides,
   };
 }
@@ -85,6 +98,7 @@ describe('_buildExportItems settlement wiring', () => {
     expect(items).toHaveLength(1);
     expect(items[0]?.amountMinor).toBe(100_000);
     expect(items[0]?.currency).toBe('PLN');
+    expect(items[0]?.iban).toBe('PL61109010140000071219812874');
     // Same-currency settlement: no FX provenance to persist (rate 1, nothing to reconstruct).
     expect(settlements).toHaveLength(0);
   });
@@ -162,6 +176,22 @@ describe('_buildExportItems settlement wiring', () => {
     expect(updates[0]?.data.settlementRateDate).not.toEqual(settlementPayDate);
     // A payout audit reconstructs the settled amount from the persisted rate.
     expect(Math.round(100_000 * persistedRate)).toBe(items[0]?.amountMinor);
+  });
+
+  it('throws when billing profile has only a masked IBAN', async () => {
+    const { db } = makeDbStub({});
+    await expect(
+      _buildExportItems(
+        db,
+        [
+          makeRunItem({
+            billingProfile: { bankAccountMasked: '****1234', swiftBic: null, bankName: null },
+          }),
+        ],
+        '{invoice_number}',
+        { paymentDate },
+      ),
+    ).rejects.toMatchObject({ code: 'PRECONDITION_FAILED' });
   });
 
   it('throws rather than emitting a zeroed amount when the settlement rate is missing', async () => {

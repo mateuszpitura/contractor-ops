@@ -11,6 +11,7 @@ import type { ApprovalQueueRow } from '../approval-queue/columns.js';
 import { getColumns } from '../approval-queue/columns.js';
 import { useApprovalChain } from './use-approval-chain.js';
 import { useApprovalQueueBulkActions } from './use-approval-queue-bulk-actions.js';
+import { useComplianceHeldApprovals } from './use-compliance-held-approvals.js';
 
 // Uppercase the URL ?status= values on read so the chip toggles, the
 // `matchesStatusFilter` comparison, and the tRPC `apiStatus` payload all
@@ -226,6 +227,9 @@ export function useApprovalQueue() {
   const chainConfigId = sidePanelOpen ? selectedStep?.approvalFlow.chainConfigId : undefined;
   const resolvedChain = useApprovalChain(chainConfigId, sidePanelOpen);
 
+  const complianceHeldTab = tab === 'all' ? 'all' : 'my';
+  const complianceHeld = useComplianceHeldApprovals(complianceHeldTab);
+
   return {
     tab,
     isAdmin,
@@ -266,6 +270,19 @@ export function useApprovalQueue() {
         steps: resolvedChain.steps,
         isLoading: resolvedChain.isLoading,
       },
+    },
+    complianceHeldProps: {
+      items: complianceHeld.items,
+      isLoading: complianceHeld.isLoading,
+      isError: complianceHeld.isError,
+      onRetry: complianceHeld.onRetry,
+      resumeTarget: complianceHeld.resumeTarget,
+      resumeReason: complianceHeld.resumeReason,
+      onResumeReasonChange: complianceHeld.setResumeReason,
+      onOpenResume: complianceHeld.openResume,
+      onCloseResume: complianceHeld.closeResume,
+      onSubmitResume: complianceHeld.submitResume,
+      isResuming: complianceHeld.isResuming,
     },
   } as const;
 }

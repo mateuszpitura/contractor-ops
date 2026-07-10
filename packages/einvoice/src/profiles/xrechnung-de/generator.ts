@@ -35,9 +35,7 @@ import {
   XRECHNUNG_KLEINUNTERNEHMER_REASON,
   XRECHNUNG_PROFILE_ID,
   XRECHNUNG_REVERSE_CHARGE_REASON,
-  XRECHNUNG_SKONTO_DESCRIPTION_TEMPLATE,
 } from './constants.js';
-import { embedLeitwegIdIntoCii } from './leitweg-id-embed.js';
 
 // ---------------------------------------------------------------------------
 // Skonto term type (mirrors the service type — no cross-package import needed)
@@ -154,12 +152,53 @@ function addDaysUtcCii(isoDate: string, days: number): string {
 }
 
 interface CiiTradeTax {
+  'ram:CalculatedAmount': string;
   'ram:TypeCode': string;
-  'ram:CategoryCode': string;
-  'ram:BasisAmount': { '@_currencyID': string; '#text': string };
-  'ram:CalculatedAmount': { '@_currencyID': string; '#text': string };
   'ram:ExemptionReason'?: string;
+  'ram:BasisAmount': string;
+  'ram:CategoryCode': string;
   'ram:RateApplicablePercent'?: string;
+}
+
+interface ParsedDeAddress {
+  lineOne?: string;
+  postcode?: string;
+  city?: string;
+}
+
+/** Split "Street, 10115 Berlin" style DE addresses used on the EInvoice envelope. */
+function parseDeAddress(address: string): ParsedDeAddress {
+  const postcodeMatch = /\b(\d{5})\b/.exec(address);
+  if (!postcodeMatch) {
+    return { lineOne: address.trim() || undefined };
+  }
+  const postcode = postcodeMatch[1];
+  if (!postcode) {
+    return { lineOne: address.trim() || undefined };
+  }
+  const afterPostcode = address.slice((postcodeMatch.index ?? 0) + postcode.length).trim();
+  const beforePostcode = address
+    .slice(0, postcodeMatch.index)
+    .replace(/[,\s]+$/, '')
+    .trim();
+  return {
+    lineOne: beforePostcode || undefined,
+    postcode,
+    city: afterPostcode.replace(/^[, ]+/, '') || undefined,
+  };
+}
+
+function isVatIdentifier(id: string): boolean {
+  return /^[A-Z]{2}[A-Z0-9]+$/i.test(id.trim());
+}
+
+function resolveLineTaxCategory(line: EInvoiceLine, taxBreakdown: EInvoiceTaxSubtotal[]): string {
+  if (taxBreakdown.length === 1) {
+    return taxBreakdown[0]!.taxCategory;
+  }
+  const rate = line.vatRate == null ? null : Number(line.vatRate);
+  const matched = taxBreakdown.find(t => t.percent === rate);
+  return matched?.taxCategory ?? taxBreakdown[0]?.taxCategory ?? 'S';
 }
 
 /**
@@ -171,44 +210,46 @@ interface CiiTradeTax {
  *   E   - exempt (Kleinunt.)  → ExemptionReason = §19 UStG locked phrase
  *   Z   - zero-rated          → (no exemption reason; consumer's choice)
  */
-function toCiiTax(tax: EInvoiceTaxSubtotal, currencyCode: string): CiiTradeTax {
-  const base: CiiTradeTax = {
-    'ram:TypeCode': 'VAT',
-    'ram:CategoryCode': tax.taxCategory,
-    'ram:BasisAmount': {
-      '@_currencyID': currencyCode,
-      '#text': fromMinor(tax.taxableAmountMinor),
-    },
-    'ram:CalculatedAmount': {
-      '@_currencyID': currencyCode,
-      '#text': fromMinor(tax.taxAmountMinor),
-    },
-  };
-
-  switch (tax.taxCategory) {
-    case 'AE':
-      base['ram:ExemptionReason'] = XRECHNUNG_REVERSE_CHARGE_REASON;
-      break;
-    case 'E':
-      base['ram:ExemptionReason'] = XRECHNUNG_KLEINUNTERNEHMER_REASON;
-      break;
-    default:
-      if (tax.percent != null) {
-        base['ram:RateApplicablePercent'] = String(tax.percent);
-      }
-      break;
-  }
+function toCiiTax(tax: EInvoiceTaxSubtotal, _currencyCode: string): CiiTradeTax {
   if (tax.taxCategory === 'S' && tax.percent == null) {
-    // Guard against silently emitting a category-S row with no rate, which
-    // KoSIT would flag with an unhelpful layer-2 message.
     throw new Error('XRechnung CII: standard-rate (S) tax subtotal requires a percent value');
   }
 
-  return base;
+  const taxBlock: CiiTradeTax = {
+    'ram:CalculatedAmount': fromMinor(tax.taxAmountMinor),
+    'ram:TypeCode': 'VAT',
+    'ram:BasisAmount': fromMinor(tax.taxableAmountMinor),
+    'ram:CategoryCode': tax.taxCategory,
+  };
+
+  if (tax.taxCategory === 'AE') {
+    taxBlock['ram:ExemptionReason'] = XRECHNUNG_REVERSE_CHARGE_REASON;
+  } else if (tax.taxCategory === 'E') {
+    taxBlock['ram:ExemptionReason'] = XRECHNUNG_KLEINUNTERNEHMER_REASON;
+  }
+
+  if (tax.taxCategory !== 'AE' && tax.taxCategory !== 'E' && tax.percent != null) {
+    taxBlock['ram:RateApplicablePercent'] = String(tax.percent);
+  }
+
+  return taxBlock;
 }
 
 /** Line-item mapping — minimal BT-levels needed for layer-1 XSD + BR core rules. */
-function toLineItem(line: EInvoiceLine, currencyCode: string): Record<string, unknown> {
+function toLineItem(
+  line: EInvoiceLine,
+  currencyCode: string,
+  taxBreakdown: EInvoiceTaxSubtotal[],
+): Record<string, unknown> {
+  const lineTaxCategory = resolveLineTaxCategory(line, taxBreakdown);
+  const lineTax: Record<string, unknown> = {
+    'ram:TypeCode': 'VAT',
+    'ram:CategoryCode': lineTaxCategory,
+  };
+  if (lineTaxCategory === 'S' && line.vatRate != null) {
+    lineTax['ram:RateApplicablePercent'] = line.vatRate;
+  }
+
   return {
     'ram:AssociatedDocumentLineDocument': {
       'ram:LineID': String(line.lineNumber),
@@ -228,16 +269,9 @@ function toLineItem(line: EInvoiceLine, currencyCode: string): Record<string, un
       },
     },
     'ram:SpecifiedLineTradeSettlement': {
-      'ram:ApplicableTradeTax': {
-        'ram:TypeCode': 'VAT',
-        'ram:CategoryCode': 'S',
-        ...(line.vatRate == null ? {} : { 'ram:RateApplicablePercent': line.vatRate }),
-      },
+      'ram:ApplicableTradeTax': lineTax,
       'ram:SpecifiedTradeSettlementLineMonetarySummation': {
-        'ram:LineTotalAmount': {
-          '@_currencyID': currencyCode,
-          '#text': fromMinor(line.netAmountMinor ?? 0),
-        },
+        'ram:LineTotalAmount': fromMinor(line.netAmountMinor ?? 0),
       },
     },
   };
@@ -261,21 +295,99 @@ function buildMonetarySummation(invoice: EInvoice): Record<string, unknown> {
   };
 }
 
-/** Minimal CII trade party — BR-Core mandates Name + PostalAddress/Country. */
-function buildCiiParty(party: EInvoice['supplier']): Record<string, unknown> {
-  return {
+/** Minimal CII trade party — BR-Core + BR-DE seller/buyer address and contact fields. */
+function buildCiiParty(
+  party: EInvoice['supplier'],
+  role: 'seller' | 'buyer',
+  leitwegId?: string | null,
+): Record<string, unknown> {
+  const parsedAddress = party.address ? parseDeAddress(party.address) : {};
+  const contactName = party.additionalIds?.contactName ?? party.name;
+  const contactPhone = party.additionalIds?.phone;
+  const contactEmail = party.additionalIds?.email;
+
+  const partyNode: Record<string, unknown> = {
     'ram:Name': party.name,
-    'ram:SpecifiedLegalOrganization': {
+  };
+
+  if (party.id && !isVatIdentifier(party.id)) {
+    partyNode['ram:SpecifiedLegalOrganization'] = {
       'ram:ID': party.id,
+    };
+  }
+
+  if (role === 'seller' && contactName && contactPhone && contactEmail) {
+    partyNode['ram:DefinedTradeContact'] = {
+      'ram:PersonName': contactName,
+      'ram:TelephoneUniversalCommunication': {
+        'ram:CompleteNumber': contactPhone,
+      },
+      'ram:EmailURIUniversalCommunication': {
+        'ram:URIID': contactEmail,
+      },
+    };
+  }
+
+  if (party.address || party.country || parsedAddress.postcode || parsedAddress.city) {
+    const postalAddress: Record<string, unknown> = {};
+    if (parsedAddress.postcode) postalAddress['ram:PostcodeCode'] = parsedAddress.postcode;
+    if (parsedAddress.lineOne) postalAddress['ram:LineOne'] = parsedAddress.lineOne;
+    if (parsedAddress.city) postalAddress['ram:CityName'] = parsedAddress.city;
+    if (party.country) postalAddress['ram:CountryID'] = party.country;
+    partyNode['ram:PostalTradeAddress'] = postalAddress;
+  }
+
+  const sellerEmail = party.additionalIds?.email;
+  if (role === 'seller' && sellerEmail) {
+    partyNode['ram:URIUniversalCommunication'] = {
+      'ram:URIID': {
+        '@_schemeID': 'EM',
+        '#text': sellerEmail,
+      },
+    };
+  } else if (role === 'buyer') {
+    const buyerEmail = party.additionalIds?.email;
+    if (buyerEmail) {
+      partyNode['ram:URIUniversalCommunication'] = {
+        'ram:URIID': {
+          '@_schemeID': 'EM',
+          '#text': buyerEmail,
+        },
+      };
+    } else if (leitwegId) {
+      partyNode['ram:URIUniversalCommunication'] = {
+        'ram:URIID': {
+          '@_schemeID': '0204',
+          '#text': leitwegId,
+        },
+      };
+    }
+  }
+
+  if (party.id && isVatIdentifier(party.id)) {
+    partyNode['ram:SpecifiedTaxRegistration'] = {
+      'ram:ID': {
+        '@_schemeID': 'VA',
+        '#text': party.id.toUpperCase(),
+      },
+    };
+  }
+
+  return partyNode;
+}
+
+/** BG-16 payment instructions — required by BR-DE-1 for German B2G invoices. */
+function buildPaymentMeans(invoice: EInvoice): Record<string, unknown> {
+  const means = invoice.paymentMeans;
+  if (!means?.bankAccount) return {};
+
+  return {
+    'ram:SpecifiedTradeSettlementPaymentMeans': {
+      'ram:TypeCode': means.code ?? '58',
+      'ram:PayeePartyCreditorFinancialAccount': {
+        'ram:IBANID': means.bankAccount,
+      },
     },
-    ...(party.address || party.country
-      ? {
-          'ram:PostalTradeAddress': {
-            ...(party.address ? { 'ram:LineOne': party.address } : {}),
-            ...(party.country ? { 'ram:CountryID': party.country } : {}),
-          },
-        }
-      : {}),
   };
 }
 
@@ -311,15 +423,6 @@ function buildPaymentTerms(
     // 2026-04-27 [HIGH]).
     const dueDateCii = addDaysUtcCii(invoice.issueDate, skontoTerm.netPeriodDays);
 
-    // Human-readable German description from mirrored locked phrase template
-    const germanDescription = XRECHNUNG_SKONTO_DESCRIPTION_TEMPLATE.replace(
-      '{percent}',
-      skontoTerm.discountPercent.toFixed(2),
-    )
-      .replace('{discountDays}', String(skontoTerm.discountPeriodDays))
-      .replace('{netDays}', String(skontoTerm.netPeriodDays));
-
-    // Structured Skonto extension per XRechnung 3.0.2 Anhang E
     const basisBetrag = fromMinor(invoice.payableAmount);
     const structuredSkonto =
       `#SKONTO#TAGE=${skontoTerm.discountPeriodDays}` +
@@ -329,7 +432,7 @@ function buildPaymentTerms(
     return {
       'ram:SpecifiedTradePaymentTerms': {
         'ram:Description': {
-          '#text': `${germanDescription}\n${structuredSkonto}`,
+          '#text': `${structuredSkonto}\n`,
         },
         'ram:DueDateDateTime': {
           'udt:DateTimeString': {
@@ -341,10 +444,10 @@ function buildPaymentTerms(
     };
   }
 
-  // No Skonto — emit standard due date if present
   if (invoice.dueDate) {
     return {
       'ram:SpecifiedTradePaymentTerms': {
+        'ram:Description': `Zahlbar bis ${invoice.dueDate}`,
         'ram:DueDateDateTime': {
           'udt:DateTimeString': {
             '@_format': '102',
@@ -380,6 +483,13 @@ export function generateXRechnungCii(
 ): string {
   const { currencyCode } = invoice;
 
+  const agreement: CiiDocShape['rsm:CrossIndustryInvoice']['rsm:SupplyChainTradeTransaction']['ram:ApplicableHeaderTradeAgreement'] =
+    {
+      ...(leitwegId ? { 'ram:BuyerReference': leitwegId } : {}),
+      'ram:SellerTradeParty': buildCiiParty(invoice.supplier, 'seller'),
+      'ram:BuyerTradeParty': buildCiiParty(invoice.customer, 'buyer', leitwegId),
+    };
+
   const doc: CiiDocShape = {
     'rsm:CrossIndustryInvoice': {
       '@_xmlns:rsm': RSM_NS,
@@ -406,15 +516,13 @@ export function generateXRechnungCii(
       },
       'rsm:SupplyChainTradeTransaction': {
         'ram:IncludedSupplyChainTradeLineItem': invoice.lines.map(line =>
-          toLineItem(line, currencyCode),
+          toLineItem(line, currencyCode, invoice.taxBreakdown),
         ),
-        'ram:ApplicableHeaderTradeAgreement': {
-          'ram:SellerTradeParty': buildCiiParty(invoice.supplier),
-          'ram:BuyerTradeParty': buildCiiParty(invoice.customer),
-        },
+        'ram:ApplicableHeaderTradeAgreement': agreement,
         'ram:ApplicableHeaderTradeDelivery': {},
         'ram:ApplicableHeaderTradeSettlement': {
           'ram:InvoiceCurrencyCode': currencyCode,
+          ...buildPaymentMeans(invoice),
           'ram:ApplicableTradeTax': invoice.taxBreakdown.map(t => toCiiTax(t, currencyCode)),
           ...buildPaymentTerms(invoice, skontoTerm),
           'ram:SpecifiedTradeSettlementHeaderMonetarySummation': buildMonetarySummation(invoice),
@@ -423,7 +531,6 @@ export function generateXRechnungCii(
     },
   };
 
-  const decorated = leitwegId === null ? doc : embedLeitwegIdIntoCii(doc, leitwegId);
-  const body = builder.build(decorated) as string;
+  const body = builder.build(doc) as string;
   return `<?xml version="1.0" encoding="UTF-8"?>\n${body}`;
 }

@@ -76,6 +76,9 @@ const { mockPrisma, ORG_ID, USER_ID, RUN_ID, TASK_RUN_ID, TEMPLATE_ID, CONTRACTO
       integrationConnection: {
         findFirst: vi.fn(),
       },
+      credentialReference: {
+        findMany: vi.fn().mockResolvedValue([]),
+      },
       auditLog: {
         create: vi.fn(),
       },
@@ -151,15 +154,11 @@ vi.mock('../../services/equipment-workflow', () => ({
   handleEquipmentTaskStart: vi.fn(async () => undefined),
 }));
 
-vi.mock('../../services/cache', () => ({
-  cacheKey: vi.fn((...s: string[]) => s.join(':')),
-  cachedSingleflight: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  cached: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  invalidate: vi.fn(async () => undefined),
-  invalidateByPrefix: vi.fn(async () => undefined),
-  CacheKeys: { dashboardPrefix: (orgId: string) => `dashboard:${orgId}` },
-  CacheTTL: {},
-}));
+vi.mock('../../services/cache', async importOriginal => {
+  const actual = await importOriginal<typeof import('../../services/cache')>();
+  const { createPassthroughCacheMock } = await import('../../__tests__/__mocks__/cache-service');
+  return createPassthroughCacheMock(actual);
+});
 
 vi.mock('../../services/jira-issue-sync', () => ({
   createJiraIssue: vi.fn(async () => undefined),
@@ -289,12 +288,15 @@ const caller = makeCaller();
 beforeEach(() => {
   vi.clearAllMocks();
   mockPrisma.member.findFirst.mockResolvedValue({ role: 'admin', userId: USER_ID });
+  mockPrisma.workflowTemplate.findFirst.mockReset();
   mockPrisma.organization.findUnique.mockResolvedValue({
     id: 'org-mock',
     dataRegion: 'EU',
     status: 'ACTIVE',
   });
   mockPrisma.workflowTaskRun.createMany.mockResolvedValue({ count: 0 });
+  mockPrisma.workflowRun.findUniqueOrThrow.mockResolvedValue({ overrideMetadata: null });
+  mockPrisma.credentialReference.findMany.mockResolvedValue([]);
   mockPrisma.$transaction.mockImplementation(
     async (fnOrArray: ((tx: unknown) => Promise<unknown>) | unknown[]) => {
       if (typeof fnOrArray === 'function') return fnOrArray(mockPrisma);
@@ -586,10 +588,14 @@ describe('workflowExecutionRouter', () => {
         externalRefId: null,
       });
       mockPrisma.workflowTaskRun.updateMany.mockResolvedValueOnce({ count: 0 });
-      mockPrisma.workflowTaskRun.findMany.mockResolvedValueOnce([
-        { status: 'SKIPPED', resultJson: { skipReason: 'Not applicable' } },
-        { status: 'DONE', resultJson: null },
-      ]);
+      mockPrisma.workflowTaskRun.findMany
+        .mockResolvedValueOnce([
+          { status: 'SKIPPED', resultJson: { skipReason: 'Not applicable' } },
+          { status: 'DONE', resultJson: null },
+        ])
+        .mockResolvedValueOnce([]);
+      mockPrisma.workflowRun.findUniqueOrThrow.mockResolvedValueOnce({ overrideMetadata: null });
+      mockPrisma.credentialReference.findMany.mockResolvedValueOnce([]);
       mockPrisma.workflowRun.update.mockResolvedValueOnce({});
 
       const result = await caller.skipTask({
@@ -622,6 +628,12 @@ describe('workflowExecutionRouter', () => {
         id: TASK_RUN_ID,
         organizationId: ORG_ID,
         status: 'TODO',
+        workflowRun: {
+          id: RUN_ID,
+          status: 'IN_PROGRESS',
+          workflowTemplate: { name: 'Onboarding' },
+          contractor: { legalName: 'Test Corp', displayName: null },
+        },
       });
       mockPrisma.workflowTaskRun.update.mockResolvedValueOnce({
         id: TASK_RUN_ID,
@@ -629,6 +641,7 @@ describe('workflowExecutionRouter', () => {
         assigneeUserId: 'new-user-1',
         workflowRun: {
           id: RUN_ID,
+          status: 'IN_PROGRESS',
           workflowTemplate: { name: 'Onboarding' },
           contractor: { legalName: 'Test Corp', displayName: null },
         },
@@ -785,7 +798,11 @@ describe('workflowExecutionRouter', () => {
       mockPrisma.workflowTemplate.findFirst.mockResolvedValueOnce(null);
 
       await expect(
-        caller.startRun({ templateId: 'nonexistent', contractorId: CONTRACTOR_ID }),
+        caller.startRun({
+          subjectType: 'CONTRACTOR',
+          templateId: 'nonexistent',
+          contractorId: CONTRACTOR_ID,
+        }),
       ).rejects.toThrow(TRPCError);
     });
 
@@ -800,7 +817,11 @@ describe('workflowExecutionRouter', () => {
       mockPrisma.contractor.findFirst.mockResolvedValueOnce(null);
 
       await expect(
-        caller.startRun({ templateId: TEMPLATE_ID, contractorId: 'nonexistent' }),
+        caller.startRun({
+          subjectType: 'CONTRACTOR',
+          templateId: TEMPLATE_ID,
+          contractorId: 'nonexistent',
+        }),
       ).rejects.toThrow(TRPCError);
     });
 
@@ -871,6 +892,7 @@ describe('workflowExecutionRouter', () => {
       });
 
       const result = await caller.startRun({
+        subjectType: 'CONTRACTOR',
         templateId: TEMPLATE_ID,
         contractorId: CONTRACTOR_ID,
       });
@@ -910,19 +932,25 @@ describe('workflowExecutionRouter', () => {
         externalRefId: null,
       });
       mockPrisma.workflowTaskRun.updateMany.mockResolvedValueOnce({ count: 0 });
-      // All tasks are DONE — triggers auto-completion
-      mockPrisma.workflowTaskRun.findMany.mockResolvedValueOnce([
-        { status: 'DONE', resultJson: null },
-        { status: 'DONE', resultJson: null },
-      ]);
+      // Progress recompute first, then run-completion gate (IP + credentials)
+      mockPrisma.workflowRun.findUniqueOrThrow.mockResolvedValue({ overrideMetadata: null });
+      mockPrisma.workflowTaskRun.findMany
+        .mockResolvedValueOnce([
+          { status: 'DONE', resultJson: null },
+          { status: 'DONE', resultJson: null },
+        ])
+        .mockResolvedValueOnce([]);
+      mockPrisma.credentialReference.findMany.mockResolvedValueOnce([]);
       mockPrisma.workflowRun.update.mockResolvedValueOnce({});
 
       await caller.completeTask({ taskRunId: TASK_RUN_ID });
 
-      const runUpdateCall = mockPrisma.workflowRun.update.mock.calls[0]?.[0];
-      expect(runUpdateCall.data).toMatchObject({
+      const completedUpdate = mockPrisma.workflowRun.update.mock.calls.find(
+        (call: [{ data?: { status?: string } }]) => call[0]?.data?.status === 'COMPLETED',
+      )?.[0];
+      expect(completedUpdate?.data).toMatchObject({
         status: 'COMPLETED',
-        completedAt: new Date(),
+        completedAt: expect.any(Date),
       });
     });
   });
@@ -956,6 +984,12 @@ describe('workflowExecutionRouter', () => {
         id: TASK_RUN_ID,
         organizationId: ORG_ID,
         status: 'TODO',
+        workflowRun: {
+          id: RUN_ID,
+          status: 'IN_PROGRESS',
+          workflowTemplate: { name: 'Onboarding' },
+          contractor: { legalName: 'Test Corp', displayName: null },
+        },
       });
       mockPrisma.workflowTaskRun.update.mockResolvedValueOnce({
         id: TASK_RUN_ID,
@@ -963,6 +997,7 @@ describe('workflowExecutionRouter', () => {
         assigneeUserId: 'new-user-2',
         workflowRun: {
           id: RUN_ID,
+          status: 'IN_PROGRESS',
           workflowTemplate: { name: 'Onboarding' },
           contractor: { legalName: 'Test Corp', displayName: null },
         },

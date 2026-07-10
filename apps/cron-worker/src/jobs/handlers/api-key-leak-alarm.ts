@@ -1,8 +1,8 @@
 /**
- * API-key leak alarm (INTEG-SEC-05).
+ * API-key leak alarm.
  *
  * A key used from more than 3 distinct source IPs in 24h is a strong leak
- * signal. This reads the Phase-99 `ApiKeyIpEvent` log (append-on-auth, already
+ * signal. This reads the `ApiKeyIpEvent` log (append-on-auth, already
  * normalized to the proxy-trusted left-most XFF hop — never a client-set chain),
  * groups DISTINCT `ipAddress` per `apiKeyId`, and raises an org-admin alarm for
  * each key over the threshold — reusing the job-health Sentry-alert pattern and
@@ -10,7 +10,7 @@
  * day bucket so it does not re-alarm the same key every run.
  */
 
-import { prisma } from '@contractor-ops/db';
+import { SUPPORTED_REGIONS, tryGetRegionalClient } from '@contractor-ops/db';
 import { metrics } from '@contractor-ops/logger/metrics';
 import { Sentry } from '../../lib/sentry.js';
 import type { JobHandler } from '../runner.js';
@@ -25,10 +25,21 @@ export const apiKeyLeakAlarmHandler: JobHandler = async ctx => {
   const start = performance.now();
   try {
     const since = new Date(Date.now() - WINDOW_HOURS * 60 * 60 * 1000);
-    const events = await prisma.apiKeyIpEvent.findMany({
-      where: { seenAt: { gte: since } },
-      select: { apiKeyId: true, ipAddress: true, organizationId: true },
-    });
+    const events: Array<{
+      apiKeyId: string;
+      ipAddress: string;
+      organizationId: string;
+    }> = [];
+
+    for (const region of SUPPORTED_REGIONS) {
+      const client = tryGetRegionalClient(region);
+      if (!client) continue;
+      const regionEvents = await client.apiKeyIpEvent.findMany({
+        where: { seenAt: { gte: since } },
+        select: { apiKeyId: true, ipAddress: true, organizationId: true },
+      });
+      events.push(...regionEvents);
+    }
 
     const ipsByKey = new Map<string, Set<string>>();
     const orgByKey = new Map<string, string>();
@@ -53,11 +64,16 @@ export const apiKeyLeakAlarmHandler: JobHandler = async ctx => {
       };
     }
 
-    const keys = await prisma.organizationApiKey.findMany({
-      where: { id: { in: suspects.map(([id]) => id) } },
-      select: { id: true, prefix: true, organizationId: true },
-    });
-    const prefixById = new Map(keys.map(key => [key.id, key.prefix]));
+    const prefixById = new Map<string, string>();
+    for (const region of SUPPORTED_REGIONS) {
+      const client = tryGetRegionalClient(region);
+      if (!client) continue;
+      const keys = await client.organizationApiKey.findMany({
+        where: { id: { in: suspects.map(([id]) => id) } },
+        select: { id: true, prefix: true },
+      });
+      for (const key of keys) prefixById.set(key.id, key.prefix);
+    }
 
     const bucket = new Date().toISOString().slice(0, 10);
     let alarmed = 0;

@@ -86,7 +86,7 @@ describe('usePortalIndex', () => {
     const { result } = renderHookWithProviders(() => usePortalIndex());
     await waitFor(() => expect(result.current.isLoading).toBe(false));
     expect(result.current.overview?.activeContracts).toBe(3);
-    expect(result.current.session?.contractor.displayName).toBe('Müller Anna');
+    expect(result.current.session?.contractor?.displayName).toBe('Müller Anna');
     clearTRPCMock();
   });
 });

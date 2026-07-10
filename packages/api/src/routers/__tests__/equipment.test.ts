@@ -39,6 +39,11 @@ const { mockPrisma } = vi.hoisted(() => {
       findMany: vi.fn(async () => []),
       findFirst: vi.fn(async () => null),
       findUnique: vi.fn(async () => null),
+      findUniqueOrThrow: vi.fn(async (opts: { where: Rec }) => ({
+        id: opts.where.id,
+        name: 'Test Equipment',
+        status: 'ASSIGNED',
+      })),
       create: vi.fn(async (opts: { data: Rec }) => ({
         id: EQUIPMENT_ID,
         ...opts.data,
@@ -48,6 +53,7 @@ const { mockPrisma } = vi.hoisted(() => {
         name: 'Test Equipment',
         ...opts.data,
       })),
+      updateMany: vi.fn(async () => ({ count: 1 })),
       count: vi.fn(async () => 0),
     },
     equipmentAssignment: {
@@ -191,15 +197,11 @@ vi.mock('../../services/billing-service', () => ({
   syncSeatCountForOrg: vi.fn(async () => undefined),
 }));
 
-vi.mock('../../services/cache', () => ({
-  cacheKey: vi.fn((...s: string[]) => s.join(':')),
-  cachedSingleflight: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  cached: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  invalidate: vi.fn(async () => undefined),
-  invalidateByPrefix: vi.fn(async () => undefined),
-  CacheKeys: { approvalChains: (orgId: string) => `approval-chains:${orgId}` },
-  CacheTTL: { APPROVAL_CHAINS: 300 },
-}));
+vi.mock('../../services/cache', async importOriginal => {
+  const actual = await importOriginal<typeof import('../../services/cache')>();
+  const { createPassthroughCacheMock } = await import('../../__tests__/__mocks__/cache-service');
+  return createPassthroughCacheMock(actual);
+});
 
 vi.mock('../../services/mime-validator', () => ({
   isAllowedMimeType: vi.fn(() => true),
@@ -595,7 +597,7 @@ describe('equipment router', () => {
         equipmentId: EQUIPMENT_ID,
         contractorId: CONTRACTOR_ID,
       });
-      mockPrisma.equipment.update.mockResolvedValueOnce({
+      mockPrisma.equipment.findUniqueOrThrow.mockResolvedValueOnce({
         id: EQUIPMENT_ID,
         status: 'ASSIGNED',
         name: 'Test Equipment',
@@ -620,9 +622,12 @@ describe('equipment router', () => {
         notes: 'Assigned for project',
       });
 
-      // Verify equipment status updated to ASSIGNED
-      const updateCall = mockPrisma.equipment.update.mock.calls[0]?.[0];
-      expect(updateCall.data).toMatchObject({ status: 'ASSIGNED' });
+      // Verify equipment status updated to ASSIGNED via optimistic CAS
+      const updateManyCall = mockPrisma.equipment.updateMany.mock.calls[0]?.[0];
+      expect(updateManyCall).toMatchObject({
+        where: { id: EQUIPMENT_ID, status: 'AVAILABLE' },
+        data: { status: 'ASSIGNED' },
+      });
     });
 
     it('throws NOT_FOUND when contractor does not exist', async () => {

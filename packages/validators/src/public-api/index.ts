@@ -325,6 +325,7 @@ export const publicApiPaymentRunCreateInputSchema = z
     notes: z.string().max(1000).optional(),
     currency: currencyCode.optional(),
     groupByCurrency: z.boolean().optional(),
+    idempotencyKey: z.string().max(64).optional(),
   })
   .strict();
 

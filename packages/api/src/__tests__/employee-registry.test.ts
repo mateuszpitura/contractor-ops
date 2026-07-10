@@ -77,8 +77,37 @@ const { mockPrisma, mockHasPermission, auditWrites } = vi.hoisted(() => {
   };
 
   const mockPrisma = {
-    employeeProfile,
+    personnelFile: {
+      create: vi.fn(async () => ({ id: 'clpfaaaaaaaaaaaaaaaaaaaaaaa' })),
+    },
+    employeeProfile: {
+      ...employeeProfile,
+      findFirst: vi.fn(async (args: { where?: R }) => {
+        const where = args?.where ?? {};
+        const row = profiles.get(String(where.workerId));
+        if (!row) return null;
+        if ('organizationId' in where && where.organizationId !== row.organizationId) return null;
+        return row;
+      }),
+    },
     worker,
+    leaveType: {
+      findMany: vi.fn(async () => []),
+    },
+    leaveLedgerEntry: {
+      findFirst: vi.fn(async () => null),
+      findMany: vi.fn(async () => []),
+      create: vi.fn(async (args: { data?: R }) => ({
+        id: 'clleaveentryaaaaaaaaaaaaaaa',
+        ...args?.data,
+      })),
+    },
+    leaveBalance: {
+      upsert: vi.fn(async (args: { create?: R; update?: R }) => ({
+        ...(args?.create ?? {}),
+        ...(args?.update ?? {}),
+      })),
+    },
     organization: {
       findUnique: vi.fn(async () => ({ countryCode: 'US', dataRegion: 'EU', status: 'ACTIVE' })),
       findUniqueOrThrow: vi.fn(async () => ({ countryCode: 'US' })),

@@ -25,10 +25,18 @@ const { mockPrisma } = vi.hoisted(() => {
     organization: {
       findUnique: vi.fn(async () => ({ id: ORG_ID, dataRegion: 'EU', status: 'ACTIVE' })),
     },
+    subscription: {
+      findUnique: vi.fn(async () => ({
+        status: 'ACTIVE',
+        tier: 'ENTERPRISE',
+        addOns: ['workforce'],
+      })),
+    },
     worker: { findFirst: vi.fn(async () => ({ id: WORKER_ID })) },
     leaveType: { findFirst: vi.fn(async () => ({ id: LEAVE_TYPE_ID })) },
     blackoutPeriod: { findFirst: vi.fn(async () => null) },
     leaveLedgerEntry: {
+      findFirst: vi.fn(async () => null),
       findMany: vi.fn(async () => [{ minutes: 100000 }]),
       create: vi.fn(async () => ({ id: 'ledger-1' })),
     },
@@ -37,11 +45,30 @@ const { mockPrisma } = vi.hoisted(() => {
       create: vi.fn(async () => ({ id: REQUEST_ID, teamId: null })),
       update: vi.fn(async () => ({ id: REQUEST_ID, status: 'PENDING', approvalFlowId: FLOW_ID })),
     },
+    approvalChainConfig: {
+      findMany: vi.fn(async () => [
+        {
+          id: 'chain-1',
+          isDefault: true,
+          conditionsJson: null,
+          stepsJson: [{ name: 'Mgr', approverUserId: APPROVER_ID, slaHours: 24, required: true }],
+        },
+      ]),
+    },
+    approvalFlow: {
+      create: vi.fn(async () => ({
+        id: FLOW_ID,
+        steps: [{ id: 'step-1', stepOrder: 1, status: 'PENDING' }],
+      })),
+    },
     approvalStep: {
       findFirst: vi.fn(async () => ({ approverUserId: APPROVER_ID, slaDeadline: null })),
     },
     auditLog: { create: vi.fn(async () => ({ id: 'audit-1' })) },
-    member: { findMany: vi.fn(async () => []) },
+    member: {
+      findMany: vi.fn(async () => []),
+      findFirst: vi.fn(async () => ({ userId: APPROVER_ID })),
+    },
     $transaction: vi.fn(async (fn: (tx: Rec) => Promise<unknown>) => fn(mockPrisma)),
   };
   return { mockPrisma };
@@ -81,18 +108,11 @@ vi.mock('../services/approval-engine', () => ({
 
 vi.mock('../services/notification-service', () => ({ dispatch: vi.fn(async () => undefined) }));
 
-vi.mock('../services/cache', () => ({
-  cacheKey: vi.fn((...s: string[]) => s.join(':')),
-  cachedSingleflight: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  cached: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  invalidate: vi.fn(async () => undefined),
-  invalidateByPrefix: vi.fn(async () => undefined),
-  CacheKeys: {
-    orgMeta: (o: string) => `org:${o}:meta`,
-    dashboardPrefix: (o: string) => `dash:${o}`,
-  },
-  CacheTTL: { ORG_META: 300, ORG_SETTINGS: 300 },
-}));
+vi.mock('../services/cache', async importOriginal => {
+  const actual = await importOriginal<typeof import('../services/cache')>();
+  const { createPassthroughCacheMock } = await import('../__tests__/__mocks__/cache-service');
+  return createPassthroughCacheMock(actual);
+});
 
 vi.mock('../services/calendar-deadline-sync', () => ({
   syncPaymentDueDeadline: vi.fn(async () => undefined),
@@ -241,14 +261,29 @@ describe('leave approval → ledger deduction (finalizeApprovedLeave)', () => {
           leaveTypeId: LEAVE_TYPE_ID,
           requestedMinutes: 480,
           startDate: new Date('2026-02-02'),
+          endDate: new Date('2026-02-06'),
+          status: 'PENDING',
+          leaveType: { kind: 'ANNUAL' },
         })),
         update: vi.fn(async () => ({})),
+        updateMany: vi.fn(async () => ({ count: 1 })),
       },
       leaveLedgerEntry: {
+        findFirst: vi.fn(async () => null),
         create: vi.fn(async () => ({ id: 'ledger-1' })),
-        findMany: vi.fn(async () => []),
+        findMany: vi.fn(async () => [{ minutes: 100000 }]),
       },
       leaveBalance: { upsert: vi.fn(async () => ({})) },
+      employeeTimeRecord: {
+        findUnique: vi.fn(async () => null),
+        upsert: vi.fn(async () => ({ id: 'time-1' })),
+      },
+      organization: {
+        findUnique: vi.fn(async () => ({ countryCode: 'PL' })),
+      },
+      publicHoliday: {
+        findMany: vi.fn(async () => []),
+      },
       auditLog: { create: vi.fn(async () => ({ id: 'audit-1' })) },
     };
   }

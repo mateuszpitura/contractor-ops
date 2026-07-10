@@ -1,6 +1,6 @@
 // Public surface of the HRIS two-way sync engine.
 
-export { type ApplyPatchResult, applyPatchToWorker } from './apply-patch';
+export { type ApplyPatchOpts, type ApplyPatchResult, applyPatchToWorker } from './apply-patch';
 export {
   assertNotHrisOwnedField,
   FIELD_OWNER,

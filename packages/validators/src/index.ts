@@ -1,11 +1,13 @@
 export type {
   ApprovalChainCreate,
+  ApprovalChainList,
   ApprovalChainUpdate,
   ApprovalQueue,
 } from './approval.js';
 export {
   approvalAuditSystemLabel,
   approvalChainCreateSchema,
+  approvalChainListSchema,
   approvalChainUpdateSchema,
   approvalDecisionTypeEnum,
   approvalQueueSchema,
@@ -224,6 +226,7 @@ export {
   validateEmployeeCountryFields,
 } from './employee-country-fields.js';
 export type {
+  KirchensteuerCode,
   Lohnsteuerklasse,
   NfzOddzial,
   SaudizationCategory,
@@ -233,6 +236,8 @@ export type {
   W4FilingStatus,
 } from './employee-reference-lists.js';
 export {
+  KIRCHENSTEUER_CODES,
+  kirchensteuerCodeSchema,
   LOHNSTEUERKLASSE,
   lohnsteuerklasseSchema,
   NFZ_ODDZIAL_SOURCE,

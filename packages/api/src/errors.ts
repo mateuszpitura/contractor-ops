@@ -8,38 +8,12 @@
  * via regex and look up translations automatically.
  */
 
-import * as ApiErrors from './errors.js';
-
-/**
- * Set of all camelCase error values exported from this module. Built lazily on
- * first call so adding a new constant requires no manual registration. Used by
- * `init.ts` `errorFormatter` to decide whether a `TRPCError.message` should be
- * surfaced verbatim as `shape.data.errorKey` or replaced with `'unknownError'`.
- */
-let knownValues: Set<string> | undefined;
-
-function buildKnownValues(): Set<string> {
-  const set = new Set<string>();
-  // Self-import: this read is lazy (called from `isKnownApiErrorValue`, never
-  // during module evaluation), so the namespace object is fully populated by
-  // the time the loop runs.
-  for (const [, value] of Object.entries(ApiErrors as Record<string, unknown>)) {
-    if (typeof value === 'string') set.add(value);
-  }
-  return set;
-}
-
-export function isKnownApiErrorValue(value: unknown): value is string {
-  if (typeof value !== 'string') return false;
-  if (!knownValues) knownValues = buildKnownValues();
-  return knownValues.has(value);
-}
-
 // ─── Generic ─────────────────────────────────────────────────────
 export const UNAUTHORIZED = 'unauthorized';
 export const FORBIDDEN = 'forbidden';
 export const ACCOUNT_BANNED = 'accountBanned';
 export const LAST_ADMIN_CANNOT_DEACTIVATE = 'lastAdminCannotDeactivate';
+export const MEMBER_HAS_PENDING_APPROVALS = 'memberHasPendingApprovals';
 export const PERMISSION_DENIED = 'permissionDenied';
 export const UNKNOWN_ERROR = 'unknownError';
 export const PLATFORM_ADMIN_REQUIRED = 'platformAdminRequired';
@@ -58,6 +32,7 @@ export const ORG_NO_COUNTRY = 'orgNoCountry';
 
 // ─── Contractor ──────────────────────────────────────────────────
 export const CONTRACTOR_NOT_FOUND = 'contractorNotFound';
+export const CONTRACTOR_COUNTRY_MISMATCH = 'contractorCountryMismatch';
 export const WORKER_NOT_FOUND = 'workerNotFound';
 export const CONTRACTOR_HAS_UNPAID_INVOICES = 'contractorHasUnpaidInvoices';
 export const CONTRACTOR_HAS_ACTIVE_WORKFLOWS = 'contractorHasActiveWorkflows';
@@ -82,16 +57,20 @@ export const INVOICE_ALREADY_PENDING = 'invoiceAlreadyPending';
 export const INVOICE_DUPLICATE = 'invoiceDuplicate';
 export const INVOICE_ALREADY_VOIDED = 'invoiceAlreadyVoided';
 export const INVOICE_VOID_NOT_ALLOWED = 'invoiceVoidNotAllowed';
+export const INVOICE_NOT_SUBMITTABLE = 'invoiceNotSubmittable';
 
 // ─── Payment ─────────────────────────────────────────────────────
 export const PAYMENT_RUN_NOT_FOUND = 'paymentRunNotFound';
 export const PAYMENT_INVOICES_NOT_READY = 'paymentInvoicesNotReady';
 export const PAYMENT_INVOICES_NOT_FOUND = 'paymentInvoicesNotFound';
 export const PAYMENT_RUN_INVALID_STATUS = 'paymentRunInvalidStatus';
+export const PAYMENT_RUN_NOT_EXPORTED = 'paymentRunNotExported';
+export const PAYMENT_RUN_ITEM_INVALID_TRANSITION = 'paymentRunItemInvalidTransition';
 export const PAYMENT_RUN_ITEM_NOT_FOUND = 'paymentRunItemNotFound';
 export const PAYMENT_RUN_NOT_DRAFT = 'paymentRunNotDraft';
 export const PAYMENT_INVOICE_NOT_IN_RUN = 'paymentInvoiceNotInRun';
 export const PAYMENT_MIXED_CURRENCIES = 'paymentMixedCurrencies';
+export const PAYMENT_EXPORT_FORMAT_MISMATCH = 'paymentExportFormatMismatch';
 export const PAYMENT_SETTLEMENT_RATE_UNAVAILABLE = 'paymentSettlementRateUnavailable';
 export const PAYMENT_ACH_PAYOUTS_DISABLED = 'paymentAchPayoutsDisabled';
 export const PAYMENT_PAYOUT_IN_PROGRESS = 'paymentPayoutInProgress';
@@ -104,6 +83,7 @@ export const APPROVAL_STEP_NOT_PENDING = 'approvalStepNotPending';
 export const APPROVAL_STEP_ALREADY_DECIDED = 'approvalStepAlreadyDecided';
 export const APPROVAL_NOT_ASSIGNED = 'approvalNotAssigned';
 export const APPROVAL_DELEGATE_NOT_MEMBER = 'approvalDelegateNotMember';
+export const APPROVAL_DELEGATE_NO_PERMISSION = 'approvalDelegateNoPermission';
 export const APPROVAL_SELF_APPROVAL_FORBIDDEN = 'approvalSelfApprovalForbidden';
 
 // ─── Employee lifecycle ──────────────────────────────────────────
@@ -112,9 +92,12 @@ export const EMPLOYEE_UNSUPPORTED_JURISDICTION = 'employeeUnsupportedJurisdictio
 
 // ─── Workflow ────────────────────────────────────────────────────
 export const WORKFLOW_TEMPLATE_NOT_FOUND = 'workflowTemplateNotFound';
+export const WORKFLOW_TEMPLATE_UNKNOWN_DEPENDENCY = 'workflowTemplateUnknownDependency';
+export const WORKFLOW_TEMPLATE_DEPENDENCY_CYCLE = 'workflowTemplateDependencyCycle';
 export const WORKFLOW_RUN_NOT_FOUND = 'workflowRunNotFound';
 export const WORKFLOW_RUN_ALREADY_CANCELLED = 'workflowRunAlreadyCancelled';
 export const WORKFLOW_RUN_NOT_IN_PROGRESS = 'workflowRunNotInProgress';
+export const WORKFLOW_RUN_HAS_OPEN_TASKS = 'workflowRunHasOpenTasks';
 export const WORKFLOW_TASK_NOT_FOUND = 'workflowTaskNotFound';
 export const WORKFLOW_ASSIGNEE_NOT_MEMBER = 'workflowAssigneeNotMember';
 export const WORKFLOW_TASK_INVALID_STATUS = 'workflowTaskInvalidStatus';
@@ -180,6 +163,7 @@ export const API_KEY_CANNOT_UPDATE_REVOKED = 'apiKeyCannotUpdateRevoked';
 export const API_KEY_CANNOT_ROTATE_SUPERSEDED = 'apiKeyCannotRotateSuperseded';
 export const INVALID_ACTING_USER = 'invalidActingUser';
 export const API_QUOTA_EXCEEDED = 'apiQuotaExceeded';
+export const OUTBOUND_WEBHOOKS_NOT_ENABLED = 'outboundWebhooksNotEnabled';
 
 // ─── Tenant ─────────────────────────────────────────────────────
 export const ORG_SUSPENDED = 'orgSuspended';
@@ -243,6 +227,7 @@ export const SHIPMENT_NO_INPOST_LABEL = 'shipmentNoInpostLabel';
 export const PAYMENT_RUN_CREATION_IN_PROGRESS = 'paymentRunCreationInProgress';
 export const PAYMENT_RUN_NUMBER_COLLISION = 'paymentRunNumberCollision';
 export const PAYMENT_BANK_STATEMENT_EXPORTED_ONLY = 'paymentBankStatementExportedOnly';
+export const PAYMENT_STATEMENT_MATCH_INVALID = 'paymentStatementMatchInvalid';
 export const PAYMENT_INVOICE_NOT_SKONTO_ELIGIBLE = 'paymentInvoiceNotSkontoEligible';
 export const PAYMENT_NO_SKONTO_TERM = 'paymentNoSkontoTerm';
 
@@ -297,6 +282,23 @@ export const IR35_DUPLICATE_IDS = 'ir35DuplicateIds';
 export const IR35_ORDERED_IDS_MUST_LIST_ALL = 'ir35OrderedIdsMustListAll';
 export const IR35_PARTICIPANT_NOT_FOUND = 'ir35ParticipantNotFound';
 export const IR35_CLIENT_WORKER_CANNOT_BE_REMOVED = 'ir35ClientWorkerCannotBeRemoved';
+export const IR35_ATTESTATION_ALREADY_EXISTS = 'ir35AttestationAlreadyExists';
+
+// ─── Compliance documents ──────────────────────────────────────
+export const DOCUMENT_SCAN_PENDING = 'documentScanPending';
+
+// ─── Late-payment interest ─────────────────────────────────────
+export const LATE_INTEREST_WAIVER_NOT_FOUND = 'lateInterestWaiverNotFound';
+
+// ─── Payroll export ────────────────────────────────────────────
+export const PAYROLL_FEED_EMPTY = 'payrollFeedEmpty';
+export const PAYROLL_FEED_MISSING_EMPLOYEES = 'payrollFeedMissingEmployees';
+export const PAYROLL_FEED_CROSS_MARKET = 'payrollFeedCrossMarket';
+export const PAYROLL_FEED_WRONG_MARKET = 'payrollFeedWrongMarket';
+
+// ─── WHT certificates ──────────────────────────────────────────
+export const WHT_CERTIFICATE_NUMBER_CONFLICT = 'whtCertificateNumberConflict';
+export const WHT_CERTIFICATE_ISSUE_FAILED = 'whtCertificateIssueFailed';
 
 // ─── Classification (extended) ─────────────────────────────────
 export const CLASSIFICATION_ONLY_DRAFT_CAN_RECREATE = 'classificationOnlyDraftCanRecreate';
@@ -379,6 +381,8 @@ export const LEAVE_REQUEST_NOT_FOUND = 'leaveRequestNotFound';
 export const LEAVE_REQUEST_NOT_PENDING = 'leaveRequestNotPending';
 export const BLACKOUT_PERIOD_NOT_FOUND = 'blackoutPeriodNotFound';
 export const EMPLOYEE_WORKER_NOT_FOUND = 'employeeWorkerNotFound';
+export const EWIDENCJA_PERIOD_NOT_MONTH_ALIGNED = 'ewidencjaPeriodNotMonthAligned';
+export const EWIDENCJA_VERSION_CONFLICT = 'ewidencjaVersionConflict';
 export const PUBLIC_API_DISABLED = 'publicApiDisabled';
 export const TREATY_OVERRIDE_REASON_REQUIRED = 'treatyOverrideReasonRequired';
 export const CLASSIFICATION_OVERRIDE_REASON_REQUIRED = 'classificationOverrideReasonRequired';
@@ -387,6 +391,7 @@ export const VAT_VALIDATION_UNSUPPORTED_COUNTRY = 'vatValidationUnsupportedCount
 export const BACS_UNMAPPABLE_CHARACTERS = 'bacsUnmappableCharacters';
 export const PAYMENT_RUN_CANCEL_ADMIN_ONLY = 'paymentRunCancelAdminOnly';
 export const CLASSIFICATION_STALE_ANSWER = 'classificationStaleAnswer';
+export const COMPLIANCE_RECOMPUTE_FAILED = 'complianceRecomputeFailed';
 export const CLOCKIFY_API_KEY_INVALID = 'clockifyApiKeyInvalid';
 export const JIRA_TASK_NOT_CONFIGURED = 'jiraTaskNotConfigured';
 export const JIRA_ACCOUNT_NOT_MAPPED = 'jiraAccountNotMapped';
@@ -407,6 +412,14 @@ export const UPLOAD_RATE_LIMIT_EXCEEDED = 'uploadRateLimitExceeded';
 export const REPORT_RATE_LIMITER_UNAVAILABLE = 'reportRateLimiterUnavailable';
 export const REPORT_RATE_LIMIT_EXCEEDED = 'reportRateLimitExceeded';
 
+// ─── Portal magic-link request rate limit (per email) ───────────
+export const MAGIC_LINK_RATE_LIMITER_UNAVAILABLE = 'magicLinkRateLimiterUnavailable';
+export const MAGIC_LINK_RATE_LIMIT_EXCEEDED = 'magicLinkRateLimitExceeded';
+
+// ─── Portal per-subject rate limit (OCR / e-sign portal actions) ─
+export const PORTAL_RATE_LIMITER_UNAVAILABLE = 'portalRateLimiterUnavailable';
+export const PORTAL_RATE_LIMIT_EXCEEDED = 'portalRateLimitExceeded';
+
 // ─── Billing / Finance (extended) ───────────────────────────────
 export const BILLING_PROFILE_NOT_FOUND = 'billingProfileNotFound';
 export const WHT_NOT_APPLICABLE = 'whtNotApplicable';
@@ -424,6 +437,8 @@ export const TIMESHEET_CAN_ONLY_EDIT_DRAFT_OR_REJECTED = 'timesheetCanOnlyEditDr
 export const TIMESHEET_CANNOT_SUBMIT = 'timesheetCannotSubmit';
 export const TIMESHEET_CANNOT_APPROVE = 'timesheetCannotApprove';
 export const TIMESHEET_CANNOT_REJECT = 'timesheetCannotReject';
+export const TIMESHEET_ENTRY_DATE_OUT_OF_WEEK = 'timesheetEntryDateOutOfWeek';
+export const TIMESHEET_INVALID_CONTRACT = 'timesheetInvalidContract';
 
 // ─── ZATCA onboarding ───────────────────────────────────────────
 export const ZATCA_API_CLIENT_UNAVAILABLE = 'zatcaApiClientUnavailable';
@@ -463,6 +478,7 @@ export const DEPROVISIONING_NO_EXTERNAL_USER = 'deprovisioningNoExternalUser';
 export const DEPROVISIONING_STEP_NOT_OVERRIDABLE = 'deprovisioningStepNotOverridable';
 export const DEPROVISIONING_PROVIDER_SIGNOFF_PENDING = 'deprovisioningProviderSignoffPending';
 export const DEPROVISIONING_INTEGRATION_NOT_CONFIGURED = 'deprovisioningIntegrationNotConfigured';
+export const DEPROVISIONING_OTHER_ACTIVE_ASSIGNMENT = 'deprovisioningOtherActiveAssignment';
 
 // ─── Compliance payment block ──────────────────────────────────────
 export const COMPLIANCE_PAYMENT_BLOCKED = 'compliancePaymentBlocked';
@@ -472,6 +488,7 @@ export const APPROVAL_FLOW_NOT_FOUND = 'approvalFlowNotFound';
 export const APPROVAL_NOT_PENDING_COMPLIANCE = 'approvalNotPendingCompliance';
 export const APPROVAL_CANNOT_RESOLVE_CONTRACTOR = 'approvalCannotResolveContractor';
 export const APPROVAL_STILL_COMPLIANCE_BLOCKED = 'approvalStillComplianceBlocked';
+export const APPROVAL_COMPLIANCE_RESUME_NO_STEP = 'approvalComplianceResumeNoStep';
 
 // ─── Compliance admin override + audit trail ──────────────────────
 export const COMPLIANCE_ITEM_NOT_FOUND = 'complianceItemNotFound';
@@ -495,3 +512,5 @@ export const HRIS_ALREADY_CONNECTED = 'hrisAlreadyConnected';
 export const HRIS_NOT_CONNECTED = 'hrisNotConnected';
 export const HRIS_NO_CONNECTED_TO_SYNC = 'hrisNoConnectedToSync';
 export const HRIS_SYNC_NOT_ENABLED = 'hrisSyncNotEnabled';
+export const HRIS_EMPLOYEE_ALREADY_LINKED = 'hrisEmployeeAlreadyLinked';
+export const HRIS_EXTERNAL_ID_ALREADY_LINKED = 'hrisExternalIdAlreadyLinked';

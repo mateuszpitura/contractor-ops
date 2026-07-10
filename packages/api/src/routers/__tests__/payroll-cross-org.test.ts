@@ -1,7 +1,6 @@
-// Two-org cross-leak regression for the payroll export feed — RED until
-// services/payroll-feed lands. buildPayrollFeed is org-scoped: an ORG_A caller
-// can never assemble a feed containing ORG_B employees, even when passing an
-// ORG_B employeeId. Terminal-RED today (the service module does not exist yet).
+// Two-org cross-leak regression for the payroll export feed.
+// buildPayrollFeed is org-scoped: an ORG_A caller can never assemble a feed
+// containing ORG_B employees, even when passing an ORG_B employeeId.
 
 import { describe, expect, it } from 'vitest';
 
@@ -44,14 +43,23 @@ function scopedDb(rows: WorkerRow[]) {
     worker: {
       findMany: async (args: {
         where: { workerType: string; organizationId: string; id: { in: string[] } };
+        include?: { employeeProfile?: boolean; personnelFile?: boolean };
       }) => {
         const { where } = args;
-        return rows.filter(
-          r =>
-            r.workerType === where.workerType &&
-            r.organizationId === where.organizationId &&
-            where.id.in.includes(r.id),
-        );
+        return rows
+          .filter(
+            r =>
+              r.workerType === where.workerType &&
+              r.organizationId === where.organizationId &&
+              where.id.in.includes(r.id),
+          )
+          .map(r => ({
+            id: r.id,
+            displayName: r.displayName,
+            email: r.email,
+            employeeProfile: r.employeeProfile,
+            personnelFile: r.personnelFile,
+          }));
       },
     },
   };
@@ -61,13 +69,16 @@ describe('payroll export — cross-org isolation', () => {
   const rows = [makeRow('wrk-a-001', ORG_A), makeRow('wrk-b-001', ORG_B)];
 
   it('never assembles an ORG_B employee into an ORG_A feed', async () => {
-    const feed = await buildPayrollFeed(scopedDb(rows) as never, ORG_A, ['wrk-a-001', 'wrk-b-001']);
+    const { feed } = await buildPayrollFeed(scopedDb(rows) as never, ORG_A, [
+      'wrk-a-001',
+      'wrk-b-001',
+    ]);
     expect(feed.employees.map(e => e.workerId)).toEqual(['wrk-a-001']);
     expect(feed.employees.some(e => e.workerId === 'wrk-b-001')).toBe(false);
   });
 
   it('returns an empty employee set when an ORG_A caller requests only ORG_B ids', async () => {
-    const feed = await buildPayrollFeed(scopedDb(rows) as never, ORG_A, ['wrk-b-001']);
+    const { feed } = await buildPayrollFeed(scopedDb(rows) as never, ORG_A, ['wrk-b-001']);
     expect(feed.employees).toHaveLength(0);
   });
 });

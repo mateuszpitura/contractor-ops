@@ -10,7 +10,7 @@
 
 import type { Dinero, DineroCurrency } from 'dinero.js';
 import { add, allocate, dinero, multiply, subtract, toDecimal, toSnapshot } from 'dinero.js';
-import { AED, EUR, GBP, PLN, SAR, USD } from 'dinero.js/currencies';
+import { AED, BHD, CHF, CZK, EUR, GBP, JPY, KWD, PLN, QAR, SAR, USD } from 'dinero.js/currencies';
 
 // ---------------------------------------------------------------------------
 // Currency Registry
@@ -27,6 +27,12 @@ const CURRENCY_MAP: Record<string, DineroCurrency<number>> = {
   PLN,
   AED,
   SAR,
+  CHF,
+  CZK,
+  KWD,
+  QAR,
+  JPY,
+  BHD,
 };
 
 // ---------------------------------------------------------------------------

@@ -105,15 +105,11 @@ vi.mock('../../services/notification-service', () => ({
   dispatch: vi.fn(async () => undefined),
 }));
 
-vi.mock('../../services/cache', () => ({
-  cacheKey: vi.fn((...s: string[]) => s.join(':')),
-  cachedSingleflight: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  cached: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  invalidate: vi.fn(async () => undefined),
-  invalidateByPrefix: vi.fn(async () => undefined),
-  CacheKeys: { dashboardPrefix: (orgId: string) => `dashboard:${orgId}` },
-  CacheTTL: {},
-}));
+vi.mock('../../services/cache', async importOriginal => {
+  const actual = await importOriginal<typeof import('../../services/cache')>();
+  const { createPassthroughCacheMock } = await import('../../__tests__/__mocks__/cache-service');
+  return createPassthroughCacheMock(actual);
+});
 
 vi.mock('@sentry/node', () => {
   const mockSpan = { setStatus: vi.fn(), setAttribute: vi.fn(), end: vi.fn() };
@@ -252,7 +248,9 @@ describe('workflowTemplatesRouter', () => {
         name: 'Onboarding',
         status: 'DRAFT',
       });
-      mockPrisma.workflowTaskTemplate.createMany.mockResolvedValueOnce({ count: 2 });
+      mockPrisma.workflowTaskTemplate.create
+        .mockResolvedValueOnce({ id: 'task-1' })
+        .mockResolvedValueOnce({ id: 'task-2' });
       mockPrisma.workflowTemplate.findUniqueOrThrow.mockResolvedValueOnce({
         id: TEMPLATE_ID,
         name: 'Onboarding',
@@ -323,7 +321,7 @@ describe('workflowTemplatesRouter', () => {
       });
       mockPrisma.workflowTemplate.update.mockResolvedValueOnce({});
       mockPrisma.workflowTaskTemplate.deleteMany.mockResolvedValueOnce({ count: 1 });
-      mockPrisma.workflowTaskTemplate.createMany.mockResolvedValueOnce({ count: 1 });
+      mockPrisma.workflowTaskTemplate.create.mockResolvedValueOnce({ id: 'task-new' });
       mockPrisma.workflowTemplate.findUniqueOrThrow.mockResolvedValueOnce({
         id: TEMPLATE_ID,
         name: 'New Name',
@@ -352,7 +350,7 @@ describe('workflowTemplatesRouter', () => {
       expect(mockPrisma.workflowTaskTemplate.deleteMany).toHaveBeenCalledWith(
         expect.objectContaining({ where: { workflowTemplateId: TEMPLATE_ID } }),
       );
-      expect(mockPrisma.workflowTaskTemplate.createMany).toHaveBeenCalled();
+      expect(mockPrisma.workflowTaskTemplate.create).toHaveBeenCalled();
     });
 
     it('throws NOT_FOUND when template does not exist', async () => {
@@ -572,13 +570,32 @@ describe('workflowTemplatesRouter', () => {
       expect(mockPrisma.workflowTaskTemplate.createMany).toHaveBeenCalledTimes(2);
     });
 
-    it('returns seeded: false when templates already exist', async () => {
+    it('returns seeded: false and patches offboarding templates missing IP_VERIFICATION', async () => {
       mockPrisma.workflowTemplate.count.mockResolvedValueOnce(3);
+      mockPrisma.workflowTemplate.findMany.mockResolvedValueOnce([{ id: 'tmpl-off', tasks: [] }]);
+      mockPrisma.workflowTaskTemplate.create.mockResolvedValueOnce({ id: 'task-ip' });
 
       const result = await caller.seedStarterTemplates();
 
-      expect(result).toEqual({ seeded: false });
+      expect(result).toEqual({ seeded: false, patchedOffboardingIpTasks: 1 });
       expect(mockPrisma.workflowTemplate.create).not.toHaveBeenCalled();
+      expect(mockPrisma.workflowTaskTemplate.create).toHaveBeenCalledTimes(1);
+      const createArgs = mockPrisma.workflowTaskTemplate.create.mock.calls[0]![0];
+      expect(createArgs.data.taskType).toBe('IP_VERIFICATION');
+      expect(createArgs.data.required).toBe(true);
+      expect(createArgs.data.workflowTemplateId).toBe('tmpl-off');
+    });
+
+    it('patches nothing when existing offboarding templates already have IP_VERIFICATION', async () => {
+      mockPrisma.workflowTemplate.count.mockResolvedValueOnce(2);
+      mockPrisma.workflowTemplate.findMany.mockResolvedValueOnce([
+        { id: 'tmpl-off', tasks: [{ id: 'task-ip' }] },
+      ]);
+
+      const result = await caller.seedStarterTemplates();
+
+      expect(result).toEqual({ seeded: false, patchedOffboardingIpTasks: 0 });
+      expect(mockPrisma.workflowTaskTemplate.create).not.toHaveBeenCalled();
     });
   });
 });

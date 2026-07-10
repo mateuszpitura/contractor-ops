@@ -1,12 +1,12 @@
 /**
- * D-05 double-dark gate (INTEG-API-01) — per-org `module.public-api`.
+ * Double-dark gate — per-org `module.public-api`.
  *
  * With `module.public-api` evaluated OFF for the caller's org, the entire public
  * surface must be invisible: a public READ throws NOT_FOUND (404 hides
  * existence). With the flag ON, the gate passes through. The write half is
- * proven once the write procedures exist (HOLD-until-98-09) — but because writes
- * are added under the SAME `apiKeyTenantProcedure` chain, they inherit this gate
- * by construction.
+ * proven once the write procedures exist — but because writes are added under
+ * the SAME `apiKeyTenantProcedure` chain, they inherit this gate by
+ * construction.
  *
  * Two layers of coverage:
  *   1. Unit — `assertPublicApiEnabled` throws NOT_FOUND off / passes on.
@@ -124,15 +124,11 @@ vi.mock('../../services/api-key-service', () => ({
 
 vi.mock('../../services/billing-service', () => ({ getSubscription: mockGetSubscription }));
 
-vi.mock('../../services/cache', () => ({
-  cacheKey: vi.fn((...s: string[]) => s.join(':')),
-  cachedSingleflight: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  cached: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  invalidate: vi.fn(async () => undefined),
-  invalidateByPrefix: vi.fn(async () => undefined),
-  CacheKeys: {},
-  CacheTTL: {},
-}));
+vi.mock('../../services/cache', async importOriginal => {
+  const actual = await importOriginal<typeof import('../../services/cache')>();
+  const { createPassthroughCacheMock } = await import('../../__tests__/__mocks__/cache-service');
+  return createPassthroughCacheMock(actual);
+});
 
 // ---------------------------------------------------------------------------
 // Imports (after mocks)
@@ -209,10 +205,9 @@ describe('module.public-api dark gate wired into apiKeyTenantProcedure', () => {
   });
 });
 
-// The write half inherits the SAME gate (apiKeyTenantProcedure). The write
-// procedures land in 99-04; this asserts the double-dark write-404 — a write is
-// invisible (NOT_FOUND) when the flag is off, ahead of any scope check.
-// RED until 99-04 adds `contractor.create` / `contractor.update`.
+// The write half inherits the SAME gate (apiKeyTenantProcedure). This asserts
+// the double-dark write-404 — a write is invisible (NOT_FOUND) when the flag
+// is off, ahead of any scope check.
 describe('module.public-api dark gate — write half', () => {
   it('a write (contractor.create) throws NOT_FOUND (dark) when the flag is OFF', async () => {
     evaluateMock.mockReturnValue({ enabled: false, reason: 'disabled' });

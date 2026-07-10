@@ -85,17 +85,30 @@ vi.mock('@contractor-ops/db', () => ({
   SUPPORTED_REGIONS: ['EU', 'ME'] as const,
   getRegionalClient: mockGetRegionalClient,
 }));
-vi.mock('@contractor-ops/logger', () => ({
-  getIdpAuditLogger: vi.fn(() => ({
-    info: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn(),
-    debug: vi.fn(),
-    child: vi.fn(),
-  })),
-  createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
-  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
-}));
+vi.mock('@contractor-ops/logger', () => {
+  const noop = { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), child: vi.fn() };
+  return {
+    createWebhookLogger: vi.fn(() => noop),
+    withBodyLogging: vi.fn((_o, fn) => fn),
+    logIntegrationCall: vi.fn(),
+    subscribeOpossumEvents: vi.fn(),
+    runWithRequestContext: vi.fn((_c, fn) => fn()),
+    getRequestId: vi.fn(() => undefined),
+    getTraceparent: vi.fn(() => undefined),
+    buildContextFromHeaders: vi.fn(() => ({})),
+    getOutboundHeaders: vi.fn(() => ({})),
+    generateRequestId: vi.fn(() => 'test-request-id'),
+    logger: noop,
+    LOG_BODY_INCLUDE_PREFIXES: [],
+    PII_MASK_KEYWORDS: [],
+    PII_MASK_PATHS: [],
+    createIntegrationLogger: vi.fn(() => noop),
+    createLogger: vi.fn(() => noop),
+    createTrpcLogger: vi.fn(() => noop),
+    createCronLogger: vi.fn(() => noop),
+    getIdpAuditLogger: vi.fn(() => noop),
+  };
+});
 vi.mock('@contractor-ops/logger/metrics', () => ({
   metrics: { gauge: vi.fn(), increment: vi.fn(), distribution: vi.fn() },
 }));

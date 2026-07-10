@@ -108,17 +108,21 @@ const { mockPrisma } = vi.hoisted(() => {
 // Mock modules
 // ---------------------------------------------------------------------------
 
-vi.mock('@contractor-ops/auth', () => ({
-  auth: {
-    api: {
-      getSession: vi.fn(),
+vi.mock('@contractor-ops/auth', async importOriginal => {
+  const actual = await importOriginal<typeof import('@contractor-ops/auth')>();
+  return {
+    ...actual,
+    auth: {
+      api: {
+        getSession: vi.fn(),
+        hasPermission: vi.fn().mockResolvedValue({ success: true }),
+      },
+    },
+    authApi: {
       hasPermission: vi.fn().mockResolvedValue({ success: true }),
     },
-  },
-  authApi: {
-    hasPermission: vi.fn().mockResolvedValue({ success: true }),
-  },
-}));
+  };
+});
 
 vi.mock('@contractor-ops/db', () => ({
   withRlsTransactions: <T>(c: T) => c,
@@ -136,20 +140,24 @@ vi.mock('@contractor-ops/db', () => ({
   getRegionalClient: vi.fn(() => mockPrisma),
 }));
 
-vi.mock('../../services/invoice-matching', () => ({
-  computeDuplicateCheckHash: vi.fn(() => 'hash-abc123'),
-  runAutoMatch: vi.fn(async () => ({
-    contractorId: 'clcontractor000000000001',
-    contractId: 'clcontract0000000000000001',
-    score: 95,
-    matchStatus: 'MATCHED',
-    expectedAmountMinor: 100000,
-    amountDeltaMinor: 0,
-    amountDeltaPercent: 0,
-    flags: [],
-    duplicateInvoiceId: null,
-  })),
-}));
+vi.mock('../../services/invoice-matching', async importOriginal => {
+  const actual = await importOriginal<typeof import('../../services/invoice-matching')>();
+  return {
+    ...actual,
+    computeDuplicateCheckHash: vi.fn(() => 'hash-abc123'),
+    runAutoMatch: vi.fn(async () => ({
+      contractorId: 'clcontractor000000000001',
+      contractId: 'clcontract0000000000000001',
+      score: 95,
+      matchStatus: 'MATCHED',
+      expectedAmountMinor: 100000,
+      amountDeltaMinor: 0,
+      amountDeltaPercent: 0,
+      flags: [],
+      duplicateInvoiceId: null,
+    })),
+  };
+});
 
 vi.mock('../../services/notification-service', () => ({
   dispatch: vi.fn(async () => undefined),
@@ -181,15 +189,11 @@ vi.mock('../../services/billing-service', () => ({
   syncSeatCountForOrg: vi.fn(async () => undefined),
 }));
 
-vi.mock('../../services/cache', () => ({
-  cacheKey: vi.fn((...s: string[]) => s.join(':')),
-  cachedSingleflight: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  cached: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  invalidate: vi.fn(async () => undefined),
-  invalidateByPrefix: vi.fn(async () => undefined),
-  CacheKeys: { dashboardPrefix: (orgId: string) => `dash:${orgId}` },
-  CacheTTL: { DASHBOARD: 300 },
-}));
+vi.mock('../../services/cache', async importOriginal => {
+  const actual = await importOriginal<typeof import('../../services/cache')>();
+  const { createPassthroughCacheMock } = await import('../../__tests__/__mocks__/cache-service');
+  return createPassthroughCacheMock(actual);
+});
 
 vi.mock('../../services/r2', () => ({
   maxBytesForMime: vi.fn(() => 10485760),
@@ -618,7 +622,7 @@ describe('invoice.create', () => {
     expect(mockPrisma.member.findMany).toHaveBeenCalledWith({
       where: {
         organizationId: ORG_ID,
-        role: 'FINANCE_ADMIN',
+        role: 'finance_admin',
       },
       select: { userId: true },
     });
@@ -774,11 +778,13 @@ describe('invoice.submitForMatching', () => {
       ORG_ID,
       {
         id: INVOICE_ID,
-        issueDate: invoice.issueDate,
-        sellerTaxId: '1234567890',
+        sellerTaxId: invoice.sellerTaxId,
+        subtotalMinor: invoice.subtotalMinor,
+        vatRate: invoice.vatRate,
         totalMinor: 123000,
         currency: 'PLN',
         duplicateCheckHash: 'hash-abc123',
+        issueDate: invoice.issueDate,
         servicePeriodStart: invoice.servicePeriodStart,
         servicePeriodEnd: invoice.servicePeriodEnd,
       },
@@ -1185,9 +1191,12 @@ describe('invoice-line tax pipeline', () => {
       reverseChargeOverrideReason: 'Customer prefers standard rate per contract clause 4.2',
     });
 
-    expect(mockPrisma.auditLog.create).toHaveBeenCalledTimes(1);
-    const auditCall = mockPrisma.auditLog.create.mock.calls[0]?.[0];
-    expect(auditCall?.data).toMatchObject({
+    const rcAuditCall = mockPrisma.auditLog.create.mock.calls.find(
+      (call: [{ data: { action?: string } }]) =>
+        call[0]?.data?.action === 'invoice.reverse-charge-override',
+    );
+    expect(rcAuditCall).toBeDefined();
+    expect(rcAuditCall?.[0]?.data).toMatchObject({
       organizationId: ORG_ID,
       action: 'invoice.reverse-charge-override',
       metadataJson: expect.objectContaining({

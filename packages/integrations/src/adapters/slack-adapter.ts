@@ -376,13 +376,17 @@ export class SlackAdapter extends BaseAdapter implements Deprovisionable {
    * Stub for Plan 02 — full handler wiring (processBlockAction, processViewSubmission)
    * comes in Plan 03 when existing Slack interactivity route is migrated.
    */
+  /**
+   * Processes a verified Slack webhook payload.
+   * Business logic is delegated to @contractor-ops/api slack-interactivity-handler
+   * via the webhook _process route (same pattern as Jira/Linear).
+   */
   override async handleWebhook(
-    payload: unknown,
+    _payload: unknown,
     _organizationId: string,
     _connectionId: string,
   ): Promise<void> {
-    const _typedPayload = payload as { type?: string };
-    // Plan 03 will wire processBlockAction and processViewSubmission here
+    // Satisfies BaseAdapter interface; processing runs in apps/api process.ts.
   }
 
   // -------------------------------------------------------------------------

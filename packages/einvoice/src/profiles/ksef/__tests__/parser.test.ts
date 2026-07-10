@@ -111,6 +111,57 @@ describe('parseFa3Xml', () => {
     expect(parsed.totals.grossMinor).toBe(123000);
   });
 
+  it('falls back to rate when P_11A sign contradicts net (legacy VAT-in-gross emitters)', () => {
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<Faktura>
+  <Podmiot1><DaneIdentyfikacyjne><NIP>1111111111</NIP><Nazwa>S</Nazwa></DaneIdentyfikacyjne></Podmiot1>
+  <Podmiot2><DaneIdentyfikacyjne><NIP>2222222222</NIP><Nazwa>B</Nazwa></DaneIdentyfikacyjne></Podmiot2>
+  <Fa>
+    <KodWaluty>PLN</KodWaluty>
+    <P_1>2026-04-01</P_1>
+    <P_2>FV-LEG-1</P_2>
+    <FaWiersz>
+      <NrWierszaFa>1</NrWierszaFa>
+      <P_7>Legacy line</P_7>
+      <P_11>100.00</P_11>
+      <P_12>23</P_12>
+      <P_11A>23.00</P_11A>
+    </FaWiersz>
+  </Fa>
+</Faktura>`;
+    const parsed = parseFa3Xml(xml, 'ref');
+
+    const line = parsed.lines[0]!;
+    // 23.00 as gross would mean VAT −77.00; sign mismatch → derive from the 23% rate instead.
+    expect(line.vatAmountMinor).toBe(2300);
+    expect(line.grossAmountMinor).toBe(12300);
+  });
+
+  it('keeps negative VAT on correction lines where gross and net are both negative', () => {
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<Faktura>
+  <Podmiot1><DaneIdentyfikacyjne><NIP>1111111111</NIP><Nazwa>S</Nazwa></DaneIdentyfikacyjne></Podmiot1>
+  <Podmiot2><DaneIdentyfikacyjne><NIP>2222222222</NIP><Nazwa>B</Nazwa></DaneIdentyfikacyjne></Podmiot2>
+  <Fa>
+    <KodWaluty>PLN</KodWaluty>
+    <P_1>2026-04-01</P_1>
+    <P_2>KOR-1</P_2>
+    <FaWiersz>
+      <NrWierszaFa>1</NrWierszaFa>
+      <P_7>Correction line</P_7>
+      <P_11>-100.00</P_11>
+      <P_12>23</P_12>
+      <P_11A>-123.00</P_11A>
+    </FaWiersz>
+  </Fa>
+</Faktura>`;
+    const parsed = parseFa3Xml(xml, 'ref');
+
+    const line = parsed.lines[0]!;
+    expect(line.vatAmountMinor).toBe(-2300);
+    expect(line.grossAmountMinor).toBe(-12300);
+  });
+
   it('parses payment information', () => {
     const xml = generateFa3Xml(createTestInvoice());
     const parsed = parseFa3Xml(xml, 'ref');

@@ -25,7 +25,11 @@ import { portalManagerProcedure } from '../../middleware/portal-auth';
 import type { TxClient } from '../../services/approval-engine';
 import { writeAuditLog } from '../../services/audit-writer';
 import { assertIsDirectReport, resolveDirectReports } from '../../services/portal-reports';
-import { finalizeApprovedLeave } from '../core/approval-shared';
+import {
+  closeLeaveFlowAsApproved,
+  closeLeaveFlowAsRejected,
+  finalizeApprovedLeave,
+} from '../core/approval-shared';
 
 interface TeamReportSummary {
   workerId: string;
@@ -126,7 +130,7 @@ export const portalManagerRouter = router({
     .mutation(async ({ ctx, input }) => {
       const request = await ctx.db.leaveRequest.findFirst({
         where: { id: input.requestId, organizationId: ctx.organizationId },
-        select: { id: true, workerId: true, status: true },
+        select: { id: true, workerId: true, status: true, approvalFlowId: true },
       });
       if (!request) {
         throw new TRPCError({ code: 'NOT_FOUND', message: E.LEAVE_REQUEST_NOT_FOUND });
@@ -139,24 +143,35 @@ export const portalManagerRouter = router({
         throw new TRPCError({ code: 'BAD_REQUEST', message: E.LEAVE_REQUEST_NOT_PENDING });
       }
 
-      await ctx.db.$transaction(async tx => {
-        await finalizeApprovedLeave(tx as TxClient, {
-          resourceId: request.id,
-          organizationId: ctx.organizationId,
-          userId: undefined,
-        });
-        await writeAuditLog({
-          tx,
-          organizationId: ctx.organizationId,
-          actorType: 'EMPLOYEE',
-          actorId: ctx.workerId,
-          action: 'leave.request.approved',
-          resourceType: 'LEAVE_REQUEST',
-          resourceId: request.id,
-          newValues: { status: 'APPROVED' },
-          metadata: { via: 'portal-manager', reportWorkerId: request.workerId },
-        });
-      });
+      // Timeout headroom: finalizeApprovedLeave materialises one
+      // EmployeeTimeRecord per leave day (a full-year PARENTAL leave is ~700
+      // round-trips), which exceeds Prisma's default 5s interactive-tx timeout
+      // and would otherwise abort with P2028.
+      await ctx.db.$transaction(
+        async tx => {
+          await closeLeaveFlowAsApproved(tx as TxClient, {
+            approvalFlowId: request.approvalFlowId,
+            organizationId: ctx.organizationId,
+          });
+          await finalizeApprovedLeave(tx as TxClient, {
+            resourceId: request.id,
+            organizationId: ctx.organizationId,
+            userId: undefined,
+          });
+          await writeAuditLog({
+            tx,
+            organizationId: ctx.organizationId,
+            actorType: 'EMPLOYEE',
+            actorId: ctx.workerId,
+            action: 'leave.request.approved',
+            resourceType: 'LEAVE_REQUEST',
+            resourceId: request.id,
+            newValues: { status: 'APPROVED' },
+            metadata: { via: 'portal-manager', reportWorkerId: request.workerId },
+          });
+        },
+        { timeout: 120_000, maxWait: 10_000 },
+      );
 
       return { id: request.id, status: 'APPROVED' as const };
     }),
@@ -171,7 +186,7 @@ export const portalManagerRouter = router({
     .mutation(async ({ ctx, input }) => {
       const request = await ctx.db.leaveRequest.findFirst({
         where: { id: input.requestId, organizationId: ctx.organizationId },
-        select: { id: true, workerId: true, status: true },
+        select: { id: true, workerId: true, status: true, approvalFlowId: true },
       });
       if (!request) {
         throw new TRPCError({ code: 'NOT_FOUND', message: E.LEAVE_REQUEST_NOT_FOUND });
@@ -185,6 +200,10 @@ export const portalManagerRouter = router({
       }
 
       await ctx.db.$transaction(async tx => {
+        await closeLeaveFlowAsRejected(tx as TxClient, {
+          approvalFlowId: request.approvalFlowId,
+          organizationId: ctx.organizationId,
+        });
         await tx.leaveRequest.update({
           where: { id: request.id },
           data: { status: 'REJECTED' },

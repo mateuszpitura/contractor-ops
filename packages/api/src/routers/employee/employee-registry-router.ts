@@ -24,6 +24,7 @@ import { assertWorkforceEnabled } from '../../middleware/require-workforce-flag'
 import { tenantProcedure } from '../../middleware/tenant';
 import { writeAuditLog } from '../../services/audit-writer';
 import { decryptPii, encryptPii, maskLast4 } from '../../services/employee-pii-crypto';
+import { onboardWorkerLeaveAccrual } from '../../services/leave-accrual';
 import { decryptSsn, encryptSsn, maskSsnLast4 } from '../../services/ssn-crypto';
 
 // ---------------------------------------------------------------------------
@@ -95,6 +96,8 @@ const registerInputSchema = z
     employmentType: employmentTypeSchema.optional(),
     contractEndDate: z.coerce.date().optional(),
     probationEndsAt: z.coerce.date().optional(),
+    /** Optional retroactive hire date; defaults to registration day (UTC). */
+    hireDate: z.coerce.date().optional(),
   })
   .strict();
 
@@ -182,6 +185,16 @@ export const employeeRegistryRouter = router({
           select: { id: true },
         });
 
+        const hireDate =
+          input.hireDate ??
+          new Date(
+            Date.UTC(
+              new Date().getUTCFullYear(),
+              new Date().getUTCMonth(),
+              new Date().getUTCDate(),
+            ),
+          );
+
         const created = await tx.employeeProfile.create({
           data: { ...profileData, workerId: worker.id },
           omit: {
@@ -192,14 +205,30 @@ export const employeeRegistryRouter = router({
           },
         });
 
+        await tx.personnelFile.create({
+          data: {
+            organizationId: ctx.organizationId,
+            workerId: worker.id,
+            countryCode: input.countryCode,
+            hireDate,
+          },
+        });
+
+        await onboardWorkerLeaveAccrual(tx as import('../../services/approval-engine').TxClient, {
+          organizationId: ctx.organizationId,
+          workerId: worker.id,
+          countryCode: input.countryCode,
+          hireDate,
+        });
+
         await writeAuditLog({
           organizationId: ctx.organizationId,
           actorType: 'USER',
           actorId: ctx.user?.id ?? null,
           action: 'employee.registered',
-          resourceType: 'ORGANIZATION',
-          resourceId: created.id,
-          metadata: { workerId: worker.id, countryCode: input.countryCode },
+          resourceType: 'EMPLOYEE',
+          resourceId: worker.id,
+          metadata: { employeeProfileId: created.id, countryCode: input.countryCode },
           tx,
         });
 
@@ -267,9 +296,9 @@ export const employeeRegistryRouter = router({
         actorType: 'USER',
         actorId: ctx.user?.id ?? null,
         action: `employee.${input.field}.revealed`,
-        resourceType: 'ORGANIZATION',
-        resourceId: record.id,
-        metadata: { field: input.field, workerId: input.workerId },
+        resourceType: 'EMPLOYEE',
+        resourceId: input.workerId,
+        metadata: { field: input.field, employeeProfileId: record.id },
       });
 
       return { field: input.field, value };

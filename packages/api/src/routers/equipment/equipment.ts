@@ -296,11 +296,40 @@ const equipmentCoreRouter = router({
           oldValues: { status: equipment.status },
           newValues: { status: 'RETIRED' },
         },
-        async tx =>
-          tx.equipment.update({
-            where: { id: input.id },
+        async tx => {
+          const activeAssignment = await tx.equipmentAssignment.findFirst({
+            where: {
+              equipmentId: input.id,
+              organizationId: ctx.organizationId,
+              unassignedAt: null,
+            },
+            select: { id: true },
+          });
+          if (activeAssignment) {
+            throw new TRPCError({
+              code: 'BAD_REQUEST',
+              message: EQUIPMENT_CURRENTLY_ASSIGNED,
+            });
+          }
+
+          const cas = await tx.equipment.updateMany({
+            where: {
+              id: input.id,
+              status: { not: 'RETIRED' },
+            },
             data: { status: 'RETIRED' },
-          }),
+          });
+          if (cas.count === 0) {
+            throw new TRPCError({
+              code: 'CONFLICT',
+              message: EQUIPMENT_NOT_FOUND,
+            });
+          }
+
+          return tx.equipment.findUniqueOrThrow({
+            where: { id: input.id },
+          });
+        },
       );
     }),
 
@@ -366,6 +395,17 @@ const equipmentCoreRouter = router({
           },
         },
         async tx => {
+          const cas = await tx.equipment.updateMany({
+            where: { id: input.equipmentId, status: 'AVAILABLE' },
+            data: { status: 'ASSIGNED' },
+          });
+          if (cas.count === 0) {
+            throw new TRPCError({
+              code: 'CONFLICT',
+              message: EQUIPMENT_NOT_AVAILABLE,
+            });
+          }
+
           assignment = await tx.equipmentAssignment.create({
             data: {
               organizationId: ctx.organizationId,
@@ -375,9 +415,8 @@ const equipmentCoreRouter = router({
               notes: input.notes ?? null,
             },
           });
-          updated = await tx.equipment.update({
+          updated = await tx.equipment.findUniqueOrThrow({
             where: { id: input.equipmentId },
-            data: { status: 'ASSIGNED' },
           });
           return updated;
         },

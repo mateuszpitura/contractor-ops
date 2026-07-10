@@ -27,10 +27,21 @@ describe('renderNotificationEmail', () => {
     expect(pl).toContain('Compliance review');
   });
 
-  it('throws for unknown type', () => {
-    expect(() => renderNotificationEmail('UNKNOWN_TYPE', {}, 'en')).toThrow(
-      /Unknown notification type/,
+  it('falls back to generic template for unknown types instead of throwing', () => {
+    const result = renderNotificationEmail(
+      'PAYMENT_COMPLETED',
+      {
+        title: 'Payment completed: INV-99',
+        body: 'Invoice INV-99 marked paid.',
+        ctaUrl: 'https://example.com',
+        preferencesUrl: 'https://example.com/prefs',
+      },
+      'en',
     );
+
+    expect(result.usedGenericFallback).toBe(true);
+    expect(result.subject).toBe('Payment completed: INV-99');
+    expect(result.react).toBeDefined();
   });
 
   it('produces a string subject (no [object Object])', () => {

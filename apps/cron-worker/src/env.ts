@@ -47,11 +47,13 @@ const envSchema = z.object({
   CRON_HRIS_SYNC_SCHEDULE: z.string().default('0 * * * *'),
   CRON_CLASSIFICATION_REASSESSMENT_TRIGGERS_SCHEDULE: z.string().default('0 3 * * *'),
   CRON_CLASSIFICATION_ECONOMIC_DEPENDENCY_SCHEDULE: z.string().default('0 2 * * *'),
+  CRON_CONTRACT_EXPIRY_SCAN_SCHEDULE: z.string().default('0 4 * * *'),
   CRON_FORM_1099K_TRACKER_SCHEDULE: z.string().default('0 5 * * *'),
   CRON_INPOST_STATUS_POLL_SCHEDULE: z.string().default('0 * * * *'),
   CRON_JOB_HEALTH_SCHEDULE: z.string().default('*/5 * * * *'),
   CRON_API_KEY_LEAK_ALARM_SCHEDULE: z.string().default('0 * * * *'),
   CRON_LATE_INTEREST_PDF_REAPER_SCHEDULE: z.string().default('*/5 * * * *'),
+  CRON_DOCUMENT_VIRUS_SCAN_RECONCILE_SCHEDULE: z.string().default('*/5 * * * *'),
   CRON_TRIAL_NOTIFICATIONS_SCHEDULE: z.string().default('0 9 * * *'),
   CRON_REMINDERS_SCHEDULE: z.string().default('0 9 * * *'),
   // Year-end 1099-NEC batch-due reminder — mid-January (before the ~Jan 31
@@ -59,6 +61,7 @@ const envSchema = z.object({
   CRON_YEAR_END_1099_REMINDER_SCHEDULE: z.string().default('0 8 15 1 *'),
   CRON_STRIPE_RECONCILE_SCHEDULE: z.string().default('0 1 * * *'),
   CRON_ZATCA_RECONCILE_SCHEDULE: z.string().default('*/15 * * * *'),
+  CRON_PEPPOL_RECONCILE_SCHEDULE: z.string().default('*/15 * * * *'),
 
   /**
    * Age (minutes) after which a still-PENDING ZATCA chain is resubmitted by the

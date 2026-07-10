@@ -1,7 +1,6 @@
-// Government-integration stub seams — Wave-0 RED scaffold (EMP-ON-01 / EMP-OFF-01).
+// Government-integration stub seams.
 //
-// The five gov stub modules do not exist yet, so these imports fail at
-// resolution and the suite is terminal-RED until Plan 07 lands them. Each stub
+// Each of the five gov stub modules
 // mirrors `elstam-stub`: a typed, network-free function returning
 // `{ source: 'STUB', available: false, note }` with PII masked to the last-2
 // characters — the seam a later live integration slots into, backed by a MANUAL

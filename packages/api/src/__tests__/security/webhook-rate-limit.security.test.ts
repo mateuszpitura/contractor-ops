@@ -1,6 +1,6 @@
 /**
- * RED security net — INTEG-SEC-03 (per-subscription dispatch rate limit).
- * Turned GREEN by 100-06 (`services/webhooks/rate-limit.ts`).
+ * Per-subscription dispatch rate-limit security net
+ * (`services/webhooks/rate-limit.ts`).
  *
  * A single subscription may dispatch at most 100 events/min. The 101st in a
  * minute is THROTTLED (the deliver drain requeues it with a short delay), never

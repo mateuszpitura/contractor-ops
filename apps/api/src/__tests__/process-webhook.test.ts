@@ -68,8 +68,8 @@ vi.mock('@contractor-ops/integrations/registry', () => ({
   getAdapter: (...a: unknown[]) => mockGetAdapter(...a),
 }));
 
-vi.mock('@contractor-ops/db', () => ({
-  prisma: {
+vi.mock('@contractor-ops/db', () => {
+  const mockClient = {
     webhookDelivery: {
       findUnique: (...a: unknown[]) => (mockFindUnique as (...a: unknown[]) => unknown)(...a),
       update: (...a: unknown[]) => (mockUpdate as (...a: unknown[]) => unknown)(...a),
@@ -79,14 +79,26 @@ vi.mock('@contractor-ops/db', () => ({
       findUnique: (...a: unknown[]) =>
         (mockIntegrationConnectionFindUnique as (...a: unknown[]) => unknown)(...a),
     },
-  },
-  // Module-eval-time exports pulled in transitively via the route's import
-  // graph (compliance-reminder-scan `__deps`). Stubbed so suite collection
-  // doesn't crash; the drain handler under test never touches them.
-  prismaRaw: {},
-  getRegionalClient: () => ({}),
-  SUPPORTED_REGIONS: ['EU', 'ME'],
-}));
+  };
+  return {
+    prisma: mockClient,
+    // Module-eval-time exports pulled in transitively via the route's import
+    // graph (compliance-reminder-scan `__deps`). Stubbed so suite collection
+    // doesn't crash; the drain handler under test never touches them.
+    prismaRaw: {},
+    // Regional helpers delegate to the same mocked client so the route's
+    // findAcrossRegions lookup exercises the real not-found / happy branches.
+    getRegionalClient: () => mockClient,
+    tryGetRegionalClient: () => mockClient,
+    SUPPORTED_REGIONS: ['EU'],
+    findAcrossRegions: async (
+      finder: (client: unknown, region: string) => Promise<unknown>,
+    ): Promise<{ result: unknown; region: string; client: unknown } | null> => {
+      const result = await finder(mockClient, 'EU');
+      return result == null ? null : { result, region: 'EU', client: mockClient };
+    },
+  };
+});
 
 vi.mock('@contractor-ops/api/services/cron-monitor', () => ({
   withQueueObservability: <T>(_name: string, fn: () => Promise<T>) => fn(),

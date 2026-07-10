@@ -22,7 +22,7 @@ import { CardFactory, CloudAdapter, MessageFactory } from '@microsoft/agents-hos
 import { buildActivityAlertCard } from '../teams/cards/activity-alert-card';
 import { buildApprovalCard } from '../teams/cards/approval-card';
 import { buildApprovalReminderCard } from '../teams/cards/approval-reminder-card';
-import { getConversationReference } from '../teams/teams-bot-handler';
+import { getConversationReference } from '../teams/conversation-reference';
 import type {
   ApprovalCardParams,
   ChannelAlertParams,

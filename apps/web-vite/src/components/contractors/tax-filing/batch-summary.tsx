@@ -1,3 +1,12 @@
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableFooter,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@contractor-ops/ui/components/shadcn/table';
 import { Info } from 'lucide-react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
@@ -28,33 +37,33 @@ export function BatchSummary({ taxYear, forms }: BatchSummaryProps) {
         {t('summary.aboveThreshold', { count: forms.length, taxYear })}
       </p>
 
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[28rem] text-sm">
-          <thead>
-            <tr className="border-b text-start text-xs text-muted-foreground">
-              <th className="py-2 pe-3 text-start font-normal">{t('summary.recipient')}</th>
-              <th className="py-2 pe-3 text-end font-normal">{t('summary.box1')}</th>
-              <th className="py-2 text-end font-normal">{t('summary.box4')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {forms.map(form => (
-              <tr key={form.id} className="border-b last:border-0">
-                <td className="py-2 pe-3">{form.recipient.legalName}</td>
-                <td className="py-2 pe-3 text-end font-mono">{usd(form.box1AmountMinor)}</td>
-                <td className="py-2 text-end font-mono">{usd(form.box4BackupWithholdingMinor)}</td>
-              </tr>
-            ))}
-          </tbody>
-          <tfoot>
-            <tr className="font-medium">
-              <td className="py-2 pe-3">{t('summary.total')}</td>
-              <td className="py-2 pe-3 text-end font-mono">{usd(totalBox1)}</td>
-              <td className="py-2" />
-            </tr>
-          </tfoot>
-        </table>
-      </div>
+      <Table className="min-w-[28rem]">
+        <TableHeader>
+          <TableRow>
+            <TableHead>{t('summary.recipient')}</TableHead>
+            <TableHead className="text-end">{t('summary.box1')}</TableHead>
+            <TableHead className="text-end">{t('summary.box4')}</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {forms.map(form => (
+            <TableRow key={form.id}>
+              <TableCell>{form.recipient.legalName}</TableCell>
+              <TableCell className="text-end font-mono">{usd(form.box1AmountMinor)}</TableCell>
+              <TableCell className="text-end font-mono">
+                {usd(form.box4BackupWithholdingMinor)}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+        <TableFooter>
+          <TableRow>
+            <TableCell>{t('summary.total')}</TableCell>
+            <TableCell className="text-end font-mono">{usd(totalBox1)}</TableCell>
+            <TableCell />
+          </TableRow>
+        </TableFooter>
+      </Table>
 
       <p className="flex items-start gap-1.5 text-xs text-muted-foreground">
         <Info className="mt-0.5 size-3.5 shrink-0" aria-hidden />

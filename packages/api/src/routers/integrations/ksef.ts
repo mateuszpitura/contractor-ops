@@ -221,7 +221,13 @@ export const ksefRouter = router({
         metadata: { connectionId: connection.id },
       });
 
-      return connection;
+      // Never return the credential ciphertext (`credentialsRef`) or the
+      // operator's user id to the browser. Re-select the safe columns; this
+      // also reflects the `qstashScheduleId` written by createKsefSyncSchedule.
+      return ctx.db.integrationConnection.findUniqueOrThrow({
+        where: { id: connection.id },
+        omit: { credentialsRef: true, connectedByUserId: true },
+      });
     }),
 
   /**
@@ -359,6 +365,13 @@ export const ksefRouter = router({
       optional: true,
     });
 
-    return connection ? connection : null;
+    if (!connection) return null;
+
+    // Strip credential ciphertext (`credentialsRef`) + operator user id before
+    // the status row reaches the browser.
+    return ctx.db.integrationConnection.findUniqueOrThrow({
+      where: { id: connection.id },
+      omit: { credentialsRef: true, connectedByUserId: true },
+    });
   }),
 });

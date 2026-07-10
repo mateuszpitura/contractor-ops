@@ -247,7 +247,8 @@
           "revokeItAccess": "IT-Zugang entziehen",
           "returnEquipment": "Ausrüstung zurückgeben",
           "financeWrapUp": "Finanz-Abschluss",
-          "finalDocumentation": "Abschlussdokumentation"
+          "finalDocumentation": "Abschlussdokumentation",
+          "ipVerification": "IP-Abtretung prüfen"
         }
       }
     }
@@ -338,6 +339,32 @@
       "notePlaceholder": "Notiz hinzufügen…",
       "confirm": "Freigabe delegieren",
       "dismiss": "Zuweisung beibehalten"
+    },
+    "complianceHold": {
+      "sectionTitle": "Compliance-Sperren",
+      "sectionDescription": "Diese Rechnungen haben alle Freigabeschritte bestanden, sind aber blockiert, bis Compliance-Dokumente erfüllt sind.",
+      "statusBadge": "PENDING_COMPLIANCE",
+      "unknownInvoice": "Unbekannte Rechnung",
+      "unknownContractor": "Unbekannter Auftragnehmer",
+      "heldSince": "Gehalten seit {date}",
+      "heldUnknown": "Sperrdatum unbekannt",
+      "holdingItems": "{count, plural, one {# blockierender Posten} other {# blockierende Posten}}",
+      "resumeAction": "Freigabe fortsetzen",
+      "resumeDialog": {
+        "title": "Freigabe aus Compliance-Sperre fortsetzen",
+        "description": "Bestätigen Sie, dass Compliance erfüllt ist, und geben Sie die Rechnung zurück in die Freigabewarteschlange. Ein Grund ist für die Prüfprotokollierung erforderlich.",
+        "reasonPlaceholder": "z. B. RTW-Dokument freigegeben und Ablaufdatum aktualisiert",
+        "cancel": "Abbrechen",
+        "confirm": "Freigabe fortsetzen"
+      },
+      "toast": {
+        "resumed": "Freigabe aus Compliance-Sperre fortgesetzt",
+        "resumeFailed": "Freigabe konnte nicht fortgesetzt werden. Prüfen Sie den Compliance-Status und versuchen Sie es erneut."
+      },
+      "error": {
+        "message": "Compliance-Sperren konnten nicht geladen werden. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
+        "retry": "Erneut versuchen"
+      }
     },
     "toast": {
       "approved": "Rechnung freigegeben",
@@ -1841,6 +1868,10 @@
       "currentlySaved": "Aktuell gespeichert: {value}"
     },
     "countryCompliance": {
+      "error": {
+        "message": "Länder-Compliance-Einstellungen konnten nicht geladen werden. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
+        "retry": "Erneut versuchen"
+      },
       "cardTitle": "Länder-Compliance — {country}",
       "incompleteFields": "{count} unvollständig",
       "vatValidationLabel": "USt-Validierung",
@@ -3460,6 +3491,7 @@
     "unknownError": "Ein unerwarteter Fehler ist aufgetreten. Versuchen Sie es erneut.",
     "generic": "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.",
     "contractorNotFound": "Auftragnehmer nicht gefunden.",
+    "contractorCountryMismatch": "Länderfelder müssen zum Land des Auftragnehmers passen.",
     "gulfAssignmentNotFound": "Einsatz nicht gefunden.",
     "contractorHasUnpaidInvoices": "Auftragnehmer mit offenen Rechnungen kann nicht archiviert werden. Klären Sie zunächst alle ausstehenden Zahlungen.",
     "contractorHasActiveWorkflows": "Auftragnehmer mit aktiven Workflows kann nicht archiviert werden. Schließen Sie Workflows zunächst ab oder brechen Sie sie ab.",
@@ -3525,6 +3557,7 @@
     "portalBillingProfileNotFound": "Standard-Rechnungsprofil für den Auftragnehmer nicht gefunden.",
     "employeePortalDisabled": "Das Mitarbeiterportal ist für Ihre Organisation nicht aktiviert.",
     "portalNotAManager": "Dieser Bereich steht nur Führungskräften mit direkt unterstellten Mitarbeitenden zur Verfügung.",
+    "portalNotADirectReport": "Dieser Mitarbeiter gehört nicht zu Ihren direkt unterstellten Mitarbeitenden.",
     "workerNotFound": "Arbeitskraft nicht gefunden.",
     "integrationNotFound": "Integration nicht gefunden.",
     "integrationNotConnected": "Integration ist nicht verbunden.",
@@ -3656,6 +3689,19 @@
     "ir35OrderedIdsMustListAll": "orderedIds muss jeden Teilnehmer genau einmal enthalten.",
     "ir35ParticipantNotFound": "Teilnehmer nicht gefunden.",
     "ir35ClientWorkerCannotBeRemoved": "CLIENT- und WORKER-Zeilen werden automatisch befüllt und können nicht entfernt werden.",
+    "ir35AttestationAlreadyExists": "Bescheinigung existiert bereits.",
+    "magicLinkRateLimitExceeded": "Zu viele Anmeldelink-Anfragen. Bitte warten Sie einige Minuten und versuchen Sie es erneut.",
+    "magicLinkRateLimiterUnavailable": "Die Anmeldung ist vorübergehend nicht verfügbar. Bitte versuchen Sie es in Kürze erneut.",
+    "portalRateLimitExceeded": "Zu viele Anfragen. Bitte warten Sie einen Moment und versuchen Sie es erneut.",
+    "portalRateLimiterUnavailable": "Diese Aktion ist vorübergehend nicht verfügbar. Bitte versuchen Sie es in Kürze erneut.",
+    "documentScanPending": "Das Dokument wird noch auf Viren geprüft. Bitte versuchen Sie es gleich erneut.",
+    "lateInterestWaiverNotFound": "Aktiver Verzicht nicht gefunden.",
+    "payrollFeedEmpty": "Keine Mitarbeitenden für diesen Lohnexport.",
+    "payrollFeedMissingEmployees": "Einige ausgewählte Mitarbeitende konnten für diesen Lohnexport nicht gefunden werden.",
+    "payrollFeedCrossMarket": "Einige ausgewählte Mitarbeitende wurden ausgeschlossen, da sie zu einem anderen Markt gehören.",
+    "payrollFeedWrongMarket": "Die ausgewählten Mitarbeitenden passen nicht zum Markt dieses Lohnexportziels.",
+    "whtCertificateNumberConflict": "Eindeutige WHT-Zertifikatsnummer konnte nicht vergeben werden. Bitte erneut versuchen.",
+    "whtCertificateIssueFailed": "WHT-Zertifikat konnte nicht ausgestellt werden. Bitte erneut versuchen.",
     "classificationOnlyDraftCanRecreate": "Nur Entwurfsbewertungen können nach Drift neu erstellt werden.",
     "classificationNoDriftToRecover": "Entwurf entspricht bereits der aktuellen Regelversion — kein Drift vorhanden.",
     "classificationAssessmentNotDraft": "Bewertung ist kein Entwurf; Antworten sind nach dem Absenden eingefroren.",
@@ -3710,10 +3756,13 @@
     "employeeInvalidIqama": "Ungültige Iqama-/Ausweisnummer. Geben Sie eine gültige 10-stellige saudische Ausweisnummer ein.",
     "employeeInvalidEmiratesId": "Ungültiges Emirates-ID-Format. Geben Sie es als 784-JJJJ-NNNNNNN-N ein.",
     "employeeEmiratesIdChecksumAdvisory": "Diese Emirates-ID besteht die Formatprüfung, aber ihre Prüfsumme konnte nicht verifiziert werden — bitte prüfen Sie die Nummer.",
+    "employeeLifecycleTemplateNotFound": "Keine aktive Lifecycle-Workflow-Vorlage für die Zuständigkeit dieses Mitarbeiters gefunden.",
+    "employeeUnsupportedJurisdiction": "Die Zuständigkeit dieses Mitarbeiters wird für Lifecycle-Workflows nicht unterstützt.",
     "vatValidationUnsupportedCountry": "USt-Validierung wird für dieses Land nicht unterstützt.",
     "bacsUnmappableCharacters": "BACS-Datei enthält nicht abbildbare Zeichen; Transliterationswarnungen vor dem Download beheben.",
     "paymentRunCancelAdminOnly": "Nur Administratoren können exportierte Zahlungsläufe stornieren. Stellen Sie sicher, dass der Export nicht an die Bank übermittelt wurde.",
     "classificationStaleAnswer": "Bewertung wurde in einem anderen Tab aktualisiert; bitte neu laden, um die aktuellen Antworten zu übernehmen.",
+    "complianceRecomputeFailed": "Compliance-Neuberechnung für diesen Auftragnehmer fehlgeschlagen.",
     "clockifyApiKeyInvalid": "Clockify-API-Schlüssel ist ungültig oder abgelaufen. Bitte verbinden Sie die Clockify-Integration erneut.",
     "jiraTaskNotConfigured": "Jira ist für diese Aufgabenvorlage nicht konfiguriert. Legen Sie Projekt und Vorgangstyp in den Workflow-Einstellungen fest.",
     "jiraAccountNotMapped": "Jira-Konto-ID nicht gefunden. Bitte ordnen Sie Ihr Jira-Konto in den Integrationseinstellungen zu.",
@@ -3723,6 +3772,9 @@
     "featureFlagUnavailable": "Der Feature-Flag-Dienst ist vorübergehend nicht verfügbar.",
     "organizationRateLimiterUnavailable": "Ratenbegrenzer nicht verfügbar. Bitte versuchen Sie es später erneut.",
     "organizationCreateRateLimitExceeded": "Limit für die Erstellung von Organisationen erreicht. Bitte versuchen Sie es später erneut.",
+    "outboundWebhooksNotEnabled": "Ausgehende Webhooks sind für diese Organisation nicht aktiviert.",
+    "ewidencjaPeriodNotMonthAligned": "Der Arbeitszeitnachweis-Zeitraum muss einem vollen Kalendermonat entsprechen (vom ersten bis zum letzten Tag).",
+    "ewidencjaVersionConflict": "Für diesen Zeitraum wurde bereits ein Arbeitszeitnachweis erstellt. Aktualisieren Sie die Seite und versuchen Sie es erneut.",
     "uploadRateLimiterUnavailable": "Upload-Ratenbegrenzer nicht verfügbar. Bitte versuchen Sie es später erneut.",
     "uploadRateLimitExceeded": "Upload-Limit erreicht. Bitte versuchen Sie es später erneut.",
     "reportRateLimiterUnavailable": "Bericht-Ratenbegrenzer nicht verfügbar. Bitte versuchen Sie es später erneut.",
@@ -3752,6 +3804,7 @@
     "approvalNotPendingCompliance": "Diese Genehmigung befindet sich nicht in einer Compliance-Sperre.",
     "approvalCannotResolveContractor": "Der Auftragnehmer für diese Genehmigung kann nicht ermittelt werden.",
     "approvalStillComplianceBlocked": "Der Auftragnehmer hat weiterhin ein abgelaufenes, blockierendes Compliance-Dokument; die Genehmigung kann nicht fortgesetzt werden.",
+    "approvalComplianceResumeNoStep": "Diese Genehmigung kann nicht fortgesetzt werden — kein Freigabeschritt zum Wiedereröffnen verfügbar.",
     "deprovisioningProviderSignoffPending": "Für diese Anbieter-Deprovisionierungsfunktion ist eine Genehmigung erforderlich, bevor sie aktiviert werden kann.",
     "workflowAssigneeNotMember": "Der ausgewählte Bearbeiter ist kein Mitglied dieser Organisation.",
     "importJobStateConflict": "Der Importauftrag hat sich geändert; bitte aktualisieren und erneut versuchen.",
@@ -3772,7 +3825,44 @@
     "personnelFileNotFound": "Personalakte nicht gefunden.",
     "personnelFileDocumentNotFound": "Dokument in dieser Personalakte nicht gefunden.",
     "personnelDocumentAlreadyAttached": "Dieses Dokument ist der Personalakte bereits beigefügt.",
-    "personnelDocumentNotPendingReview": "Dieses Dokument steht nicht zur Prüfung aus."
+    "personnelDocumentNotPendingReview": "Dieses Dokument steht nicht zur Prüfung aus.",
+    "memberHasPendingApprovals": "Dieses Mitglied hat ausstehende Freigaben und kann nicht entfernt werden.",
+    "invoiceNotSubmittable": "Diese Rechnung kann im aktuellen Status nicht zur Freigabe eingereicht werden.",
+    "paymentRunNotExported": "Der Zahlungslauf muss exportiert sein, bevor diese Aktion möglich ist.",
+    "paymentRunItemInvalidTransition": "Dieser Zahlungslauf-Posten kann nicht in den gewünschten Status wechseln.",
+    "paymentExportFormatMismatch": "Das Exportformat passt nicht zur Konfiguration des Zahlungslaufs.",
+    "approvalDelegateNoPermission": "Der Stellvertreter hat keine Berechtigung für diesen Freigabeschritt.",
+    "workflowTemplateUnknownDependency": "Die Workflow-Vorlage verweist auf eine unbekannte Aufgabenabhängigkeit.",
+    "workflowTemplateDependencyCycle": "Die Workflow-Vorlage enthält eine zirkuläre Aufgabenabhängigkeit.",
+    "workflowRunHasOpenTasks": "Diese Aktion ist nicht möglich, solange der Workflow-Lauf offene Aufgaben hat.",
+    "paymentStatementMatchInvalid": "Die Kontoauszugszeile konnte keiner Zahlung zugeordnet werden.",
+    "timesheetEntryDateOutOfWeek": "Das Buchungsdatum muss in der ausgewählten Arbeitszeitwoche liegen.",
+    "timesheetInvalidContract": "Für diesen Zeiteintrag ist kein gültiger Vertrag verknüpft.",
+    "deprovisioningOtherActiveAssignment": "Für diesen Benutzer existiert eine weitere aktive Zuweisung; bitte zuerst klären.",
+    "hrisEmployeeAlreadyLinked": "Dieser Mitarbeitereintrag ist bereits mit einem anderen Profil verknüpft.",
+    "hrisExternalIdAlreadyLinked": "Diese externe HRIS-Kennung ist in dieser Organisation bereits verknüpft.",
+    "apiKeyCannotRotateSuperseded": "Ein ersetzter API-Schlüssel kann nicht rotiert werden.",
+    "invalidActingUser": "Ungültiger handelnder Benutzer für diesen Vorgang.",
+    "apiQuotaExceeded": "API-Kontingent überschritten. Bitte später erneut versuchen.",
+    "form1099NotFound": "1099-Formular nicht gefunden.",
+    "stateFilingConfigNotFound": "Bundesstaatliche Meldekonfiguration nicht gefunden.",
+    "irisAckParseFailed": "IRIS-Bestätigungsdatei konnte nicht geparst werden.",
+    "hrDashboardDisabled": "HR-Dashboard ist für Ihre Organisation nicht aktiviert.",
+    "leaveWorkerNotFound": "Arbeitskraft für diesen Urlaubsantrag nicht gefunden.",
+    "leaveTypeNotFound": "Urlaubsart nicht gefunden.",
+    "leaveSickTypeNotConfigured": "Krankheitsurlaub ist nicht konfiguriert.",
+    "leaveBlackoutOverlap": "Urlaubsantrag überschneidet sich mit einer Sperrzeit.",
+    "leaveInsufficientBalance": "Unzureichendes Urlaubsguthaben.",
+    "leaveNoChainConfigured": "Keine Freigabekette für Urlaubsanträge konfiguriert.",
+    "leaveRequestNotFound": "Urlaubsantrag nicht gefunden.",
+    "leaveRequestNotPending": "Urlaubsantrag wartet nicht auf Freigabe.",
+    "blackoutPeriodNotFound": "Sperrzeit nicht gefunden.",
+    "employeeWorkerNotFound": "Mitarbeiter-Arbeitskraft-Datensatz nicht gefunden.",
+    "publicApiDisabled": "Öffentliche API ist für Ihre Organisation nicht aktiviert.",
+    "hrisAlreadyConnected": "Eine HRIS-Integration ist bereits verbunden.",
+    "hrisNotConnected": "HRIS-Integration ist nicht verbunden.",
+    "hrisNoConnectedToSync": "Keine verbundene HRIS-Integration zum Synchronisieren.",
+    "hrisSyncNotEnabled": "HRIS-Synchronisierung ist nicht aktiviert."
   },
   "Compliance": {
     "paymentBlockModal": {
@@ -6095,7 +6185,17 @@
       "residency": "Ansässigkeit",
       "standard": "Standard",
       "certFooter": "Dieses Zertifikat bestätigt, dass die Quellensteuer gemäß den geltenden Steuervorschriften an der Quelle einbehalten wurde."
-    }
+    },
+    "orgBankHeading": "Organisationsbankkonto",
+    "orgBankDescription": "Debitor-IBAN und BIC als Ursprungskonto in SEPA- und SWIFT-Zahlungsexporten.",
+    "orgBankIbanLabel": "Organisations-IBAN",
+    "orgBankIbanPlaceholder": "z. B. DE89370400440532013000",
+    "orgBankBicLabel": "Organisations-BIC",
+    "orgBankBicPlaceholder": "z. B. COBADEFFXXX",
+    "orgBankCannotClear": "Geben Sie einen gültigen Wert ein — ein gespeichertes Bankfeld darf nicht leer bleiben. Ersetzen Sie es stattdessen.",
+    "orgBankLoadError": "Organisationsbankdaten konnten nicht geladen werden. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
+    "orgBankRetry": "Erneut versuchen",
+    "toastOrgBankSaved": "Organisationsbankdaten gespeichert"
   },
   "Peppol": {
     "statusCard": {
@@ -8926,7 +9026,9 @@
       "knowledgeTransfer": "Wissenstransfer",
       "meeting": "Meeting",
       "manual": "Manual",
-      "notification": "Notification"
+      "notification": "Notification",
+      "ipVerification": "IP-Prüfung",
+      "contractHealthCheck": "Vertrags-Gesundheitscheck"
     },
     "operator": {
       "notEquals": "ist ungleich",
@@ -9115,6 +9217,9 @@
     "complianceCsid": {
       "title": "Schritt 3 von 5: Compliance-Zertifikat anfordern",
       "description": "Ihre CSR wird an ZATCA übermittelt, um ein Compliance-Zertifikat für Tests zu erhalten.",
+      "otpLabel": "ZATCA-Portal-OTP",
+      "otpPlaceholder": "Einmalpasswort von ZATCA eingeben",
+      "otpHint": "Erzeugen Sie ein OTP im ZATCA-Fatoora-Portal vor dem Absenden.",
       "requestButton": "Compliance-CSID anfordern",
       "progressLabel": "Fortschritt der Compliance-CSID",
       "status": {

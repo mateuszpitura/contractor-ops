@@ -15,15 +15,14 @@ export async function acknowledgeValidation(
   deps: IntakeServiceDeps = {},
 ): Promise<void> {
   const now = deps.now ?? (() => new Date());
-  const intake = await db.invoiceIntakeRequest.findUnique({
-    where: { id: input.intakeId },
+  const intake = await db.invoiceIntakeRequest.findFirst({
+    where: { id: input.intakeId, organizationId: input.orgId },
     select: {
       id: true,
-      organizationId: true,
       validationStatus: true,
     },
   });
-  if (!intake || intake.organizationId !== input.orgId) {
+  if (!intake) {
     throw makeError('NOT_FOUND', `Intake ${input.intakeId} not found`);
   }
   if (intake.validationStatus !== 'WARNINGS' && intake.validationStatus !== 'INVALID') {
@@ -34,7 +33,7 @@ export async function acknowledgeValidation(
   }
 
   await db.invoiceIntakeRequest.update({
-    where: { id: input.intakeId },
+    where: { id: input.intakeId, organizationId: input.orgId },
     data: {
       validationAcknowledgedAt: now(),
       validationAcknowledgedByUserId: input.userId,
@@ -137,10 +136,10 @@ export async function convertToInvoice(
 ): Promise<ConvertToInvoiceResult> {
   const now = deps.now ?? (() => new Date());
 
-  const intake = await db.invoiceIntakeRequest.findUnique({
-    where: { id: input.intakeId },
+  const intake = await db.invoiceIntakeRequest.findFirst({
+    where: { id: input.intakeId, organizationId: input.orgId },
   });
-  if (!intake || intake.organizationId !== input.orgId) {
+  if (!intake) {
     throw makeError('NOT_FOUND', `Intake ${input.intakeId} not found`);
   }
 
@@ -229,7 +228,7 @@ export async function convertToInvoice(
     }
 
     await tx.invoiceIntakeRequest.update({
-      where: { id: intake.id },
+      where: { id: intake.id, organizationId: input.orgId },
       data: {
         status: 'CONVERTED',
         convertedInvoiceId: invoice.id,
@@ -245,11 +244,11 @@ export async function reject(db: PrismaClient, input: RejectInput): Promise<void
     throw makeError('REASON_TOO_SHORT', `Rejection reason must be at least 3 characters`);
   }
 
-  const intake = await db.invoiceIntakeRequest.findUnique({
-    where: { id: input.intakeId },
-    select: { id: true, organizationId: true, status: true },
+  const intake = await db.invoiceIntakeRequest.findFirst({
+    where: { id: input.intakeId, organizationId: input.orgId },
+    select: { id: true, status: true },
   });
-  if (!intake || intake.organizationId !== input.orgId) {
+  if (!intake) {
     throw makeError('NOT_FOUND', `Intake ${input.intakeId} not found`);
   }
   if (intake.status === 'CONVERTED') {
@@ -257,7 +256,7 @@ export async function reject(db: PrismaClient, input: RejectInput): Promise<void
   }
 
   await db.invoiceIntakeRequest.update({
-    where: { id: input.intakeId },
+    where: { id: input.intakeId, organizationId: input.orgId },
     data: {
       status: 'REJECTED',
       rejectionReason: input.reason,

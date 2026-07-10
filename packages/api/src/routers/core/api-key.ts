@@ -106,44 +106,47 @@ export const apiKeyRouter = router({
 
     const { plaintext, prefix, hash } = generateApiKey();
 
-    const key = await ctx.db.organizationApiKey.create({
-      data: {
-        organizationId: ctx.organizationId,
-        name: input.name,
-        prefix,
-        hash,
-        scopes: input.scopes,
-        createdByUserId: creatorId,
-        actingUserId,
-        expiresAt: input.expiresAt ?? null,
-      },
-      select: {
-        id: true,
-        name: true,
-        prefix: true,
-        scopes: true,
-        expiresAt: true,
-        createdAt: true,
-      },
-    });
+    const key = await ctx.db.$transaction(async tx => {
+      const created = await tx.organizationApiKey.create({
+        data: {
+          organizationId: ctx.organizationId,
+          name: input.name,
+          prefix,
+          hash,
+          scopes: input.scopes,
+          createdByUserId: creatorId,
+          actingUserId,
+          expiresAt: input.expiresAt ?? null,
+        },
+        select: {
+          id: true,
+          name: true,
+          prefix: true,
+          scopes: true,
+          expiresAt: true,
+          createdAt: true,
+        },
+      });
 
-    // API keys are long-lived bearer tokens for the public API.
-    // Issuance MUST be in the audit log for forensics + compliance.
-    await writeAuditLog({
-      organizationId: ctx.organizationId,
-      actorType: 'USER',
-      actorId: ctx.user?.id ?? null,
-      action: 'API_KEY_CREATE',
-      resourceType: 'ORGANIZATION',
-      resourceId: ctx.organizationId,
-      newValues: {
-        apiKeyId: key.id,
-        name: key.name,
-        prefix: key.prefix,
-        scopes: key.scopes,
-        expiresAt: key.expiresAt,
-      },
-      metadata: { apiKeyId: key.id },
+      await writeAuditLog({
+        tx,
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user?.id ?? null,
+        action: 'API_KEY_CREATE',
+        resourceType: 'ORGANIZATION',
+        resourceId: ctx.organizationId,
+        newValues: {
+          apiKeyId: created.id,
+          name: created.name,
+          prefix: created.prefix,
+          scopes: created.scopes,
+          expiresAt: created.expiresAt,
+        },
+        metadata: { apiKeyId: created.id },
+      });
+
+      return created;
     });
 
     return {
@@ -253,41 +256,45 @@ export const apiKeyRouter = router({
       await assertActiveMember(ctx.db, ctx.organizationId, input.actingUserId);
     }
 
-    const updated = await ctx.db.organizationApiKey.update({
-      where: { id: input.id },
-      data: {
-        ...(input.name !== undefined && { name: input.name }),
-        ...(input.scopes !== undefined && { scopes: input.scopes }),
-        ...(input.actingUserId !== undefined && { actingUserId: input.actingUserId }),
-      },
-      select: {
-        id: true,
-        name: true,
-        prefix: true,
-        scopes: true,
-        lastUsedAt: true,
-        expiresAt: true,
-        actingUserId: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
+    const updated = await ctx.db.$transaction(async tx => {
+      const row = await tx.organizationApiKey.update({
+        where: { id: input.id },
+        data: {
+          ...(input.name !== undefined && { name: input.name }),
+          ...(input.scopes !== undefined && { scopes: input.scopes }),
+          ...(input.actingUserId !== undefined && { actingUserId: input.actingUserId }),
+        },
+        select: {
+          id: true,
+          name: true,
+          prefix: true,
+          scopes: true,
+          lastUsedAt: true,
+          expiresAt: true,
+          actingUserId: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
 
-    // Scope/name/acting-user changes can broaden the key's access surface.
-    await writeAuditLog({
-      organizationId: ctx.organizationId,
-      actorType: 'USER',
-      actorId: ctx.user?.id ?? null,
-      action: 'API_KEY_UPDATE',
-      resourceType: 'ORGANIZATION',
-      resourceId: ctx.organizationId,
-      oldValues: {
-        name: existing.name,
-        scopes: existing.scopes,
-        actingUserId: existing.actingUserId,
-      },
-      newValues: { name: updated.name, scopes: updated.scopes, actingUserId: updated.actingUserId },
-      metadata: { apiKeyId: updated.id },
+      await writeAuditLog({
+        tx,
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user?.id ?? null,
+        action: 'API_KEY_UPDATE',
+        resourceType: 'ORGANIZATION',
+        resourceId: ctx.organizationId,
+        oldValues: {
+          name: existing.name,
+          scopes: existing.scopes,
+          actingUserId: existing.actingUserId,
+        },
+        newValues: { name: row.name, scopes: row.scopes, actingUserId: row.actingUserId },
+        metadata: { apiKeyId: row.id },
+      });
+
+      return row;
     });
 
     return updated;
@@ -312,22 +319,24 @@ export const apiKeyRouter = router({
       throw new TRPCError({ code: 'BAD_REQUEST', message: API_KEY_REVOKED });
     }
 
-    await ctx.db.organizationApiKey.update({
-      where: { id: input.id },
-      data: { revokedAt: new Date() },
-    });
+    await ctx.db.$transaction(async tx => {
+      await tx.organizationApiKey.update({
+        where: { id: input.id },
+        data: { revokedAt: new Date() },
+      });
 
-    // API key revocation is forensics-critical.
-    await writeAuditLog({
-      organizationId: ctx.organizationId,
-      actorType: 'USER',
-      actorId: ctx.user?.id ?? null,
-      action: 'API_KEY_REVOKE',
-      resourceType: 'ORGANIZATION',
-      resourceId: ctx.organizationId,
-      oldValues: { revokedAt: null, name: existing.name, prefix: existing.prefix },
-      newValues: { revokedAt: new Date().toISOString() },
-      metadata: { apiKeyId: existing.id },
+      await writeAuditLog({
+        tx,
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user?.id ?? null,
+        action: 'API_KEY_REVOKE',
+        resourceType: 'ORGANIZATION',
+        resourceId: ctx.organizationId,
+        oldValues: { revokedAt: null, name: existing.name, prefix: existing.prefix },
+        newValues: { revokedAt: new Date().toISOString() },
+        metadata: { apiKeyId: existing.id },
+      });
     });
 
     return { success: true };
@@ -340,7 +349,7 @@ export const apiKeyRouter = router({
    * zero-downtime cutover. Returns the new plaintext EXACTLY ONCE.
    */
   rotate: apiKeyAdminProcedure
-    .input(z.object({ id: z.string(), graceHours: z.number().int().positive().optional() }))
+    .input(entityIdSchema.extend({ graceHours: z.number().int().positive().optional() }))
     .mutation(async ({ ctx, input }) => {
       const creatorId = ctx.user?.id;
       if (!creatorId) {

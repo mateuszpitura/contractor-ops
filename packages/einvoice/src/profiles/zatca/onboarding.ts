@@ -256,7 +256,7 @@ export function buildComplianceTestInvoices(taxDetails: ZatcaTaxDetails): EInvoi
           quantity: 1,
           unitPriceMinor: 10000,
           netAmountMinor: 10000,
-          vatRate: '15',
+          vatRate: 'S',
           vatAmountMinor: 1500,
           grossAmountMinor: 11500,
         },

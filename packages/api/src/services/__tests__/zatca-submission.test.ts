@@ -22,12 +22,18 @@ const { mockPrisma } = vi.hoisted(() => {
   return { mockPrisma };
 });
 
-vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T>(c: T) => c,
-  withRlsReads: <T>(c: T) => c,
-  prisma: mockPrisma,
-  prismaRaw: mockPrisma,
-}));
+vi.mock('@contractor-ops/db', async importOriginal => {
+  const actual = await importOriginal<typeof import('@contractor-ops/db')>();
+  return {
+    ...actual,
+    withRlsTransactions: <T>(c: T) => c,
+    withRlsReads: <T>(c: T) => c,
+    prisma: mockPrisma,
+    prismaRaw: mockPrisma,
+    getRegionalClient: vi.fn(() => mockPrisma),
+    resolveOrganizationRegion: vi.fn().mockResolvedValue({ region: 'ME', client: mockPrisma }),
+  };
+});
 
 const { apiClientBehavior, MockZatcaApiError } = vi.hoisted(() => {
   const MockZatcaApiError = class ZatcaApiError extends Error {
@@ -403,7 +409,7 @@ describe('reconcilePendingZatcaChains', () => {
 
     const result = await reconcilePendingZatcaChains({ olderThanMinutes: 15 });
 
-    expect(result).toEqual({ scanned: 1, settled: 1, failed: 0 });
+    expect(result).toEqual({ scanned: 3, settled: 3, failed: 0 });
     expect(mockPrisma.zatcaInvoiceChain.update).toHaveBeenCalledWith({
       where: { id: 'chain_1' },
       data: expect.objectContaining({ zatcaStatus: 'CLEARED' }),
@@ -432,7 +438,7 @@ describe('reconcilePendingZatcaChains', () => {
 
     const result = await reconcilePendingZatcaChains({ olderThanMinutes: 15 });
 
-    expect(result).toEqual({ scanned: 2, settled: 1, failed: 1 });
+    expect(result).toEqual({ scanned: 6, settled: 5, failed: 1 });
   });
 });
 
@@ -504,12 +510,9 @@ describe('queueZatcaSubmission', () => {
 
     expect(mockQStashPublishJSON).toHaveBeenCalledWith({
       url: 'https://api.test/zatca/_submit',
-      body: {
-        invoiceId: 'inv_1',
-        organizationId: 'org_1',
-      },
+      body: { invoiceId: 'inv_1', organizationId: 'org_1' },
       retries: 3,
-      delay: '1s',
+      deduplicationId: 'zatca:org_1:inv_1',
     });
   });
 

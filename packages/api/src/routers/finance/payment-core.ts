@@ -454,27 +454,9 @@ export const paymentCoreRouter = router({
         paymentRunId: input.runId,
         actorId: ctx.user.id,
         entries,
-      });
-
-      // Ingestion-level masked audit, in addition to the per-item transition
-      // audit applyAchReturns writes: records who ingested a return file against
-      // which run and the resulting disposition counts. No bank data and no raw
-      // file content — only sizes and the summary tallies.
-      await writeAuditLog({
-        tx: ctx.db,
-        organizationId: ctx.organizationId,
-        actorType: 'USER',
-        actorId: ctx.user.id,
-        action: 'payment_run.ach_return_ingested',
-        resourceType: 'PAYMENT_RUN',
-        resourceId: input.runId,
-        metadata: {
+        ingestAudit: {
           entryCount: entries.length,
           fileBytes: input.returnFileText.length,
-          failed: summary.failed,
-          advisory: summary.advisory,
-          skipped: summary.skipped,
-          unmatched: summary.unmatched,
         },
       });
 
@@ -530,26 +512,26 @@ export const paymentCoreRouter = router({
         accountNumber: profile.usAccountNumberMasked ?? '',
       });
 
-      await ctx.db.contractorBillingProfile.update({
-        where: { id: profile.id },
-        data: {
-          plaidVerificationStatus: result.status,
-          plaidVerifiedAt: new Date(),
-          plaidAccountId: result.plaidAccountId ?? profile.plaidAccountId,
-        },
-      });
+      await ctx.db.$transaction(async tx => {
+        await tx.contractorBillingProfile.update({
+          where: { id: profile.id, organizationId: ctx.organizationId },
+          data: {
+            plaidVerificationStatus: result.status,
+            plaidVerifiedAt: new Date(),
+            plaidAccountId: result.plaidAccountId ?? profile.plaidAccountId,
+          },
+        });
 
-      // Masked audit: only the profile id and the resulting status are recorded —
-      // never the routing/account (which reach the mock masked and stay masked).
-      await writeAuditLog({
-        tx: ctx.db,
-        organizationId: ctx.organizationId,
-        actorType: 'USER',
-        actorId: ctx.user.id,
-        action: 'contractor_billing_profile.plaid_verified',
-        resourceType: 'CONTRACTOR',
-        resourceId: profile.contractorId,
-        metadata: { billingProfileId: profile.id, status: result.status },
+        await writeAuditLog({
+          tx,
+          organizationId: ctx.organizationId,
+          actorType: 'USER',
+          actorId: ctx.user.id,
+          action: 'contractor_billing_profile.plaid_verified',
+          resourceType: 'CONTRACTOR',
+          resourceId: profile.contractorId,
+          metadata: { billingProfileId: profile.id, status: result.status },
+        });
       });
 
       return { status: result.status, advisoryWarning: result.advisoryWarning };

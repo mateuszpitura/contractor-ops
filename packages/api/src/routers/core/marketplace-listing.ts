@@ -113,36 +113,41 @@ export const marketplaceListingRouter = router({
       const now = new Date();
       const nextStatus = input.status ?? current.status;
 
-      const updated = await ctx.db.marketplaceListing.update({
-        where: { platform: input.platform },
-        data: {
-          ...(input.status !== undefined && { status: input.status }),
-          ...(input.versionPin !== undefined && { versionPin: input.versionPin }),
-          ...(input.lastReviewFeedback !== undefined && {
-            lastReviewFeedback: input.lastReviewFeedback,
-          }),
-          ...(input.listingUrl !== undefined && { listingUrl: input.listingUrl }),
-          ...(input.status === 'SUBMITTED' && { submittedAt: now }),
-          ...(input.status === 'LIVE' && { wentLiveAt: now }),
-          updatedByUserId: ctx.user?.id ?? null,
-        },
-      });
+      const updated = await ctx.db.$transaction(async tx => {
+        const row = await tx.marketplaceListing.update({
+          where: { platform: input.platform },
+          data: {
+            ...(input.status !== undefined && { status: input.status }),
+            ...(input.versionPin !== undefined && { versionPin: input.versionPin }),
+            ...(input.lastReviewFeedback !== undefined && {
+              lastReviewFeedback: input.lastReviewFeedback,
+            }),
+            ...(input.listingUrl !== undefined && { listingUrl: input.listingUrl }),
+            ...(input.status === 'SUBMITTED' && { submittedAt: now }),
+            ...(input.status === 'LIVE' && { wentLiveAt: now }),
+            updatedByUserId: ctx.user?.id ?? null,
+          },
+        });
 
-      await writeAuditLog({
-        organizationId: ctx.organizationId,
-        actorType: 'USER',
-        actorId: ctx.user?.id ?? null,
-        actorName: ctx.user?.name ?? null,
-        action: 'marketplace_listing.update',
-        resourceType: 'MARKETPLACE_LISTING',
-        resourceId: updated.id,
-        resourceName: updated.platform,
-        oldValues: { status: current.status, versionPin: current.versionPin },
-        newValues: {
-          status: nextStatus,
-          versionPin: updated.versionPin,
-          listingUrl: updated.listingUrl,
-        },
+        await writeAuditLog({
+          tx,
+          organizationId: ctx.organizationId,
+          actorType: 'USER',
+          actorId: ctx.user?.id ?? null,
+          actorName: ctx.user?.name ?? null,
+          action: 'marketplace_listing.update',
+          resourceType: 'MARKETPLACE_LISTING',
+          resourceId: row.id,
+          resourceName: row.platform,
+          oldValues: { status: current.status, versionPin: current.versionPin },
+          newValues: {
+            status: nextStatus,
+            versionPin: row.versionPin,
+            listingUrl: row.listingUrl,
+          },
+        });
+
+        return row;
       });
 
       log.info(

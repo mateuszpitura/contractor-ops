@@ -14,7 +14,7 @@ export function useOtherClientAttestation(engagementId: string) {
   );
 
   const mutation = useResourceMutation(trpc.ir35Attestation.upsert.mutationOptions(), {
-    invalidate: [['ir35Attestation']],
+    invalidate: [trpc.ir35Attestation.pathFilter()],
     successMessage: toasts.done(),
   });
 

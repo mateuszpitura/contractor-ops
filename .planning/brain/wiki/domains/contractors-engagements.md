@@ -2,13 +2,13 @@
 title: Contractors and engagements
 type: domain
 tags: [contractors, hr, compliance]
-source_commit: d839f52e
+source_commit: e0d533fa
 verify_with:
   - packages/api/src/routers/core/contractor-core.ts
   - packages/api/src/routers/core/contractor-shared.ts
   - packages/validators/src/contractor.ts
-  - apps/web-vite/src/components/contractors/
-updated: 2026-06-18
+  - packages/api/src/routers/core/contractor-country.ts
+updated: 2026-07-10
 ---
 
 # Contractors and engagements
@@ -43,6 +43,8 @@ Contractor master data, lifecycle, compliance health, country-specific fields, b
 ## Invariants
 
 - Tenant-scoped list/detail
+- **`contractor.list` selects with `omit: { ssnEncrypted: true }`** (`routers/core/contractor-core.ts`), matching every other contractor read path — SSN ciphertext never leaves the API, even to `contractor:read` holders.
+- **Country fields:** `updateCountryFields` validates against the **contractor's** `countryCode` schema (`countryFieldsSchemaMap[input.countryCode]`), not the org HQ country; `getCountryFieldsConfig` accepts optional `countryCode` (UI passes contractor country via `use-country-compliance.ts`).
 - Classification assessments link to [[classification-ir35]] when flag on
 - **List band faceting + consistency:** band and table share `contractorFiltersSchema` (validators) + `buildContractorListWhere` (`contractor-shared.ts`), but `contractor.insights` aggregates over the **core** population — only the always-applied filters (status / owner / team / billingModel / search); the segment + attention facet groups (lifecycle / type / country / health / expiring / paymentBlocked / stalled) are **excluded** so segment counts stay stable (don't collapse to zero) as the user drills and each segment stays a live filter entry-point. Deliberate consequence: when a facet-group filter is active, band counts and `total` are **broader** than the visible table rows. Guaranteed identities: `attention.atRiskCompliance === composition.health.red` (same `computeListHealthBadge` JS tally as `list`, since health is JS-derived not a SQL column), and with no facet-group filter active band `total` == `list` total.
 - **Pre-existing (not introduced here):** `list` post-filters `complianceHealth` in JS *after* DB pagination and returns `filtered.length` as `total` — a wrong page-scoped total when a health filter is combined with paging. Untouched by the band refactor; fix needs the health rule moved out of JS.

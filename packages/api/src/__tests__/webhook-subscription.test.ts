@@ -1,8 +1,7 @@
 /**
- * RED contract — INTEG-WEBHOOK-01 / INTEG-WEBHOOK-02 (subscription model + event catalog).
- * The event-catalog + envelope portion turns GREEN in 100-05
- * (`packages/validators/src/webhooks`); the CRUD-router portion turns GREEN in
- * 100-08 (`routers/core/webhook-subscription`).
+ * Subscription model + event catalog contract. The event-catalog + envelope
+ * portion lives in `packages/validators/src/webhooks`; the CRUD-router portion
+ * in `routers/core/webhook-subscription`.
  *
  * The catalog is a Zod discriminated union over 16 event types; the envelope
  * wraps `{ id, type, created_at, organization_id, data, include_pii }`. The

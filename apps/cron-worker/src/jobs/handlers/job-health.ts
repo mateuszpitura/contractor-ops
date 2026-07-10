@@ -13,9 +13,12 @@
  *      against the job's nominal interval and alerts when a job has not
  *      succeeded in more than 2× its interval (a scheduler that silently
  *      stopped firing a job is otherwise undetectable).
+ *   6. Outbox FAILED backlog: counts terminal-FAILED outbox events across
+ *      regions (per-event Sentry fires at exhaustion; this is the aggregate
+ *      replay-me signal) and alerts past a threshold.
  */
 
-import { prisma, prismaRaw } from '@contractor-ops/db';
+import { getRegionalClient, prisma, prismaRaw, SUPPORTED_REGIONS } from '@contractor-ops/db';
 import { queueWebhookProcessing } from '@contractor-ops/integrations/services/webhook-dispatcher';
 import { metrics } from '@contractor-ops/logger/metrics';
 import { Sentry } from '../../lib/sentry.js';
@@ -24,6 +27,7 @@ import type { JobHandler } from '../runner.js';
 
 const STALE_THRESHOLD_MIN = 15;
 const FAILURE_ALERT_THRESHOLD = 10;
+const OUTBOX_FAILED_BACKLOG_THRESHOLD = 10;
 const MAX_REAPER_ATTEMPTS = 5;
 const BACKOFF_BASE_SECONDS = 60;
 const BACKOFF_MAX_SECONDS = 60 * 60;
@@ -201,6 +205,46 @@ async function checkStaleCronJobs(now: Date, ctx: JobHandlerCtx): Promise<number
   }
 }
 
+/**
+ * Count terminal-FAILED outbox events across every configured region and
+ * alert when the backlog breaches the threshold. FAILED is a terminal state
+ * (retries exhausted) — rows leave it only via manual replay, so the count
+ * is the operator's replay-me queue depth. Own try/catch — a failure here
+ * must not abort the webhook reaper above.
+ */
+async function checkOutboxFailedBacklog(ctx: JobHandlerCtx): Promise<number> {
+  try {
+    let backlog = 0;
+    for (const region of SUPPORTED_REGIONS) {
+      try {
+        const client = getRegionalClient(region);
+        backlog += await client.outboxEvent.count({ where: { status: 'FAILED' } });
+      } catch (err) {
+        ctx.log.warn({ err, region }, 'outbox backlog check: region unavailable; skipping region');
+      }
+    }
+
+    metrics.gauge('jobs.outbox.failed_backlog', backlog);
+
+    if (backlog > OUTBOX_FAILED_BACKLOG_THRESHOLD) {
+      const msg = `Background job alert: ${backlog} outbox events in terminal FAILED backlog (threshold: ${OUTBOX_FAILED_BACKLOG_THRESHOLD})`;
+      ctx.log.error({ backlog, threshold: OUTBOX_FAILED_BACKLOG_THRESHOLD }, msg);
+      Sentry.captureMessage(msg, {
+        level: 'error',
+        tags: { 'cron.job': 'job-health', 'alert.type': 'outbox_failed_backlog' },
+        extra: { backlog },
+      });
+    }
+    return backlog;
+  } catch (err) {
+    ctx.log.error({ err }, 'outbox failed-backlog check failed');
+    Sentry.captureException(err, {
+      tags: { 'cron.job': 'job-health', 'alert.type': 'outbox_backlog_check_failed' },
+    });
+    return 0;
+  }
+}
+
 export const jobHealthHandler: JobHandler = async ctx => {
   const start = performance.now();
   try {
@@ -239,6 +283,7 @@ export const jobHealthHandler: JobHandler = async ctx => {
     await failExhaustedDeliveries(toFail, now);
 
     const staleCronJobs = await checkStaleCronJobs(now, ctx);
+    const outboxFailedBacklog = await checkOutboxFailedBacklog(ctx);
 
     if (staleRetried > 0 || toFail.length > 0) {
       ctx.log.warn(
@@ -296,6 +341,7 @@ export const jobHealthHandler: JobHandler = async ctx => {
         staleRetried,
         staleCleared: toFail.length,
         staleCronJobs,
+        outboxFailedBacklog,
       },
       'job health check completed',
     );
@@ -309,10 +355,12 @@ export const jobHealthHandler: JobHandler = async ctx => {
         staleRetried,
         staleCleared: toFail.length,
         staleCronJobs,
+        outboxFailedBacklog,
         healthy:
           recentFailureCount <= FAILURE_ALERT_THRESHOLD &&
           pendingCount <= 100 &&
-          staleCronJobs === 0,
+          staleCronJobs === 0 &&
+          outboxFailedBacklog <= OUTBOX_FAILED_BACKLOG_THRESHOLD,
       },
     };
   } catch (err) {

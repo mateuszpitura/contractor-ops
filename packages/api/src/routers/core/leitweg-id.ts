@@ -13,7 +13,7 @@
 // - Every procedure runs through `tenantProcedure`; every `where` clause
 //   carries `organizationId: ctx.organizationId`. Cross-tenant ids resolve to
 //   NOT_FOUND (never FORBIDDEN) to avoid a response-code oracle.
-// - Input validation uses `leitwegIdSchema` (structure + MOD-11-10 check
+// - Input validation uses `leitwegIdSchema` (structure + MOD 97-10 check
 //   digit) at the tRPC boundary so malformed IDs never hit the DB.
 // - `setDefault` and default-flipping writes live inside `$transaction` so
 //   two concurrent callers cannot produce two "isDefaultForContractor=true"

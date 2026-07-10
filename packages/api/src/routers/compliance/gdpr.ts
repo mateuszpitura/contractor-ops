@@ -539,6 +539,40 @@ export const gdprRouter = router({
           });
           results.portalMagicTokens = portalTokens.count;
         }
+
+        const ipAddress = ctx.headers.get('x-forwarded-for')?.split(',')[0] ?? null;
+        const userAgent = ctx.headers.get('user-agent') ?? null;
+
+        await writeAuditLog({
+          tx,
+          organizationId: orgId,
+          action: 'organization.erasure_requested',
+          actorType: 'USER',
+          actorId: ctx.user?.id,
+          actorName: ctx.user?.name ?? ctx.user?.email,
+          resourceType: 'ORGANIZATION',
+          resourceId: orgId,
+          resourceName: 'Data Erasure Request',
+          ipAddress,
+          userAgent,
+        });
+
+        if (Object.keys(retainedUnderStatute).length > 0) {
+          await writeAuditLog({
+            tx,
+            organizationId: orgId,
+            action: 'organization.erasure_retained_under_statute',
+            actorType: 'USER',
+            actorId: ctx.user?.id,
+            actorName: ctx.user?.name ?? ctx.user?.email,
+            resourceType: 'ORGANIZATION',
+            resourceId: orgId,
+            resourceName: 'Data Erasure — Statutory Retention Hold',
+            metadata: { retainedUnderStatute },
+            ipAddress,
+            userAgent,
+          });
+        }
       });
 
       // Clean up R2 objects for soft-deleted documents (outside transaction)
@@ -562,42 +596,6 @@ export const gdprRouter = router({
 
       const retainedModelNames = Object.keys(retainedUnderStatute);
       const hasStatutoryHold = retainedModelNames.length > 0;
-
-      const ipAddress = ctx.headers.get('x-forwarded-for')?.split(',')[0] ?? null;
-      const userAgent = ctx.headers.get('user-agent') ?? null;
-
-      // 7. Log the erasure request in audit (new org-level record)
-      await writeAuditLog({
-        organizationId: orgId,
-        action: 'organization.erasure_requested',
-        actorType: 'USER',
-        actorId: ctx.user?.id,
-        actorName: ctx.user?.name ?? ctx.user?.email,
-        resourceType: 'ORGANIZATION',
-        resourceId: orgId,
-        resourceName: 'Data Erasure Request',
-        ipAddress,
-        userAgent,
-      });
-
-      // 7b. When records are held under an active statutory-retention rule,
-      //     audit the retention-blocked erasure attempt with the citations
-      //     (sensitive mutation; RODO repudiation mitigation).
-      if (hasStatutoryHold) {
-        await writeAuditLog({
-          organizationId: orgId,
-          action: 'organization.erasure_retained_under_statute',
-          actorType: 'USER',
-          actorId: ctx.user?.id,
-          actorName: ctx.user?.name ?? ctx.user?.email,
-          resourceType: 'ORGANIZATION',
-          resourceId: orgId,
-          resourceName: 'Data Erasure — Statutory Retention Hold',
-          metadata: { retainedUnderStatute },
-          ipAddress,
-          userAgent,
-        });
-      }
 
       return {
         success: true,

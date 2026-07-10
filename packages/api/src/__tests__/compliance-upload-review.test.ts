@@ -38,12 +38,24 @@ const {
   };
   // document.findFirst returns a PENDING_REVIEW doc by default.
   const document = {
-    findFirst: vi.fn(async () => ({ id: DOC_ID, status: 'PENDING_REVIEW' })),
+    findFirst: vi.fn(async () => ({
+      id: DOC_ID,
+      status: 'PENDING_REVIEW',
+      virusScanStatus: 'CLEAN',
+    })),
     update: vi.fn(async () => ({ id: DOC_ID })),
   };
   // documentLink.findFirst returns the owner link by default.
   const documentLink = {
-    findFirst: vi.fn(async () => ({ id: 'link_1' })),
+    findFirst: vi.fn(async () => ({
+      id: 'link_1',
+      entityType: 'CONTRACTOR',
+      entityId: CONTRACTOR_ID,
+    })),
+  };
+  const contractorComplianceReminderState = {
+    findUnique: vi.fn(async () => null),
+    upsert: vi.fn(async () => ({ itemId: ITEM_ID })),
   };
   const organization = {
     findUnique: vi.fn(async () => ({ dataRegion: 'EU', status: 'ACTIVE' })),
@@ -55,7 +67,34 @@ const {
     { id: 'flow-held-1', resourceType: 'INVOICE', resourceId: 'inv-held-1' },
   ];
   const approvalFlowUpdate = vi.fn(async () => ({ id: 'flow-held-1', status: 'PENDING' }));
-  const approvalFlow = { update: approvalFlowUpdate };
+  const approvalFlow = {
+    update: approvalFlowUpdate,
+    findUniqueOrThrow: vi.fn(async () => ({
+      id: 'flow-held-1',
+      resourceType: 'INVOICE',
+      resourceId: 'inv-held-1',
+      currentStepOrder: 1,
+      chainConfigId: null,
+      steps: [{ id: 'step-1', stepOrder: 1, status: 'APPROVED', approverUserId: 'admin_user_1' }],
+    })),
+  };
+  const approvalStep = {
+    update: vi.fn(async () => ({ id: 'step-1', status: 'PENDING' })),
+  };
+  const approvalChainConfig = { findUnique: vi.fn(async () => null) };
+  const invoice = {
+    findUnique: vi.fn(async () => ({
+      id: 'inv-held-1',
+      invoiceNumber: 'INV-001',
+      contractorId: CONTRACTOR_ID,
+      totalMinor: 10000,
+      currency: 'EUR',
+    })),
+  };
+  const contractor = {
+    findUnique: vi.fn(async () => ({ legalName: 'Test Contractor Ltd' })),
+    findMany: vi.fn(async () => []),
+  };
   // The recovery hook reads held flows via a raw tagged-template query.
   const queryRaw = vi.fn(async () => heldFlows.slice());
   // The transactional outbox enqueues the upload-outcome notice via
@@ -63,10 +102,15 @@ const {
   const execRawUnsafe = vi.fn(async () => 1);
   const base = {
     contractorComplianceItem,
+    contractorComplianceReminderState,
     document,
     documentLink,
     organization,
     approvalFlow,
+    approvalStep,
+    approvalChainConfig,
+    invoice,
+    contractor,
     $queryRaw: queryRaw,
     $executeRaw: vi.fn(async () => 1),
     $executeRawUnsafe: execRawUnsafe,
@@ -237,8 +281,13 @@ beforeEach(() => {
   mockPrisma.document.findFirst.mockResolvedValue({
     id: DOC_ID,
     status: 'PENDING_REVIEW',
+    virusScanStatus: 'CLEAN',
   } as never);
-  mockPrisma.documentLink.findFirst.mockResolvedValue({ id: 'link_1' } as never);
+  mockPrisma.documentLink.findFirst.mockResolvedValue({
+    id: 'link_1',
+    entityType: 'CONTRACTOR',
+    entityId: CONTRACTOR_ID,
+  } as never);
   // Recovery defaults: one held flow, no remaining blocking items.
   mockPrisma.contractorComplianceItem.findMany.mockResolvedValue([] as never);
   queryRaw.mockResolvedValue([
@@ -327,7 +376,11 @@ describe('compliance-upload-review approve — WR-1 validation', () => {
   });
 
   it('throws PRECONDITION_FAILED when document status is ACTIVE (not PENDING_REVIEW)', async () => {
-    mockPrisma.document.findFirst.mockResolvedValueOnce({ id: DOC_ID, status: 'ACTIVE' } as never);
+    mockPrisma.document.findFirst.mockResolvedValueOnce({
+      id: DOC_ID,
+      status: 'ACTIVE',
+      virusScanStatus: 'CLEAN',
+    } as never);
     const caller = makeCaller();
     await expect(
       caller.complianceAdmin.approveUploadReplacement({
@@ -551,12 +604,10 @@ describe('compliance-upload-review approve — notification delivery is deferred
       }),
     );
     // The notice was enqueued into the outbox inside the same tx.
-    const outboxCall = execRawUnsafe.mock.calls.find((c: unknown[]) =>
-      String(c[0]).includes('INSERT INTO "OutboxEvent"'),
-    );
-    expect(outboxCall).toBeDefined();
-    const payload = JSON.parse(String(outboxCall?.[6]));
-    expect(payload).toMatchObject({ type: 'compliance.upload.approved' });
+    const outboxPayloads = execRawUnsafe.mock.calls
+      .filter((c: unknown[]) => String(c[0]).includes('INSERT INTO "OutboxEvent"'))
+      .map(c => JSON.parse(String(c[6])));
+    expect(outboxPayloads.some(p => p.type === 'compliance.upload.approved')).toBe(true);
     expect(dispatchSpy).not.toHaveBeenCalled();
   });
 });

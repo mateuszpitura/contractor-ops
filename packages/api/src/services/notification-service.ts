@@ -183,7 +183,7 @@ async function sendNotificationEmail(
   const ctaUrl = buildEntityUrl(event.entityType, event.entityId);
   const preferencesUrl = buildPreferencesUrl();
 
-  const { subject, react } = renderNotificationEmail(
+  const { subject, react, usedGenericFallback } = renderNotificationEmail(
     event.type,
     {
       ...event.metadata,
@@ -194,6 +194,13 @@ async function sendNotificationEmail(
     },
     locale,
   );
+
+  if (usedGenericFallback) {
+    log.info(
+      { userId, type: event.type, entityId: event.entityId },
+      'notification email using generic template (no dedicated template for type)',
+    );
+  }
 
   await sendAppEmail({
     from: 'Contractor Ops <notifications@contractorhub.io>',

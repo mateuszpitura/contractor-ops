@@ -4,6 +4,10 @@ import type { LinearIssueMetadata } from '@contractor-ops/validators';
 import { getServerEnv, linearWebhookPayloadSchema } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import * as E from '../errors';
+import {
+  unblockDependentsAndRecomputeRun,
+  validateTransition,
+} from '../routers/workflow/workflow-shared';
 import { linearGraphQL } from './linear-issue-sync';
 import { resolveInternalStatus } from './linear-status-mapping';
 import type { DbClient } from './types';
@@ -357,44 +361,71 @@ export async function processLinearWebhook(
   );
 
   try {
-    // 9. Update WorkflowTaskRun status
-    await prisma.workflowTaskRun.update({
-      where: { id: externalLink.entityId },
-      data: {
+    await prisma.$transaction(async tx => {
+      const task = await tx.workflowTaskRun.findFirst({
+        where: { id: externalLink.entityId, organizationId },
+        select: { id: true, status: true, workflowRunId: true },
+      });
+
+      if (!task) {
+        throw new Error('Linked workflow task not found');
+      }
+
+      if (!validateTransition(task.status, mappedWorkflowStatus)) {
+        throw new Error(`Invalid task transition ${task.status} -> ${mappedWorkflowStatus}`);
+      }
+
+      const now = new Date();
+      const updateData: Prisma.WorkflowTaskRunUpdateInput = {
         status: mappedWorkflowStatus as Prisma.WorkflowTaskRunUpdateInput['status'],
-      },
-    });
+      };
+      if (mappedWorkflowStatus === 'DONE') {
+        updateData.completedAt = now;
+      }
 
-    // 10. Update ExternalLink metadata
-    const updatedMetadata = buildUpdatedLinearMetadata({
-      issueIdentifier,
-      metadata,
-      data: webhookPayload.data,
-      externalUrl: externalLink.externalUrl,
-      stateName,
-      stateType,
-    });
+      await tx.workflowTaskRun.update({
+        where: { id: task.id, organizationId },
+        data: updateData,
+      });
 
-    await prisma.externalLink.update({
-      where: { id: externalLink.id },
-      data: {
-        metadataJson: updatedMetadata,
-      },
-    });
+      if (mappedWorkflowStatus === 'DONE' || mappedWorkflowStatus === 'SKIPPED') {
+        await unblockDependentsAndRecomputeRun(
+          tx,
+          { id: task.id, workflowRun: { id: task.workflowRunId } },
+          now,
+          { organizationId },
+        );
+      }
 
-    // 11. Update sync log to success
-    await prisma.integrationSyncLog.update({
-      where: { id: syncLog.id },
-      data: {
-        status: 'SUCCESS',
-        completedAt: new Date(),
-        responsePayloadJson: {
-          identifier: issueIdentifier,
-          newStateId,
-          newStateName: stateName,
-          mappedWorkflowStatus,
+      const updatedMetadata = buildUpdatedLinearMetadata({
+        issueIdentifier,
+        metadata,
+        data: webhookPayload.data,
+        externalUrl: externalLink.externalUrl,
+        stateName,
+        stateType,
+      });
+
+      await tx.externalLink.update({
+        where: { id: externalLink.id },
+        data: {
+          metadataJson: updatedMetadata,
         },
-      },
+      });
+
+      await tx.integrationSyncLog.update({
+        where: { id: syncLog.id },
+        data: {
+          status: 'SUCCESS',
+          completedAt: new Date(),
+          responsePayloadJson: {
+            identifier: issueIdentifier,
+            newStateId,
+            newStateName: stateName,
+            mappedWorkflowStatus,
+          },
+        },
+      });
     });
   } catch (error) {
     await failInboundSync(prisma, syncLog.id, error);

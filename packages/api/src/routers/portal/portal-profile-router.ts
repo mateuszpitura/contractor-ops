@@ -9,6 +9,7 @@ import {
   assertValidContractorTaxId,
   normalizeContractorTaxId,
 } from '../../services/contractor-tax-id';
+import { scheduleDocumentVirusScan } from '../../services/document-virus-scan';
 import { consumePendingUpload, createPendingUpload } from '../../services/pending-upload';
 import { createChangeRequest } from '../../services/portal-change-request';
 import { stripBankAccountEncrypted } from './portal-shared';
@@ -441,7 +442,7 @@ export const portalProfileRouter = router({
         expectedPurpose: 'PORTAL_COMPLIANCE_UPLOAD',
       });
 
-      return await ctx.db.$transaction(async tx => {
+      const result = await ctx.db.$transaction(async tx => {
         const item = await tx.contractorComplianceItem.findFirst({
           where: {
             id: input.itemId,
@@ -467,6 +468,7 @@ export const portalProfileRouter = router({
             documentType: 'OTHER',
             source: 'USER_UPLOAD',
             status: 'PENDING_REVIEW',
+            virusScanStatus: 'PENDING',
             checksumSha256: '',
           },
         });
@@ -506,7 +508,20 @@ export const portalProfileRouter = router({
           },
         });
         // Item status intentionally unchanged — admin review flips it.
-        return { itemId: item.id, documentId: input.documentId, status: item.status };
+        return {
+          itemId: item.id,
+          documentId: input.documentId,
+          status: item.status,
+          storageKey: pending.storageKey,
+        };
       });
+
+      scheduleDocumentVirusScan(ctx.db, result.documentId, result.storageKey);
+
+      return {
+        itemId: result.itemId,
+        documentId: result.documentId,
+        status: result.status,
+      };
     }),
 });

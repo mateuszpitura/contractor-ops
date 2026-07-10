@@ -84,13 +84,11 @@ export function useEwidencja() {
   const generate = useResourceMutation(trpc.ewidencja.generate.mutationOptions(), {
     invalidate: [[['ewidencja', 'list']] as const],
     successMessage: t('toast.generated'),
-    errorMessage: t('error.message'),
   });
 
   const regenerate = useResourceMutation(trpc.ewidencja.generate.mutationOptions(), {
     invalidate: [[['ewidencja', 'list']] as const],
     successMessage: t('toast.regenerated'),
-    errorMessage: t('error.message'),
   });
 
   const handleWorkerChange = useCallback((next: string) => void setWorkerId(next), [setWorkerId]);

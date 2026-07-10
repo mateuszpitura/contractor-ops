@@ -163,6 +163,8 @@ export {
 export type { ZatcaConnectionData } from './profiles/zatca/compliance.js';
 export { computeZatcaComplianceStatus } from './profiles/zatca/compliance.js';
 export { generateZatcaXml } from './profiles/zatca/generator.js';
+export type { ZatcaInvoiceHash } from './profiles/zatca/hash.js';
+export { computeZatcaInvoiceHash } from './profiles/zatca/hash.js';
 export { ZatcaProfile } from './profiles/zatca/index.js';
 export { buildComplianceTestInvoices, generateZatcaCsr } from './profiles/zatca/onboarding.js';
 export { parseZatcaXml } from './profiles/zatca/parser.js';

@@ -73,45 +73,48 @@ export const saudizationRouter = router({
     .use(requirePermission({ settings: ['update'] }))
     .input(upsertConfigSchema)
     .mutation(async ({ ctx, input }) => {
-      const existing = await ctx.db.saudizationConfig.findFirst({
-        where: { organizationId: ctx.organizationId },
-        select: { id: true, band: true },
-      });
+      return ctx.db.$transaction(async tx => {
+        const existing = await tx.saudizationConfig.findFirst({
+          where: { organizationId: ctx.organizationId },
+          select: { id: true, band: true },
+        });
 
-      const bandChanged = (existing?.band ?? null) !== (input.band ?? null);
-      const bandLastUpdatedAt = bandChanged ? new Date() : undefined;
+        const bandChanged = (existing?.band ?? null) !== (input.band ?? null);
+        const bandLastUpdatedAt = bandChanged ? new Date() : undefined;
 
-      const config = await ctx.db.saudizationConfig.upsert({
-        where: { organizationId: ctx.organizationId },
-        create: {
+        const config = await tx.saudizationConfig.upsert({
+          where: { organizationId: ctx.organizationId },
+          create: {
+            organizationId: ctx.organizationId,
+            band: input.band ?? null,
+            industrySegment: input.industrySegment ?? null,
+            bandLastUpdatedAt: input.band ? new Date() : null,
+          },
+          update: {
+            band: input.band ?? null,
+            industrySegment: input.industrySegment ?? null,
+            ...(bandLastUpdatedAt ? { bandLastUpdatedAt } : {}),
+          },
+        });
+
+        await writeAuditLog({
+          tx,
           organizationId: ctx.organizationId,
-          band: input.band ?? null,
-          industrySegment: input.industrySegment ?? null,
-          bandLastUpdatedAt: input.band ? new Date() : null,
-        },
-        update: {
-          band: input.band ?? null,
-          industrySegment: input.industrySegment ?? null,
-          ...(bandLastUpdatedAt ? { bandLastUpdatedAt } : {}),
-        },
-      });
+          actorType: 'USER',
+          actorId: ctx.user?.id ?? null,
+          action: 'gulf.saudization_config.upsert',
+          resourceType: 'ORGANIZATION',
+          resourceId: ctx.organizationId,
+          metadata: {
+            configId: config.id,
+            band: config.band,
+            industrySegment: config.industrySegment,
+            bandChanged,
+          },
+        });
 
-      await writeAuditLog({
-        organizationId: ctx.organizationId,
-        actorType: 'USER',
-        actorId: ctx.user?.id ?? null,
-        action: 'gulf.saudization_config.upsert',
-        resourceType: 'ORGANIZATION',
-        resourceId: ctx.organizationId,
-        metadata: {
-          configId: config.id,
-          band: config.band,
-          industrySegment: config.industrySegment,
-          bandChanged,
-        },
+        return config;
       });
-
-      return config;
     }),
 
   /**
@@ -123,29 +126,32 @@ export const saudizationRouter = router({
     .use(requirePermission({ settings: ['update'] }))
     .input(upsertHeadcountSchema)
     .mutation(async ({ ctx, input }) => {
-      const headcount = await ctx.db.saudiHeadcount.create({
-        data: {
+      return ctx.db.$transaction(async tx => {
+        const headcount = await tx.saudiHeadcount.create({
+          data: {
+            organizationId: ctx.organizationId,
+            totalHeadcount: input.totalHeadcount,
+            saudiHeadcount: input.saudiHeadcount,
+          },
+        });
+
+        await writeAuditLog({
+          tx,
           organizationId: ctx.organizationId,
-          totalHeadcount: input.totalHeadcount,
-          saudiHeadcount: input.saudiHeadcount,
-        },
-      });
+          actorType: 'USER',
+          actorId: ctx.user?.id ?? null,
+          action: 'gulf.saudi_headcount.record',
+          resourceType: 'ORGANIZATION',
+          resourceId: ctx.organizationId,
+          metadata: {
+            headcountId: headcount.id,
+            totalHeadcount: headcount.totalHeadcount,
+            saudiHeadcount: headcount.saudiHeadcount,
+          },
+        });
 
-      await writeAuditLog({
-        organizationId: ctx.organizationId,
-        actorType: 'USER',
-        actorId: ctx.user?.id ?? null,
-        action: 'gulf.saudi_headcount.record',
-        resourceType: 'ORGANIZATION',
-        resourceId: ctx.organizationId,
-        metadata: {
-          headcountId: headcount.id,
-          totalHeadcount: headcount.totalHeadcount,
-          saudiHeadcount: headcount.saudiHeadcount,
-        },
+        return headcount;
       });
-
-      return headcount;
     }),
 
   /**

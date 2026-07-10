@@ -2,6 +2,8 @@
  * Equipment shipment procedures: generic shipment CRUD, event tracking,
  * status transitions, and contractor equipment view.
  */
+
+import { createLogger } from '@contractor-ops/logger';
 import {
   entityIdSchema,
   shipmentCreateSchema,
@@ -21,6 +23,8 @@ import {
   SHIPMENT_NOT_FOUND,
   SHIPMENT_TO_EQUIPMENT_STATUS,
 } from './equipment-shared';
+
+const log = createLogger({ service: 'equipment-shipments' });
 
 // ---------------------------------------------------------------------------
 // Equipment Shipments sub-router
@@ -71,11 +75,20 @@ export const equipmentShipmentsRouter = router({
           },
         },
         async tx => {
+          const activeAssignment = await tx.equipmentAssignment.findFirst({
+            where: {
+              organizationId: ctx.organizationId,
+              equipmentId: input.equipmentId,
+              unassignedAt: null,
+            },
+            select: { id: true },
+          });
+
           created = await tx.shipment.create({
             data: {
               organizationId: ctx.organizationId,
               equipmentId: input.equipmentId,
-              assignmentId: input.workflowTaskRunId ? undefined : undefined,
+              assignmentId: activeAssignment?.id ?? null,
               workflowTaskRunId: input.workflowTaskRunId ?? null,
               direction: input.direction,
               carrier: input.carrier,
@@ -195,14 +208,14 @@ export const equipmentShipmentsRouter = router({
       });
 
       // Fire-and-forget: auto-complete linked workflow task if shipment reached target status
-      void (async () => {
-        await checkShipmentTaskCompletion(ctx.db, ctx.organizationId, {
-          id: shipment.id,
-          workflowTaskRunId: shipment.workflowTaskRunId,
-          direction: shipment.direction as 'OUTBOUND' | 'RETURN',
-          currentStatus: input.status,
-        });
-      })();
+      void checkShipmentTaskCompletion(ctx.db, ctx.organizationId, {
+        id: shipment.id,
+        workflowTaskRunId: shipment.workflowTaskRunId,
+        direction: shipment.direction as 'OUTBOUND' | 'RETURN',
+        currentStatus: input.status,
+      }).catch(err => {
+        log.error({ err, shipmentId: shipment.id }, 'checkShipmentTaskCompletion failed');
+      });
 
       return result;
     }),

@@ -1,3 +1,5 @@
+import type { Prisma } from '@contractor-ops/db/generated/prisma/client';
+import type { ReminderRuleUpdateInput } from '@contractor-ops/validators';
 import {
   entityIdSchema,
   reminderRuleCreateSchema,
@@ -14,6 +16,27 @@ import { writeAuditLog } from '../../services/audit-writer';
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
+
+/** Whitelist reminder-rule columns — never spread client input into Prisma. */
+function buildReminderRuleUpdateData(
+  data: ReminderRuleUpdateInput,
+): Prisma.ReminderRuleUpdateInput {
+  const update: Prisma.ReminderRuleUpdateInput = {};
+
+  if (data.name !== undefined) update.name = data.name;
+  if (data.entityType !== undefined) update.entityType = data.entityType;
+  if (data.triggerType !== undefined) update.triggerType = data.triggerType;
+  if (data.offsetDays !== undefined) update.offsetDays = data.offsetDays;
+  if (data.offsetHours !== undefined) update.offsetHours = data.offsetHours;
+  if (data.channel !== undefined) update.channel = data.channel;
+  if (data.recipientMode !== undefined) update.recipientMode = data.recipientMode;
+  if (data.configJson !== undefined) {
+    update.configJson = data.configJson ? JSON.parse(JSON.stringify(data.configJson)) : undefined;
+  }
+  if (data.active !== undefined) update.active = data.active;
+
+  return update;
+}
 
 // ---------------------------------------------------------------------------
 // Reminder router
@@ -100,10 +123,7 @@ export const reminderRouter = router({
 
       const updated = await ctx.db.reminderRule.update({
         where: { id },
-        data: {
-          ...data,
-          configJson: data.configJson ? JSON.parse(JSON.stringify(data.configJson)) : undefined,
-        },
+        data: buildReminderRuleUpdateData(data),
       });
 
       // Rule edits change which contractors get notified + when.
@@ -159,24 +179,24 @@ export const reminderRouter = router({
         });
 
         await tx.reminderRule.delete({ where: { id: input.id } });
-      });
 
-      // Rule deletion silences future notifications; auditable.
-      await writeAuditLog({
-        organizationId: ctx.organizationId,
-        actorType: 'USER',
-        actorId: ctx.user?.id ?? null,
-        action: 'REMINDER_RULE_DELETE',
-        resourceType: 'ORGANIZATION',
-        resourceId: ctx.organizationId,
-        oldValues: {
-          ruleId: existing.id,
-          name: existing.name,
-          entityType: existing.entityType,
-          triggerType: existing.triggerType,
-          channel: existing.channel,
-        },
-        metadata: { ruleId: existing.id },
+        await writeAuditLog({
+          tx,
+          organizationId: ctx.organizationId,
+          actorType: 'USER',
+          actorId: ctx.user?.id ?? null,
+          action: 'REMINDER_RULE_DELETE',
+          resourceType: 'ORGANIZATION',
+          resourceId: ctx.organizationId,
+          oldValues: {
+            ruleId: existing.id,
+            name: existing.name,
+            entityType: existing.entityType,
+            triggerType: existing.triggerType,
+            channel: existing.channel,
+          },
+          metadata: { ruleId: existing.id },
+        });
       });
 
       return { success: true };
@@ -208,7 +228,6 @@ export const reminderRouter = router({
           data: { active: input.active },
         });
 
-        // If deactivating, cancel pending instances
         if (!input.active) {
           await tx.reminderInstance.updateMany({
             where: {
@@ -219,6 +238,19 @@ export const reminderRouter = router({
             data: { status: 'CANCELLED' },
           });
         }
+
+        await writeAuditLog({
+          tx,
+          organizationId: ctx.organizationId,
+          actorType: 'USER',
+          actorId: ctx.user?.id ?? null,
+          action: 'REMINDER_RULE_TOGGLE',
+          resourceType: 'ORGANIZATION',
+          resourceId: ctx.organizationId,
+          oldValues: { active: existing.active },
+          newValues: { active: input.active },
+          metadata: { ruleId: existing.id },
+        });
       });
 
       return { success: true };

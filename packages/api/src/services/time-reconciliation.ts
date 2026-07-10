@@ -100,14 +100,19 @@ export async function computeTimeReconciliation(
   periodStart: Date,
   periodEnd: Date,
   invoicedAmountMinor: number,
+  invoiceCurrency?: string,
 ): Promise<TimeReconciliation | null> {
   // 1. Get contract with rateType and rateValueMinor
   const contract = await db.contract.findFirst({
     where: { id: contractId, organizationId },
-    select: { rateType: true, rateValueMinor: true },
+    select: { rateType: true, rateValueMinor: true, currency: true },
   });
 
   if (!contract?.rateValueMinor) return null;
+
+  if (invoiceCurrency && contract.currency !== invoiceCurrency) {
+    return null;
+  }
 
   // Only compute for PER_HOUR and PER_DAY contracts
   // MONTHLY_FIXED: skip (expected = fixed rate regardless of hours)
@@ -158,6 +163,8 @@ export interface ReconciliationBatchItem<T> {
   contractId: string;
   rateType: string;
   rateValueMinor: number | null;
+  contractCurrency: string;
+  invoiceCurrency: string;
   periodStart: Date;
   periodEnd: Date;
   invoicedAmountMinor: number;
@@ -235,6 +242,10 @@ export async function computeTimeReconciliationBatch<T>(
   }
 
   return invoices.map(item => {
+    if (item.contractCurrency !== item.invoiceCurrency) {
+      return { invoice: item.invoice, reconciliation: null };
+    }
+
     const bucket = entriesByContract.get(item.contractId);
     let approvedMinutes = 0;
     if (bucket) {

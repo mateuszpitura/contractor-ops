@@ -1,5 +1,6 @@
 import { randomBytes } from 'node:crypto';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { getAdapter } from '../registry.js';
 import type { CredentialBlob } from '../types/credentials.js';
 import type { IntegrationProviderAdapter } from '../types/provider.js';
 
@@ -126,6 +127,15 @@ describe('token-refresh', () => {
           }),
         }),
       );
+
+      // The credential-persisting write must NOT stamp lastSyncAt/lastSuccessAt:
+      // the HRIS pull orchestrator reuses lastSyncAt as its hourly throttle, so
+      // a refresh here would masquerade as a completed sync and suppress pulls.
+      const persistCall = mockUpdate.mock.calls.find(
+        ([arg]) => (arg as { data?: Record<string, unknown> }).data?.credentialsRef != null,
+      );
+      expect(persistCall?.[0].data).not.toHaveProperty('lastSyncAt');
+      expect(persistCall?.[0].data).not.toHaveProperty('lastSuccessAt');
     });
 
     it('should skip connections with an active lock', async () => {
@@ -139,6 +149,9 @@ describe('token-refresh', () => {
       expect(result.refreshed).toBe(0);
       expect(result.failed).toBe(0);
       expect(mockRefreshToken).not.toHaveBeenCalled();
+      // Losing the claim must not release the lock — the process that WON the
+      // claim owns it, so no update (release) call may run this iteration.
+      expect(mockUpdate).not.toHaveBeenCalled();
     });
 
     it('should mark connection as REAUTH_REQUIRED on refresh failure', async () => {
@@ -171,6 +184,28 @@ describe('token-refresh', () => {
       expect(result.total).toBe(0);
       expect(result.refreshed).toBe(0);
       expect(result.failed).toBe(0);
+    });
+
+    it('skips a provider with no refreshToken handler without failing it', async () => {
+      // Personio self-mints its bearer from client-credentials and exposes no
+      // refreshToken handler — proactive refresh must skip it, never lock it,
+      // and never move it to REAUTH_REQUIRED.
+      vi.mocked(getAdapter).mockReturnValueOnce({
+        slug: 'personio',
+        displayName: 'Personio',
+        supportsOAuth: false,
+        supportsWebhooks: false,
+      } as IntegrationProviderAdapter);
+      mockFindMany.mockResolvedValue([makeConnection({ provider: 'PERSONIO' })]);
+
+      const result = await refreshExpiring();
+
+      expect(result.total).toBe(1);
+      expect(result.refreshed).toBe(0);
+      expect(result.failed).toBe(0);
+      expect(mockRefreshToken).not.toHaveBeenCalled();
+      expect(mockUpdateMany).not.toHaveBeenCalled(); // never attempted the lock
+      expect(mockUpdate).not.toHaveBeenCalled(); // no markRefreshFailed / release
     });
   });
 

@@ -176,6 +176,16 @@ function makeDb(seed: { intakes?: IntakeRow[] } = {}) {
       Object.assign(row, args.data);
       return row;
     }),
+    findFirst: vi.fn(async (args: { where: { id?: string; organizationId?: string } }) => {
+      const { id, organizationId } = args.where;
+      if (id && organizationId) {
+        return intakes.find(r => r.id === id && r.organizationId === organizationId) ?? null;
+      }
+      if (id) {
+        return intakes.find(r => r.id === id) ?? null;
+      }
+      return null;
+    }),
     count: vi.fn(async () => intakes.length),
   };
 

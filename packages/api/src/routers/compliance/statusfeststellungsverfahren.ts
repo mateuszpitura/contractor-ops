@@ -99,114 +99,120 @@ export const statusfeststellungsverfahrenRouter = router({
     }),
 
   create: contractorUpdateProcedure.input(createInput).mutation(async ({ ctx, input }) => {
-    const row = await ctx.db.statusfeststellungsverfahren.create({
-      data: {
+    return ctx.db.$transaction(async tx => {
+      const row = await tx.statusfeststellungsverfahren.create({
+        data: {
+          organizationId: ctx.organizationId,
+          contractorAssignmentId: input.contractorAssignmentId,
+          filedAt: input.filedAt,
+          drvReference: input.drvReference,
+          outcome: input.outcome,
+          validFrom: input.validFrom ?? null,
+          validTo: input.validTo ?? null,
+          notes: input.notes ?? null,
+        },
+      });
+
+      await writeAuditLog({
+        tx,
         organizationId: ctx.organizationId,
-        contractorAssignmentId: input.contractorAssignmentId,
-        filedAt: input.filedAt,
-        drvReference: input.drvReference,
-        outcome: input.outcome,
-        validFrom: input.validFrom ?? null,
-        validTo: input.validTo ?? null,
-        notes: input.notes ?? null,
-      },
-    });
+        actorType: 'USER',
+        actorId: ctx.user?.id,
+        action: 'STATUSFESTSTELLUNGSVERFAHREN_CREATE',
+        resourceType: 'CONTRACTOR',
+        resourceId: input.contractorAssignmentId,
+        newValues: {
+          id: row.id,
+          drvReference: '[REDACTED]',
+          outcome: row.outcome,
+          filedAt: row.filedAt,
+        },
+      });
 
-    // Audit every mutation; resourceType=CONTRACTOR for consistent audit-log queries.
-    await writeAuditLog({
-      organizationId: ctx.organizationId,
-      actorType: 'USER',
-      actorId: ctx.user?.id,
-      action: 'STATUSFESTSTELLUNGSVERFAHREN_CREATE',
-      resourceType: 'CONTRACTOR',
-      resourceId: input.contractorAssignmentId,
-      newValues: {
-        id: row.id,
-        drvReference: '[REDACTED]', // T-60-10: never log drvReference verbatim
-        outcome: row.outcome,
-        filedAt: row.filedAt,
-      },
+      return row;
     });
-
-    return row;
   }),
 
   update: contractorUpdateProcedure.input(updateInput).mutation(async ({ ctx, input }) => {
-    const existing = await findOrThrow(
-      () =>
-        ctx.db.statusfeststellungsverfahren.findFirst({
-          where: { id: input.id },
-        }),
-      'Statusfeststellungsverfahren record not found.',
-    );
+    return ctx.db.$transaction(async tx => {
+      const existing = await findOrThrow(
+        () =>
+          tx.statusfeststellungsverfahren.findFirst({
+            where: { id: input.id },
+          }),
+        'Statusfeststellungsverfahren record not found.',
+      );
 
-    // Cross-field validation after merge — reject updates that would leave a
-    // SELBSTANDIG/ABHANGIG row without validFrom/validTo.
-    const nextOutcome = input.outcome ?? existing.outcome;
-    const nextValidFrom = input.validFrom === undefined ? existing.validFrom : input.validFrom;
-    const nextValidTo = input.validTo === undefined ? existing.validTo : input.validTo;
-    if (
-      (nextOutcome === 'SELBSTANDIG' || nextOutcome === 'ABHANGIG') &&
-      (nextValidFrom === null || nextValidTo === null)
-    ) {
-      throw new TRPCError({
-        code: 'BAD_REQUEST',
-        message: STATUS_VAL_DATES_REQUIRED,
+      const nextOutcome = input.outcome ?? existing.outcome;
+      const nextValidFrom = input.validFrom === undefined ? existing.validFrom : input.validFrom;
+      const nextValidTo = input.validTo === undefined ? existing.validTo : input.validTo;
+      if (
+        (nextOutcome === 'SELBSTANDIG' || nextOutcome === 'ABHANGIG') &&
+        (nextValidFrom === null || nextValidTo === null)
+      ) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: STATUS_VAL_DATES_REQUIRED,
+        });
+      }
+
+      const row = await tx.statusfeststellungsverfahren.update({
+        where: { id: input.id },
+        data: {
+          filedAt: input.filedAt ?? existing.filedAt,
+          drvReference: input.drvReference ?? existing.drvReference,
+          outcome: nextOutcome,
+          validFrom: nextValidFrom,
+          validTo: nextValidTo,
+          notes: input.notes === undefined ? existing.notes : input.notes,
+        },
       });
-    }
 
-    const row = await ctx.db.statusfeststellungsverfahren.update({
-      where: { id: input.id },
-      data: {
-        filedAt: input.filedAt ?? existing.filedAt,
-        drvReference: input.drvReference ?? existing.drvReference,
-        outcome: nextOutcome,
-        validFrom: nextValidFrom,
-        validTo: nextValidTo,
-        notes: input.notes === undefined ? existing.notes : input.notes,
-      },
+      await writeAuditLog({
+        tx,
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user?.id,
+        action: 'STATUSFESTSTELLUNGSVERFAHREN_UPDATE',
+        resourceType: 'CONTRACTOR',
+        resourceId: existing.contractorAssignmentId,
+        newValues: {
+          id: row.id,
+          outcome: row.outcome,
+        },
+      });
+
+      return row;
     });
-
-    await writeAuditLog({
-      organizationId: ctx.organizationId,
-      actorType: 'USER',
-      actorId: ctx.user?.id,
-      action: 'STATUSFESTSTELLUNGSVERFAHREN_UPDATE',
-      resourceType: 'CONTRACTOR',
-      resourceId: existing.contractorAssignmentId,
-      newValues: {
-        id: row.id,
-        outcome: row.outcome,
-      },
-    });
-
-    return row;
   }),
 
   delete: contractorUpdateProcedure.input(deleteInput).mutation(async ({ ctx, input }) => {
-    const existing = await findOrThrow(
-      () =>
-        ctx.db.statusfeststellungsverfahren.findFirst({
-          where: { id: input.id },
-        }),
-      'Statusfeststellungsverfahren record not found.',
-    );
+    return ctx.db.$transaction(async tx => {
+      const existing = await findOrThrow(
+        () =>
+          tx.statusfeststellungsverfahren.findFirst({
+            where: { id: input.id },
+          }),
+        'Statusfeststellungsverfahren record not found.',
+      );
 
-    await ctx.db.statusfeststellungsverfahren.delete({ where: { id: input.id } });
+      await tx.statusfeststellungsverfahren.delete({ where: { id: input.id } });
 
-    await writeAuditLog({
-      organizationId: ctx.organizationId,
-      actorType: 'USER',
-      actorId: ctx.user?.id,
-      action: 'STATUSFESTSTELLUNGSVERFAHREN_DELETE',
-      resourceType: 'CONTRACTOR',
-      resourceId: existing.contractorAssignmentId,
-      oldValues: {
-        id: existing.id,
-        outcome: existing.outcome,
-      },
+      await writeAuditLog({
+        tx,
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user?.id,
+        action: 'STATUSFESTSTELLUNGSVERFAHREN_DELETE',
+        resourceType: 'CONTRACTOR',
+        resourceId: existing.contractorAssignmentId,
+        oldValues: {
+          id: existing.id,
+          outcome: existing.outcome,
+        },
+      });
+
+      return { id: existing.id };
     });
-
-    return { id: existing.id };
   }),
 });

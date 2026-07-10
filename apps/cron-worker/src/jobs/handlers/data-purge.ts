@@ -79,7 +79,7 @@ type PersonnelDocRetentionRow = {
 function isPersonnelDocErasable(row: PersonnelDocRetentionRow, now: Date): boolean {
   const jurisdiction = mapCountryCodeToJurisdiction(row.personnelFile.countryCode);
   if (!jurisdiction || row.section === null) return false;
-  const rules = getPersonnelRetentionRules(jurisdiction, row.section);
+  const rules = getPersonnelRetentionRules(jurisdiction, row.section, row.personnelFile.hireDate);
   return getPersonnelRetentionCutoff(rules, {
     hireDate: row.personnelFile.hireDate,
     terminationDate: row.personnelFile.terminatedAt,

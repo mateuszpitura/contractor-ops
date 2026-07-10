@@ -210,7 +210,14 @@ describe('billing-webhook', () => {
   let tx: ReturnType<typeof createMockTx>;
 
   beforeEach(() => {
-    vi.clearAllMocks();
+    mockStripeSubscriptionsRetrieve.mockReset();
+    mockResolveTierFromPriceId.mockReset();
+    mockResolveTopUpCredits.mockReset();
+    mockDispatch.mockReset();
+    mockDispatch.mockResolvedValue(undefined);
+    mockInvalidate.mockReset();
+    mockEmailSend.mockReset();
+    mockEmailSend.mockResolvedValue({});
     tx = createMockTx();
     mockResolveTierFromPriceId.mockReturnValue('PRO');
   });
@@ -334,7 +341,7 @@ describe('billing-webhook', () => {
       await routeStripeEvent(event, tx);
 
       expect(tx.subscription.upsert).toHaveBeenCalledWith({
-        where: { stripeSubscriptionId: 'sub_123' },
+        where: { organizationId: 'org_1' },
         create: expect.objectContaining({
           stripeSubscriptionId: 'sub_123',
           organizationId: 'org_1',
@@ -368,7 +375,6 @@ describe('billing-webhook', () => {
         ['canceled', 'CANCELED'],
         ['unpaid', 'UNPAID'],
       ] as const) {
-        vi.clearAllMocks();
         tx = createMockTx();
         tx.subscription.findUnique.mockResolvedValue(null);
         mockResolveTierFromPriceId.mockReturnValue('PRO');
@@ -1195,7 +1201,11 @@ describe('billing-webhook', () => {
 
   describe('handleSubscriptionUpdated - tier change', () => {
     it('dispatches notification when tier changes', async () => {
-      tx.subscription.findUnique.mockResolvedValue({ tier: 'STARTER' });
+      tx.subscription.findUnique.mockResolvedValue({
+        tier: 'STARTER',
+        currentPeriodStart: new Date(1700000000 * 1000),
+        currentPeriodEnd: new Date(1702592000 * 1000),
+      });
       tx.member.findMany.mockResolvedValue([{ userId: 'usr_1' }]);
       mockResolveTierFromPriceId.mockReturnValue('PRO');
 
@@ -1212,7 +1222,11 @@ describe('billing-webhook', () => {
     });
 
     it('does not dispatch notification when tier stays the same', async () => {
-      tx.subscription.findUnique.mockResolvedValue({ tier: 'PRO' });
+      tx.subscription.findUnique.mockResolvedValue({
+        tier: 'PRO',
+        currentPeriodStart: new Date(1700000000 * 1000),
+        currentPeriodEnd: new Date(1702592000 * 1000),
+      });
       mockResolveTierFromPriceId.mockReturnValue('PRO');
 
       const event = makeEvent('customer.subscription.updated', makeSubscription());
@@ -1267,6 +1281,8 @@ describe('billing-webhook', () => {
       tx.subscription.findUnique.mockResolvedValue({
         tier: 'PRO',
         lastEventCreated: new Date(300 * 1000),
+        currentPeriodStart: new Date(1700000000 * 1000),
+        currentPeriodEnd: new Date(1702592000 * 1000),
       });
       mockResolveTierFromPriceId.mockReturnValue('PRO');
 
@@ -1276,7 +1292,12 @@ describe('billing-webhook', () => {
     });
 
     it('applies when no watermark is stored yet (first event for the row)', async () => {
-      tx.subscription.findUnique.mockResolvedValue({ tier: 'PRO', lastEventCreated: null });
+      tx.subscription.findUnique.mockResolvedValue({
+        tier: 'PRO',
+        lastEventCreated: null,
+        currentPeriodStart: new Date(1700000000 * 1000),
+        currentPeriodEnd: new Date(1702592000 * 1000),
+      });
       mockResolveTierFromPriceId.mockReturnValue('PRO');
 
       await routeStripeEvent(updatedEvent(100), tx);

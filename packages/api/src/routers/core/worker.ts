@@ -1,3 +1,4 @@
+import { entityIdSchema } from '@contractor-ops/validators';
 import { z } from 'zod';
 import { router } from '../../init';
 import { requirePermission } from '../../middleware/rbac';
@@ -70,7 +71,7 @@ export const workerRouter = router({
    */
   getById: tenantProcedure
     .use(requirePermission({ contractor: ['read'] }))
-    .input(z.object({ id: z.string().min(1) }).strict())
+    .input(entityIdSchema)
     .query(async ({ ctx, input }) => {
       assertWorkforceEnabled(ctx.organizationId, ctx.region);
 

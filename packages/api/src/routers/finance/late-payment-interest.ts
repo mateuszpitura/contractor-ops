@@ -14,6 +14,7 @@ import { findOrThrow } from '../../lib/find-or-throw';
 import { cursorClause, paginateByLastKept } from '../../lib/pagination';
 import { requireFeatureFlag, tenantFlaggedProcedure } from '../../middleware/feature-flag';
 import { requirePermission } from '../../middleware/rbac';
+import { writeAuditLog } from '../../services/audit-writer';
 import { loadBoeRateHistory } from '../../services/boe-rate-cache';
 import { calculateLateInterest, getCompensationTier } from '../../services/late-payment-interest';
 import { signExistingDownload } from '../../services/r2';
@@ -289,32 +290,46 @@ export const latePaymentInterestRouter = router({
         'Invoice not found',
       );
 
-      // Check for existing active waiver of same type
-      const existingWaiver = await ctx.db.invoiceInterestWaiver.findFirst({
-        where: {
-          invoiceId: input.invoiceId,
-          organizationId: ctx.organizationId,
-          waiveType: input.waiveType,
-          revokedAt: null,
-        },
-      });
-
-      if (existingWaiver) {
-        throw new TRPCError({
-          code: 'CONFLICT',
-          message: E.INVOICE_INTEREST_WAIVER_EXISTS,
+      const waiver = await ctx.db.$transaction(async tx => {
+        const existing = await tx.invoiceInterestWaiver.findFirst({
+          where: {
+            invoiceId: input.invoiceId,
+            organizationId: ctx.organizationId,
+            waiveType: input.waiveType,
+            revokedAt: null,
+          },
+          select: { id: true },
         });
-      }
+        if (existing) {
+          throw new TRPCError({
+            code: 'CONFLICT',
+            message: E.INVOICE_INTEREST_WAIVER_EXISTS,
+          });
+        }
 
-      const waiver = await ctx.db.invoiceInterestWaiver.create({
-        data: {
+        const created = await tx.invoiceInterestWaiver.create({
+          data: {
+            organizationId: ctx.organizationId,
+            invoiceId: input.invoiceId,
+            waiveType: input.waiveType,
+            reason: input.reason,
+            waivedByUserId: userId,
+            waivedAt: new Date(),
+          },
+        });
+
+        await writeAuditLog({
+          tx,
           organizationId: ctx.organizationId,
-          invoiceId: input.invoiceId,
-          waiveType: input.waiveType,
-          reason: input.reason,
-          waivedByUserId: userId,
-          waivedAt: new Date(),
-        },
+          actorType: 'USER',
+          actorId: userId,
+          action: 'invoice_interest.waived',
+          resourceType: 'INVOICE',
+          resourceId: input.invoiceId,
+          newValues: { waiverId: created.id, waiveType: input.waiveType },
+        });
+
+        return created;
       });
 
       log.info(
@@ -350,13 +365,33 @@ export const latePaymentInterestRouter = router({
         'Active waiver not found',
       );
 
-      await ctx.db.invoiceInterestWaiver.update({
-        where: { id: input.waiverId },
-        data: {
-          revokedAt: new Date(),
-          revokedByUserId: ctx.user?.id,
-          revokeReason: input.revokeReason,
-        },
+      await ctx.db.$transaction(async tx => {
+        const cas = await tx.invoiceInterestWaiver.updateMany({
+          where: {
+            id: input.waiverId,
+            organizationId: ctx.organizationId,
+            revokedAt: null,
+          },
+          data: {
+            revokedAt: new Date(),
+            revokedByUserId: ctx.user?.id,
+            revokeReason: input.revokeReason,
+          },
+        });
+        if (cas.count === 0) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: E.LATE_INTEREST_WAIVER_NOT_FOUND });
+        }
+
+        await writeAuditLog({
+          tx,
+          organizationId: ctx.organizationId,
+          actorType: 'USER',
+          actorId: ctx.user?.id ?? null,
+          action: 'invoice_interest.waiver_revoked',
+          resourceType: 'INVOICE',
+          resourceId: waiver.invoiceId,
+          newValues: { waiverId: input.waiverId, revokeReason: input.revokeReason },
+        });
       });
 
       log.info(
@@ -466,45 +501,72 @@ export const latePaymentInterestRouter = router({
       // tRPC timeout. Clients poll `downloadClaim` or watch `pdfStatus`
       // on `getForInvoice`.
       let secondaryInvoiceId: string | null = null;
+      let claim!: Awaited<ReturnType<typeof ctx.db.invoiceInterestClaim.create>>;
 
-      if (input.issueAsSecondaryInvoice) {
-        const secondaryInvoice = await ctx.db.invoice.create({
+      await ctx.db.$transaction(async tx => {
+        const existingClaim = await tx.invoiceInterestClaim.findFirst({
+          where: { invoiceId: input.invoiceId, organizationId: ctx.organizationId },
+          select: { id: true },
+        });
+        if (existingClaim) {
+          throw new TRPCError({
+            code: 'CONFLICT',
+            message: E.INTEREST_ALREADY_CLAIMED,
+          });
+        }
+
+        if (input.issueAsSecondaryInvoice) {
+          const secondaryInvoice = await tx.invoice.create({
+            data: {
+              organizationId: ctx.organizationId,
+              contractorId: invoice.contractorId,
+              invoiceNumber: `LPC-${invoice.invoiceNumber}`,
+              source: 'LATE_INTEREST_CLAIM',
+              sourceReference: input.invoiceId,
+              issueDate: new Date(),
+              dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+              currency: 'GBP',
+              subtotalMinor: result.totalClaimMinor,
+              totalMinor: result.totalClaimMinor,
+              amountToPayMinor: result.totalClaimMinor,
+              status: 'RECEIVED',
+              matchStatus: 'MATCHED',
+              notes: `Statutory late payment interest claim for invoice ${invoice.invoiceNumber}. ${LPCDA_SECTION_REF}.`,
+            },
+          });
+          secondaryInvoiceId = secondaryInvoice.id;
+        }
+
+        claim = await tx.invoiceInterestClaim.create({
           data: {
             organizationId: ctx.organizationId,
-            contractorId: invoice.contractorId,
-            invoiceNumber: `LPC-${invoice.invoiceNumber}`,
-            source: 'LATE_INTEREST_CLAIM',
-            sourceReference: input.invoiceId,
-            issueDate: new Date(),
-            dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-            currency: 'GBP',
-            subtotalMinor: result.totalClaimMinor,
-            totalMinor: result.totalClaimMinor,
-            amountToPayMinor: result.totalClaimMinor,
-            status: 'RECEIVED',
-            matchStatus: 'MATCHED',
-            notes: `Statutory late payment interest claim for invoice ${invoice.invoiceNumber}. ${LPCDA_SECTION_REF}.`,
+            invoiceId: input.invoiceId,
+            claimedByUserId: userId,
+            claimedAt: new Date(),
+            snapshotInterestMinor: result.accruedInterestMinor,
+            snapshotCompensationMinor: result.compensationTierMinor,
+            snapshotRateUsed: result.rateUsed,
+            snapshotDaysOverdue: result.daysOverdue,
+            pdfKey: null,
+            pdfStatus: 'PENDING_RENDER',
+            secondaryInvoiceId,
           },
         });
-        secondaryInvoiceId = secondaryInvoice.id;
-      }
 
-      const claim = await ctx.db.invoiceInterestClaim.create({
-        data: {
+        await writeAuditLog({
+          tx,
           organizationId: ctx.organizationId,
-          invoiceId: input.invoiceId,
-          claimedByUserId: userId,
-          claimedAt: new Date(),
-          snapshotInterestMinor: result.accruedInterestMinor,
-          snapshotCompensationMinor: result.compensationTierMinor,
-          snapshotRateUsed: result.rateUsed,
-          snapshotDaysOverdue: result.daysOverdue,
-          // pdfKey is null until the worker uploads — the downloadClaim
-          // procedure gates on pdfStatus=READY before signing a URL.
-          pdfKey: null,
-          pdfStatus: 'PENDING_RENDER',
-          secondaryInvoiceId,
-        },
+          actorType: 'USER',
+          actorId: userId,
+          action: 'invoice_interest.claimed',
+          resourceType: 'INVOICE',
+          resourceId: input.invoiceId,
+          newValues: {
+            claimId: claim.id,
+            totalClaimMinor: result.totalClaimMinor,
+            secondaryInvoiceId,
+          },
+        });
       });
 
       // Enqueue the render job. We use dynamic imports so that tests /

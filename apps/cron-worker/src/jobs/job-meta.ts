@@ -33,16 +33,22 @@ export const JOB_STATIC_META: Record<string, StaticJobMeta> = {
   'exchange-rates': { intervalMs: DAY, catchUpOnBoot: true },
   'boe-rate-poll': { intervalMs: DAY, catchUpOnBoot: true },
   'org-definition-sync': { intervalMs: DAY, catchUpOnBoot: true },
+  'hris-sync': { intervalMs: HOUR },
   'classification-reassessment-triggers': { intervalMs: DAY, catchUpOnBoot: true },
   'classification-economic-dependency': { intervalMs: DAY, catchUpOnBoot: true },
+  'contract-expiry-scan': { intervalMs: DAY, catchUpOnBoot: true },
   'form-1099k-tracker': { intervalMs: DAY, catchUpOnBoot: true },
   'inpost-status-poll': { intervalMs: HOUR },
   'job-health': { intervalMs: 5 * MINUTE },
+  'api-key-leak-alarm': { intervalMs: HOUR },
   'late-interest-pdf-reaper': { intervalMs: 5 * MINUTE },
+  'document-virus-scan-reconcile': { intervalMs: 5 * MINUTE },
   'trial-notifications': { intervalMs: DAY, catchUpOnBoot: true },
   reminders: { intervalMs: DAY, catchUpOnBoot: true, maxMs: 10 * MINUTE },
+  'year-end-1099-reminder': { intervalMs: DAY, catchUpOnBoot: true },
   'stripe-reconcile': { intervalMs: DAY, catchUpOnBoot: true },
   'zatca-reconcile': { intervalMs: 15 * MINUTE },
+  'peppol-reconcile': { intervalMs: 15 * MINUTE },
 };
 
 /** jobName → nominal cadence (ms). Consumed by `job-health` staleness detection. */

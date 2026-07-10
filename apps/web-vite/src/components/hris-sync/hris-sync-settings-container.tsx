@@ -1,7 +1,7 @@
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { HrisSyncMappingTable } from './data-table.js';
 import { useHrisSync } from './hooks/use-hris-sync.js';
 import { HrisSyncConnectCard } from './hris-sync-connect-card.js';
-import { HrisSyncMappingTable } from './hris-sync-mapping-table.js';
 
 /**
  * Section container for the HRIS sync settings surface. Owns the loading /

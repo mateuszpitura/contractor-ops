@@ -63,7 +63,7 @@ describe('a pull enqueues no push (disjoint partition)', () => {
     // has no reason to enqueue an outbound push. Asserted by the orchestrator
     // suite (enqueueOutboxEvent is never called during a pull run); this case
     // pins the intent here so a future refactor that wires them together is
-    // caught. The import resolves once the orchestrator lands (Wave 4).
+    // caught.
     const mod = await import('../../hris-sync/pull-orchestrator');
     expect(typeof mod.runHrisPull).toBe('function');
   });

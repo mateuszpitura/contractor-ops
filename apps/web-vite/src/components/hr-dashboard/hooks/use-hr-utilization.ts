@@ -6,12 +6,12 @@ import { useTRPC } from '../../../providers/trpc-provider.js';
 
 type RouterOutputs = inferRouterOutputs<AppRouter>;
 
-/** Per worker-year vacation-utilization read model (HR-DASH-02). */
+/** Per worker-year vacation-utilization read model. */
 export type HrUtilization = RouterOutputs['hrDashboard']['getVacationUtilization'];
 export type WorkerUtilizationRow = HrUtilization['items'][number];
 
 /**
- * Sole tRPC boundary for the HR-DASH-02 vacation-utilization section. Reads the
+ * Sole tRPC boundary for the vacation-utilization section. Reads the
  * per worker-year taken / entitled / unused days (already derived to days by the
  * server) plus the under-utilized count. Returns a props bag + variant flags;
  * the wired section owns loading / degraded (no leave balances) / error. When

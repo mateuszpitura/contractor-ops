@@ -21,6 +21,28 @@ const XADES_NS = 'http://uri.etsi.org/01903/v1.3.2#';
 
 const ZATCA_TAX_SCHEME_ID = 'VAT';
 
+const ZATCA_TAX_CATEGORY_CODES = new Set(['S', 'Z', 'E', 'O']);
+
+/** Map line vatRate (category code or numeric percent) to UBL ClassifiedTaxCategory fields. */
+function resolveZatcaLineTax(vatRate: string): { categoryId: string; percent?: string } {
+  const trimmed = vatRate.trim();
+  const upper = trimmed.toUpperCase();
+  if (ZATCA_TAX_CATEGORY_CODES.has(upper)) {
+    // BR-Z-05/BR-E-05: zero-rated and exempt lines must state rate 0; BR-O-05: 'O' must omit it.
+    if (upper === 'S') return { categoryId: 'S', percent: '15' };
+    if (upper === 'Z' || upper === 'E') return { categoryId: upper, percent: '0' };
+    return { categoryId: upper };
+  }
+
+  const numeric = parseFloat(trimmed);
+  if (Number.isFinite(numeric)) {
+    if (numeric === 0) return { categoryId: 'Z', percent: '0' };
+    return { categoryId: 'S', percent: String(numeric) };
+  }
+
+  return { categoryId: upper };
+}
+
 // ---------------------------------------------------------------------------
 // Builder
 // ---------------------------------------------------------------------------
@@ -151,13 +173,16 @@ function buildInvoiceLines(invoice: EInvoice) {
     'cac:Item': {
       'cbc:Name': line.description,
       ...(line.vatRate
-        ? {
-            'cac:ClassifiedTaxCategory': {
-              'cbc:ID': line.vatRate,
-              ...(line.vatRate === 'S' ? { 'cbc:Percent': '15' } : {}),
-              'cac:TaxScheme': { 'cbc:ID': ZATCA_TAX_SCHEME_ID },
-            },
-          }
+        ? (() => {
+            const tax = resolveZatcaLineTax(line.vatRate);
+            return {
+              'cac:ClassifiedTaxCategory': {
+                'cbc:ID': tax.categoryId,
+                ...(tax.percent == null ? {} : { 'cbc:Percent': tax.percent }),
+                'cac:TaxScheme': { 'cbc:ID': ZATCA_TAX_SCHEME_ID },
+              },
+            };
+          })()
         : {}),
     },
     'cac:Price': {

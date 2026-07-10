@@ -23,6 +23,7 @@ import {
   isEventDuplicate,
   processShipmentStatusChange,
   SHIPMENT_TO_EQUIPMENT_STATUS,
+  shouldApplyShipmentStatusUpdate,
   TERMINAL_STATUSES,
 } from '../shipment-processing';
 
@@ -31,7 +32,7 @@ import {
 // ---------------------------------------------------------------------------
 
 function createMockDb() {
-  return {
+  const db = {
     shipmentEvent: {
       create: vi.fn().mockResolvedValue({ id: 'evt_1' }),
       findFirst: vi.fn(),
@@ -43,7 +44,13 @@ function createMockDb() {
       findUnique: vi.fn(),
       update: vi.fn().mockResolvedValue({}),
     },
+    auditLog: { create: vi.fn().mockResolvedValue({}) },
+    $transaction: vi.fn(),
   };
+  db.$transaction.mockImplementation(async (callback: (tx: typeof db) => Promise<unknown>) =>
+    callback(db),
+  );
+  return db;
 }
 
 function baseShipment(overrides: Record<string, unknown> = {}) {
@@ -325,5 +332,33 @@ describe('isEventDuplicate', () => {
     const result = await isEventDuplicate(db as never, 'ship_1', 'DELIVERED');
 
     expect(result).toBe(false);
+  });
+});
+
+describe('shouldApplyShipmentStatusUpdate', () => {
+  it('allows forward progression and same-rank repeats', () => {
+    expect(shouldApplyShipmentStatusUpdate('CREATED', 'LABEL_GENERATED')).toBe(true);
+    expect(shouldApplyShipmentStatusUpdate('IN_TRANSIT', 'OUT_FOR_DELIVERY')).toBe(true);
+    expect(shouldApplyShipmentStatusUpdate('IN_TRANSIT', 'IN_TRANSIT')).toBe(true);
+    expect(shouldApplyShipmentStatusUpdate('OUT_FOR_DELIVERY', 'DELIVERED')).toBe(true);
+  });
+
+  it('blocks backward transitions from late out-of-order webhooks', () => {
+    expect(shouldApplyShipmentStatusUpdate('OUT_FOR_DELIVERY', 'IN_TRANSIT')).toBe(false);
+    expect(shouldApplyShipmentStatusUpdate('IN_TRANSIT', 'PICKED_UP')).toBe(false);
+  });
+
+  it('keeps DELIVERED and RETURNED immutable', () => {
+    expect(shouldApplyShipmentStatusUpdate('DELIVERED', 'IN_TRANSIT')).toBe(false);
+    expect(shouldApplyShipmentStatusUpdate('DELIVERED', 'RETURNED')).toBe(false);
+    expect(shouldApplyShipmentStatusUpdate('RETURNED', 'DELIVERED')).toBe(false);
+  });
+
+  it('lets FAILED progress to a delivery outcome (courier retry / return-to-sender)', () => {
+    expect(shouldApplyShipmentStatusUpdate('FAILED', 'RETURNED')).toBe(true);
+    expect(shouldApplyShipmentStatusUpdate('FAILED', 'DELIVERED')).toBe(true);
+    expect(shouldApplyShipmentStatusUpdate('FAILED', 'OUT_FOR_DELIVERY')).toBe(true);
+    expect(shouldApplyShipmentStatusUpdate('FAILED', 'IN_TRANSIT')).toBe(false);
+    expect(shouldApplyShipmentStatusUpdate('FAILED', 'CREATED')).toBe(false);
   });
 });

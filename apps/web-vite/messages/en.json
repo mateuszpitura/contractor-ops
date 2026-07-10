@@ -247,7 +247,8 @@
           "revokeItAccess": "Revoke IT access",
           "returnEquipment": "Return equipment",
           "financeWrapUp": "Finance wrap-up",
-          "finalDocumentation": "Final documentation"
+          "finalDocumentation": "Final documentation",
+          "ipVerification": "Verify IP assignment"
         }
       }
     }
@@ -338,6 +339,32 @@
       "notePlaceholder": "Add a note...",
       "confirm": "Delegate approval",
       "dismiss": "Keep assigned"
+    },
+    "complianceHold": {
+      "sectionTitle": "Compliance holds",
+      "sectionDescription": "These invoices passed all approval steps but are blocked until compliance documents are satisfied.",
+      "statusBadge": "PENDING_COMPLIANCE",
+      "unknownInvoice": "Unknown invoice",
+      "unknownContractor": "Unknown contractor",
+      "heldSince": "Held since {date}",
+      "heldUnknown": "Held date unknown",
+      "holdingItems": "{count, plural, one {# blocking item} other {# blocking items}}",
+      "resumeAction": "Resume approval",
+      "resumeDialog": {
+        "title": "Resume approval from compliance hold",
+        "description": "Confirm compliance is cleared and return this invoice to the approver queue. A reason is required for the audit trail.",
+        "reasonPlaceholder": "e.g. RTW document approved and expiry updated",
+        "cancel": "Cancel",
+        "confirm": "Resume approval"
+      },
+      "toast": {
+        "resumed": "Approval resumed from compliance hold",
+        "resumeFailed": "Could not resume approval. Check compliance status and try again."
+      },
+      "error": {
+        "message": "Could not load compliance holds. Check your connection and try again.",
+        "retry": "Retry"
+      }
     },
     "toast": {
       "approved": "Invoice approved",
@@ -1841,6 +1868,10 @@
       "currentlySaved": "Currently saved: {value}"
     },
     "countryCompliance": {
+      "error": {
+        "message": "Could not load country compliance settings. Check your connection and try again.",
+        "retry": "Retry"
+      },
       "cardTitle": "Country Compliance — {country}",
       "incompleteFields": "{count} incomplete",
       "vatValidationLabel": "VAT validation",
@@ -3460,6 +3491,7 @@
     "unknownError": "An unexpected error occurred. Please try again.",
     "generic": "Something went wrong. Please try again.",
     "contractorNotFound": "Contractor not found.",
+    "contractorCountryMismatch": "Country fields must match the contractor's country.",
     "gulfAssignmentNotFound": "Assignment not found.",
     "contractorHasUnpaidInvoices": "Cannot archive contractor with unpaid invoices. Resolve all pending payments first.",
     "contractorHasActiveWorkflows": "Cannot archive contractor with active workflows. Complete or cancel workflows first.",
@@ -3525,6 +3557,7 @@
     "portalBillingProfileNotFound": "Default billing profile not found for contractor.",
     "employeePortalDisabled": "The employee portal is not enabled for your organization.",
     "portalNotAManager": "This area is available only to managers with direct reports.",
+    "portalNotADirectReport": "This employee is not in your direct reports.",
     "workerNotFound": "Worker not found.",
     "integrationNotFound": "Integration not found.",
     "integrationNotConnected": "Integration is not connected.",
@@ -3656,6 +3689,19 @@
     "ir35OrderedIdsMustListAll": "orderedIds must list every participant exactly once.",
     "ir35ParticipantNotFound": "Participant not found.",
     "ir35ClientWorkerCannotBeRemoved": "CLIENT and WORKER rows are auto-populated and cannot be removed.",
+    "ir35AttestationAlreadyExists": "Attestation already exists.",
+    "magicLinkRateLimitExceeded": "Too many sign-in link requests. Please wait a few minutes and try again.",
+    "magicLinkRateLimiterUnavailable": "Sign-in is temporarily unavailable. Please try again shortly.",
+    "portalRateLimitExceeded": "Too many requests. Please wait a moment and try again.",
+    "portalRateLimiterUnavailable": "This action is temporarily unavailable. Please try again shortly.",
+    "documentScanPending": "Document is still being scanned for viruses. Try again shortly.",
+    "lateInterestWaiverNotFound": "Active waiver not found.",
+    "payrollFeedEmpty": "No employees match this payroll export.",
+    "payrollFeedMissingEmployees": "Some selected employees could not be found for this payroll export.",
+    "payrollFeedCrossMarket": "Some selected employees were excluded because they belong to a different market.",
+    "payrollFeedWrongMarket": "The selected employees do not match the market of this payroll target.",
+    "whtCertificateNumberConflict": "Could not allocate a unique WHT certificate number. Retry.",
+    "whtCertificateIssueFailed": "Could not issue the WHT certificate. Retry.",
     "classificationOnlyDraftCanRecreate": "Only draft assessments can be recreated after drift.",
     "classificationNoDriftToRecover": "Draft already matches the current rule-set version — no drift to recover from.",
     "classificationAssessmentNotDraft": "Assessment is not a draft; answers are frozen after submit.",
@@ -3710,10 +3756,13 @@
     "employeeInvalidIqama": "Invalid Iqama / national ID. Enter a valid 10-digit Saudi ID number.",
     "employeeInvalidEmiratesId": "Invalid Emirates ID format. Enter it as 784-YYYY-NNNNNNN-N.",
     "employeeEmiratesIdChecksumAdvisory": "This Emirates ID passes the format check but its checksum could not be verified — please double-check the number.",
+    "employeeLifecycleTemplateNotFound": "No active lifecycle workflow template was found for this employee's jurisdiction.",
+    "employeeUnsupportedJurisdiction": "This employee's jurisdiction is not supported for lifecycle workflows.",
     "vatValidationUnsupportedCountry": "VAT validation is not supported for this country.",
     "bacsUnmappableCharacters": "BACS file contains unmappable characters; resolve transliteration warnings before downloading.",
     "paymentRunCancelAdminOnly": "Only administrators can cancel exported payment runs. Ensure the export was not submitted to your bank before cancelling.",
     "classificationStaleAnswer": "Assessment was updated by another tab; reload to pick up the latest answers before saving again.",
+    "complianceRecomputeFailed": "Compliance recompute failed for this contractor.",
     "clockifyApiKeyInvalid": "Clockify API key is invalid or expired. Please reconnect your Clockify integration.",
     "jiraTaskNotConfigured": "Jira is not configured for this task template. Set project and issue type mapping in workflow settings.",
     "jiraAccountNotMapped": "Jira account ID not found. Please map your Jira user account in integration settings.",
@@ -3723,6 +3772,9 @@
     "featureFlagUnavailable": "Feature flag service is temporarily unavailable.",
     "organizationRateLimiterUnavailable": "Rate limiter unavailable. Please try again later.",
     "organizationCreateRateLimitExceeded": "Organization creation rate limit reached. Try again later.",
+    "outboundWebhooksNotEnabled": "Outbound webhooks are not enabled for this organization.",
+    "ewidencjaPeriodNotMonthAligned": "Working-time record period must be a full calendar month (first through last day).",
+    "ewidencjaVersionConflict": "A working-time record for this period was already generated. Refresh and try again.",
     "uploadRateLimiterUnavailable": "Upload rate limiter unavailable. Please try again later.",
     "uploadRateLimitExceeded": "Upload rate limit reached. Try again later.",
     "reportRateLimiterUnavailable": "Report rate limiter unavailable. Please try again later.",
@@ -3752,6 +3804,7 @@
     "approvalNotPendingCompliance": "This approval is not on a compliance hold.",
     "approvalCannotResolveContractor": "Cannot resolve the contractor for this approval.",
     "approvalStillComplianceBlocked": "Contractor still has an expired blocking compliance document; cannot resume the approval.",
+    "approvalComplianceResumeNoStep": "This approval cannot be resumed — no approver step is available to reopen.",
     "deprovisioningProviderSignoffPending": "This provider's deprovisioning feature requires sign-off approval before it can be enabled.",
     "workflowAssigneeNotMember": "Selected assignee is not a member of this organization.",
     "importJobStateConflict": "Import job state changed; refresh and try again.",
@@ -3772,7 +3825,44 @@
     "personnelFileNotFound": "Personnel file not found.",
     "personnelFileDocumentNotFound": "Document not found in this personnel file.",
     "personnelDocumentAlreadyAttached": "This document is already attached to the personnel file.",
-    "personnelDocumentNotPendingReview": "This document is not pending review."
+    "personnelDocumentNotPendingReview": "This document is not pending review.",
+    "memberHasPendingApprovals": "This member has pending approvals and cannot be removed.",
+    "invoiceNotSubmittable": "This invoice cannot be submitted for approval in its current state.",
+    "paymentRunNotExported": "Payment run must be exported before this action.",
+    "paymentRunItemInvalidTransition": "This payment run item cannot move to the requested status.",
+    "paymentExportFormatMismatch": "The export format does not match the payment run configuration.",
+    "approvalDelegateNoPermission": "The delegate does not have permission to act on this approval step.",
+    "workflowTemplateUnknownDependency": "The workflow template references an unknown task dependency.",
+    "workflowTemplateDependencyCycle": "The workflow template contains a circular task dependency.",
+    "workflowRunHasOpenTasks": "Cannot complete this action while the workflow run has open tasks.",
+    "paymentStatementMatchInvalid": "The bank statement line could not be matched to a payment.",
+    "timesheetEntryDateOutOfWeek": "The entry date must fall within the selected timesheet week.",
+    "timesheetInvalidContract": "No valid contract is linked for this timesheet entry.",
+    "deprovisioningOtherActiveAssignment": "Another active assignment exists for this user; resolve it before deprovisioning.",
+    "hrisEmployeeAlreadyLinked": "This employee record is already linked to another profile.",
+    "hrisExternalIdAlreadyLinked": "This external HRIS identifier is already linked in this organization.",
+    "apiKeyCannotRotateSuperseded": "Cannot rotate a superseded API key.",
+    "invalidActingUser": "Invalid acting user for this operation.",
+    "apiQuotaExceeded": "API quota exceeded. Try again later.",
+    "form1099NotFound": "1099 form not found.",
+    "stateFilingConfigNotFound": "State filing configuration not found.",
+    "irisAckParseFailed": "Could not parse the IRIS acknowledgement file.",
+    "hrDashboardDisabled": "HR dashboard is not enabled for your organization.",
+    "leaveWorkerNotFound": "Worker not found for this leave request.",
+    "leaveTypeNotFound": "Leave type not found.",
+    "leaveSickTypeNotConfigured": "Sick leave type is not configured.",
+    "leaveBlackoutOverlap": "Leave request overlaps a blackout period.",
+    "leaveInsufficientBalance": "Insufficient leave balance.",
+    "leaveNoChainConfigured": "No approval chain configured for leave requests.",
+    "leaveRequestNotFound": "Leave request not found.",
+    "leaveRequestNotPending": "Leave request is not pending approval.",
+    "blackoutPeriodNotFound": "Blackout period not found.",
+    "employeeWorkerNotFound": "Employee worker record not found.",
+    "publicApiDisabled": "Public API is not enabled for your organization.",
+    "hrisAlreadyConnected": "An HRIS integration is already connected.",
+    "hrisNotConnected": "HRIS integration is not connected.",
+    "hrisNoConnectedToSync": "No connected HRIS integration to sync.",
+    "hrisSyncNotEnabled": "HRIS sync is not enabled."
   },
   "Compliance": {
     "paymentBlockModal": {
@@ -6094,7 +6184,17 @@
       "residency": "Residency",
       "standard": "Standard",
       "certFooter": "This certificate confirms that withholding tax has been deducted at source in accordance with applicable tax regulations."
-    }
+    },
+    "orgBankHeading": "Organization bank account",
+    "orgBankDescription": "Debtor IBAN and BIC used as the origin account in SEPA and SWIFT payment exports.",
+    "orgBankIbanLabel": "Organization IBAN",
+    "orgBankIbanPlaceholder": "e.g. DE89370400440532013000",
+    "orgBankBicLabel": "Organization BIC",
+    "orgBankBicPlaceholder": "e.g. COBADEFFXXX",
+    "orgBankCannotClear": "Enter a valid value — a saved bank field cannot be left blank. Replace it instead.",
+    "orgBankLoadError": "Could not load organization bank details. Check your connection and try again.",
+    "orgBankRetry": "Retry",
+    "toastOrgBankSaved": "Organization bank details saved"
   },
   "Peppol": {
     "statusCard": {
@@ -8925,7 +9025,9 @@
       "knowledgeTransfer": "Knowledge transfer",
       "meeting": "Meeting",
       "manual": "Manual",
-      "notification": "Notification"
+      "notification": "Notification",
+      "ipVerification": "IP verification",
+      "contractHealthCheck": "Contract health check"
     },
     "operator": {
       "notEquals": "does not equal",
@@ -9114,6 +9216,9 @@
     "complianceCsid": {
       "title": "Step 3 of 5: Request Compliance Certificate",
       "description": "Your CSR will be submitted to ZATCA to obtain a compliance certificate for testing.",
+      "otpLabel": "ZATCA portal OTP",
+      "otpPlaceholder": "Enter one-time password from ZATCA",
+      "otpHint": "Generate a one-time password in the ZATCA Fatoora portal before submitting.",
       "requestButton": "Request Compliance CSID",
       "progressLabel": "Compliance CSID progress",
       "status": {

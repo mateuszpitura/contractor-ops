@@ -72,8 +72,11 @@ export function useSpendTeamReport(dateFrom: string, dateTo: string) {
   }, [drillDownTeamId, tableData, t]);
 
   const grandTotal = useMemo(() => {
-    return tableData.reduce((sum, row) => sum + row.totalMinor, 0);
-  }, [tableData]);
+    const result = tableQuery.data as
+      | { items: TeamSpendRow[]; total: number; grandTotalMinor?: number }
+      | undefined;
+    return result?.grandTotalMinor ?? 0;
+  }, [tableQuery.data]);
 
   const handleSortChange = useCallback((newSortBy: string, newSortOrder: string) => {
     setSortBy(newSortBy);

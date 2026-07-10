@@ -62,7 +62,8 @@
 // provider math and the worked Resend example.
 
 import { randomUUID } from 'node:crypto';
-import { prismaRaw } from '@contractor-ops/db';
+import type { PrismaClient } from '@contractor-ops/db';
+import { getRegionalClient, SUPPORTED_REGIONS } from '@contractor-ops/db';
 import { createLogger } from '@contractor-ops/logger';
 import * as Sentry from '@sentry/node';
 import { isDemoOrg } from '../../lib/demo';
@@ -311,6 +312,38 @@ export function enqueueNotificationOutboxEvent(input: {
  * backoff + jitter. Final attempt → status='FAILED' + Sentry capture.
  */
 export async function drainOutboxBatch(): Promise<DrainBatchResult> {
+  const total: DrainBatchResult = {
+    scanned: 0,
+    dispatched: 0,
+    failed: 0,
+    retried: 0,
+    exhausted: 0,
+  };
+
+  for (const region of SUPPORTED_REGIONS) {
+    let client: PrismaClient;
+    try {
+      client = getRegionalClient(region);
+    } catch (err) {
+      log.warn({ err, region }, 'outbox drain: region client unavailable; skipping region');
+      continue;
+    }
+
+    const result = await drainOutboxBatchForClient(client);
+    total.scanned += result.scanned;
+    total.dispatched += result.dispatched;
+    total.failed += result.failed;
+    total.retried += result.retried;
+    total.exhausted += result.exhausted;
+  }
+
+  return total;
+}
+
+/**
+ * Drains up to `DRAIN_BATCH_LIMIT` PENDING events from one regional DB.
+ */
+export async function drainOutboxBatchForClient(client: PrismaClient): Promise<DrainBatchResult> {
   const result: DrainBatchResult = {
     scanned: 0,
     dispatched: 0,
@@ -320,7 +353,7 @@ export async function drainOutboxBatch(): Promise<DrainBatchResult> {
   };
 
   // Step 1 — claim.
-  const claimed = await claimOutboxBatch();
+  const claimed = await claimOutboxBatch(client);
   result.scanned = claimed.length;
   if (claimed.length === 0) return result;
 
@@ -329,7 +362,7 @@ export async function drainOutboxBatch(): Promise<DrainBatchResult> {
   // serverless memory bounded; the per-row tx scope prevents one slow
   // handler from blocking other rows' status updates.
   for (const row of claimed) {
-    const outcome = await dispatchAndFinalize(row);
+    const outcome = await dispatchAndFinalize(client, row);
     if (outcome === 'dispatched') result.dispatched += 1;
     else if (outcome === 'retried') result.retried += 1;
     else if (outcome === 'exhausted') {
@@ -353,8 +386,8 @@ export async function drainOutboxBatch(): Promise<DrainBatchResult> {
  * with attempts already bumped; once the claim window expires the next
  * drain tick picks it up naturally (counts toward MAX_OUTBOX_ATTEMPTS).
  */
-async function claimOutboxBatch(): Promise<ClaimedOutboxRow[]> {
-  return prismaRaw.$transaction(async tx => {
+async function claimOutboxBatch(client: PrismaClient): Promise<ClaimedOutboxRow[]> {
+  return client.$transaction(async tx => {
     // FOR UPDATE SKIP LOCKED is the standard outbox primitive: any number of
     // workers can run this query in parallel without selecting the same
     // row. The lock is released on tx end (immediately after the UPDATE
@@ -413,7 +446,10 @@ type RowOutcome = 'dispatched' | 'retried' | 'exhausted';
  *
  * Returns the outcome label so the caller can update its aggregate counts.
  */
-async function dispatchAndFinalize(row: ClaimedOutboxRow): Promise<RowOutcome> {
+async function dispatchAndFinalize(
+  client: PrismaClient,
+  row: ClaimedOutboxRow,
+): Promise<RowOutcome> {
   // Demo read-only — a demo org's outbox events fire no real side-effects
   // (email / webhooks / notifications). Mark the event done without dispatching
   // so it is not retried, and emit a skip log.
@@ -422,7 +458,7 @@ async function dispatchAndFinalize(row: ClaimedOutboxRow): Promise<RowOutcome> {
       { outboxEventId: row.id, organizationId: row.organizationId, eventType: row.eventType },
       'demo org — skipping outbox dispatch',
     );
-    await finalizeSuccess(row.id);
+    await finalizeSuccess(client, row.id);
     return 'dispatched';
   }
 
@@ -435,17 +471,17 @@ async function dispatchAndFinalize(row: ClaimedOutboxRow): Promise<RowOutcome> {
       payload: row.payloadJson,
     });
   } catch (err) {
-    return finalizeFailure(row, err);
+    return finalizeFailure(client, row, err);
   }
 
   // Step 3a — success.
-  await finalizeSuccess(row.id);
+  await finalizeSuccess(client, row.id);
   return 'dispatched';
 }
 
 /** Mark a row DISPATCHED in its own short transaction. */
-async function finalizeSuccess(outboxEventId: string): Promise<void> {
-  await prismaRaw.$executeRawUnsafe(
+async function finalizeSuccess(client: PrismaClient, outboxEventId: string): Promise<void> {
+  await client.$executeRawUnsafe(
     `
     UPDATE "OutboxEvent"
     SET "status" = 'DISPATCHED',
@@ -464,12 +500,16 @@ async function finalizeSuccess(outboxEventId: string): Promise<void> {
  * Note: `attempts` was already incremented during the claim phase, so we
  * do NOT bump it again here. The post-increment count is `row.attemptNumber`.
  */
-async function finalizeFailure(row: ClaimedOutboxRow, err: unknown): Promise<RowOutcome> {
+async function finalizeFailure(
+  client: PrismaClient,
+  row: ClaimedOutboxRow,
+  err: unknown,
+): Promise<RowOutcome> {
   const message = err instanceof Error ? err.message : String(err);
   const truncated = message.slice(0, 1000);
 
   if (row.attemptNumber >= MAX_OUTBOX_ATTEMPTS) {
-    await prismaRaw.$executeRawUnsafe(
+    await client.$executeRawUnsafe(
       `
       UPDATE "OutboxEvent"
       SET "status" = 'FAILED',
@@ -506,7 +546,7 @@ async function finalizeFailure(row: ClaimedOutboxRow, err: unknown): Promise<Row
   }
 
   const delayMs = computeBackoffMs(row.attemptNumber);
-  await prismaRaw.$executeRawUnsafe(
+  await client.$executeRawUnsafe(
     `
     UPDATE "OutboxEvent"
     SET "lastError" = $2,

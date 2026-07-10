@@ -413,6 +413,23 @@ export const bacsRouter = router({
               generatedByUserId: ctx.user?.id ?? '',
             },
           });
+
+          await writeAuditLog({
+            tx,
+            organizationId: ctx.organizationId,
+            actorType: 'USER',
+            actorId: ctx.user?.id ?? null,
+            action: 'payment_run.bacs_export',
+            resourceType: 'PAYMENT_RUN',
+            resourceId: input.paymentRunId,
+            resourceName: runNumber,
+            metadata: {
+              format: 'BACS_STD18',
+              itemCount: bacsItems.length,
+              sha256Prefix,
+              documentId: document.id,
+            },
+          });
         });
       } catch (txErr) {
         // Best-effort cleanup. We deliberately do NOT await on the cleanup
@@ -508,35 +525,37 @@ export const bacsRouter = router({
       const accountMasked = maskAccountNumber(input.submitterAccountNumber);
 
       const db: BacsTenantDb = ctx.db;
-      await db.organization.update({
-        where: { id: ctx.organizationId },
-        data: {
-          bacsServiceUserNumberEncrypted: encryptBankAccount(input.serviceUserNumber),
-          bacsServiceUserNumberMasked: sunMasked,
-          bacsSubmitterSortCodeEncrypted: encryptBankAccount(input.submitterSortCode),
-          bacsSubmitterSortCodeMasked: sortCodeMasked,
-          bacsSubmitterAccountNumberEncrypted: encryptBankAccount(input.submitterAccountNumber),
-          bacsSubmitterAccountNumberMasked: accountMasked,
-          bacsSubmitterName: input.submitterName,
-        },
-      });
+      await db.$transaction(async tx => {
+        await tx.organization.update({
+          where: { id: ctx.organizationId },
+          data: {
+            bacsServiceUserNumberEncrypted: encryptBankAccount(input.serviceUserNumber),
+            bacsServiceUserNumberMasked: sunMasked,
+            bacsSubmitterSortCodeEncrypted: encryptBankAccount(input.submitterSortCode),
+            bacsSubmitterSortCodeMasked: sortCodeMasked,
+            bacsSubmitterAccountNumberEncrypted: encryptBankAccount(input.submitterAccountNumber),
+            bacsSubmitterAccountNumberMasked: accountMasked,
+            bacsSubmitterName: input.submitterName,
+          },
+        });
 
-      await writeAuditLog({
-        organizationId: ctx.organizationId,
-        actorType: 'USER',
-        actorId: ctx.user?.id ?? null,
-        action: 'BACS_SUBMITTER_CONFIG_UPDATED',
-        resourceType: 'ORGANIZATION',
-        resourceId: ctx.organizationId,
-        // Field NAMES only — never the values (encrypted bank fields).
-        metadata: {
-          fieldsUpdated: [
-            'bacsServiceUserNumber',
-            'bacsSubmitterSortCode',
-            'bacsSubmitterAccountNumber',
-            'bacsSubmitterName',
-          ],
-        },
+        await writeAuditLog({
+          tx,
+          organizationId: ctx.organizationId,
+          actorType: 'USER',
+          actorId: ctx.user?.id ?? null,
+          action: 'BACS_SUBMITTER_CONFIG_UPDATED',
+          resourceType: 'ORGANIZATION',
+          resourceId: ctx.organizationId,
+          metadata: {
+            fieldsUpdated: [
+              'bacsServiceUserNumber',
+              'bacsSubmitterSortCode',
+              'bacsSubmitterAccountNumber',
+              'bacsSubmitterName',
+            ],
+          },
+        });
       });
 
       log.info(

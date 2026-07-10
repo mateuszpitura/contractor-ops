@@ -36,6 +36,15 @@ const { mockPrisma } = vi.hoisted(() => {
       updateMany: vi.fn(),
     },
     auditLog: { create: vi.fn(async () => ({ id: 'audit-1' })) },
+    subscription: {
+      findUnique: vi.fn(async () => ({
+        id: 'sub-1',
+        organizationId: ORG_ID,
+        tier: 'STARTER',
+        status: 'ACTIVE',
+        addOns: ['workforce'],
+      })),
+    },
     $transaction: vi.fn(async (fn: (tx: Rec) => Promise<unknown>) => fn(mockPrisma)),
   };
   return { mockPrisma };
@@ -68,18 +77,11 @@ vi.mock('@contractor-ops/feature-flags', () => ({
   evaluate: vi.fn(() => ({ enabled: true, reason: 'test' })),
 }));
 
-vi.mock('../services/cache', () => ({
-  cacheKey: vi.fn((...s: string[]) => s.join(':')),
-  cachedSingleflight: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  cached: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  invalidate: vi.fn(async () => undefined),
-  invalidateByPrefix: vi.fn(async () => undefined),
-  CacheKeys: {
-    orgMeta: (o: string) => `org:${o}:meta`,
-    dashboardPrefix: (o: string) => `dash:${o}`,
-  },
-  CacheTTL: { ORG_META: 300, ORG_SETTINGS: 300 },
-}));
+vi.mock('../services/cache', async importOriginal => {
+  const actual = await importOriginal<typeof import('../services/cache')>();
+  const { createPassthroughCacheMock } = await import('../__tests__/__mocks__/cache-service');
+  return createPassthroughCacheMock(actual);
+});
 
 vi.mock('@contractor-ops/logger', () => ({
   getIdpAuditLogger: vi.fn(() => ({
@@ -178,6 +180,13 @@ beforeEach(() => {
   mockPrisma.employeeTimeRecord.upsert.mockResolvedValue({ id: 'etr-1', workedMinutes: 660 });
   mockPrisma.employeeTimeRecord.findMany.mockResolvedValue([{ workedMinutes: 660 }]);
   mockPrisma.ewidencjaSnapshot.findFirst.mockResolvedValue(null);
+  mockPrisma.subscription.findUnique.mockResolvedValue({
+    id: 'sub-1',
+    organizationId: ORG_ID,
+    tier: 'STARTER',
+    status: 'ACTIVE',
+    addOns: ['workforce'],
+  });
 });
 
 describe('employeeTime.upsertRecord — non-blocking WT findings', () => {

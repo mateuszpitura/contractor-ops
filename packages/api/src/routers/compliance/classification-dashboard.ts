@@ -603,14 +603,14 @@ export const classificationDashboardRouter = router({
       db.economicDependencyAlertState.count({
         where: {
           organizationId: orgId,
-          currentBand: 'warning',
+          currentBand: 'WARNING',
           contractorAssignment: { contractor: { countryCode: 'DE' } },
         },
       }),
       db.economicDependencyAlertState.count({
         where: {
           organizationId: orgId,
-          currentBand: 'critical',
+          currentBand: 'CRITICAL',
           contractorAssignment: { contractor: { countryCode: 'DE' } },
         },
       }),

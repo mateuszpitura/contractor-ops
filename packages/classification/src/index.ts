@@ -56,11 +56,16 @@ export {
 } from './registry.js';
 export {
   billingRatioSchema,
+  billingRatioValueSchema,
   getAnswerSchemaForType,
   likert5AnswerSchema,
+  likert5ValueSchema,
+  normalizeAnswerMap,
   rationaleSchema,
+  rationaleValueSchema,
   score03AnswerSchema,
   yesNoAnswerSchema,
+  yesNoValueSchema,
 } from './schemas/answers.js';
 export type { OutcomeSchemaType } from './schemas/assessment.js';
 // Schemas

@@ -24,10 +24,13 @@ export {
 } from './doc-registry';
 
 export {
+  DEFAULT_EXPIRY_JURISDICTION_TZ,
   daysUntilExpiryInTz,
   defaultExpiryFromUploadDate,
   isExpired,
+  JURISDICTION_TZ_BY_COUNTRY,
   jurisdictionDate,
+  resolveExpiryJurisdictionTz,
 } from './expiry';
 export {
   mapCountryCodeToJurisdiction,

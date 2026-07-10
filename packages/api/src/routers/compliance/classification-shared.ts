@@ -36,8 +36,10 @@ import { classificationProcedure } from '../../middleware/require-classification
 import { writeAuditLog } from '../../services/audit-writer';
 import { onComplianceItemSatisfied } from '../../services/compliance-recovery';
 import {
+  buildEngagementOutcome,
   extractOutcomeKind,
   materialiseFromPolicy,
+  outcomesEqualForPolicyResolution,
   supersedeAndMaterialise,
 } from '../../services/compliance-supersession';
 
@@ -195,6 +197,7 @@ export async function resolveAssignmentAndProfile(
 export type { Outcome, Prisma };
 export {
   adminProcedure,
+  buildEngagementOutcome,
   buildQuestionsSnapshot,
   CLASSIFICATION_ALREADY_SUBMITTED,
   CLASSIFICATION_ASSESSMENT_NOT_DRAFT,
@@ -211,6 +214,7 @@ export {
   getProfileForCountry,
   materialiseFromPolicy,
   outcomeSchema,
+  outcomesEqualForPolicyResolution,
   POLICY_RULE_SET_VERSION,
   requirePermission,
   SDS_APPROVAL_ALREADY_EXISTS,

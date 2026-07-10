@@ -38,6 +38,7 @@ export function decodeCursor(token?: string): string | undefined {
     ) {
       return (parsed as CursorPayload).id;
     }
+    // safe-swallow: malformed cursor token is a client error — falls through to the BAD_REQUEST below
   } catch {
     // fall through to the shared BAD_REQUEST below
   }

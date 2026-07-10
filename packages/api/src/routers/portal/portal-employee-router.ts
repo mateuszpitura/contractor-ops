@@ -25,6 +25,7 @@ import { router } from '../../init';
 import { portalEmployeeProcedure } from '../../middleware/portal-auth';
 import type { TxClient } from '../../services/approval-engine';
 import { createApprovalFlow, routeToLeaveChain } from '../../services/approval-engine';
+import { resolveApprovalFlowCreatorUserId } from '../../services/approval-flow-creator';
 import { writeAuditLog } from '../../services/audit-writer';
 import { computeLeaveBalance } from '../../services/leave-balance';
 import { portalEmployeeAktaProcedures } from './portal-employee-akta';
@@ -246,12 +247,18 @@ export const portalEmployeeRouter = router({
 
         // A portal-submitted request has no staff creator; the approval chain
         // still routes to the org's leave approvers by role.
+        const createdByUserId = await resolveApprovalFlowCreatorUserId(
+          tx as TxClient,
+          ctx.organizationId,
+          null,
+        );
+
         const flow = await createApprovalFlow(tx as TxClient, {
           organizationId: ctx.organizationId,
           resourceType: 'LEAVE_REQUEST',
           resourceId: leaveRequest.id,
           chainConfig,
-          createdByUserId: '',
+          createdByUserId,
         });
 
         const updated = await tx.leaveRequest.update({

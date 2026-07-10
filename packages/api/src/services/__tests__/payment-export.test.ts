@@ -16,6 +16,7 @@ import {
   generateSepaXml,
   resolveTransferTitle,
   stripDiacritics,
+  validateAbaRoutingNumber,
 } from '../payment-export';
 
 // The source uses require("mt940js") which bypasses vi.mock ESM interception.
@@ -354,6 +355,17 @@ describe('payment-export', () => {
     // Use a reproducible processing date so Julian conversion is deterministic.
     // 2026-04-15 -> Julian YYDDD = 26105 (April 15 is day-of-year 105 in 2026).
     const PROCESSING_DATE = new Date(Date.UTC(2026, 3, 15));
+
+    it('rejects a short destination sort code instead of space-padding', () => {
+      expect(() =>
+        generateBacsStandard18(
+          [makeBacsItem({ sortCode: '20304', accountNumber: '12345678' })],
+          makeBacsOrg(),
+          'RUN-1',
+          PROCESSING_DATE,
+        ),
+      ).toThrow(/destination sort code must be exactly 6 digits/);
+    });
 
     it('produces a fixed-width buffer with 8 lines (VOL/HDR1/HDR2/UHL1 + 1 detail + EOF1/EOF2/UTL1)', () => {
       const result = generateBacsStandard18(
@@ -1046,5 +1058,14 @@ describe('bank-statement', () => {
       expect(results).toHaveLength(1);
       expect(results[0]?.confidence).toBe('unmatched');
     });
+  });
+});
+describe('validateAbaRoutingNumber', () => {
+  it('accepts a known-good test routing number', () => {
+    expect(() => validateAbaRoutingNumber('021000021')).not.toThrow();
+  });
+
+  it('rejects a routing number with a bad checksum', () => {
+    expect(() => validateAbaRoutingNumber('021000022')).toThrow(/ABA mod-10/);
   });
 });

@@ -44,6 +44,7 @@ const { mockPrisma, assignments, runCreate, runUpdate, runFindUnique, orgSetting
             }) ?? null
           );
         }),
+        count: vi.fn(async () => 0),
       },
       deprovisioningRun: { create: runCreate, update: runUpdate, findUniqueOrThrow: runFindUnique },
       // retryDeprovisioningStep fetches the step before any QStash enqueue; the
@@ -248,6 +249,7 @@ describe('startDeprovisioningRun mutation (Phase 76 D-03)', () => {
     const caller = makeCaller();
     await expect(
       caller.deprovisioning.startDeprovisioningRun({
+        subjectType: 'CONTRACTOR',
         assignmentId: 'a-1',
         idempotencyKey: 'k-12345678',
       }),
@@ -259,6 +261,7 @@ describe('startDeprovisioningRun mutation (Phase 76 D-03)', () => {
     seedEnded();
     const caller = makeCaller();
     const result = await caller.deprovisioning.startDeprovisioningRun({
+      subjectType: 'CONTRACTOR',
       assignmentId: 'a-1',
       idempotencyKey: 'k-12345678',
     });
@@ -277,6 +280,7 @@ describe('startDeprovisioningRun mutation (Phase 76 D-03)', () => {
     seedEnded();
     const caller = makeCaller();
     await caller.deprovisioning.startDeprovisioningRun({
+      subjectType: 'CONTRACTOR',
       assignmentId: 'a-1',
       idempotencyKey: 'k-12345678',
     });
@@ -293,6 +297,7 @@ describe('startDeprovisioningRun mutation (Phase 76 D-03)', () => {
     runFindUnique.mockResolvedValue({ id: 'run-existing' });
     const caller = makeCaller();
     const result = await caller.deprovisioning.startDeprovisioningRun({
+      subjectType: 'CONTRACTOR',
       assignmentId: 'a-1',
       idempotencyKey: 'k-12345678',
     });
@@ -312,6 +317,7 @@ describe('startDeprovisioningRun mutation (Phase 76 D-03)', () => {
     const caller = makeCaller();
     await expect(
       caller.deprovisioning.startDeprovisioningRun({
+        subjectType: 'CONTRACTOR',
         assignmentId: 'a-1',
         idempotencyKey: 'k-12345678',
       }),
@@ -334,6 +340,7 @@ describe('startDeprovisioningRun — Phase 81 D-05 multi-provider derivation (RE
     orgSettings.idpDeprovisioningEnabled = { GOOGLE_WORKSPACE: true, SLACK: true };
     const caller = makeCaller();
     await caller.deprovisioning.startDeprovisioningRun({
+      subjectType: 'CONTRACTOR',
       assignmentId: 'a-1',
       idempotencyKey: 'k-12345678',
     });
@@ -352,6 +359,7 @@ describe('startDeprovisioningRun — Phase 81 D-05 multi-provider derivation (RE
     orgSettings.idpDeprovisioningEnabled = { GOOGLE_WORKSPACE: true };
     const caller = makeCaller();
     await caller.deprovisioning.startDeprovisioningRun({
+      subjectType: 'CONTRACTOR',
       assignmentId: 'a-1',
       idempotencyKey: 'k-12345678',
     });
@@ -373,6 +381,7 @@ describe('startDeprovisioningRun — Phase 81 D-06 empty provider set (RED)', ()
     const caller = makeCaller();
     await expect(
       caller.deprovisioning.startDeprovisioningRun({
+        subjectType: 'CONTRACTOR',
         assignmentId: 'a-1',
         idempotencyKey: 'k-12345678',
       }),
@@ -393,6 +402,7 @@ describe('startDeprovisioningRun — Phase 81 D-06 empty provider set (RED)', ()
     const caller = makeCaller();
     await expect(
       caller.deprovisioning.startDeprovisioningRun({
+        subjectType: 'CONTRACTOR',
         assignmentId: 'a-1',
         idempotencyKey: 'k-12345678',
       }),
@@ -412,6 +422,7 @@ describe('startDeprovisioningRun — Phase 81 D-10 idp:start_run gate (RED)', ()
     const caller = makeCaller();
     await expect(
       caller.deprovisioning.startDeprovisioningRun({
+        subjectType: 'CONTRACTOR',
         assignmentId: 'a-1',
         idempotencyKey: 'k-12345678',
       }),
@@ -452,6 +463,7 @@ describe('startDeprovisioningRun — Phase 81 D-09 per-assignment idempotency ke
     runFindUnique.mockResolvedValueOnce({ id: 'run-existing' });
     const caller = makeCaller();
     const result = await caller.deprovisioning.startDeprovisioningRun({
+      subjectType: 'CONTRACTOR',
       assignmentId: 'a-1',
       idempotencyKey: assignmentDerivedKey,
     });

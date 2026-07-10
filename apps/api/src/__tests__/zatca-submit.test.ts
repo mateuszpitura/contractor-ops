@@ -42,16 +42,27 @@ vi.mock('@contractor-ops/api/services/cron-monitor', () => ({
   withQueueObservability: <T>(_name: string, fn: () => Promise<T>) => fn(),
 }));
 
-vi.mock('@contractor-ops/db', () => ({
-  prisma: {
+vi.mock('@contractor-ops/db', () => {
+  const client = {
     zatcaInvoiceChain: {
       findUnique: (...a: unknown[]) => (mockChainFindUnique as (...a: unknown[]) => unknown)(...a),
     },
-  },
-  prismaRaw: {},
-  getRegionalClient: () => ({}),
-  SUPPORTED_REGIONS: ['EU', 'ME', 'US'],
-}));
+  };
+  return {
+    prisma: client,
+    prismaRaw: {},
+    getRegionalClient: () => client,
+    tryGetRegionalClient: () => client,
+    SUPPORTED_REGIONS: ['EU'],
+    findAcrossRegions: async <T>(
+      finder: (dbClient: typeof client, region: string) => Promise<T | null>,
+    ) => {
+      const result = await finder(client, 'EU');
+      return result == null ? null : { result, region: 'EU', client };
+    },
+    resolveOrganizationRegion: async () => ({ result: 'EU', region: 'EU', client }),
+  };
+});
 
 // `ZatcaApiError` is a real export — we want the actual constructor so
 // `error instanceof ZatcaApiError` works inside the route.
@@ -123,12 +134,12 @@ describe('POST /zatca/_submit', () => {
   });
 
   it('short-circuits when a chain row already records submission', async () => {
-    mockChainFindUnique.mockResolvedValue({ submittedAt: new Date(), zatcaStatus: 'ACCEPTED' });
+    mockChainFindUnique.mockResolvedValue({ submittedAt: new Date(), zatcaStatus: 'CLEARED' });
     const res = await post({ invoiceId: 'inv-1', organizationId: 'org-1' });
     expect(res.statusCode).toBe(200);
     const body = JSON.parse(res.body) as { skipped?: boolean; status?: string };
     expect(body.skipped).toBe(true);
-    expect(body.status).toBe('ACCEPTED');
+    expect(body.status).toBe('CLEARED');
     expect(mockHandleJob).not.toHaveBeenCalled();
   });
 

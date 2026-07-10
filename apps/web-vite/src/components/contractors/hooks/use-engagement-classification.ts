@@ -304,6 +304,20 @@ function reifyAnswer(value: unknown): WizardAnswerValue | undefined {
   if (typeof value === 'number' && value >= 1 && value <= 5 && Number.isInteger(value)) {
     return { type: 'likert-5', value: value as 1 | 2 | 3 | 4 | 5 };
   }
+  if (value !== null && typeof value === 'object' && 'value' in value) {
+    const inner = (value as { value: unknown }).value;
+    if (inner === 'yes' || inner === 'no') {
+      return { type: 'yes-no', value: inner };
+    }
+    if (typeof inner === 'number' && Number.isInteger(inner)) {
+      if (inner >= 1 && inner <= 5) {
+        return { type: 'likert-5', value: inner as 1 | 2 | 3 | 4 | 5 };
+      }
+      if (inner >= 0 && inner <= 100) {
+        return { type: 'billing-ratio', value: inner };
+      }
+    }
+  }
   if (
     value !== null &&
     typeof value === 'object' &&
@@ -325,19 +339,7 @@ function reifyAnswer(value: unknown): WizardAnswerValue | undefined {
         },
       };
     }
-    // Falls through to the billing-ratio check below, matching the original
-    // no-`continue` flow when the score range validation fails.
-  }
-  if (
-    value !== null &&
-    typeof value === 'object' &&
-    'value' in value &&
-    typeof (value as { value: unknown }).value === 'number'
-  ) {
-    const num = (value as { value: number }).value;
-    if (num >= 0 && num <= 100) {
-      return { type: 'billing-ratio', value: num };
-    }
+    // Falls through when score range validation fails.
   }
   return;
 }

@@ -7,6 +7,7 @@
  *   3. Stale delivery at the attempt cap → flipped to FAILED.
  *   4. Delivery query throws → ok=false + Sentry capture.
  *   5. A cron job whose persisted last success exceeds 2× its interval alerts.
+ *   6. Outbox FAILED backlog past threshold → gauge + Sentry alert + unhealthy.
  */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -17,6 +18,7 @@ const {
   mockDeliveryUpdateMany,
   mockDeliveryCount,
   mockCronRunStateFindMany,
+  mockOutboxCount,
   mockQueueWebhook,
   mockGauge,
   mockCaptureException,
@@ -27,6 +29,7 @@ const {
   mockDeliveryUpdateMany: vi.fn(),
   mockDeliveryCount: vi.fn(),
   mockCronRunStateFindMany: vi.fn(),
+  mockOutboxCount: vi.fn(),
   mockQueueWebhook: vi.fn(),
   mockGauge: vi.fn(),
   mockCaptureException: vi.fn(),
@@ -45,6 +48,8 @@ vi.mock('@contractor-ops/db', () => ({
   prismaRaw: {
     cronJobRunState: { findMany: mockCronRunStateFindMany },
   },
+  SUPPORTED_REGIONS: ['EU', 'ME'],
+  getRegionalClient: () => ({ outboxEvent: { count: mockOutboxCount } }),
 }));
 
 vi.mock('@contractor-ops/integrations/services/webhook-dispatcher', () => ({
@@ -84,6 +89,7 @@ beforeEach(() => {
   mockDeliveryUpdateMany.mockResolvedValue({ count: 0 });
   mockDeliveryCount.mockResolvedValue(0);
   mockCronRunStateFindMany.mockResolvedValue([]);
+  mockOutboxCount.mockResolvedValue(0);
   mockQueueWebhook.mockResolvedValue(undefined);
 });
 
@@ -164,6 +170,29 @@ describe('jobHealthHandler', () => {
     const result = await jobHealthHandler(makeJobContext());
 
     expect(result.details).toMatchObject({ staleCronJobs: 0, healthy: true });
+    expect(mockCaptureMessage).not.toHaveBeenCalled();
+  });
+
+  it('sums the outbox FAILED backlog across regions and alerts past the threshold', async () => {
+    // 6 per region × 2 mocked regions = 12 > threshold 10.
+    mockOutboxCount.mockResolvedValue(6);
+
+    const result = await jobHealthHandler(makeJobContext());
+
+    expect(result.ok).toBe(true);
+    expect(result.details).toMatchObject({ outboxFailedBacklog: 12, healthy: false });
+    expect(mockGauge).toHaveBeenCalledWith('jobs.outbox.failed_backlog', 12);
+    expect(mockCaptureMessage).toHaveBeenCalledTimes(1);
+    const [msg, opts] = mockCaptureMessage.mock.calls[0];
+    expect(msg).toContain('12 outbox events');
+    expect(opts.tags['alert.type']).toBe('outbox_failed_backlog');
+  });
+
+  it('stays healthy with an empty outbox FAILED backlog', async () => {
+    const result = await jobHealthHandler(makeJobContext());
+
+    expect(result.details).toMatchObject({ outboxFailedBacklog: 0, healthy: true });
+    expect(mockGauge).toHaveBeenCalledWith('jobs.outbox.failed_backlog', 0);
     expect(mockCaptureMessage).not.toHaveBeenCalled();
   });
 });

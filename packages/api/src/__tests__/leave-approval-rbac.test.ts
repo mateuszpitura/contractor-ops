@@ -1,13 +1,13 @@
-// LEAVE-02 RBAC gate — the Blocker-1 contract for the shared, resourceType-aware
+// RBAC gate — the enforcement contract for the shared, resourceType-aware
 // approval procedures. The shared approve/reject/bulk procedures gate on a
 // coarse OR-set (invoice:approve OR employee:approve_leave) plus a fine-grained
 // body assertion mapping the fetched step's resourceType → the exact required
 // permission, so neither role reaches the other's resource.
 //
-// HOLD: registered as the enforcement contract; executing it GREEN requires the
-// leave-router + approval-gate integration harness (role-session caller over a
-// seeded LEAVE_REQUEST flow) landed in Plan 07. Kept as describe.skip so it
-// registers without a live-DB/auth harness and never bricks tsc.
+// Executing it GREEN requires the leave-router + approval-gate integration
+// harness (role-session caller over a seeded LEAVE_REQUEST flow). Kept as
+// describe.skip so it registers without a live-DB/auth harness and never
+// bricks tsc.
 
 import { describe, it } from 'vitest';
 

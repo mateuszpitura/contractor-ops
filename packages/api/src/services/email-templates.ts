@@ -3,6 +3,7 @@ import { createElement } from 'react';
 import { ApprovalDecisionEmail } from '../emails/approval-decision';
 import { ApprovalRequestEmail } from '../emails/approval-request';
 import { ContractExpiringEmail } from '../emails/contract-expiring';
+import { GenericNotificationEmail } from '../emails/generic-notification';
 import { InvoiceReceivedEmail } from '../emails/invoice-received';
 import { TaskAssignedEmail } from '../emails/task-assigned';
 import { TaskOverdueEmail } from '../emails/task-overdue';
@@ -137,6 +138,13 @@ const TEMPLATE_MAP: Record<string, TemplateComponent> = {
 // Public API
 // ---------------------------------------------------------------------------
 
+export interface RenderedNotificationEmail {
+  subject: string;
+  react: ReactElement;
+  /** True when no dedicated template exists and the generic layout was used. */
+  usedGenericFallback: boolean;
+}
+
 /**
  * Render a notification email in the recipient's locale.
  *
@@ -145,31 +153,47 @@ const TEMPLATE_MAP: Record<string, TemplateComponent> = {
  * element with the pre-resolved props. The returned `subject` is the
  * final string ready to ship to Resend — no further interpolation needed.
  *
+ * Types without a dedicated React Email template fall back to
+ * {@link GenericNotificationEmail} using the event's `title`/`body` — in-app
+ * delivery is unaffected; `usedGenericFallback` signals the email path.
+ *
  * `locale` should be the recipient's preferred language, normalised to
  * one of {en, pl, de, ar}. Anything else falls back to en.
- *
- * @throws if `type` is not one of the 6 registered notification types
  */
 export function renderNotificationEmail(
   type: string,
   data: Record<string, unknown>,
   locale: EmailLocale,
-): { subject: string; react: ReactElement } {
+): RenderedNotificationEmail {
   const Component = TEMPLATE_MAP[type];
   const getSubject = SUBJECT_LINES[type];
   const labelKeys = TEMPLATE_LABEL_KEYS[type];
+  const baseLabels = resolveMessages(BASE_LABEL_KEYS, locale);
 
   if (Component === undefined || getSubject === undefined || labelKeys === undefined) {
-    throw new Error(`Unknown notification type: ${type}`);
+    const title = (data.title as string) ?? type;
+    const body = (data.body as string) ?? '';
+    const subject = title.length > 0 ? title : `Notification: ${type}`;
+
+    return {
+      subject,
+      usedGenericFallback: true,
+      react: createElement(GenericNotificationEmail, {
+        ...data,
+        title,
+        body,
+        baseLabels,
+      }),
+    };
   }
 
   const subjectSpec = getSubject(data);
   const subject = resolveMessage(subjectSpec.key, locale, subjectSpec.params);
   const labels = resolveMessages(labelKeys, locale);
-  const baseLabels = resolveMessages(BASE_LABEL_KEYS, locale);
 
   return {
     subject,
+    usedGenericFallback: false,
     react: createElement(Component, {
       ...data,
       labels,

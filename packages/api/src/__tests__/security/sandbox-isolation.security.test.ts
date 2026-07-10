@@ -16,9 +16,14 @@ process.env.API_KEY_HMAC_SECRET = HMAC_SECRET;
 
 const { mockFindMany } = vi.hoisted(() => ({ mockFindMany: vi.fn() }));
 
-vi.mock('@contractor-ops/db', () => ({
-  prisma: { organizationApiKey: { findMany: mockFindMany } },
-}));
+vi.mock('@contractor-ops/db', async importOriginal => {
+  const actual = await importOriginal<typeof import('@contractor-ops/db')>();
+  return {
+    ...actual,
+    prisma: { organizationApiKey: { findMany: mockFindMany } },
+    tryGetRegionalClient: vi.fn(() => ({ organizationApiKey: { findMany: mockFindMany } })),
+  };
+});
 
 vi.mock('@contractor-ops/logger', () => {
   const stub = { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() };

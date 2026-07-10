@@ -19,6 +19,7 @@ Cavecrew = three subagent presets that emit caveman output. Same job as Anthropi
 
 | Task | Use |
 |---|---|
+| Feature / fix / logic across router+service+UI layers | **`business-logic-shield`** first ([SKILL.md](../business-logic-shield/SKILL.md)), then builder/investigator |
 | "Where is X defined / what calls Y / list uses of Z" | `cavecrew-investigator` |
 | Same but you also want suggestions/architecture commentary | `Explore` (vanilla) |
 | Surgical edit, ≤2 files, scope obvious | `cavecrew-builder` |

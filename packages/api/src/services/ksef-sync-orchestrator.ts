@@ -125,13 +125,43 @@ async function processSingleKsefInvoice(
   const parsed = parseFa3Xml(xml, ksefReferenceNumber);
   const { invoice: fields, lines } = mapKsefToInvoiceFields(parsed);
 
+  const invoiceTypeUpper = parsed.invoiceType.toUpperCase();
+  const isCreditNote = invoiceTypeUpper === 'KOR' || invoiceTypeUpper === 'CORRECTIVE';
+  const normalizedTotalMinor = isCreditNote ? -Math.abs(fields.totalMinor) : fields.totalMinor;
+  const normalizedSubtotalMinor = isCreditNote
+    ? -Math.abs(fields.subtotalMinor)
+    : fields.subtotalMinor;
+  const normalizedVatMinor =
+    fields.vatAmountMinor == null
+      ? fields.vatAmountMinor
+      : isCreditNote
+        ? -Math.abs(fields.vatAmountMinor)
+        : fields.vatAmountMinor;
+  const normalizedAmountToPay = isCreditNote
+    ? -Math.abs(fields.amountToPayMinor)
+    : fields.amountToPayMinor;
+
+  const normalizedLines = isCreditNote
+    ? lines.map(line => ({
+        ...line,
+        netAmountMinor:
+          line.netAmountMinor == null ? line.netAmountMinor : -Math.abs(line.netAmountMinor),
+        vatAmountMinor:
+          line.vatAmountMinor == null ? line.vatAmountMinor : -Math.abs(line.vatAmountMinor),
+        grossAmountMinor:
+          line.grossAmountMinor == null ? line.grossAmountMinor : -Math.abs(line.grossAmountMinor),
+        unitPriceMinor:
+          line.unitPriceMinor == null ? line.unitPriceMinor : -Math.abs(line.unitPriceMinor),
+      }))
+    : lines;
+
   // Compute duplicate check hash
   const hash =
     computeDuplicateCheckHashForInvoice({
       invoiceNumber: fields.invoiceNumber,
       sellerTaxId: fields.sellerTaxId,
       sellerName: fields.sellerName,
-      totalMinor: fields.totalMinor,
+      totalMinor: normalizedTotalMinor,
     }) ?? null;
 
   // Check cross-source duplicate
@@ -145,14 +175,21 @@ async function processSingleKsefInvoice(
   const invoice = await db.invoice.create({
     data: {
       ...fields,
+      subtotalMinor: normalizedSubtotalMinor,
+      vatAmountMinor: normalizedVatMinor,
+      totalMinor: normalizedTotalMinor,
+      amountToPayMinor: normalizedAmountToPay,
       dueDate,
       organizationId,
       duplicateCheckHash: hash,
-      status: 'RECEIVED',
+      flagsJson: isCreditNote
+        ? { creditNote: true, ksefInvoiceType: parsed.invoiceType }
+        : undefined,
+      status: isCreditNote ? 'VOID' : 'RECEIVED',
       matchStatus: 'UNMATCHED',
       approvalStatus: 'NOT_STARTED',
       paymentStatus: 'NOT_READY',
-      lines: { create: lines.map(l => ({ ...l, organizationId })) },
+      lines: { create: normalizedLines.map(l => ({ ...l, organizationId })) },
     },
   });
 
@@ -163,15 +200,17 @@ async function processSingleKsefInvoice(
     isDuplicate = true;
   }
 
-  // Run auto-match
-  await runAutoMatch(db, organizationId, {
-    id: invoice.id,
-    sellerTaxId: fields.sellerTaxId,
-    totalMinor: fields.totalMinor,
-    currency: fields.currency,
-    duplicateCheckHash: hash,
-    issueDate: fields.issueDate,
-  });
+  // Run auto-match (skip credit notes — they must not enter the payable pipeline)
+  if (!isCreditNote) {
+    await runAutoMatch(db, organizationId, {
+      id: invoice.id,
+      sellerTaxId: fields.sellerTaxId,
+      totalMinor: normalizedTotalMinor,
+      currency: fields.currency,
+      duplicateCheckHash: hash,
+      issueDate: fields.issueDate,
+    });
+  }
 
   return isDuplicate ? 'duplicate' : 'created';
 }

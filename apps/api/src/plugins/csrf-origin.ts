@@ -43,6 +43,9 @@ const EXEMPT_PREFIXES = [
   '/exports/_process',
   '/google-workspace/',
   '/late-interest/',
+  '/webhooks-outbound/',
+  '/contract-health/',
+  '/idp-deprovisioning/',
   // Bot Framework `process()` validates the inbound JWT itself — Origin
   // is not relevant.
   '/teams/',

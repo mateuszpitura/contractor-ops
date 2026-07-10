@@ -6,6 +6,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@contractor-ops/ui/components/shadcn/dropdown-menu';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@contractor-ops/ui/components/shadcn/table';
 import { MoreHorizontal, Plus, RefreshCw, Send, Trash2, Webhook } from 'lucide-react';
 import type { TranslateFn } from '../../../i18n/useTranslations.js';
 
@@ -72,44 +80,44 @@ export function WebhooksDataTable({
   }
 
   return (
-    <div className="overflow-x-auto rounded-lg border">
-      <table className="w-full text-sm">
-        <thead className="border-b bg-muted/40 text-xs text-muted-foreground">
-          <tr>
-            <th className="px-3 py-2 text-start font-medium">{t('table.url')}</th>
-            <th className="px-3 py-2 text-start font-medium">{t('table.events')}</th>
-            <th className="px-3 py-2 text-start font-medium">{t('table.status')}</th>
-            <th className="px-3 py-2 text-start font-medium">{t('table.lastSuccess')}</th>
-            <th className="px-3 py-2 text-start font-medium">{t('table.lastFailure')}</th>
-            <th className="px-3 py-2 text-end font-medium">{t('table.actions')}</th>
-          </tr>
-        </thead>
-        <tbody>
+    <div className="overflow-hidden rounded-lg border">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>{t('table.url')}</TableHead>
+            <TableHead>{t('table.events')}</TableHead>
+            <TableHead>{t('table.status')}</TableHead>
+            <TableHead>{t('table.lastSuccess')}</TableHead>
+            <TableHead>{t('table.lastFailure')}</TableHead>
+            <TableHead className="text-end">{t('table.actions')}</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
           {subscriptions.map(row => (
-            <tr key={row.id} className="border-b last:border-0">
-              <td className="max-w-xs truncate px-3 py-2 font-mono text-xs" title={row.url}>
+            <TableRow key={row.id}>
+              <TableCell className="max-w-xs truncate font-mono text-xs" title={row.url}>
                 {row.url}
                 {row.httpAllowed ? (
                   <Badge variant="outline" className="ms-2 text-amber-600">
                     HTTP
                   </Badge>
                 ) : null}
-              </td>
-              <td className="px-3 py-2 text-xs text-muted-foreground">
+              </TableCell>
+              <TableCell className="text-xs text-muted-foreground">
                 {t('table.eventCount', { count: row.eventFilter.length })}
-              </td>
-              <td className="px-3 py-2">
+              </TableCell>
+              <TableCell>
                 <Badge variant={row.enabled ? 'default' : 'secondary'}>
                   {row.enabled ? t('status.enabled') : t('status.disabled')}
                 </Badge>
-              </td>
-              <td className="px-3 py-2 text-xs text-muted-foreground">
+              </TableCell>
+              <TableCell className="text-xs text-muted-foreground">
                 {formatTimestamp(row.lastSuccessAt)}
-              </td>
-              <td className="px-3 py-2 text-xs text-muted-foreground">
+              </TableCell>
+              <TableCell className="text-xs text-muted-foreground">
                 {formatTimestamp(row.lastFailureAt)}
-              </td>
-              <td className="px-3 py-2 text-end">
+              </TableCell>
+              <TableCell className="text-end">
                 <DropdownMenu>
                   <DropdownMenuTrigger
                     render={
@@ -134,11 +142,11 @@ export function WebhooksDataTable({
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
-              </td>
-            </tr>
+              </TableCell>
+            </TableRow>
           ))}
-        </tbody>
-      </table>
+        </TableBody>
+      </Table>
     </div>
   );
 }

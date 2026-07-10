@@ -94,16 +94,24 @@ export function handleError(err: Error, c: Context) {
     const status = mapTrpcCodeToHttp(err.code);
     const { code, message } = extractErrorDetails(err);
 
+    // Server-side (5xx) tRPC errors are genuine bugs — their raw message can
+    // carry stack fragments, driver strings, or interpolated secrets. Log the
+    // full detail + beacon to Sentry, but ship only a generic body to the
+    // external API consumer. Coded 4xx messages are caller-facing and pass
+    // through unchanged.
     if (status >= 500) {
       log.error({ err, requestId, route, method, status, code }, 'tRPC server error');
       Sentry.captureException(err, {
         tags: { 'trpc.code': err.code, route, method },
         extra: { requestId, status },
       });
-    } else {
-      log.warn({ err, requestId, route, method, status, code }, 'tRPC client error');
+      return c.json(
+        formatErrorResponse(status, 'INTERNAL_SERVER_ERROR', 'An unexpected error occurred.'),
+        status as 500,
+      );
     }
 
+    log.warn({ err, requestId, route, method, status, code }, 'tRPC client error');
     return c.json(formatErrorResponse(status, code, message), status as 400);
   }
 

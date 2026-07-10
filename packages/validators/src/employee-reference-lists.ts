@@ -70,6 +70,16 @@ export const lohnsteuerklasseSchema = z.enum(LOHNSTEUERKLASSE);
 export type Lohnsteuerklasse = z.infer<typeof lohnsteuerklasseSchema>;
 
 // ---------------------------------------------------------------------------
+// Kirchensteuer confession code (DE) — DATEV LODAS 2-char import field
+// ---------------------------------------------------------------------------
+//
+// LOCAL-ONLY / adviser-verify: rk/ev/ak/is/vd are the common DATEV Lohn codes.
+
+export const KIRCHENSTEUER_CODES = ['ev', 'rk', 'ak', 'is', 'vd'] as const;
+export const kirchensteuerCodeSchema = z.enum(KIRCHENSTEUER_CODES);
+export type KirchensteuerCode = z.infer<typeof kirchensteuerCodeSchema>;
+
+// ---------------------------------------------------------------------------
 // Student-loan plan (UK)
 // ---------------------------------------------------------------------------
 //

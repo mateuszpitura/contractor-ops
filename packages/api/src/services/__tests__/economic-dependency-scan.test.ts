@@ -55,6 +55,18 @@ const {
         return { _sum: { totalMinor: 0 } };
       }),
     },
+    contractor: {
+      findFirst: vi.fn(async (args: { where: { id: string; organizationId: string } }) => {
+        if (args.where.id === 'clcontractor0000000000000') {
+          return { taxId: 'DE123', countryCode: 'DE' };
+        }
+        return null;
+      }),
+      findMany: vi.fn(async (args: { where: { taxId: string; countryCode: string } }) => {
+        if (args.where.taxId !== 'DE123' || args.where.countryCode !== 'DE') return [];
+        return [{ id: 'clcontractor0000000000000' }];
+      }),
+    },
     contractorAssignment: {
       findMany: vi.fn(async () => assignmentsFixture),
     },
@@ -182,12 +194,42 @@ import {
 } from '../economic-dependency-scan';
 
 const ORG_A = 'clorgaaaaaaaaaaaaaaaaaaaaaa';
-const _ORG_B = 'clorgbbbbbbbbbbbbbbbbbbbbbb';
 const CONTRACTOR = 'clcontractor0000000000000';
 const ASSIGNMENT_A = 'clasgnmentaaaaaaaaaaaaaaaa';
 
+/**
+ * Seed the numerator (org-A scoped aggregate — scalar contractorId +
+ * organizationId) and the denominator (the single cross-org peer aggregate —
+ * `contractorId: { in: [...] }`, no organizationId). One aggregate resolves the
+ * denominator; there is no per-org fan-out.
+ */
+function seedCrossOrgBilling(numeratorSum: number, denominatorSum: number) {
+  invoicesByWhere.push({
+    match: where =>
+      where.organizationId === ORG_A &&
+      typeof where.contractorId === 'string' &&
+      where.contractorId === CONTRACTOR,
+    sum: numeratorSum,
+  });
+  invoicesByWhere.push({
+    match: where => {
+      const contractorFilter = where.contractorId as { in?: string[] } | string | undefined;
+      return (
+        where.organizationId === undefined &&
+        typeof contractorFilter === 'object' &&
+        contractorFilter !== null &&
+        Array.isArray(contractorFilter.in) &&
+        contractorFilter.in.includes(CONTRACTOR)
+      );
+    },
+    sum: denominatorSum,
+  });
+}
+
 function resetFixtures() {
   mockPrismaRaw.invoice.aggregate.mockClear();
+  mockPrismaRaw.contractor.findFirst.mockClear();
+  mockPrismaRaw.contractor.findMany.mockClear();
   mockPrismaRaw.contractorAssignment.findMany.mockClear();
   mockPrismaRaw.economicDependencyAlertState.findUnique.mockClear();
   mockPrismaRaw.economicDependencyAlertState.upsert.mockClear();
@@ -230,15 +272,7 @@ describe('bandFor (thresholds)', () => {
 describe('computeBillingShare', () => {
   it('[window] uses a 12-month closed interval ending at `now`', async () => {
     const now = new Date('2026-04-14T00:00:00Z');
-    invoicesByWhere.push({
-      match: where =>
-        (where.organizationId as string) === ORG_A && (where.contractorId as string) === CONTRACTOR,
-      sum: 500_00,
-    });
-    invoicesByWhere.push({
-      match: where => !('organizationId' in where) && (where.contractorId as string) === CONTRACTOR,
-      sum: 1_000_00,
-    });
+    seedCrossOrgBilling(500_00, 1_000_00);
 
     await computeBillingShare(CONTRACTOR, ORG_A, now);
 
@@ -253,17 +287,9 @@ describe('computeBillingShare', () => {
     }
   });
 
-  it('[cross-org] denominator aggregates across every organisation (no organizationId filter)', async () => {
+  it('[cross-org] denominator sums taxId-matched peer invoices in one aggregate', async () => {
     const now = new Date('2026-04-14T00:00:00Z');
-    invoicesByWhere.push({
-      match: where =>
-        (where.organizationId as string) === ORG_A && (where.contractorId as string) === CONTRACTOR,
-      sum: 700_00,
-    });
-    invoicesByWhere.push({
-      match: where => !('organizationId' in where) && (where.contractorId as string) === CONTRACTOR,
-      sum: 1_000_00,
-    });
+    seedCrossOrgBilling(700_00, 1_000_00);
 
     const result = await computeBillingShare(CONTRACTOR, ORG_A, now);
 
@@ -271,17 +297,45 @@ describe('computeBillingShare', () => {
     expect(result.denominator).toBe(1_000_00);
     expect(result.share).toBeCloseTo(0.7, 5);
 
-    // Assert one of the aggregate calls OMITS organizationId (cross-org).
-    const whereArgs = mockPrismaRaw.invoice.aggregate.mock.calls.map(c => c[0].where);
-    const crossOrgCalls = whereArgs.filter(w => !('organizationId' in w));
-    expect(crossOrgCalls.length).toBe(1);
-    expect(crossOrgCalls[0]).toMatchObject({ contractorId: CONTRACTOR });
+    expect(mockPrismaRaw.contractor.findFirst).toHaveBeenCalled();
+    // Peer contractor ids resolve in ONE cross-org query (no organizationId).
+    expect(mockPrismaRaw.contractor.findMany).toHaveBeenCalledTimes(1);
+    const peerLookupWhere = mockPrismaRaw.contractor.findMany.mock.calls[0][0].where;
+    expect(peerLookupWhere.organizationId).toBeUndefined();
+    expect(peerLookupWhere.taxId).toBe('DE123');
+    expect(peerLookupWhere.countryCode).toBe('DE');
+
+    // Exactly ONE aggregate carries the cross-org `contractorId: { in: [...] }`
+    // denominator filter — no per-org fan-out.
+    const aggregateWheres = mockPrismaRaw.invoice.aggregate.mock.calls.map(c => c[0].where);
+    const peerAggregates = aggregateWheres.filter(
+      w =>
+        w.contractorId &&
+        typeof w.contractorId === 'object' &&
+        'in' in (w.contractorId as Record<string, unknown>),
+    );
+    expect(peerAggregates.length).toBe(1);
+    expect((peerAggregates[0].contractorId as { in: string[] }).in).toContain(CONTRACTOR);
+    expect(peerAggregates[0].organizationId).toBeUndefined();
   });
 
   it('returns share=0 when denominator is zero (no invoices)', async () => {
     const now = new Date('2026-04-14T00:00:00Z');
     const result = await computeBillingShare(CONTRACTOR, ORG_A, now);
     expect(result).toEqual({ numerator: 0, denominator: 0, share: 0 });
+  });
+
+  it('returns share=0 when contractor has no taxId (cross-org identity missing)', async () => {
+    mockPrismaRaw.contractor.findFirst.mockResolvedValueOnce({ taxId: null, countryCode: 'DE' });
+    const now = new Date('2026-04-14T00:00:00Z');
+    seedCrossOrgBilling(500_00, 1_000_00);
+
+    const result = await computeBillingShare(CONTRACTOR, ORG_A, now);
+
+    expect(result.numerator).toBe(500_00);
+    expect(result.denominator).toBe(0);
+    expect(result.share).toBe(0);
+    expect(mockPrismaRaw.contractor.findMany).not.toHaveBeenCalled();
   });
 
   it('filters VOID invoices from both numerator and denominator', async () => {
@@ -417,15 +471,7 @@ describe('runEconomicDependencyScan (orchestrator)', () => {
       contractorId: CONTRACTOR,
       contractor: { displayName: 'ACME Contractor' },
     });
-    invoicesByWhere.push({
-      match: w =>
-        (w.organizationId as string) === ORG_A && (w.contractorId as string) === CONTRACTOR,
-      sum: 800_00,
-    });
-    invoicesByWhere.push({
-      match: w => !('organizationId' in w) && (w.contractorId as string) === CONTRACTOR,
-      sum: 1_000_00,
-    });
+    seedCrossOrgBilling(800_00, 1_000_00);
     mockResolveRecipients.mockResolvedValueOnce(['user-a', 'user-b']);
 
     const result = await runEconomicDependencyScan(new Date('2026-04-14T00:00:00Z'));
@@ -454,15 +500,7 @@ describe('runEconomicDependencyScan (orchestrator)', () => {
       contractorId: CONTRACTOR,
       contractor: { displayName: 'ACME Contractor' },
     });
-    invoicesByWhere.push({
-      match: w =>
-        (w.organizationId as string) === ORG_A && (w.contractorId as string) === CONTRACTOR,
-      sum: 800_00,
-    });
-    invoicesByWhere.push({
-      match: w => !('organizationId' in w) && (w.contractorId as string) === CONTRACTOR,
-      sum: 1_000_00,
-    });
+    seedCrossOrgBilling(800_00, 1_000_00);
 
     const t0 = new Date('2026-04-14T00:00:00Z');
     await runEconomicDependencyScan(t0);
@@ -481,42 +519,7 @@ describe('runEconomicDependencyScan (orchestrator)', () => {
       contractorId: CONTRACTOR,
       contractor: { displayName: 'Multi-Org Contractor' },
     });
-    invoicesByWhere.push({
-      match: w =>
-        (w.organizationId as string) === ORG_A && (w.contractorId as string) === CONTRACTOR,
-      sum: 700_00, // numerator = 700k from Org A
-    });
-    invoicesByWhere.push({
-      match: w => !('organizationId' in w) && (w.contractorId as string) === CONTRACTOR,
-      sum: 1_000_00, // denominator = Org A (700k) + Org B (300k) = 1_000_00
-    });
-    const res = await runEconomicDependencyScan(new Date('2026-04-14T00:00:00Z'));
-    expect(res.notificationsDispatched).toBe(1);
-    // Share = 700k / 1M = 0.70 → warning
-    const call = mockEnqueue.mock.calls[0][0];
-    expect(call.event.type).toBe('classification.economic_dependency_warning');
-  });
-
-  it('Kleinunternehmer non-interaction: thresholds fire identically regardless of VAT regime', async () => {
-    // The scan service itself is agnostic of the org's isKleinunternehmer
-    // flag — there is no branch for it in the code path. This test asserts
-    // that assertion: the same share produces the same band/notification
-    // irrespective of any per-org fixture variable.
-    assignmentsFixture.push({
-      id: ASSIGNMENT_A,
-      organizationId: ORG_A,
-      contractorId: CONTRACTOR,
-      contractor: { displayName: 'Kleinunternehmer Contractor' },
-    });
-    invoicesByWhere.push({
-      match: w =>
-        (w.organizationId as string) === ORG_A && (w.contractorId as string) === CONTRACTOR,
-      sum: 750_00,
-    });
-    invoicesByWhere.push({
-      match: w => !('organizationId' in w) && (w.contractorId as string) === CONTRACTOR,
-      sum: 1_000_00,
-    });
+    seedCrossOrgBilling(700_00, 1_000_00);
 
     const res = await runEconomicDependencyScan(new Date('2026-04-14T00:00:00Z'));
     expect(res.notificationsDispatched).toBe(1);

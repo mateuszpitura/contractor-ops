@@ -22,7 +22,7 @@ export const KOSIT_RULE_SET_VERSION = 'XRechnung 3.0.2 / KoSIT release-2026-01-3
 
 /** Document-level `CustomizationID` — identifies XRechnung CIUS 3.0. */
 export const XRECHNUNG_CUSTOMIZATION_ID =
-  'urn:cen.eu:en16931:2017#compliant#urn:xoev-de:kosit:standard:xrechnung_3.0' as const;
+  'urn:cen.eu:en16931:2017#compliant#urn:xeinkauf.de:kosit:xrechnung_3.0' as const;
 
 /** Document-level `ProfileID` — Peppol BIS 3.0 billing (dual-profile with XRechnung CIUS). */
 export const XRECHNUNG_PROFILE_ID = 'urn:fdc:peppol.eu:2017:poacc:billing:01:1.0' as const;

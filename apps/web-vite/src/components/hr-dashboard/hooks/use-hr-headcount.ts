@@ -6,13 +6,13 @@ import { useTRPC } from '../../../providers/trpc-provider.js';
 
 type RouterOutputs = inferRouterOutputs<AppRouter>;
 
-/** Headcount total + breakdown buckets over the active workforce (HR-DASH-01). */
+/** Headcount total + breakdown buckets over the active workforce. */
 export type HrHeadcount = RouterOutputs['hrDashboard']['getHeadcount'];
 export type HeadcountBucket = HrHeadcount['byDepartment'][number];
 export type ContractEndBuckets = HrHeadcount['byContractEndBucket'];
 
 /**
- * Sole tRPC boundary for the HR-DASH-01 headcount section. Reads the active
+ * Sole tRPC boundary for the headcount section. Reads the active
  * total plus the department / jurisdiction / employment-type / contract-end
  * breakdowns. Returns a props bag + variant flags; the wired section owns the
  * loading / empty (no active employees) / error branches.

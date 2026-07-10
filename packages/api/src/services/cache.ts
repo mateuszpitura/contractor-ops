@@ -305,7 +305,8 @@ export const CacheKeys = {
   orgSettings: (orgId: string) => cacheKey(orgId, 'settings', 'org'),
   orgSettingsJson: (orgId: string, sub: string) => cacheKey(orgId, 'settings', 'json', sub),
   orgBranding: (orgId: string) => cacheKey(orgId, 'settings', 'branding'),
-  approvalChains: (orgId: string) => cacheKey(orgId, 'approval', 'chains'),
+  approvalChains: (orgId: string, resourceType?: string) =>
+    cacheKey(orgId, 'approval', 'chains', resourceType ?? 'all'),
   // IdP impact preview (org-scoped; keyed by provider + external user id).
   idpPreview: (orgId: string, provider: string, externalUserId: string) =>
     cacheKey(orgId, 'idp', 'preview', provider, externalUserId),

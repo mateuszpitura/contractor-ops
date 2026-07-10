@@ -70,9 +70,11 @@ const {
     },
     documentLink: {
       findMany: vi.fn(),
+      createMany: vi.fn(),
     },
     invoiceFile: {
       create: vi.fn(),
+      createMany: vi.fn(),
     },
     paymentRunItem: {
       findFirst: vi.fn(),
@@ -87,6 +89,9 @@ const {
     contractorNotificationPreference: {
       findMany: vi.fn(),
       upsert: vi.fn(),
+    },
+    member: {
+      findMany: vi.fn(),
     },
     // Pre-signed PUTs go through the pendingUpload table so the server can
     // verify a contractor consumed the URL within TTL.
@@ -145,17 +150,24 @@ vi.mock('../../services/portal-session', () => ({
   deletePortalSession: mockDeletePortalSession,
 }));
 
-vi.mock('@contractor-ops/auth', () => ({
-  auth: {
-    api: {
-      getSession: vi.fn(),
+vi.mock('@contractor-ops/auth', async importOriginal => {
+  const actual = await importOriginal<typeof import('@contractor-ops/auth')>();
+  return {
+    ...actual,
+    auth: {
+      ...actual.auth,
+      api: {
+        ...actual.auth?.api,
+        getSession: vi.fn(),
+        hasPermission: vi.fn().mockResolvedValue({ success: true }),
+      },
+    },
+    authApi: {
+      ...actual.authApi,
       hasPermission: vi.fn().mockResolvedValue({ success: true }),
     },
-  },
-  authApi: {
-    hasPermission: vi.fn().mockResolvedValue({ success: true }),
-  },
-}));
+  };
+});
 
 vi.mock('@contractor-ops/db', () => ({
   withRlsTransactions: <T>(c: T) => c,
@@ -340,6 +352,8 @@ beforeEach(() => {
   mockPrisma.document.create.mockResolvedValue({});
   mockPrisma.invoice.create.mockResolvedValue({});
   mockPrisma.invoiceFile.create.mockResolvedValue({});
+  mockPrisma.invoiceFile.createMany.mockResolvedValue({ count: 1 });
+  mockPrisma.documentLink.createMany.mockResolvedValue({ count: 1 });
   mockPrisma.contractorBillingProfile.findFirst.mockResolvedValue(null);
   mockPrisma.contractorChangeRequest.findFirst.mockResolvedValue(null);
   mockPrisma.contractorNotificationPreference.findMany.mockResolvedValue([]);
@@ -347,6 +361,7 @@ beforeEach(() => {
     category: 'INVOICE_UPDATES',
     emailEnabled: true,
   });
+  mockPrisma.member.findMany.mockResolvedValue([]);
   mockCreatePresignedDownloadUrl.mockImplementation(async () => 'https://signed.example/doc');
   mockCreatePresignedUploadUrl.mockResolvedValue('https://upload.example/put');
   mockGenerateStorageKey.mockReturnValue('org/org-1/doc/x.pdf');
@@ -519,6 +534,10 @@ describe('portal router — getSession + overview', () => {
         logo: 'https://cdn.example/logo.png',
         metadata: null,
       });
+    mockPrisma.contractor.findFirst.mockResolvedValueOnce({
+      id: CONTRACTOR_ID,
+      displayName: 'Portal Contractor',
+    });
 
     const out = await authedPortalCaller().getSession();
 
@@ -527,6 +546,7 @@ describe('portal router — getSession + overview', () => {
       select: { id: true, name: true, logo: true, metadata: true },
     });
     expect(out).toEqual({
+      subjectType: 'CONTRACTOR',
       contractor: {
         id: CONTRACTOR_ID,
         displayName: 'Portal Contractor',
@@ -857,7 +877,8 @@ describe('portal router — documents, payments, uploads', () => {
 
     expect(mockPrisma.document.create).toHaveBeenCalled();
     expect(mockPrisma.invoice.create).toHaveBeenCalled();
-    expect(mockPrisma.invoiceFile.create).toHaveBeenCalled();
+    expect(mockPrisma.invoiceFile.createMany).toHaveBeenCalled();
+    expect(mockPrisma.documentLink.createMany).toHaveBeenCalled();
     expect(out).toMatchObject({
       invoiceId: 'inv-new-1',
       invoiceNumber: 'INV-PORT-1',

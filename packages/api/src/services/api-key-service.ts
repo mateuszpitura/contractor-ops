@@ -1,5 +1,6 @@
 import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
-import { prisma } from '@contractor-ops/db';
+import type { DataRegion, PrismaClient } from '@contractor-ops/db';
+import { SUPPORTED_REGIONS, tryGetRegionalClient } from '@contractor-ops/db';
 import { createLogger } from '@contractor-ops/logger';
 import { markSandboxOrg } from '../lib/demo';
 
@@ -132,7 +133,25 @@ export function resolveApiKey(plaintext: string) {
 
 async function resolveByPrefix(plaintext: string, prefix: string) {
   const now = new Date();
-  const candidates = await prisma.organizationApiKey.findMany({
+
+  for (const region of SUPPORTED_REGIONS) {
+    const client = tryGetRegionalClient(region);
+    if (!client) continue;
+
+    const candidate = await resolveByPrefixInClient(client, plaintext, prefix, now);
+    if (candidate) return candidate;
+  }
+
+  return null;
+}
+
+async function resolveByPrefixInClient(
+  client: PrismaClient,
+  plaintext: string,
+  prefix: string,
+  now: Date,
+) {
+  const candidates = await client.organizationApiKey.findMany({
     where: {
       prefix,
       revokedAt: null,
@@ -187,14 +206,17 @@ async function resolveByPrefix(plaintext: string, prefix: string) {
 const TOUCH_DEBOUNCE_MS = 5 * 60_000;
 const lastTouchedAt = new Map<string, number>();
 
-export function touchLastUsed(keyId: string): void {
+export function touchLastUsed(keyId: string, region: DataRegion = 'EU'): void {
   const now = Date.now();
   const last = lastTouchedAt.get(keyId) ?? 0;
 
   if (now - last < TOUCH_DEBOUNCE_MS) return;
   lastTouchedAt.set(keyId, now);
 
-  prisma.organizationApiKey
+  const client = tryGetRegionalClient(region);
+  if (!client) return;
+
+  client.organizationApiKey
     .update({
       where: { id: keyId },
       data: { lastUsedAt: new Date() },
@@ -234,6 +256,7 @@ export function appendApiKeyIpEvent(
   organizationId: string,
   ipAddress: string | undefined,
   userAgent: string | undefined,
+  region: DataRegion = 'EU',
 ): void {
   if (!ipAddress) return;
 
@@ -243,21 +266,24 @@ export function appendApiKeyIpEvent(
   if (now - last < IP_EVENT_DEBOUNCE_MS) return;
   lastIpEventAt.set(debounceKey, now);
 
+  const client = tryGetRegionalClient(region);
+  if (!client) return;
+
   void (async () => {
     try {
-      await prisma.apiKeyIpEvent.create({
+      await client.apiKeyIpEvent.create({
         data: { apiKeyId: keyId, organizationId, ipAddress, userAgent: userAgent ?? null },
       });
 
       // Prune older rows beyond the retained window (keep the newest N).
-      const stale = await prisma.apiKeyIpEvent.findMany({
+      const stale = await client.apiKeyIpEvent.findMany({
         where: { apiKeyId: keyId },
         orderBy: { seenAt: 'desc' },
         skip: IP_EVENTS_KEEP_PER_KEY,
         select: { id: true },
       });
       if (stale.length > 0) {
-        await prisma.apiKeyIpEvent.deleteMany({ where: { id: { in: stale.map(r => r.id) } } });
+        await client.apiKeyIpEvent.deleteMany({ where: { id: { in: stale.map(r => r.id) } } });
       }
     } catch (err) {
       log.error({ err, keyId }, 'failed to append ApiKeyIpEvent');

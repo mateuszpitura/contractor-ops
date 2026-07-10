@@ -20,9 +20,9 @@
       "default": "./dist/types.js"
     },
     "./webhook": {
-      "types": "./src/webhook/index.ts",
-      "import": "./src/webhook/index.ts",
-      "default": "./src/webhook/index.ts"
+      "types": "./dist/webhook/index.d.ts",
+      "import": "./dist/webhook/index.js",
+      "default": "./dist/webhook/index.js"
     }
   },
   "scripts": {

@@ -2,7 +2,9 @@ import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { ESIGN_ENVELOPE_NOT_FOUND, ESIGN_NOT_RECIPIENT } from '../../errors';
 import { router } from '../../init';
+import { loadIntegrationConnection } from '../../lib/integration-connection';
 import { portalProcedure } from '../../middleware/portal-auth';
+import { portalSubjectRateLimitMiddleware } from '../../middleware/portal-rate-limit';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
 import {
@@ -66,12 +68,14 @@ const listEnvelopesInput = z.object({
 // E-Sign Router
 // ---------------------------------------------------------------------------
 
+const esignReadProcedure = tenantProcedure.use(requirePermission({ contract: ['read'] }));
+
 export const esignRouter = router({
   /**
    * List connected e-sign provider connections (DocuSign, Autenti).
    * Returns connection ID, provider, and status for the provider picker UI.
    */
-  listConnections: tenantProcedure.query(async ({ ctx }) => {
+  listConnections: esignReadProcedure.query(async ({ ctx }) => {
     const connections = await ctx.db.integrationConnection.findMany({
       where: {
         organizationId: ctx.organizationId,
@@ -99,6 +103,14 @@ export const esignRouter = router({
     .use(requirePermission({ contract: ['update'] }))
     .input(sendForSignatureInput)
     .mutation(async ({ ctx, input }) => {
+      // The client supplies `connectionId`, and the provider adapter later
+      // resolves it by id alone. Verify it belongs to this tenant (and matches
+      // the requested provider + is CONNECTED) first, so a caller can never
+      // drive another org's DocuSign/Autenti credentials via a foreign id.
+      await loadIntegrationConnection(ctx.db, input.connectionId, ctx.organizationId, {
+        provider: input.provider,
+      });
+
       const envelope = await sendForSignature({
         organizationId: ctx.organizationId,
         userId: ctx.user.id,
@@ -119,55 +131,83 @@ export const esignRouter = router({
    * Get an embedded signing URL for a recipient.
    * Generated on-demand — never cache (DocuSign URLs expire in 5 min).
    */
-  getSigningUrl: tenantProcedure.input(getSigningUrlInput).query(async ({ ctx, input }) => {
-    const result = await getSigningUrl({
-      organizationId: ctx.organizationId,
-      envelopeId: input.envelopeId,
-      recipientEmail: input.recipientEmail,
-      returnUrl: input.returnUrl,
-    });
+  getSigningUrl: tenantProcedure
+    .use(requirePermission({ contract: ['update'] }))
+    .input(getSigningUrlInput)
+    .query(async ({ ctx, input }) => {
+      const envelope = await ctx.db.signingEnvelope.findFirst({
+        where: {
+          id: input.envelopeId,
+          organizationId: ctx.organizationId,
+        },
+        include: {
+          recipients: { select: { email: true } },
+        },
+      });
 
-    return result;
-  }),
+      if (!envelope) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: ESIGN_ENVELOPE_NOT_FOUND });
+      }
+
+      const normalizedRecipient = input.recipientEmail.toLowerCase();
+      const isRecipient = envelope.recipients.some(
+        r => r.email.toLowerCase() === normalizedRecipient,
+      );
+      if (!isRecipient) {
+        throw new TRPCError({ code: 'FORBIDDEN', message: ESIGN_NOT_RECIPIENT });
+      }
+
+      const result = await getSigningUrl({
+        organizationId: ctx.organizationId,
+        envelopeId: input.envelopeId,
+        recipientEmail: input.recipientEmail,
+        returnUrl: input.returnUrl,
+      });
+
+      return result;
+    }),
 
   /**
    * Get an embedded signing URL for a portal contractor.
    * Verifies the contractor is a recipient of the envelope before
    * delegating to the shared getSigningUrl orchestrator.
    */
-  getPortalSigningUrl: portalProcedure.input(getSigningUrlInput).query(async ({ ctx, input }) => {
-    const envelope = await ctx.db.signingEnvelope.findFirst({
-      where: {
-        id: input.envelopeId,
+  getPortalSigningUrl: portalProcedure
+    .use(portalSubjectRateLimitMiddleware)
+    .input(getSigningUrlInput)
+    .query(async ({ ctx, input }) => {
+      const envelope = await ctx.db.signingEnvelope.findFirst({
+        where: {
+          id: input.envelopeId,
+          organizationId: ctx.organizationId,
+        },
+        include: {
+          recipients: { select: { email: true } },
+        },
+      });
+
+      if (!envelope) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: ESIGN_ENVELOPE_NOT_FOUND });
+      }
+
+      const contractorEmail = ctx.contractor?.email?.toLowerCase();
+      if (!contractorEmail) {
+        throw new TRPCError({ code: 'FORBIDDEN', message: ESIGN_NOT_RECIPIENT });
+      }
+
+      const isRecipient = envelope.recipients.some(r => r.email.toLowerCase() === contractorEmail);
+
+      if (!isRecipient) {
+        throw new TRPCError({ code: 'FORBIDDEN', message: ESIGN_NOT_RECIPIENT });
+      }
+
+      return getSigningUrl({
         organizationId: ctx.organizationId,
-      },
-      include: {
-        recipients: { select: { email: true } },
-      },
-    });
-
-    if (!envelope) {
-      throw new TRPCError({ code: 'NOT_FOUND', message: ESIGN_ENVELOPE_NOT_FOUND });
-    }
-
-    const contractorEmail = ctx.contractor?.email?.toLowerCase();
-    if (!contractorEmail) {
-      throw new TRPCError({ code: 'FORBIDDEN', message: ESIGN_NOT_RECIPIENT });
-    }
-
-    const isRecipient = envelope.recipients.some(r => r.email.toLowerCase() === contractorEmail);
-
-    if (!isRecipient) {
-      throw new TRPCError({ code: 'FORBIDDEN', message: ESIGN_NOT_RECIPIENT });
-    }
-
-    return getSigningUrl({
-      organizationId: ctx.organizationId,
-      envelopeId: input.envelopeId,
-      recipientEmail: input.recipientEmail,
-      returnUrl: input.returnUrl,
-    });
-  }),
+        envelopeId: input.envelopeId,
+        recipientEmail: contractorEmail,
+        returnUrl: input.returnUrl,
+      });
+    }),
 
   /**
    * Void (cancel) a signing envelope.
@@ -207,37 +247,39 @@ export const esignRouter = router({
    * Get detailed information about a signing envelope.
    * Includes recipients and events (ordered by occurredAt desc).
    */
-  getEnvelopeDetail: tenantProcedure.input(getEnvelopeDetailInput).query(async ({ ctx, input }) => {
-    const envelope = await ctx.db.signingEnvelope.findFirst({
-      where: {
-        id: input.envelopeId,
-        organizationId: ctx.organizationId,
-      },
-      include: {
-        recipients: {
-          orderBy: { routingOrder: 'asc' },
+  getEnvelopeDetail: esignReadProcedure
+    .input(getEnvelopeDetailInput)
+    .query(async ({ ctx, input }) => {
+      const envelope = await ctx.db.signingEnvelope.findFirst({
+        where: {
+          id: input.envelopeId,
+          organizationId: ctx.organizationId,
         },
-        events: {
-          orderBy: { occurredAt: 'desc' },
+        include: {
+          recipients: {
+            orderBy: { routingOrder: 'asc' },
+          },
+          events: {
+            orderBy: { occurredAt: 'desc' },
+          },
+          sentBy: {
+            select: { id: true, name: true, email: true },
+          },
         },
-        sentBy: {
-          select: { id: true, name: true, email: true },
-        },
-      },
-    });
+      });
 
-    if (!envelope) {
-      return null;
-    }
+      if (!envelope) {
+        return null;
+      }
 
-    return envelope;
-  }),
+      return envelope;
+    }),
 
   /**
    * List all signing envelopes for a contract.
    * Ordered by createdAt desc with recipient summary.
    */
-  listEnvelopes: tenantProcedure.input(listEnvelopesInput).query(async ({ ctx, input }) => {
+  listEnvelopes: esignReadProcedure.input(listEnvelopesInput).query(async ({ ctx, input }) => {
     const envelopes = await ctx.db.signingEnvelope.findMany({
       where: {
         contractId: input.contractId,

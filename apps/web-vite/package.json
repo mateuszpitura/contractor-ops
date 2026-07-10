@@ -19,7 +19,7 @@
     "test:watch": "vitest",
     "e2e:functional": "playwright test -c playwright.functional.config.ts",
     "e2e:functional:install": "playwright install chromium",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "NODE_OPTIONS=--max-old-space-size=8192 tsc --noEmit",
     "typecheck:fast": "tsgo --noEmit"
   },
   "dependencies": {

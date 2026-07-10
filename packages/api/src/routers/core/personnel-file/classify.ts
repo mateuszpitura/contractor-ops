@@ -287,6 +287,7 @@ export const classifyRouter = router({
     .use(requirePermission({ compliance: ['override'] }))
     .input(approveInput)
     .mutation(async ({ ctx, input }) => {
+      assertWorkforceEnabled(ctx.organizationId, ctx.region);
       return ctx.db.$transaction(async tx => {
         const pfd = await tx.personnelFileDocument.findFirst({
           where: { id: input.personnelFileDocumentId, organizationId: ctx.organizationId },
@@ -343,6 +344,7 @@ export const classifyRouter = router({
     .use(requirePermission({ compliance: ['override'] }))
     .input(rejectInput)
     .mutation(async ({ ctx, input }) => {
+      assertWorkforceEnabled(ctx.organizationId, ctx.region);
       return ctx.db.$transaction(async tx => {
         const pfd = await tx.personnelFileDocument.findFirst({
           where: { id: input.personnelFileDocumentId, organizationId: ctx.organizationId },

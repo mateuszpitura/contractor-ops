@@ -107,7 +107,7 @@ describe('PINT-AE Generator', () => {
     expect(xml).toContain(PINT_AE_PROFILE_ID);
   });
 
-  it('includes supplier TRN with schemeID 0192', () => {
+  it('includes supplier TRN with UAE scheme ID', () => {
     const invoice = createTestInvoice();
     const xml = generatePintAeXml(invoice);
     expect(xml).toContain(UAE_SCHEME_ID);
@@ -213,7 +213,7 @@ describe('PINT-AE Validator', () => {
     const invoice = createTestInvoice();
     const xml = generatePintAeXml(invoice);
     // Remove schemeID attribute from supplier
-    const xmlNoScheme = xml.replace(/schemeID="0192"/, 'schemeID="NONE"');
+    const xmlNoScheme = xml.replace(new RegExp(`schemeID="${UAE_SCHEME_ID}"`), 'schemeID="NONE"');
     const result = validatePintAeXml(xmlNoScheme);
     expect(result.valid).toBe(false);
     expect(result.errors.some(e => e.code === 'MISSING_SUPPLIER_TRN')).toBe(true);
@@ -266,12 +266,12 @@ describe('PeppolAEQRCode', () => {
 
 describe('Peppol Schemas', () => {
   it('validates correct participant ID format', () => {
-    const result = peppolParticipantIdSchema.safeParse('0192:123456789012345');
+    const result = peppolParticipantIdSchema.safeParse('0235:123456789012345');
     expect(result.success).toBe(true);
   });
 
   it('rejects invalid participant ID format', () => {
-    expect(peppolParticipantIdSchema.safeParse('0192:12345').success).toBe(false);
+    expect(peppolParticipantIdSchema.safeParse('0235:12345').success).toBe(false);
     expect(peppolParticipantIdSchema.safeParse('0088:123456789012345').success).toBe(false);
     expect(peppolParticipantIdSchema.safeParse('invalid').success).toBe(false);
   });

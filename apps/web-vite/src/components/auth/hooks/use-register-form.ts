@@ -85,8 +85,7 @@ export function useRegisterForm(): RegisterFormProps {
           email: values.email,
           password: values.password,
           name: values.email.split('@')[0] ?? values.email,
-          // @ts-expect-error — Better Auth types don't model the cf-turnstile-response field
-          'cf-turnstile-response': turnstileToken,
+          ...({ 'cf-turnstile-response': turnstileToken } as Record<string, string>),
         });
         if (signUpError) {
           toast.error(signUpError.message ?? tToast('createAccountFailed'));

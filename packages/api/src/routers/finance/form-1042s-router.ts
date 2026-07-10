@@ -7,9 +7,9 @@ import * as E from '../../errors';
 import { router } from '../../init';
 import { clear, complete, reserve } from '../../lib/idempotency';
 import { requirePermission } from '../../middleware/rbac';
-import { assertUsExpansionEnabled } from '../../middleware/require-us-expansion-flag';
-import { tenantProcedure } from '../../middleware/tenant';
+import { usExpansionProcedure } from '../../middleware/us-expansion-procedures';
 import { writeAuditLog } from '../../services/audit-writer';
+import { convertAmount, FX_CONVERSION_MAX_AGE_DAYS } from '../../services/exchange-rate';
 import type { BatchRecipient1042S } from '../../services/form-1042s.service';
 import {
   buildForm1042SSnapshot,
@@ -23,6 +23,7 @@ import { parseIrisAck } from '../../services/iris-ack-parser';
 import { signExistingDownload } from '../../services/r2';
 import { decryptSsn } from '../../services/ssn-crypto';
 import { applyTreaty } from '../../services/treaty-rate.service';
+import type { DbClient } from '../../services/types';
 
 // ---------------------------------------------------------------------------
 // Staff Form 1042-S surface — generate / correct / recipient-copy.
@@ -52,21 +53,11 @@ function isW8ChainComplete(submission: { signedAt: Date | null; expiresAt: Date 
 }
 
 /**
- * Sum settled (PAID) USD payouts for one recipient within the calendar tax year
- * — the box-2 gross income, computed server-side from the payment ledger so a
- * client can never assert the figure. Non-USD payouts are out of scope for this
- * reported-only core (the US payment rail owns FX-settled payouts); only USD
- * settlements are aggregated here.
+ * Sum settled (PAID) payouts for one recipient within the calendar tax year,
+ * FX-converted to USD minor units for box-2 gross income (mirrors 1099 box-1 path).
  */
 async function aggregateBox2GrossMinor(
-  db: {
-    paymentRunItem: {
-      findMany: (args: {
-        where: Prisma.PaymentRunItemWhereInput;
-        select: { amountMinor: true };
-      }) => Promise<{ amountMinor: number }[]>;
-    };
-  },
+  db: DbClient,
   organizationId: string,
   contractorId: string,
   taxYear: number,
@@ -79,18 +70,94 @@ async function aggregateBox2GrossMinor(
       organizationId,
       contractorId,
       status: 'PAID',
-      currency: 'USD',
       paymentRun: { completedAt: { gte: from, lt: to } },
     },
-    select: { amountMinor: true },
+    select: {
+      grossAmountMinor: true,
+      amountMinor: true,
+      currency: true,
+      paymentRun: { select: { completedAt: true } },
+    },
   });
 
-  return items.reduce((sum, item) => sum + item.amountMinor, 0);
+  let totalUsdMinor = 0;
+  for (const item of items) {
+    const grossMinor = item.grossAmountMinor ?? item.amountMinor;
+    if (item.currency === 'USD') {
+      totalUsdMinor += grossMinor;
+      continue;
+    }
+    const paymentDate = item.paymentRun.completedAt ?? new Date();
+    const conversion = await convertAmount(
+      db,
+      grossMinor,
+      item.currency,
+      'USD',
+      paymentDate,
+      FX_CONVERSION_MAX_AGE_DAYS,
+    );
+    if (!conversion) {
+      throw new Error(
+        `aggregateBox2GrossMinor: no payment-date FX rate for ${item.currency}->USD on ${paymentDate.toISOString()}`,
+      );
+    }
+    totalUsdMinor += conversion.amountMinor;
+  }
+
+  return totalUsdMinor;
 }
 
-/** Round the chapter-3 tax withheld (box 7) from a gross amount + whole-percent rate. */
-function chap3WithheldMinor(box2GrossMinor: number, ratePercent: number): number {
-  return Math.round((box2GrossMinor * ratePercent) / 100);
+/** Sum recorded chapter-3 withholding (box 7) from the payment-run ledger. */
+async function aggregateBox7WithheldMinor(
+  db: DbClient,
+  organizationId: string,
+  contractorId: string,
+  taxYear: number,
+): Promise<number> {
+  const from = new Date(Date.UTC(taxYear, 0, 1));
+  const to = new Date(Date.UTC(taxYear + 1, 0, 1));
+
+  const items = await db.paymentRunItem.findMany({
+    where: {
+      organizationId,
+      contractorId,
+      status: 'PAID',
+      paymentRun: { completedAt: { gte: from, lt: to } },
+    },
+    select: {
+      whtAmountMinor: true,
+      currency: true,
+      paymentRun: { select: { completedAt: true } },
+    },
+  });
+
+  let totalUsdMinor = 0;
+  for (const item of items) {
+    if (!item.whtAmountMinor || item.whtAmountMinor <= 0) {
+      continue;
+    }
+    if (item.currency === 'USD') {
+      totalUsdMinor += item.whtAmountMinor;
+      continue;
+    }
+    const paymentDate = item.paymentRun.completedAt ?? new Date();
+    const conversion = await convertAmount(
+      db,
+      item.whtAmountMinor,
+      item.currency,
+      'USD',
+      paymentDate,
+      FX_CONVERSION_MAX_AGE_DAYS,
+    );
+    if (!conversion) {
+      throw new Error(
+        `aggregateBox7WithheldMinor: no payment-date FX rate for ${item.currency}->USD on ${paymentDate.toISOString()}`,
+      );
+    }
+    totalUsdMinor += conversion.amountMinor;
+  }
+
+  return totalUsdMinor;
 }
 
 /**
@@ -192,12 +259,10 @@ export const form1042sRouter = router({
    * that leaves the server on this path (the gated full reveal is a separate
    * procedure). Scoped to the staff tenant org.
    */
-  list: tenantProcedure
+  list: usExpansionProcedure
     .use(requirePermission({ contractor: ['read'] }))
     .input(z.object({ taxYear: z.number().int().min(2020).max(2100).optional() }).strict())
     .query(async ({ ctx, input }) => {
-      assertUsExpansionEnabled(ctx.organizationId, ctx.region);
-
       return ctx.db.form1042S.findMany({
         where: {
           organizationId: ctx.organizationId,
@@ -229,12 +294,10 @@ export const form1042sRouter = router({
    * active W-8 submissions on file; box figures are aggregated server-side from
    * settled payouts. Idempotent + audited (delegated to the service).
    */
-  generateBatch: tenantProcedure
+  generateBatch: usExpansionProcedure
     .use(requirePermission({ contractor: ['update'] }))
     .input(z.object({ taxYear: z.number().int().min(2020).max(2100) }).strict())
     .mutation(async ({ ctx, input }) => {
-      assertUsExpansionEnabled(ctx.organizationId, ctx.region);
-
       const org = await ctx.db.organization.findUnique({
         where: { id: ctx.organizationId },
         select: { name: true },
@@ -245,7 +308,7 @@ export const form1042sRouter = router({
         where: {
           organizationId: ctx.organizationId,
           formType: { in: ['W8BEN', 'W8BENE'] },
-          supersededById: null,
+          status: 'ACTIVE',
         },
         select: {
           formType: true,
@@ -270,11 +333,12 @@ export const form1042sRouter = router({
           continue;
         }
 
-        const box2 = await resolveBox2Rate({
-          contractorResidency: submission.contractorResidency ?? 'XX',
-          w8ChainComplete,
-          resolveTreaty: applyTreaty,
-        });
+        const box7FederalTaxWithheldMinor = await aggregateBox7WithheldMinor(
+          ctx.db,
+          ctx.organizationId,
+          contractor.id,
+          input.taxYear,
+        );
 
         recipients.push({
           recipientId: contractor.id,
@@ -285,7 +349,7 @@ export const form1042sRouter = router({
           contractorResidency: submission.contractorResidency ?? 'XX',
           w8ChainComplete,
           box2GrossIncomeMinor,
-          box7FederalTaxWithheldMinor: chap3WithheldMinor(box2GrossIncomeMinor, box2.rate),
+          box7FederalTaxWithheldMinor,
           box1IncomeCode: INDEPENDENT_SERVICES_INCOME_CODE,
         });
       }
@@ -322,12 +386,10 @@ export const form1042sRouter = router({
    * unproven) — nothing files on that outcome. Review-before-file: this never
    * transmits.
    */
-  buildAndValidateXml: tenantProcedure
+  buildAndValidateXml: usExpansionProcedure
     .use(requirePermission({ contractor: ['read'] }))
     .input(z.object({ taxYear: z.number().int().min(2020).max(2100) }).strict())
     .query(async ({ ctx, input }) => {
-      assertUsExpansionEnabled(ctx.organizationId, ctx.region);
-
       const org = await ctx.db.organization.findUnique({
         where: { id: ctx.organizationId },
         select: { name: true, legalName: true },
@@ -363,12 +425,10 @@ export const form1042sRouter = router({
    * duplicate submission rows, and stamps the Pub 1187 schema version so the
    * shared submission ledger never confuses a 1042-S with a 1099. Audited.
    */
-  downloadValidatedXml: tenantProcedure
+  downloadValidatedXml: usExpansionProcedure
     .use(requirePermission({ contractor: ['update'] }))
     .input(z.object({ taxYear: z.number().int().min(2020).max(2100) }).strict())
     .mutation(async ({ ctx, input }) => {
-      assertUsExpansionEnabled(ctx.organizationId, ctx.region);
-
       const org = await ctx.db.organization.findUnique({
         where: { id: ctx.organizationId },
         select: { name: true, legalName: true },
@@ -447,7 +507,7 @@ export const form1042sRouter = router({
    * never lands on a 1099 submission for the same (org, tax year). The ack file is
    * untrusted — `parseIrisAck` is XXE-safe and never `as`-casts.
    */
-  uploadAck: tenantProcedure
+  uploadAck: usExpansionProcedure
     .use(requirePermission({ contractor: ['update'] }))
     .input(
       z
@@ -459,8 +519,6 @@ export const form1042sRouter = router({
         .strict(),
     )
     .mutation(async ({ ctx, input }) => {
-      assertUsExpansionEnabled(ctx.organizationId, ctx.region);
-
       let parsed: ReturnType<typeof parseIrisAck>;
       try {
         parsed = parseIrisAck(input.ackXml);
@@ -532,7 +590,7 @@ export const form1042sRouter = router({
    * transaction. Audited (delegated to the service). The filed row is never
    * mutated in place.
    */
-  fileCorrection: tenantProcedure
+  fileCorrection: usExpansionProcedure
     .use(requirePermission({ contractor: ['update'] }))
     .input(
       z
@@ -543,8 +601,6 @@ export const form1042sRouter = router({
         .strict(),
     )
     .mutation(async ({ ctx, input }) => {
-      assertUsExpansionEnabled(ctx.organizationId, ctx.region);
-
       const form = await ctx.db.form1042S.findFirst({
         where: {
           id: input.formId,
@@ -567,7 +623,7 @@ export const form1042sRouter = router({
           organizationId: ctx.organizationId,
           contractorId: form.recipientId,
           formType: { in: ['W8BEN', 'W8BENE'] },
-          supersededById: null,
+          status: 'ACTIVE',
         },
         select: {
           formType: true,
@@ -599,7 +655,12 @@ export const form1042sRouter = router({
         resolveTreaty: applyTreaty,
       });
       const box3bChap3RateBp = Math.round(box2.rate * 100);
-      const box7FederalTaxWithheldMinor = chap3WithheldMinor(box2GrossIncomeMinor, box2.rate);
+      const box7FederalTaxWithheldMinor = await aggregateBox7WithheldMinor(
+        ctx.db,
+        ctx.organizationId,
+        form.recipientId,
+        form.taxYear,
+      );
       const box1IncomeCode = form.box1IncomeCode ?? INDEPENDENT_SERVICES_INCOME_CODE;
 
       const snapshotJson = buildForm1042SSnapshot({
@@ -641,12 +702,10 @@ export const form1042sRouter = router({
    * Render (if needed) and return a short-TTL signed URL for the recipient-copy
    * PDF. The PDF is rendered from the immutable masked snapshot — no full FTIN.
    */
-  getRecipientCopyUrl: tenantProcedure
+  getRecipientCopyUrl: usExpansionProcedure
     .use(requirePermission({ contractor: ['read'] }))
     .input(z.object({ formId: z.string().min(1) }).strict())
     .mutation(async ({ ctx, input }) => {
-      assertUsExpansionEnabled(ctx.organizationId, ctx.region);
-
       const form = await ctx.db.form1042S.findFirst({
         where: { id: input.formId, organizationId: ctx.organizationId },
         select: { id: true, taxYear: true },
@@ -670,12 +729,10 @@ export const form1042sRouter = router({
    * Reveal the full recipient FTIN — staff-router only, gated by
    * `contractorPii:read`, and audited. Every other surface uses the last-4 mask.
    */
-  revealRecipientFtin: tenantProcedure
+  revealRecipientFtin: usExpansionProcedure
     .use(requirePermission({ contractorPii: ['read'] }))
     .input(z.object({ formId: z.string().min(1) }).strict())
     .mutation(async ({ ctx, input }) => {
-      assertUsExpansionEnabled(ctx.organizationId, ctx.region);
-
       const form = await ctx.db.form1042S.findFirst({
         where: { id: input.formId, organizationId: ctx.organizationId },
         select: { id: true, recipientId: true },
@@ -707,3 +764,6 @@ export const form1042sRouter = router({
       return { ftin };
     }),
 });
+
+/** @internal Exported for box-2 / box-7 aggregation unit tests only. */
+export { aggregateBox2GrossMinor, aggregateBox7WithheldMinor };

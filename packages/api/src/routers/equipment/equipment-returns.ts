@@ -62,6 +62,25 @@ export const equipmentReturnsRouter = router({
         });
       }
 
+      const claimed = await ctx.db.returnRequest.updateMany({
+        where: {
+          id: input.id,
+          organizationId: ctx.organizationId,
+          status: 'PENDING_APPROVAL',
+        },
+        data: {
+          status: 'APPROVED',
+          approvedByUserId: ctx.user.id,
+          approvedAt: new Date(),
+        },
+      });
+      if (claimed.count === 0) {
+        throw new TRPCError({
+          code: 'CONFLICT',
+          message: RETURN_REQUEST_NOT_PENDING,
+        });
+      }
+
       // Load all equipment assigned to the contractor (all-or-nothing)
       const assignments = await ctx.db.equipmentAssignment.findMany({
         where: {
@@ -133,6 +152,24 @@ export const equipmentReturnsRouter = router({
         async tx => {
           const firstShipmentId = shipmentRows[0]?.id ?? null;
 
+          const finalized = await tx.returnRequest.updateMany({
+            where: {
+              id: input.id,
+              organizationId: ctx.organizationId,
+              status: 'APPROVED',
+            },
+            data: {
+              status: 'SHIPMENT_CREATED',
+              shipmentId: firstShipmentId,
+            },
+          });
+          if (finalized.count === 0) {
+            throw new TRPCError({
+              code: 'CONFLICT',
+              message: RETURN_REQUEST_NOT_PENDING,
+            });
+          }
+
           if (shipmentRows.length > 0) {
             await tx.shipment.createMany({
               data: shipmentRows as Parameters<typeof tx.shipment.createMany>[0]['data'],
@@ -166,14 +203,8 @@ export const equipmentReturnsRouter = router({
             ]);
           }
 
-          const updated = await tx.returnRequest.update({
+          const updated = await tx.returnRequest.findUniqueOrThrow({
             where: { id: input.id },
-            data: {
-              status: 'SHIPMENT_CREATED',
-              approvedByUserId: ctx.user.id,
-              approvedAt: new Date(),
-              shipmentId: firstShipmentId,
-            },
             include: {
               contractor: {
                 select: { id: true, displayName: true },

@@ -9,10 +9,15 @@
 
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import { CONTRACTOR_NOT_FOUND } from '../../errors';
+import { CONTRACTOR_NOT_FOUND, IR35_ATTESTATION_ALREADY_EXISTS } from '../../errors';
 
 import { router } from '../../init';
+import { requirePermission } from '../../middleware/rbac';
 import { classificationProcedure } from '../../middleware/require-classification-flag';
+
+const contractorUpdateProcedure = classificationProcedure.use(
+  requirePermission({ contractor: ['update'] }),
+);
 
 const attestationSelect = {
   id: true,
@@ -54,7 +59,7 @@ export const ir35AttestationRouter = router({
    * Upsert attestation for an engagement. `signedAt` is set server-side whenever
    * statementText or signedName changes to ensure the signature timestamp is trusted.
    */
-  upsert: classificationProcedure.input(upsertInput).mutation(async ({ input, ctx }) => {
+  upsert: contractorUpdateProcedure.input(upsertInput).mutation(async ({ input, ctx }) => {
     const now = new Date();
     const existing = await ctx.db.ir35OtherClientAttestation.findUnique({
       where: { contractorAssignmentId: input.contractorAssignmentId },
@@ -75,16 +80,40 @@ export const ir35AttestationRouter = router({
       });
     }
 
-    return ctx.db.ir35OtherClientAttestation.create({
-      data: {
-        organizationId: ctx.organizationId,
-        contractorAssignmentId: input.contractorAssignmentId,
-        statementText: input.statementText,
-        signedName: input.signedName,
-        signedAt: now,
-      },
-      select: attestationSelect,
-    });
+    try {
+      return await ctx.db.ir35OtherClientAttestation.create({
+        data: {
+          organizationId: ctx.organizationId,
+          contractorAssignmentId: input.contractorAssignmentId,
+          statementText: input.statementText,
+          signedName: input.signedName,
+          signedAt: now,
+        },
+        select: attestationSelect,
+      });
+    } catch (err) {
+      if (typeof err === 'object' && err !== null && (err as { code?: unknown }).code === 'P2002') {
+        const raced = await ctx.db.ir35OtherClientAttestation.findUnique({
+          where: { contractorAssignmentId: input.contractorAssignmentId },
+          select: { id: true, statementText: true, signedName: true },
+        });
+        if (!raced) {
+          throw new TRPCError({ code: 'CONFLICT', message: IR35_ATTESTATION_ALREADY_EXISTS });
+        }
+        const unchanged =
+          raced.statementText === input.statementText && raced.signedName === input.signedName;
+        return ctx.db.ir35OtherClientAttestation.update({
+          where: { id: raced.id },
+          data: {
+            statementText: input.statementText,
+            signedName: input.signedName,
+            signedAt: unchanged ? undefined : now,
+          },
+          select: attestationSelect,
+        });
+      }
+      throw err;
+    }
   }),
 
   /**

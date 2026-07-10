@@ -8,13 +8,15 @@ source_commit: 28061f01e
 source_commit: c8f8ffdbc
 source_commit: e367c07fed8a84c5b504f6b0fbeb0608e2471330
 source_commit: 5d5aff4c6
+source_commit: e0d533fa
 verify_with:
   - apps/cron-worker/src/jobs/handlers/
+  - apps/cron-worker/src/jobs/job-meta.ts
   - apps/cron-worker/src/jobs/handlers/reminders/wt-limit-scan.ts
   - packages/api/src/services/wt-limit-scan.ts
   - apps/api/src/lib/qstash-route.ts
   - packages/db/prisma/schema/cron.prisma
-updated: 2026-07-05
+updated: 2026-07-10
 ---
 
 # Cron worker jobs
@@ -45,6 +47,7 @@ sequenceDiagram
 | `boe-rate-poll.ts` | BoE base rate | [[domains/payments-and-bank-files]] |
 | `compliance-reminder.ts` | compliance renewals — shared scan entry (`executeComplianceReminderScan`) run via the `reminders` fan-out, not a standalone registered job | [[domains/compliance-dashboard]] |
 | `classification-economic-dependency.ts` | §2 SGB VI scan | [[domains/classification-ir35]] |
+| `contract-expiry-scan.ts` (`runContractExpiryScan`, `0 4 * * *`; `CRON_CONTRACT_EXPIRY_SCAN_SCHEDULE`) | ACTIVE→EXPIRING (30d window) + ACTIVE/EXPIRING→EXPIRED; per-region fan-out, CAS + audit | [[domains/contracts-lifecycle]] |
 | `form-1099k-tracker.ts` | informational 1099-K band scan (`module.us-expansion`; never files) | [[domains/us-tax-forms]] |
 | `year-end-1099-reminder.ts` | notify-only 1099-NEC batch-due reminder (`module.us-expansion`; **never generates or transmits**; mid-January, deduped per tax year) | [[domains/us-tax-year-end-filing]] |
 | `classification-reassessment-triggers.ts` | IR35 triggers | [[domains/classification-ir35]] |
@@ -58,9 +61,11 @@ sequenceDiagram
 | `trial-notifications.ts` | billing trial | [[domains/billing-and-feature-gates]] |
 | `stripe-reconcile.ts` | daily Stripe subscription status/tier drift repair (`0 1 * * *`; `CRON_STRIPE_RECONCILE_SCHEDULE`) | [[integrations/stripe-billing]] |
 | `zatca-reconcile.ts` | resubmit ZATCA chains stuck PENDING past `CRON_ZATCA_RECONCILE_STALE_MINUTES` (`*/15 * * * *`; `CRON_ZATCA_RECONCILE_SCHEDULE`) | [[integrations/zatca]] |
+| `peppol-reconcile.ts` | re-enqueue lost `peppol.outbound` jobs — post-approval invoices on Peppol-connected orgs with contractor Peppol ids and no in-flight/delivered OUTBOUND transmission; `SUPPORTED_REGIONS` fan-out; delegates to idempotent `maybeEnqueuePeppolOutbound` (`*/15 * * * *`; `CRON_PEPPOL_RECONCILE_SCHEDULE`) | [[integrations/peppol]] |
 | `data-purge.ts` | GDPR retention | [[domains/consent-gdpr-pdpl]] |
 | `inpost-status-poll.ts` | courier polling | [[domains/equipment-logistics]] |
 | `late-interest-pdf-reaper.ts` | LPC PDF cleanup | [[domains/payments-and-bank-files]] |
+| `document-virus-scan-reconcile.ts` | re-schedule stale `PENDING`/`FAILED` document virus scans (`*/5`; `CRON_DOCUMENT_VIRUS_SCAN_RECONCILE_SCHEDULE`) | [[domains/documents-and-ocr]] |
 | `job-health.ts` | cron monitor | [[integrations/qstash-cron]] |
 
 ## Invariants
@@ -68,6 +73,8 @@ sequenceDiagram
 - **The runner (`jobs/runner.ts`) guards every job in one place, not per handler.** Each tick gets: (1) an **in-process overlap guard** — a `Set` of in-flight job names; a tick whose previous run is still running is skipped + WARN-logged (`cron.tick.skipped_overlap`); (2) a **per-tick Postgres advisory lock** `pg_try_advisory_xact_lock('cron', jobName)` held for the whole handler by keeping its transaction open while the handler runs on separate pool connections — a second replica that can't acquire it skips the tick (`cron.tick.skipped_locked`); (3) a **hard wall-clock timeout** (`maxMs`, per-job in `jobs/job-meta.ts`, default `CRON_JOB_DEFAULT_MAX_MS`=5 min) via `Promise.race` — a hung handler is abandoned and a `cron.outcome=timeout` message is sent to Sentry (the handler keeps running on its pool connections since JS can't cancel a promise; the guard releases so the next tick may retry). `reminders` self-locks on its own `cron:reminders` key inside its handler — a distinct key from the runner's `cron:<jobName>`, so they never collide.
 - **Per-job last-success is persisted, not in-memory.** The runner upserts `CronJobRunState` (`packages/db/prisma/schema/cron.prisma`, global/non-tenant, keyed `jobName @unique`) on every run — `lastRunAt` each tick, `lastSuccessAt` on success — so state survives a cron-worker restart (the in-memory `lastSuccessByJob` map, still served by `/health`, is wiped on restart, which used to hide missed ticks). On boot, `runStartupCatchUp` re-runs each **must-run daily job** (`catchUpOnBoot` in `job-meta.ts`) whose persisted `lastSuccessAt` predates one interval, so a restart that spanned a daily window doesn't silently skip a day.
 - **`job-health.ts` alerts on a dead cron job, not just stale webhooks.** Alongside the `WebhookDelivery` reaper it reads every `CronJobRunState` row and, using the nominal cadence in `CRON_JOB_INTERVALS_MS` (`jobs/job-meta.ts`), fires a Sentry `alert.type=cron_job_stale` when `now - (lastSuccessAt ?? createdAt) > 2 × interval` for a job (a scheduler that silently stopped firing a job is otherwise undetectable). Jobs without a known interval are skipped; the staleness check is isolated in its own try/catch so it can't abort the webhook reaper.
+- **Every registered job needs a `job-meta.ts` entry — jobs without meta are invisible to the staleness alert.** `apps/cron-worker/src/jobs/job-meta.ts` carries entries for `hris-sync`, `api-key-leak-alarm`, and `year-end-1099-reminder` (HOUR / HOUR / DAY + `catchUpOnBoot`); a job missing from meta has no known interval and is silently skipped by the `job-health` staleness check.
+- **`job-health` also gauges the cross-region terminal-FAILED outbox backlog.** It fans out `SUPPORTED_REGIONS` via `getRegionalClient`, emits `jobs.outbox.failed_backlog`, and fires a Sentry alert past 10 (`apps/cron-worker/src/jobs/handlers/job-health.ts`). FAILED is terminal (retries exhausted) — the gauge is the operator's replay queue depth.
 - `createCronLogger` — no `console.*`
 - **`data-purge.ts` runs once PER configured region — the single frankfurt cron-worker is not DB-blind.** It iterates `SUPPORTED_REGIONS`, resolving each region's base writer via `getRegionalClient(region)` and running the full retention pass (documents + R2, invoices, contracts, contractors, personnel files) against that region's DB — so ME (and future US) soft-deletes + GDPR erasures are finalised, not just the `DATABASE_URL` region. A region whose `DATABASE_URL_<region>` is unset (e.g. US locally) throws in `getRegionalClient` and is **skipped** (surfaced in `details.regionsSkipped`); a failure in one region is Sentry-captured with a `purge.region` tag and does not abort the others. R2 cleanup uses `deleteRegionalObject(key, region)` (region passed explicitly — the cron has no `tenantStore` context) so blobs are deleted from the org's regional bucket, never the legacy default. Runs on the **base** (non-soft-delete) client, so every `deleteMany` is a true DELETE gated by the per-model retention cutoff (`getRetentionCutoff`) — a statutorily retained model (`Form1099Nec` 4yr, akta osobowe windows) is never destroyed early.
 - QStash routes: `defineQStashRoute` + Zod body (`apps/api/src/lib/qstash-route.ts`)
@@ -77,7 +84,8 @@ sequenceDiagram
 - **User-facing notification copy is i18n, never hardcoded English.** Cron handlers pass dotted `Notifications.*` keys (into `apps/web-vite/messages/<locale>.json`) as `dispatch({ title, body, metadata })`. `dispatch`'s `resolveEventCopy` resolves them against the org's `Organization.language` (single locale per org, resolved at write time), with `metadata` supplying `{placeholder}` params — used by `reminders/` (contract/invoice/task) and `drv-clearance-expiries.ts`.
 - **Bespoke cron emails** that bypass the React-Email pipeline (`trial-notifications.ts` → `sendAppEmail` raw HTML) resolve copy directly via `resolveMessage(key, normalizeLocale(org.language))` from `@contractor-ops/api/i18n/email-i18n` — the same bundle reader the email templates use.
 - **`stripe-reconcile.ts` is the entitlement-drift backstop, not the primary path.** Webhooks own subscription state; this daily job pages `stripe.subscriptions.list({ status: 'all' })` and repairs any `Subscription` row whose `status`/`tier` disagrees with Stripe (source of truth). It writes Stripe's value directly but **never touches `lastEventCreated`**, so the webhook out-of-order guard stays intact. Idempotent (a re-run is a no-op on matching rows) and no advisory lock — it makes no in-place decisions, only convergent writes. Reaches Stripe via `@contractor-ops/api/services/stripe-client` (lazy `getServerEnv()`) + `buildSubscriptionData` from `@contractor-ops/billing/webhook`.
-- **`zatca-reconcile.ts` is the ZATCA submission backstop.** QStash retries own the fast recovery from a transient submit failure; this cron (`*/15`) catches a submission whose retries were exhausted by a longer outage. It delegates to `reconcilePendingZatcaChains` (`@contractor-ops/api/services/zatca-submission`), which resubmits every `ZatcaInvoiceChain` still PENDING past `CRON_ZATCA_RECONCILE_STALE_MINUTES` (default 15) reusing the row's original `zatcaUuid` (ZATCA dedups on the uuid). Idempotent — an already-settled chain is skipped and a still-failing one stays PENDING for the next tick; per-chain failures are counted, never aborting the sweep. See [[integrations/zatca]].
+- **`zatca-reconcile.ts` is the ZATCA submission backstop.** QStash retries own the fast recovery from a transient submit failure; this cron (`*/15`) catches a submission whose retries were exhausted by a longer outage. It delegates to `reconcilePendingZatcaChains` (`@contractor-ops/api/services/zatca-submission`), which **fans out across `SUPPORTED_REGIONS`** and resubmits every `ZatcaInvoiceChain` still PENDING past `CRON_ZATCA_RECONCILE_STALE_MINUTES` (default 15) reusing the row's original `zatcaUuid` (ZATCA dedups on the uuid). Idempotent — an already-settled chain is skipped and a still-failing one stays PENDING for the next tick; per-chain failures are counted, never aborting the sweep. See [[integrations/zatca]].
+- **`form-1099k-tracker.ts` / `year-end-1099-reminder.ts` / `api-key-leak-alarm.ts` / `contract-expiry-scan.ts` fan out across regions.** Each service iterates `SUPPORTED_REGIONS` with `getRegionalClient` (skipping unconfigured regions) so ME/US org data is not invisible to EU-pinned `prismaRaw`. Pattern matches `compliance-reminder-scan` / `data-purge`.
 
 ## Related
 

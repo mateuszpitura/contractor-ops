@@ -6,6 +6,7 @@ import { cursorClause, paginateByLastKeptUndefined } from '../../lib/pagination'
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
 import { requireTier } from '../../middleware/tier';
+import { writeAuditLog } from '../../services/audit-writer';
 import { generateAuditCsv } from '../../services/report-export';
 
 // ---------------------------------------------------------------------------
@@ -255,6 +256,26 @@ export const auditRouter = router({
         where,
         orderBy: { createdAt: 'desc' },
         take: 10000,
+      });
+
+      await writeAuditLog({
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user?.id,
+        action: 'AUDIT_LOG_EXPORT',
+        resourceType: 'ORGANIZATION',
+        resourceId: ctx.organizationId,
+        metadata: {
+          rowCount: items.length,
+          filters: {
+            search: input.search ?? null,
+            actorId: input.actorId ?? null,
+            action: input.action ?? null,
+            resourceType: input.resourceType ?? null,
+            dateFrom: input.dateFrom ?? null,
+            dateTo: input.dateTo ?? null,
+          },
+        },
       });
 
       const csv = await generateAuditCsv(items);

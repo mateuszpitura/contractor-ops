@@ -30,10 +30,12 @@ export function useOrgSwitcher(): OrgSwitcherView {
   const { data: orgList } = auth.useListOrganizations();
   const [isCreating, setIsCreating] = useState(false);
 
-  const organizations: OrgSwitcherListItem[] = (orgList ?? []).map(org => ({
-    id: org.id,
-    name: org.name,
-  }));
+  const organizations: OrgSwitcherListItem[] = (orgList ?? []).map(
+    (org: { id: string; name: string }) => ({
+      id: org.id,
+      name: org.name,
+    }),
+  );
 
   const handleOrgSwitch = useCallback(
     async (orgId: string) => {

@@ -2,7 +2,7 @@
  * Invoice matching procedures.
  */
 
-import type { Prisma } from '@contractor-ops/db';
+import { Prisma } from '@contractor-ops/db/generated/prisma/client';
 import { entityIdSchema, invoiceManualMatchSchema } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
@@ -10,8 +10,9 @@ import * as E from '../../errors';
 import { router } from '../../init';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
+import { writeAuditLog } from '../../services/audit-writer';
 import { CacheKeys, invalidateByPrefix } from '../../services/cache';
-import { runAutoMatch } from '../../services/invoice-matching';
+import { resolveInvoiceMatchLinks, runAutoMatch } from '../../services/invoice-matching';
 import { applyReverseCharge } from '../../services/reverse-charge.service';
 
 export const invoiceMatchingRouter = router({
@@ -63,6 +64,8 @@ export const invoiceMatchingRouter = router({
         {
           id: invoice.id,
           sellerTaxId: invoice.sellerTaxId,
+          subtotalMinor: invoice.subtotalMinor,
+          vatRate: invoice.vatRate,
           totalMinor: invoice.totalMinor,
           currency: invoice.currency,
           duplicateCheckHash: invoice.duplicateCheckHash,
@@ -73,12 +76,17 @@ export const invoiceMatchingRouter = router({
         deviationThreshold,
       );
 
+      const linkedIds = resolveInvoiceMatchLinks(matchResult, {
+        contractorId: invoice.contractorId,
+        contractId: invoice.contractId,
+      });
+
       // Auto-detect reverse charge when matched to a contractor
       let reverseChargeUpdate: { isReverseCharge: boolean } | undefined;
-      if (matchResult.contractorId) {
+      if (linkedIds.contractorId) {
         const rcResult = await applyReverseCharge({
           organizationId: ctx.organizationId,
-          contractorId: matchResult.contractorId,
+          contractorId: linkedIds.contractorId,
           reverseChargeOverride: invoice.reverseChargeOverride,
         });
         reverseChargeUpdate = { isReverseCharge: rcResult.isReverseCharge };
@@ -109,8 +117,8 @@ export const invoiceMatchingRouter = router({
         const inv = await tx.invoice.update({
           where: { id: invoice.id },
           data: {
-            contractorId: matchResult.contractorId,
-            contractId: matchResult.contractId,
+            contractorId: linkedIds.contractorId,
+            contractId: linkedIds.contractId,
             matchStatus: matchResult.matchStatus,
             status: 'UNDER_REVIEW',
             flagsJson: matchResult.flags.length > 0 ? matchResult.flags : undefined,
@@ -149,6 +157,13 @@ export const invoiceMatchingRouter = router({
         });
       }
 
+      if (!['RECEIVED', 'UNDER_REVIEW'].includes(invoice.status)) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: E.INVOICE_NOT_RECEIVED_STATUS,
+        });
+      }
+
       // Validate contractor belongs to org
       const contractor = await ctx.db.contractor.findFirst({
         where: {
@@ -165,12 +180,13 @@ export const invoiceMatchingRouter = router({
         });
       }
 
-      // Validate contract belongs to org (if provided)
+      // Validate contract belongs to org and contractor (if provided)
       if (input.contractId) {
         const contract = await ctx.db.contract.findFirst({
           where: {
             id: input.contractId,
             organizationId: ctx.organizationId,
+            contractorId: input.contractorId,
             deletedAt: null,
           },
         });
@@ -214,6 +230,23 @@ export const invoiceMatchingRouter = router({
           },
         });
 
+        await writeAuditLog({
+          tx,
+          organizationId: ctx.organizationId,
+          actorType: 'USER',
+          actorId: ctx.user?.id,
+          actorName: ctx.user?.name,
+          action: 'invoice.manual-match',
+          resourceType: 'INVOICE',
+          resourceId: inv.id,
+          resourceName: inv.invoiceNumber,
+          metadata: {
+            contractorId: input.contractorId,
+            contractId: input.contractId ?? null,
+            isReverseCharge: rcResult.isReverseCharge,
+          },
+        });
+
         return inv;
       });
 
@@ -246,11 +279,29 @@ export const invoiceMatchingRouter = router({
       const currentFlags = Array.isArray(invoice.flagsJson) ? (invoice.flagsJson as string[]) : [];
       const updatedFlags = currentFlags.filter(f => f !== 'DUPLICATE_SUSPECTED');
 
-      const updated = await ctx.db.invoice.update({
-        where: { id: input.id },
-        data: {
-          flagsJson: updatedFlags.length > 0 ? updatedFlags : undefined,
-        },
+      const updated = await ctx.db.$transaction(async tx => {
+        const inv = await tx.invoice.update({
+          where: { id: input.id },
+          data: {
+            flagsJson: updatedFlags.length > 0 ? updatedFlags : Prisma.DbNull,
+          },
+        });
+
+        await writeAuditLog({
+          tx,
+          organizationId: ctx.organizationId,
+          actorType: 'USER',
+          actorId: ctx.user?.id,
+          actorName: ctx.user?.name,
+          action: 'invoice.dismiss-duplicate',
+          resourceType: 'INVOICE',
+          resourceId: inv.id,
+          resourceName: inv.invoiceNumber,
+          oldValues: { flagsJson: currentFlags },
+          newValues: { flagsJson: updatedFlags },
+        });
+
+        return inv;
       });
 
       return updated;

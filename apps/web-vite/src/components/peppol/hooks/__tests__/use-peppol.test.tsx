@@ -307,7 +307,7 @@ describe('usePeppolWizard', () => {
     setupConnect();
     const { result } = renderHookWithProviders(() => usePeppolWizard({ onOpenChange: vi.fn() }));
     act(() => result.current.setTrn('123456789012345'));
-    expect(result.current.participantId).toBe('0192:123456789012345');
+    expect(result.current.participantId).toBe('0235:123456789012345');
     expect(result.current.canGoNext).toBe(true);
   });
 

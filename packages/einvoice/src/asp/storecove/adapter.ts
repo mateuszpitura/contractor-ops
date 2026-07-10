@@ -214,7 +214,7 @@ export class StorecoveAdapter implements ASPAdapter {
         xml: params.xml,
         senderLegalEntityId: 0, // Caller should resolve this from participant data
         receiverIdentifier: receiverIdentifier ?? params.receiverParticipantId,
-        receiverScheme: receiverScheme ?? '0192',
+        receiverScheme: receiverScheme ?? '0235',
         documentType: resolveDocumentTypeId(params),
         // DRIFT-01: feed the organizationId into the idempotency-key
         // derivation so retries from any code path (orchestrator, outbox,

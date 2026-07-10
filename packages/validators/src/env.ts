@@ -458,7 +458,21 @@ export const serverEnvSchema = coreSchema
   .merge(proxySchema)
   .merge(infisicalSchema)
   .merge(posthogServerSchema)
-  .merge(demoSchema);
+  .merge(demoSchema)
+  .superRefine((env, ctx) => {
+    // API_URL defaults to http://localhost:4000 for dev ergonomics. In
+    // production the Fastify host is the QStash callback + external-provider
+    // webhook target — an unset (default localhost) value silently breaks every
+    // QStash callback, so fail fast at boot rather than 127.0.0.1-loop in prod.
+    if (env.NODE_ENV === 'production' && env.API_URL === 'http://localhost:4000') {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['API_URL'],
+        message:
+          'API_URL must be set to the production Fastify host when NODE_ENV=production (still the http://localhost:4000 default).',
+      });
+    }
+  });
 
 // ── Client env (NEXT_PUBLIC_ only) ──────────────────────────────────────────
 

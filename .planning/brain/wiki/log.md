@@ -5,6 +5,74 @@ type: log
 
 # Wiki log (append only)
 
+## 2026-07-10 — Shield patterns from adversarial round 2 (~01:45 batch)
+
+Extended skill with S8–S10, T8–T11 (same-file stale refs, seed backfill, handler sibling fan-out, nullable silent wrong math, batch determinism, boolean→enum guess, mandatory touched-module vitest). Wiki table maps handoff round-2 findings → pattern classes. Hooks unchanged — T11 is verify-gate not PreToolUse.
+
+## 2026-07-10 — Business logic shield skill + hooks
+
+New agent skill `.claude/skills/business-logic-shield/` (S1–S7, T1–T7 from business-logic review). Opt-in hooks: `[shield]` blocks logic-path Write/Edit until skill read + `.claude/hooks/.state/shield-scope.json`; `[shield-strict]` also blocks Grep/Glob until skill read. Implementation: `shield-workflow-{lib,prompt,track,guard}.js` (`.claude/` + `.codex/`). Cursor rule `35-business-logic-shield.mdc`. Wiki: [[patterns/business-logic-shield]].
+
+## 2026-07-10 — Contract expiry cron + isExpired TZ fix
+
+`runContractExpiryScan` (`packages/api/src/services/contract-expiry-scan.ts`) + `contract-expiry-scan` cron handler (`0 4 * * *`, `CRON_CONTRACT_EXPIRY_SCAN_SCHEDULE`): per-region fan-out, ACTIVE→EXPIRING within 30 calendar days of `endDate`, ACTIVE/EXPIRING→EXPIRED when `endDate` < today, CAS `updateMany` + SYSTEM `STATUS_TRANSITION` audit. `isExpired`/`daysUntilExpiryInTz` now build expiry boundary from UTC Y-M-D of `@db.Date` (fixes US negative-offset off-by-one). Wiki: [[domains/contracts-lifecycle]], [[structure/cron-jobs]].
+
+## 2026-07-10 — Pack7-integrations MED/LOW closure
+
+API-key create/update/revoke + webhook-subscription CRUD/rotate audit in `$transaction`; import `commit` re-validates rows + audit; Jira disconnect audit-in-tx; gulf `setSaudiAssignmentFields` + saudization upserts + marketplace listing update audit-in-tx; deprovisioning `enableProviderForOrg` audit-in-tx; Linear inbound `validateTransition` + org-scoped task update; dispatcher kill-switch re-enqueues disabled attempts; subscribe create/update assert `module.outbound-webhooks`; Teams channel mapping + fallback approver audit; Jira/Linear status-mapping + task-config audit; import-processor uses `ctx.db`; dispatch rate-limit in-memory fallback. Wiki: [[domains/outbound-webhooks]], [[domains/onboarding-and-import]].
+
+## 2026-07-10 — Pack1-finance MED/LOW closure
+
+BACS `generateExport` audit in tx; `_initiatePayoutForRun` persists adapter order id on `PaymentRunItem.paymentReference`; `verifyBillingProfilePlaid` org-scoped update; `toggleReverseCharge` blocks PAID/IN_RUN/VOID; LPC `claim` audit; intake finalize updates pre-filter `organizationId`; `roundHalfUpMinor` + BACS digit-length + NACHA ABA checksum guards. Wiki: [[domains/payments-and-bank-files]].
+
+## 2026-07-10 — Pack2-tax MED/LOW closure
+
+`taxSummary` pending WHT uses uncertificated payment-run-item join; WHT cert `@unique(paymentRunItemId)` + P2002 retry; ZATCA onboarding + WHT list/issue use `ctx.db`; ZATCA UBL builder per-line VAT + grouped tax breakdown. Wiki: [[domains/tax-and-wht]], [[integrations/zatca]].
+
+## 2026-07-10 — Pack4-workforce MED/LOW closure
+
+Leave sick/adjust audits use `WORKER`; org leave-config audits use `ORGANIZATION` + config id in metadata; notification dispatch failures logged. Ewidencja: month-aligned period guard + `P2002` → `CONFLICT`. Payroll export: `sensitiveActionMiddleware` + explicit mixed-country batch rejection in `buildPayrollFeed`. Employee register/reveal audits use `resourceType:'EMPLOYEE'`. Wiki: [[domains/leave-and-time]], [[domains/payroll-export]].
+
+## 2026-07-10 — Pack5-workflow MED/LOW closure
+
+Bulk approval steps process sequentially (no parallel `advanceFlow` races); delegate/clarify audit already present; `processShipmentStatusChange` wraps DB writes + SYSTEM audit in one tx; `reassignTask` audit + IN_PROGRESS guard; `workflowRoles.list`/`selectForContractor` require `workflow:read`; equipment `createShipment` links active `assignmentId`; shipment event IIFE `.catch`. Wiki: [[domains/approvals-engine]], [[domains/workflows-and-roles]], [[domains/equipment-logistics]].
+
+## 2026-07-10 — Pack6-docs MED/LOW closure
+
+Reminder `update` maps whitelisted columns only (`buildReminderRuleUpdateData`); `reminderRuleUpdateSchema` is `.strict()`. New `document-virus-scan-reconcile` cron re-schedules stale `PENDING`/`FAILED` document scans. Wiki: [[domains/documents-and-ocr]], [[structure/cron-jobs]].
+
+## 2026-07-09 — Wave 2 partials (H-OFF-1/3/7, H-CLS-3, H-APP-1) + API test mock fixes
+
+Template builder exposes `IP_VERIFICATION` / `CONTRACT_HEALTH_CHECK` and auto-injects IP verification on new OFFBOARDING templates. `forceCompleteRunWithPendingCredentials` rejects any open non-terminal task. Deprovisioning retry enqueue failure reverts step to FAILED (matches start path). Classification dashboard test fixtures use uppercase band enums. Approval-engine adds unmocked `memberRoleToUserRole` test. API tests: deprovisioning `subjectType`, compliance virus-scan + contractor gate mocks, employee `personnelFile`, leave-approval billing/add-on/ledger mocks, reminder/v6 logger `createIntegrationLogger`. Wiki: [[domains/workflows-and-roles]].
+
+## 2026-07-09 — Zero-debt review closure (raw-pack LOW stragglers)
+
+Equipment auto-InPost + auto-complete SYSTEM audit rows; `resolveOcrCreditAllowance` blocks unknown-tier NaN credits; webhook dispatch rate-limit uses in-memory fallback when Redis errors (no fail-open); invoice-intake `findFirst({ id, organizationId })` on match/finalize paths. Handoff + review docs marked zero-debt ✅. Wiki: [[domains/equipment-logistics]], [[integrations/framework-core]], [[domains/documents-and-ocr]].
+
+## 2026-07-09 — Opportunistic MED/LOW review closure
+
+Business-logic review stragglers: InPost HTTP outside tx + FSM-filtered courier updates; e-sign read RBAC (`contract:read`); payroll export `employeePii:read`; leave submit balance scoped to leave year; OCR `createRegionalPresignedDownloadUrl`; Linear webhook `validateTransition`; deprovisioning + Gulf saudization audit-in-tx; classification/reassessment CAS; `invoice.create` audit. Handoff + review docs updated ✅. Wiki: [[domains/equipment-logistics]], [[integrations/docusign-esign]], [[domains/payroll-export]], [[domains/leave-and-time]], [[domains/documents-and-ocr]], [[domains/workflows-and-roles]], [[domains/idp-deprovisioning]], [[domains/gulf-saudization]], [[domains/classification-ir35]], [[domains/invoice-to-payment]].
+
+## 2026-07-09 — Residual review follow-ups (KSeF inbound, ZATCA OTP, Peppol 0235, T6/T7, MED batch)
+
+KSeF FA(3) inbound: `P_11A` parsed as gross (not VAT); mixed-rate `P_13_*`/`P_14_*` totals; buyer NIP relaxed for B2C/foreign (`schemas.ts`). ZATCA web-vite: OTP field on compliance CSID step (`compliance-csid.tsx`). Peppol: UI preview `0235:` + migration `20260709120000_peppol_uae_scheme_0235`. T6: `assertWorkforceEnabled` on classify approve/reject; HR dashboard requires `module.workforce-employees`; webhook create re-asserts `module.outbound-webhooks`. T7/MED: import-processor uses `ctx.db`; payment-run item transition guards; 1042-S box-2 FX to USD; WHT cert dedup; LPC waive/revoke audit; import commit audit; Peppol connect/disconnect audit; 1099 uploadAck schemaVersion filter; `forceCompleteRunWithPendingCredentials` → `override_blocking_task`. Updated [[integrations/ksef]], [[integrations/zatca]], [[integrations/peppol]].
+
+## 2026-07-09 — Business-logic review closure (docs + last gaps)
+
+Closed remaining review-pack HIGH rows: WHT certificate issuance audit (`wht-certificate.service.ts` + `tax.ts`); ZATCA compliance/production cert audit (`zatca-onboarding.ts` + `zatca.ts`); extended `CURRENCY_MAP` for Gulf/EU settlement currencies (`packages/shared/src/money.ts`); equipment return terminal `RECEIVED` enum (migration `20260708120000_equipment_return_received`). Updated handoff + consolidated review docs to 100% BLOCKER/HIGH status. Wiki: [[domains/equipment-logistics]], [[domains/payments-and-bank-files]], [[integrations/zatca]].
+
+## 2026-07-08 — Multi-region EU-pinning (C-29 / H-REG-1)
+
+Fixed EU-pinned out-of-request-frame paths: outbox drain (`drainOutboxBatch` fans `SUPPORTED_REGIONS`), webhook `_process`, Peppol QStash routes, ZATCA submit/reconcile, e-sign completion, public-API key resolve (`findAcrossRegions`), 1099-K/NEC crons, API-key leak alarm. New `@contractor-ops/db` helpers: `tryGetRegionalClient`, `findAcrossRegions`, `resolveOrganizationRegion`. Updated [[structure/cron-jobs]], [[patterns/transactional-outbox]].
+
+## 2026-07-08 — E-invoicing C-19..C-22 (ZATCA submit + Peppol UAE)
+
+ZATCA: `enqueueJob('zatca.submit')` on invoice approval; `queueZatcaSubmission` uses typed queue; REJECTED chain rows reset to PENDING on resubmit; invoice hash via `zatca/hash.ts` (C14N excl. extensions/QR, base64 to API). Onboarding uses real `ZatcaApiClient` + OTP on `requestComplianceCsid`. Peppol: UAE scheme **0235**; `peppol.outbound` producer on UAE approval. Updated [[integrations/zatca]], [[integrations/peppol]].
+
+## 2026-07-08 — Workforce C-5..C-9 (leave accrual, portal flow, PersonnelFile, HRIS linking)
+
+Wired built-but-unwired workforce seams: `leave-accrual.ts` (onboarding + daily cron + `leave.adjustBalance` + Jan-1 carryover); portal manager closes `ApprovalFlow` before `finalizeApprovedLeave`; `PersonnelFile` created on `employee.register` + HRIS upsert + dual termination mirror; HRIS email auto-match + `linkEmployee`/`listUnlinkedEmployees`; pull hash only when `applied:true`. Updated [[domains/leave-and-time]], [[domains/personnel-file]], [[domains/hris-sync]], [[domains/employee-portal]].
+
 ## 2026-07-06 — UAE + KSA statutory leave/working-time rules (Phase 92 reconcile, Theme B)
 
 Closed a real scope gap found while reconciling Phase 92: the per-market leave-accrual + working-time
@@ -856,3 +924,20 @@ Updated [[structure/api-routers-catalog]], [[domains/public-api-surface]].
 ## 2026-07-06 — Prisma: SigningEvent completion backstop + InvoiceInterestClaim note + migration replay health
 
 - [[structure/prisma-schema-areas]] — Review-fix follow-up (reviewer M3/LOW + replay-health). **FIX-A (M3):** `SigningEvent` gains a partial UNIQUE `signing_event_signed_pdf_saved_key` on `(signingEnvelopeId) WHERE eventType = 'SIGNED_PDF_SAVED'` (migration `20260705150000_signing_event_signed_pdf_saved_unique`) — makes the e-sign completion-idempotency guard (INT-1-4) atomic under concurrent webhook redelivery; the second writer is rejected P2002-as-idempotent (no duplicate signed `Document`). Service-side P2002 catch is a separate change set. **FIX-B (LOW):** `InvoiceInterestClaim @@unique([invoiceId])` stays a FULL unique — the model has no void/withdraw status column, so a partial "one ACTIVE claim" predicate is not yet expressible (documented in-schema; do NOT invent a column). **FIX-C (replay health):** `prisma migrate diff --from-migrations` (and `migrate deploy` / `db:migrate:all`) now apply the full history cleanly. Ordering: the four `__`-prefixed manual-gate migrations (Prisma sorts un-timestamped names FIRST, before `baseline`) re-timestamped `20260705160000..160003` in dependency order; `20260428000000_phase_73_...` re-dated `20260512000001` (it depends on the May-12 baseline). Missing CREATE migrations authored for db-push-only tables (the T0-6 "relation does not exist" class): gulf (`20260705160004_gulf_domain`), ewidencja (`20260630000000_ewidencja_snapshot`, before its `20260701000000_ewidencja_append_only` hardening), working-time/leave/reference (`20260705160005_working_time_leave_domain`). Also closed a pre-existing gap: `Worker_organizationId_fkey` (schema declared it, worker-base migration omitted it). **Remaining (out of scope, reported):** a large pre-existing accumulated db-push drift the replay diff now surfaces (additive enum variants + columns on ~10 tables, plus structural searchVector generated-column / PK / index-rename / unique / FK changes on ~8 baseline-era tables) — the drift check stays exit-1 until reconciled, so the CI gate is NOT yet flippable to a hard gate. `pnpm typecheck --filter=@contractor-ops/db` GREEN; `db:check-drift` (generated client) GREEN.
+
+- 2026-07-08: Classification answer envelope fix (C-25/C-26) — Zod normalises to `{ value }` / `{ rawScore }`; submit uses `normalizeAnswerMap`; round-trip tests per profile.
+
+- **2026-07-10** Pack3 classification MED/LOW: date-driven compliance payment gate + export snapshot; reassessment `acknowledge` CAS; IR35 reorder tx + participant assignment guard; attestation P2002 recovery; `createAmendment` count-in-tx; contractor `countryFields` validated against contractor country; `recreateComplianceAssessment` generic error code.
+
+- **2026-07-10** [[integrations/ksef]] — FA(3) round-trip hardening: outbound `generateFa3Xml` now emits `P_11A` = gross + `P_11Vat` = VAT (was: VAT into the gross field); inbound parser gains a VAT sign guard — `P_11A − P_11` with a sign contradicting the net (legacy VAT-in-gross emitters) falls back to the `P_12` rate instead of ingesting negative VAT; KOR all-negative correction lines still pass. Kirchensteuer legacy boolean now exports **blank + warn** in DATEV/Sage (never a guessed confession code). Import commit savepoints RELEASEd per row. `CROSS-ORG-AGGREGATE` grep tag de-breadcrumbed in `economic-dependency-scan.ts`.
+
+- **2026-07-10** Go-prod hardening sweep — [[structure/cron-jobs]] + [[integrations/peppol]]: new `peppol-reconcile` cron (`*/15`, `CRON_PEPPOL_RECONCILE_SCHEDULE`) re-enqueues lost `peppol.outbound` jobs via region fan-out + idempotent `maybeEnqueuePeppolOutbound` (now returns whether it enqueued). [[integrations/zatca]]: `resolveZatcaLineTax` letter codes `Z`/`E` now carry `cbc:Percent 0` (BR-Z-05/BR-E-05), `O` omits it. [[domains/equipment-logistics]]: `shouldApplyShipmentStatusUpdate` allows FAILED → OUT_FOR_DELIVERY/DELIVERED/RETURNED (courier retry / return-to-sender), DELIVERED/RETURNED immutable, + guard unit tests. Import-cycle cuts (biome.ci `noImportCycles` now clean): `errors-registry.ts` (errors.ts self-import), `outbox/handler-types.ts` (handlers↔hris-push), `compliance-reminder-reset.ts` (recovery↔reminder-scan↔free-zone), `teams/conversation-reference.ts` (messaging↔bot-handler↔approval-shared SCC). Six hardcoded TRPCError messages → constants + 4-locale keys (`documentScanPending`, `ir35AttestationAlreadyExists`, `lateInterestWaiverNotFound`, `payrollFeedEmpty`, `whtCertificateNumberConflict/IssueFailed`). 65-site breadcrumb-comment sweep; web-vite table-pattern conformance (shadcn Table in `batch-summary` + `settings/webhooks`, renames to `data-table.tsx`); 7 developer-portal routes added to the webhook-route contract; 4 silent-catch annotations; `entityIdSchema` at 4 routers. **Full `lint:ci` green end-to-end.**
+
+## 2026-07-10 — Go-prod deep-audit fixes (active-path security, perf, rate-limits, UI error states)
+
+- **Leak closures.** [[domains/payments-and-bank-files]]: payment-run export idempotent-replay branches re-select the safe response shape (staff `finance/payment-export-router.ts` `lockAndExport` + public-api `payment-run.ts` via `paymentRunSelect`) — the raw row carried bank-field ciphertext + contractor taxId; SEPA settings audit writes `fieldsUpdated` names only (at-rest encryption of settingsJson SEPA fields = backlog); org-bank UI gains error panel / translated toasts / `orgBankCannotClear` clear-block. [[domains/contractors-engagements]]: `contractor.list` `omit:{ssnEncrypted:true}`. [[domains/tax-and-wht]]: WhtCertificate `list`/`get` gated `payment:['read']`; WHT hook toasts `translateError`. [[integrations/ksef]]: `connect`/`connectionStatus` omit `credentialsRef`+`connectedByUserId`. [[integrations/docusign-esign]]: send path org-scopes `connectionId` via `loadIntegrationConnection` (cross-org IDOR closed). [[domains/public-api-surface]] + [[integrations/sentry]]: ≥500 responses carry generic bodies in prod on both the public-api error handler and the plain-Fastify handler in `apps/api/src/plugins/sentry.ts` (tRPC formatter already stripped INTERNAL).
+- **Active-path integrity.** [[domains/documents-and-ocr]]: ClamAV scans the FULL object (un-ranged GetObject); the 4KB ranged read is MIME-sniff only; `use-upload-review.ts` toasts translated `documentScanPending`/`documentInfected`. [[domains/hris-sync]]: token-refresh claim moved before try/finally (lost claim can't clear the winner's `refreshLockedAt`), refresh no longer stamps `lastSyncAt`/`lastSuccessAt` (hourly-sync throttle fields), adapters without a refreshToken handler skipped (no false REAUTH_REQUIRED). [[domains/outbound-webhooks]]: CSRF-origin `EXEMPT_PREFIXES` += `/webhooks-outbound/`, `/contract-health/`, `/idp-deprovisioning/` (QStash callbacks send no Origin; `/webhooks/` doesn't prefix-match).
+- **Perf/tx bounds.** [[domains/onboarding-and-import]]: import commit tx `{timeout:120s,maxWait:10s}`; row-failure logs classified `err.name` only (PrismaClientValidationError embeds the raw PII row). [[domains/leave-and-time]]: 120s tx on all three leave-finalize paths (`core/approval-queue.ts`, `core/approval-shared.ts`, `portal/portal-manager-router.ts`); `use-ewidencja.ts` drops static errorMessage override. [[domains/classification-ir35]]: DE economic-dependency scan constant 4 queries/assignment (one peer `findMany` + one `invoice.aggregate`); attestation hook invalidates via `pathFilter()`. [[integrations/peppol]]: reconcile covered-set = NOT EXISTS anti-join + ACTIVE-participant precondition (no bind-param ceiling, no take-50 starvation).
+- **Rate limits.** [[domains/employee-portal]]: portal tRPC on strict `portalLimiter` 10/min (`usesPortalLimiter()`); `requestMagicLink` 5/15min per hashed email fail-closed (`middleware/magic-link-rate-limit.ts`); `portalSubjectRateLimitMiddleware` 10/min/subject on portal OCR trigger + `getPortalSigningUrl`; 4-locale rate-limit copy.
+- **Cron observability.** [[structure/cron-jobs]]: `job-meta.ts` entries for `hris-sync`/`api-key-leak-alarm`/`year-end-1099-reminder` (meta-less jobs are invisible to the staleness alert); `job-health` gauges cross-region terminal-FAILED outbox backlog (`jobs.outbox.failed_backlog`, Sentry alert >10). [[domains/payroll-export]]: `PAYROLL_FEED_*` errors are registry constants with `cause.params` + 4-locale keys (prefix-parameterized strings can't translate client-side). [[domains/approvals-engine]] + [[domains/compliance-dashboard]]: compliance-held + country-compliance sections render inline error states (null-on-error looked like empty data).
+- Gates: full `lint:ci` EXIT 0; api suite 4433 green; web-vite scoped 1220+650+767 green + typecheck; cron-worker typecheck + `job-health.test.ts` 8/8. Tracker: `.planning/reviews/go-prod-deep-audit-2026-07-10.md` (all findings ✅/📦, GO verdict).

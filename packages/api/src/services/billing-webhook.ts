@@ -10,12 +10,14 @@ import { getServerEnv } from '@contractor-ops/validators';
 import type Stripe from 'stripe';
 import { sendAppEmail } from './app-email';
 import {
+  resolveOcrCreditAllowance,
   resolveTierFromPriceId,
   resolveTopUpCredits,
   TIER_CREDIT_ALLOWANCE,
   TRIAL_CREDIT_ALLOWANCE,
 } from './billing-constants';
 import { CacheKeys, invalidate } from './cache';
+import { carryForwardUnusedTopUpCredits } from './credit-service';
 import type { NotificationEvent } from './notification-service';
 import { dispatch } from './notification-service';
 import { captureEvent } from './posthog';
@@ -371,8 +373,14 @@ async function handleSubscriptionUpdated(
   // Fetch the current row for (a) the tier-change notification and (b) the
   // out-of-order guard (see isStaleSubscriptionEvent).
   const previousSub = await tx.subscription.findUnique({
-    where: { stripeSubscriptionId: subscription.id },
-    select: { tier: true, lastEventCreated: true },
+    where: { organizationId },
+    select: {
+      tier: true,
+      status: true,
+      lastEventCreated: true,
+      currentPeriodStart: true,
+      currentPeriodEnd: true,
+    },
   });
 
   if (isStaleSubscriptionEvent(previousSub?.lastEventCreated, eventCreated)) {
@@ -390,13 +398,36 @@ async function handleSubscriptionUpdated(
 
   const upsertData = { ...data, lastEventCreated: eventCreated };
   await tx.subscription.upsert({
-    where: { stripeSubscriptionId: subscription.id },
+    where: { organizationId },
     create: {
       stripeSubscriptionId: subscription.id,
       ...upsertData,
     } as Parameters<typeof tx.subscription.upsert>[0]['create'],
-    update: upsertData as Parameters<typeof tx.subscription.upsert>[0]['update'],
+    update: {
+      stripeSubscriptionId: subscription.id,
+      ...upsertData,
+    } as Parameters<typeof tx.subscription.upsert>[0]['update'],
   });
+
+  if (
+    previousSub &&
+    previousSub.currentPeriodStart.getTime() !== data.currentPeriodStart.getTime()
+  ) {
+    const allowance = resolveOcrCreditAllowance({
+      status: data.status,
+      tier,
+    });
+    if (allowance !== null) {
+      await carryForwardUnusedTopUpCredits(tx, {
+        organizationId,
+        priorPeriodStart: previousSub.currentPeriodStart,
+        priorPeriodEnd: previousSub.currentPeriodEnd,
+        newPeriodStart: data.currentPeriodStart,
+        newPeriodEnd: data.currentPeriodEnd,
+        allowance,
+      });
+    }
+  }
 
   void invalidate(CacheKeys.subscription(organizationId), CacheKeys.creditBalance(organizationId));
 

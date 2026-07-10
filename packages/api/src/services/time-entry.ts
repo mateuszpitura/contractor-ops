@@ -6,13 +6,22 @@ import {
   TIMESHEET_CANNOT_EDIT_IMPORTED,
   TIMESHEET_CANNOT_REJECT,
   TIMESHEET_CANNOT_SUBMIT,
+  TIMESHEET_ENTRY_DATE_OUT_OF_WEEK,
   TIMESHEET_ENTRY_NOT_FOUND,
+  TIMESHEET_INVALID_CONTRACT,
   TIMESHEET_NOT_FOUND,
   TIMESHEET_WEEK_START_DATE_MUST_BE_MONDAY,
 } from '../errors';
+import { writeAuditLog, writeAuditLogMany } from './audit-writer';
 import type { DbClient } from './types';
 
 type TxClient = Parameters<Parameters<DbClient['$transaction']>[0]>[0];
+
+export interface TimesheetAuditContext {
+  actorName?: string | null;
+  ipAddress?: string | null;
+  userAgent?: string | null;
+}
 
 // ---------------------------------------------------------------------------
 // Status transition rules:
@@ -35,6 +44,74 @@ function getISOMonday(date: Date): Date {
   return d;
 }
 
+function getWeekEnd(weekStart: Date): Date {
+  const end = new Date(weekStart);
+  end.setUTCDate(end.getUTCDate() + 6);
+  end.setUTCHours(23, 59, 59, 999);
+  return end;
+}
+
+function parseEntryDate(entryDate: string): Date {
+  return new Date(`${entryDate}T00:00:00.000Z`);
+}
+
+async function assertValidContractsForEntries(
+  db: DbClient,
+  organizationId: string,
+  contractorId: string,
+  contractIds: string[],
+): Promise<void> {
+  if (!('contract' in db)) return;
+
+  const uniqueIds = [...new Set(contractIds)];
+  const valid = await (
+    db as DbClient & {
+      contract: {
+        findMany: (args: {
+          where: {
+            id: { in: string[] };
+            organizationId: string;
+            contractorId: string;
+            deletedAt: null;
+            status: { in: string[] };
+          };
+          select: { id: true };
+        }) => Promise<Array<{ id: string }>>;
+      };
+    }
+  ).contract.findMany({
+    where: {
+      id: { in: uniqueIds },
+      organizationId,
+      contractorId,
+      deletedAt: null,
+      status: { in: ['ACTIVE', 'PENDING'] },
+    },
+    select: { id: true },
+  });
+  if (valid.length !== uniqueIds.length) {
+    throw new TRPCError({ code: 'BAD_REQUEST', message: TIMESHEET_INVALID_CONTRACT });
+  }
+}
+
+function assertEntryDateInWeek(entryDate: string, weekStartDate: Date): void {
+  const entry = parseEntryDate(entryDate);
+  const weekEnd = getWeekEnd(weekStartDate);
+  if (entry < weekStartDate || entry > weekEnd) {
+    throw new TRPCError({ code: 'BAD_REQUEST', message: TIMESHEET_ENTRY_DATE_OUT_OF_WEEK });
+  }
+}
+
+/** Imported/manual entry writes are allowed only on DRAFT or REJECTED sheets. */
+export function assertTimesheetEditable(status: string): void {
+  if (status !== 'DRAFT' && status !== 'REJECTED') {
+    throw new TRPCError({
+      code: 'PRECONDITION_FAILED',
+      message: TIMESHEET_CAN_ONLY_EDIT_DRAFT_OR_REJECTED,
+    });
+  }
+}
+
 // ---------------------------------------------------------------------------
 // getOrCreateTimesheet
 // ---------------------------------------------------------------------------
@@ -44,6 +121,7 @@ export async function getOrCreateTimesheet(
   organizationId: string,
   contractorId: string,
   weekStartDate: Date, // Must be a Monday
+  opts?: { requireEditable?: boolean },
 ) {
   // Validate weekStartDate is a Monday
   const monday = getISOMonday(weekStartDate);
@@ -54,7 +132,7 @@ export async function getOrCreateTimesheet(
     });
   }
 
-  return db.timesheet.upsert({
+  const timesheet = await db.timesheet.upsert({
     where: {
       organizationId_contractorId_weekStartDate: {
         organizationId,
@@ -72,6 +150,12 @@ export async function getOrCreateTimesheet(
     update: {},
     include: { entries: true },
   });
+
+  if (opts?.requireEditable) {
+    assertTimesheetEditable(timesheet.status);
+  }
+
+  return timesheet;
 }
 
 /**
@@ -142,6 +226,16 @@ export async function saveDraftEntries(
       code: 'PRECONDITION_FAILED',
       message: TIMESHEET_CAN_ONLY_EDIT_DRAFT_OR_REJECTED,
     });
+  }
+
+  await assertValidContractsForEntries(
+    db,
+    organizationId,
+    contractorId,
+    entries.map(e => e.contractId),
+  );
+  for (const entry of entries) {
+    assertEntryDateInWeek(entry.entryDate, timesheet.weekStartDate);
   }
 
   // Upsert entries in transaction
@@ -228,31 +322,48 @@ export async function approveTimesheet(
   organizationId: string,
   timesheetId: string,
   reviewerUserId: string,
+  audit?: TimesheetAuditContext,
 ) {
-  // Standalone approval (one person)
-  const updated = await db.timesheet.updateMany({
-    where: {
-      id: timesheetId,
-      organizationId,
-      status: 'SUBMITTED',
-    },
-    data: {
-      status: 'APPROVED',
-      reviewedAt: new Date(),
-      reviewedByUserId: reviewerUserId,
-    },
-  });
-
-  if (updated.count === 0) {
-    throw new TRPCError({
-      code: 'PRECONDITION_FAILED',
-      message: TIMESHEET_CANNOT_APPROVE,
+  return db.$transaction(async (tx: TxClient) => {
+    const timesheet = await tx.timesheet.findFirst({
+      where: { id: timesheetId, organizationId, status: 'SUBMITTED' },
     });
-  }
 
-  return db.timesheet.findUniqueOrThrow({
-    where: { id: timesheetId },
-    include: { entries: true, contractor: true },
+    if (!timesheet) {
+      throw new TRPCError({
+        code: 'PRECONDITION_FAILED',
+        message: TIMESHEET_CANNOT_APPROVE,
+      });
+    }
+
+    await tx.timesheet.update({
+      where: { id: timesheetId },
+      data: {
+        status: 'APPROVED',
+        reviewedAt: new Date(),
+        reviewedByUserId: reviewerUserId,
+      },
+    });
+
+    await writeAuditLog({
+      tx,
+      organizationId,
+      actorType: 'USER',
+      actorId: reviewerUserId,
+      actorName: audit?.actorName ?? null,
+      action: 'timesheet.approve',
+      resourceType: 'TIMESHEET',
+      resourceId: timesheetId,
+      oldValues: { status: timesheet.status },
+      newValues: { status: 'APPROVED' },
+      ipAddress: audit?.ipAddress ?? null,
+      userAgent: audit?.userAgent ?? null,
+    });
+
+    return tx.timesheet.findUniqueOrThrow({
+      where: { id: timesheetId },
+      include: { entries: true, contractor: true },
+    });
   });
 }
 
@@ -266,32 +377,49 @@ export async function rejectTimesheet(
   timesheetId: string,
   reviewerUserId: string,
   reason: string,
+  audit?: TimesheetAuditContext,
 ) {
-  // Rejection includes reason
-  const updated = await db.timesheet.updateMany({
-    where: {
-      id: timesheetId,
-      organizationId,
-      status: 'SUBMITTED',
-    },
-    data: {
-      status: 'REJECTED',
-      reviewedAt: new Date(),
-      reviewedByUserId: reviewerUserId,
-      rejectionReason: reason,
-    },
-  });
-
-  if (updated.count === 0) {
-    throw new TRPCError({
-      code: 'PRECONDITION_FAILED',
-      message: TIMESHEET_CANNOT_REJECT,
+  return db.$transaction(async (tx: TxClient) => {
+    const timesheet = await tx.timesheet.findFirst({
+      where: { id: timesheetId, organizationId, status: 'SUBMITTED' },
     });
-  }
 
-  return db.timesheet.findUniqueOrThrow({
-    where: { id: timesheetId },
-    include: { entries: true, contractor: true },
+    if (!timesheet) {
+      throw new TRPCError({
+        code: 'PRECONDITION_FAILED',
+        message: TIMESHEET_CANNOT_REJECT,
+      });
+    }
+
+    await tx.timesheet.update({
+      where: { id: timesheetId },
+      data: {
+        status: 'REJECTED',
+        reviewedAt: new Date(),
+        reviewedByUserId: reviewerUserId,
+        rejectionReason: reason,
+      },
+    });
+
+    await writeAuditLog({
+      tx,
+      organizationId,
+      actorType: 'USER',
+      actorId: reviewerUserId,
+      actorName: audit?.actorName ?? null,
+      action: 'timesheet.reject',
+      resourceType: 'TIMESHEET',
+      resourceId: timesheetId,
+      oldValues: { status: timesheet.status },
+      newValues: { status: 'REJECTED', rejectionReason: reason },
+      ipAddress: audit?.ipAddress ?? null,
+      userAgent: audit?.userAgent ?? null,
+    });
+
+    return tx.timesheet.findUniqueOrThrow({
+      where: { id: timesheetId },
+      include: { entries: true, contractor: true },
+    });
   });
 }
 
@@ -304,18 +432,53 @@ export async function bulkApproveTimesheets(
   organizationId: string,
   timesheetIds: string[],
   reviewerUserId: string,
+  audit?: TimesheetAuditContext,
 ) {
-  return db.timesheet.updateMany({
-    where: {
-      id: { in: timesheetIds },
-      organizationId,
-      status: 'SUBMITTED',
-    },
-    data: {
-      status: 'APPROVED',
-      reviewedAt: new Date(),
-      reviewedByUserId: reviewerUserId,
-    },
+  return db.$transaction(async (tx: TxClient) => {
+    const timesheets = await tx.timesheet.findMany({
+      where: {
+        id: { in: timesheetIds },
+        organizationId,
+        status: 'SUBMITTED',
+      },
+      select: { id: true, status: true },
+    });
+
+    if (timesheets.length === 0) {
+      return { count: 0 };
+    }
+
+    const result = await tx.timesheet.updateMany({
+      where: {
+        id: { in: timesheets.map(t => t.id) },
+        organizationId,
+        status: 'SUBMITTED',
+      },
+      data: {
+        status: 'APPROVED',
+        reviewedAt: new Date(),
+        reviewedByUserId: reviewerUserId,
+      },
+    });
+
+    await writeAuditLogMany({
+      tx,
+      rows: timesheets.map(ts => ({
+        organizationId,
+        actorType: 'USER' as const,
+        actorId: reviewerUserId,
+        actorName: audit?.actorName ?? null,
+        action: 'timesheet.approve',
+        resourceType: 'TIMESHEET' as const,
+        resourceId: ts.id,
+        oldValues: { status: ts.status },
+        newValues: { status: 'APPROVED' },
+        ipAddress: audit?.ipAddress ?? null,
+        userAgent: audit?.userAgent ?? null,
+      })),
+    });
+
+    return result;
   });
 }
 
@@ -329,18 +492,53 @@ export async function bulkRejectTimesheets(
   timesheetIds: string[],
   reviewerUserId: string,
   reason: string,
+  audit?: TimesheetAuditContext,
 ) {
-  return db.timesheet.updateMany({
-    where: {
-      id: { in: timesheetIds },
-      organizationId,
-      status: 'SUBMITTED',
-    },
-    data: {
-      status: 'REJECTED',
-      reviewedAt: new Date(),
-      reviewedByUserId: reviewerUserId,
-      rejectionReason: reason,
-    },
+  return db.$transaction(async (tx: TxClient) => {
+    const timesheets = await tx.timesheet.findMany({
+      where: {
+        id: { in: timesheetIds },
+        organizationId,
+        status: 'SUBMITTED',
+      },
+      select: { id: true, status: true },
+    });
+
+    if (timesheets.length === 0) {
+      return { count: 0 };
+    }
+
+    const result = await tx.timesheet.updateMany({
+      where: {
+        id: { in: timesheets.map(t => t.id) },
+        organizationId,
+        status: 'SUBMITTED',
+      },
+      data: {
+        status: 'REJECTED',
+        reviewedAt: new Date(),
+        reviewedByUserId: reviewerUserId,
+        rejectionReason: reason,
+      },
+    });
+
+    await writeAuditLogMany({
+      tx,
+      rows: timesheets.map(ts => ({
+        organizationId,
+        actorType: 'USER' as const,
+        actorId: reviewerUserId,
+        actorName: audit?.actorName ?? null,
+        action: 'timesheet.reject',
+        resourceType: 'TIMESHEET' as const,
+        resourceId: ts.id,
+        oldValues: { status: ts.status },
+        newValues: { status: 'REJECTED', rejectionReason: reason },
+        ipAddress: audit?.ipAddress ?? null,
+        userAgent: audit?.userAgent ?? null,
+      })),
+    });
+
+    return result;
   });
 }

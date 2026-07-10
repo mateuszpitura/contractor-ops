@@ -21,6 +21,13 @@ const { mockPrisma } = vi.hoisted(() => {
     organization: {
       findUnique: vi.fn(async () => ({ id: ORG_ID, dataRegion: 'EU', status: 'ACTIVE' })),
     },
+    subscription: {
+      findUnique: vi.fn(async () => ({
+        status: 'ACTIVE',
+        tier: 'ENTERPRISE',
+        addOns: ['workforce'],
+      })),
+    },
     worker: { findFirst: vi.fn(async () => ({ id: WORKER_ID })) },
     leaveType: { findFirst: vi.fn(async () => ({ id: LEAVE_TYPE_ID })) },
     blackoutPeriod: { findFirst: vi.fn(async () => null) },
@@ -30,6 +37,10 @@ const { mockPrisma } = vi.hoisted(() => {
       update: vi.fn(async () => ({ id: REQUEST_ID, status: 'PENDING', approvalFlowId: FLOW_ID })),
     },
     approvalStep: { findFirst: vi.fn(async () => null) },
+    member: {
+      findMany: vi.fn(async () => []),
+      findFirst: vi.fn(async () => ({ userId: USER_ID })),
+    },
     auditLog: { create: vi.fn(async () => ({ id: 'audit-1' })) },
     $transaction: vi.fn(async (fn: (tx: Rec) => Promise<unknown>) => fn(mockPrisma)),
   };
@@ -70,18 +81,11 @@ vi.mock('../services/approval-engine', () => ({
 
 vi.mock('../services/notification-service', () => ({ dispatch: vi.fn(async () => undefined) }));
 
-vi.mock('../services/cache', () => ({
-  cacheKey: vi.fn((...s: string[]) => s.join(':')),
-  cachedSingleflight: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  cached: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  invalidate: vi.fn(async () => undefined),
-  invalidateByPrefix: vi.fn(async () => undefined),
-  CacheKeys: {
-    orgMeta: (o: string) => `org:${o}:meta`,
-    dashboardPrefix: (o: string) => `dash:${o}`,
-  },
-  CacheTTL: { ORG_META: 300, ORG_SETTINGS: 300 },
-}));
+vi.mock('../services/cache', async importOriginal => {
+  const actual = await importOriginal<typeof import('../services/cache')>();
+  const { createPassthroughCacheMock } = await import('../__tests__/__mocks__/cache-service');
+  return createPassthroughCacheMock(actual);
+});
 
 vi.mock('../services/calendar-deadline-sync', () => ({
   syncPaymentDueDeadline: vi.fn(async () => undefined),

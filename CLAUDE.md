@@ -162,10 +162,13 @@ pnpm test                                      # vitest via turbo
 
 **Editing:** Edit > Write on existing files. No `sed`/`awk`/ad-hoc Python/TS replace scripts (breaks imports/formatting) — Edit per file; codemods only when appropriate. Scripted replace = last resort + user OK + typecheck/lint after. Minimal diff; no new files/docs unless asked. Parallelize independent reads/edits. Verify paths via Read/Glob/semble — never guess.
 
+**Business logic (mandatory before domain work):** Read and follow [`.claude/skills/business-logic-shield/SKILL.md`](.claude/skills/business-logic-shield/SKILL.md) before any feature, fix, or multi-layer change touching `packages/api` domain rules, money, compliance, workflows, portal/public-api, or cron. Prefix `[shield]` / `[shield-strict]` for hook-enforced skill + scope file before logic edits; `/shield-workflow-off` to disable. Cursor rule: [`.cursor/rules/35-business-logic-shield.mdc`](.cursor/rules/35-business-logic-shield.mdc). Wiki: [patterns/business-logic-shield](.planning/brain/wiki/patterns/business-logic-shield.md).
+
 **Delegation (subagent-first):** Prefer Task subagents over ad-hoc bulk shell scripts. Full routing: [`.claude/skills/cavecrew/SKILL.md`](.claude/skills/cavecrew/SKILL.md).
 
 | Task | Subagent |
 |------|----------|
+| Domain feature / fix / multi-layer logic | **`business-logic-shield`** first, then implement |
 | Locate symbol / callers | `cavecrew-investigator` (default); `explore` for prose |
 | Fix ≤2 files | `cavecrew-builder` or main `Edit` after `Read` |
 | Review diff/PR | `cavecrew-reviewer`; `bugbot` / `security-review` on request |

@@ -149,7 +149,10 @@ const {
         ?.organizationId;
       return blockingItems.filter(i => {
         if (where.severity && i.severity !== where.severity) return false;
-        if (where.status && i.status !== where.status) return false;
+        const statusFilter = where.status as { in?: string[] } | string | undefined;
+        if (typeof statusFilter === 'object' && statusFilter?.in) {
+          if (!statusFilter.in.includes(i.status)) return false;
+        } else if (statusFilter && i.status !== statusFilter) return false;
         if (cid && !cid.includes(i.contractorId)) return false;
         if (orgIs && i.organizationId !== orgIs) return false;
         return true;
@@ -160,6 +163,11 @@ const {
   // Raw executors on the tx client — the compliance-outcome outbox enqueue runs
   // via `$executeRawUnsafe` inside the approve tx.
   const execRawUnsafe = vi.fn(async () => 1);
+
+  const contractorComplianceReminderState = {
+    findUnique: vi.fn(async () => null),
+    upsert: vi.fn(async () => ({ itemId: ITEM_ID })),
+  };
 
   const base = {
     // ── Flow 1 models ──
@@ -182,6 +190,7 @@ const {
         }
         return rows[0] ?? null;
       }),
+      count: vi.fn(async () => 0),
     },
     deprovisioningRun: { create: runCreate, update: runUpdate, findUniqueOrThrow: runFindUnique },
     organization: {
@@ -195,14 +204,46 @@ const {
     },
     // ── Flow 2 models ──
     contractorComplianceItem,
+    contractorComplianceReminderState,
     document: {
-      findFirst: vi.fn(async () => ({ id: DOC_ID, status: 'PENDING_REVIEW' })),
+      findFirst: vi.fn(async () => ({
+        id: DOC_ID,
+        status: 'PENDING_REVIEW',
+        virusScanStatus: 'CLEAN',
+      })),
       update: vi.fn(async () => ({ id: DOC_ID })),
     },
     documentLink: {
       findFirst: vi.fn(async () => ({ id: 'link_1' })),
     },
-    approvalFlow: { update: approvalFlowUpdate },
+    approvalFlow: {
+      update: approvalFlowUpdate,
+      findUniqueOrThrow: vi.fn(async () => ({
+        id: 'flow-held-1',
+        resourceType: 'INVOICE',
+        resourceId: 'inv-held-1',
+        currentStepOrder: 1,
+        chainConfigId: null,
+        steps: [{ id: 'step-1', stepOrder: 1, status: 'APPROVED', approverUserId: 'admin_user_1' }],
+      })),
+    },
+    approvalStep: {
+      update: vi.fn(async () => ({ id: 'step-1', status: 'PENDING' })),
+    },
+    approvalChainConfig: { findUnique: vi.fn(async () => null) },
+    invoice: {
+      findUnique: vi.fn(async () => ({
+        id: 'inv-held-1',
+        invoiceNumber: 'INV-001',
+        contractorId: CONTRACTOR_ID,
+        totalMinor: 10000,
+        currency: 'EUR',
+      })),
+    },
+    contractor: {
+      findUnique: vi.fn(async () => ({ legalName: 'Test Contractor Ltd' })),
+      findMany: vi.fn(async () => []),
+    },
     $queryRaw: queryRaw,
     $executeRaw: vi.fn(async () => 1),
     $executeRawUnsafe: execRawUnsafe,
@@ -479,6 +520,7 @@ describe('Flow 1 (INT-01) — ACCESS_REVOKE resolve → startDeprovisioningRun c
       // 2. The UI derives a deterministic per-assignment idempotencyKey and starts.
       const idempotencyKey = deriveIdempotencyKey(resolved.assignmentId as string);
       const result = await caller.deprovisioning.startDeprovisioningRun({
+        subjectType: 'CONTRACTOR',
         assignmentId: resolved.assignmentId as string,
         idempotencyKey,
       });
@@ -540,6 +582,7 @@ describe('Flow 1 (INT-01) — ACCESS_REVOKE resolve → startDeprovisioningRun c
       ).rejects.toMatchObject({ code: 'FORBIDDEN' });
       await expect(
         caller.deprovisioning.startDeprovisioningRun({
+          subjectType: 'CONTRACTOR',
           assignmentId: ASSIGNMENT_ENDED_RECENT,
           idempotencyKey: deriveIdempotencyKey(ASSIGNMENT_ENDED_RECENT),
         }),

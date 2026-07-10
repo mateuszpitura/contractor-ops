@@ -1,20 +1,17 @@
 /**
- * Wave-0 RED contract (INTEG-API-01) — mass-assignment defense.
+ * Mass-assignment defense.
  *
  * Every public write DTO must be `.strict()` and OMIT `organizationId`,
  * `workerType`, and any server-derived money field entirely, so a client cannot
  * forge the tenant, worker classification, or an amount by piggy-backing extra
  * body keys.
  *
- * Per the 98-09 handoff: an invoice's amounts are legitimate content, so the
- * money-rejection assertion belongs on the payment_run create DTO (where money
- * is server-derived from eligible invoices), NOT on invoice. org/workerType
+ * An invoice's amounts are legitimate content, so the money-rejection
+ * assertion belongs on the payment_run create DTO (where money is
+ * server-derived from eligible invoices), NOT on invoice. org/workerType
  * rejection lives on the contractor create DTO.
- *
- * RED until 99-04 adds the write DTOs to `@contractor-ops/validators/public-api`.
  */
 
-// RED: these write DTOs do not exist yet (added in 99-04).
 import {
   publicApiContractorCreateInputSchema,
   publicApiInvoiceCreateInputSchema,

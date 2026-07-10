@@ -54,8 +54,8 @@ vi.mock('@contractor-ops/api/services/peppol-orchestrator', () => ({
   },
 }));
 
-vi.mock('@contractor-ops/db', () => ({
-  prisma: {
+vi.mock('@contractor-ops/db', () => {
+  const prismaMock = {
     webhookDelivery: {
       findUnique: (...a: unknown[]) =>
         (mockDeliveryFindUniqueOrThrow as (...a: unknown[]) => unknown)(...a),
@@ -68,11 +68,35 @@ vi.mock('@contractor-ops/db', () => ({
         (mockConnectionFindFirst as (...a: unknown[]) => unknown)(...a),
     },
     peppolParticipant: { findMany: vi.fn(async () => []) },
-  },
-  prismaRaw: {},
-  getRegionalClient: () => ({}),
-  SUPPORTED_REGIONS: ['EU', 'ME', 'US'],
-}));
+    organization: {
+      findUnique: vi.fn(async (_args: unknown) => ({ dataRegion: 'EU' })),
+    },
+  };
+  // Single-region mirror of packages/db/src/region.ts: every helper resolves
+  // to the one mocked client so route handlers exercise the same seams.
+  const findAcrossRegions = async (
+    finder: (client: typeof prismaMock, region: string) => Promise<unknown>,
+  ) => {
+    const result = await finder(prismaMock, 'EU');
+    return result == null ? null : { result, region: 'EU', client: prismaMock };
+  };
+  return {
+    prisma: prismaMock,
+    prismaRaw: {},
+    getRegionalClient: () => prismaMock,
+    tryGetRegionalClient: () => prismaMock,
+    SUPPORTED_REGIONS: ['EU'],
+    findAcrossRegions,
+    resolveOrganizationRegion: async (organizationId: string) =>
+      findAcrossRegions(async client => {
+        const org = await client.organization.findUnique({
+          where: { id: organizationId },
+          select: { dataRegion: true },
+        });
+        return org == null ? null : (org.dataRegion ?? 'EU');
+      }),
+  };
+});
 
 vi.mock('@contractor-ops/integrations', async importOriginal => {
   const actual = await importOriginal<typeof import('@contractor-ops/integrations')>();

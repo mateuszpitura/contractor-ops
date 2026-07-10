@@ -2,30 +2,47 @@
  * Classification submit procedures.
  */
 
+import type { AnswerMap } from '@contractor-ops/classification';
+import {
+  normalizeAnswerMap,
+  resolveUsWorkState,
+  withUsWorkState,
+} from '@contractor-ops/classification';
 import type { EngagementContext } from '@contractor-ops/compliance-policy';
 import { TRPCError } from '@trpc/server';
 import { CLASSIFICATION_ASSESSMENT_NOT_FOUND } from '../../errors';
 import { router } from '../../init';
 import { findOrThrow } from '../../lib/find-or-throw';
+import { writeAuditLog } from '../../services/audit-writer';
 import { enqueueHrisEmployeePush } from '../../services/outbox/hris-push-producer';
 import type { DbClient } from '../../services/types';
 import type { Outcome, Prisma } from './classification-shared';
 import {
   acknowledgeDisclaimerInput,
+  buildEngagementOutcome,
   buildQuestionsSnapshot,
   CLASSIFICATION_ALREADY_SUBMITTED,
   CLASSIFICATION_ONLY_COMPLETED_CAN_ACKNOWLEDGE,
   contractorUpdateProcedure,
-  extractOutcomeKind,
   getProfileForCountry,
   mapCountryCodeToJurisdiction,
   materialiseFromPolicy,
   outcomeSchema,
+  outcomesEqualForPolicyResolution,
   POLICY_RULE_SET_VERSION,
   releaseHeldApprovalsForContractor,
   submitInput,
   supersedeAndMaterialise,
 } from './classification-shared';
+
+/** Read the contractor's US state from the country-specific fields JSON. */
+function readUsState(countryFields: unknown): string | null {
+  if (countryFields && typeof countryFields === 'object' && !Array.isArray(countryFields)) {
+    const state = (countryFields as Record<string, unknown>).state;
+    if (typeof state === 'string' && state.trim().length > 0) return state.trim();
+  }
+  return null;
+}
 
 type Jurisdiction = NonNullable<ReturnType<typeof mapCountryCodeToJurisdiction>>;
 type TxClient = Parameters<Parameters<DbClient['$transaction']>[0]>[0];
@@ -58,7 +75,7 @@ async function applyPolicyMaterialisation(
 
   const engagement: EngagementContext = {
     jurisdiction: args.jurisdiction,
-    outcome: extractOutcomeKind(args.validatedOutcome),
+    outcome: buildEngagementOutcome(args.validatedOutcome),
     sector: null,
     // Contractor.countryCode is the closest proxy to nationality today;
     // when contractorNationality lands on Contractor in a future phase,
@@ -78,7 +95,7 @@ async function applyPolicyMaterialisation(
     return;
   }
 
-  if (extractOutcomeKind(args.prior.outcome) !== extractOutcomeKind(args.validatedOutcome)) {
+  if (!outcomesEqualForPolicyResolution(args.prior.outcome, args.validatedOutcome)) {
     // Outcome kind changed — supersede prior rows and re-materialise.
     await supersedeAndMaterialise(tx, {
       organizationId: args.organizationId,
@@ -117,12 +134,30 @@ export const classificationSubmitRouter = router({
       }
 
       const profile = getProfileForCountry(row.countryCode);
+      const shell = profile.buildAssessment(row.contractorAssignmentId);
+      const rawAnswers = (row.answers as Record<string, unknown>) ?? {};
+
+      let answersForScoring = rawAnswers;
+      if (row.countryCode === 'US') {
+        const assignmentForState = await tx.contractorAssignment.findFirst({
+          where: { id: row.contractorAssignmentId },
+          select: {
+            workState: true,
+            contractor: { select: { countryFields: true } },
+          },
+        });
+        const workState = resolveUsWorkState({
+          assignmentWorkState: assignmentForState?.workState,
+          contractorUsState: readUsState(assignmentForState?.contractor?.countryFields),
+        });
+        answersForScoring = withUsWorkState(rawAnswers as AnswerMap, workState) as AnswerMap;
+      }
+
+      const normalizedAnswers = normalizeAnswerMap(shell.questions, answersForScoring);
 
       let computed: Outcome;
       try {
-        computed = profile.scoreAssessment(
-          row.answers as Parameters<typeof profile.scoreAssessment>[0],
-        );
+        computed = profile.scoreAssessment(normalizedAnswers);
       } catch (err) {
         // Engine errors (MissingAnswerError, malformed answers, etc.) surface
         // as a typed BAD_REQUEST so the wizard can highlight the offending
@@ -139,7 +174,6 @@ export const classificationSubmitRouter = router({
       // Validate the computed outcome before persistence.
       const validatedOutcome = outcomeSchema.parse(computed);
 
-      const shell = profile.buildAssessment(row.contractorAssignmentId);
       const snapshot = buildQuestionsSnapshot(profile, {
         profileId: profile.profileId,
         ruleSetVersion: profile.ruleSetVersion,
@@ -222,6 +256,31 @@ export const classificationSubmitRouter = router({
           businessEventId: updated.id,
         });
       }
+
+      await writeAuditLog({
+        tx,
+        organizationId: row.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user?.id ?? null,
+        actorName: ctx.user?.name ?? ctx.user?.email ?? null,
+        action: 'classification.submit',
+        resourceType: 'CONTRACTOR',
+        resourceId: updated.id,
+        resourceName: `Classification assessment (${row.countryCode})`,
+        oldValues: { status: 'DRAFT' },
+        newValues: {
+          status: 'COMPLETED',
+          outcome: validatedOutcome,
+          policyRuleSetVersion: POLICY_RULE_SET_VERSION,
+        },
+        metadata: {
+          contractorAssignmentId: row.contractorAssignmentId,
+          countryCode: row.countryCode,
+          priorOutcomeKind: prior ? buildEngagementOutcome(prior.outcome) : null,
+        },
+        ipAddress: ctx.headers.get('x-forwarded-for')?.split(',')[0] ?? null,
+        userAgent: ctx.headers.get('user-agent') ?? null,
+      });
 
       return updated;
     });

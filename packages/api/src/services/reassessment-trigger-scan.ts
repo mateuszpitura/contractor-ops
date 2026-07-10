@@ -35,12 +35,16 @@ const AUDIT_TAKE_LIMIT = 10000;
  * centre, owner) is explicitly ignored to avoid noise.
  */
 const CONTRACTOR_MATERIAL_FIELDS = new Set([
+  'countryCode',
+  'status',
+  'lifecycleStage',
+  'ownerUserId',
+  'primaryTeamId',
+  'primaryProjectId',
+  // Assignment-level fields when resourceId is a ContractorAssignment id.
   'activeTo',
   'projectId',
   'teamId',
-  'status',
-  'countryCode',
-  'lifecycleStage',
 ]);
 
 const CONTRACT_MATERIAL_FIELDS = new Set([
@@ -145,13 +149,34 @@ async function resolveEngagement(row: AuditRow): Promise<{
   priorSdsDocumentId: string | null;
 } | null> {
   if (row.resourceType === 'CONTRACTOR') {
-    // PHASE-60-CROSS-ORG-AGGREGATE: assignment lookup outside tenant frame.
-    const assignment = await prismaRaw.contractorAssignment.findFirst({
+    // Production contractor.update audits use resourceId = contractor.id.
+    // Tolerate assignment-id rows for backward compatibility.
+    const assignmentById = await prismaRaw.contractorAssignment.findFirst({
       where: { id: row.resourceId },
       select: { id: true, contractor: { select: { countryCode: true } } },
     });
-    if (!assignment || assignment.contractor?.countryCode !== 'GB') return null;
-    return resolveIr35Assessment(row.resourceId);
+    if (assignmentById) {
+      if (assignmentById.contractor?.countryCode !== 'GB') return null;
+      return resolveIr35Assessment(assignmentById.id);
+    }
+
+    const contractor = await prismaRaw.contractor.findFirst({
+      where: { id: row.resourceId, organizationId: row.organizationId },
+      select: {
+        countryCode: true,
+        assignments: {
+          where: { status: 'ACTIVE' },
+          select: { id: true },
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+        },
+      },
+    });
+    const assignmentId = contractor?.assignments?.[0]?.id;
+    if (!contractor || contractor.countryCode !== 'GB' || !assignmentId) {
+      return null;
+    }
+    return resolveIr35Assessment(assignmentId);
   }
 
   if (row.resourceType === 'CONTRACT') {
@@ -369,11 +394,17 @@ export async function runReassessmentTriggerScan(
   // don't re-fire — the original notification already went out).
   await dispatchTriggerNotifications(dispatchPayloads);
 
-  // Advance the cursor to the scan start so future runs resume cleanly.
+  // Advance the cursor to the last processed audit row so capped scans resume
+  // where they left off instead of jumping to `now` and permanently skipping
+  // unread history.
+  const nextCursor =
+    rows.length > 0
+      ? (rows[rows.length - 1]?.createdAt ?? cursor)
+      : (scanState?.lastScanCompletedAt ?? now);
   await prismaRaw.cronScanState.upsert({
     where: { name: SCAN_NAME },
-    create: { name: SCAN_NAME, lastScanCompletedAt: now },
-    update: { lastScanCompletedAt: now },
+    create: { name: SCAN_NAME, lastScanCompletedAt: nextCursor },
+    update: { lastScanCompletedAt: nextCursor },
   });
 
   metrics.gauge('classification.reassessment_scan.scanned', scanned);

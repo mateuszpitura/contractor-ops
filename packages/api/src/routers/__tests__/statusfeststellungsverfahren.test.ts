@@ -82,6 +82,7 @@ const { mockPrisma, rows, mockHasPermission, auditCreate } = vi.hoisted(() => {
     organization: {
       findUnique: vi.fn(async () => ({ dataRegion: 'EU', status: 'ACTIVE' })),
     },
+    $transaction: vi.fn(async (fn: (tx: typeof mockPrisma) => Promise<unknown>) => fn(mockPrisma)),
   };
   return { mockPrisma, rows, mockHasPermission, auditCreate };
 });

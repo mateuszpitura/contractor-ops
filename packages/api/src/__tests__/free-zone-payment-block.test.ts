@@ -21,7 +21,11 @@ const { mockPrisma, itemsFixture } = vi.hoisted(() => {
         const where = args?.where ?? {};
         return itemsFixture.filter(row => {
           if (where.severity && row.severity !== where.severity) return false;
-          if (where.status && row.status !== where.status) return false;
+          const statusFilter = where.status as string | { in?: string[] } | undefined;
+          if (typeof statusFilter === 'string' && row.status !== statusFilter) return false;
+          if (statusFilter && typeof statusFilter === 'object' && 'in' in statusFilter) {
+            if (!statusFilter.in?.includes(row.status as string)) return false;
+          }
           return true;
         });
       }),
@@ -40,6 +44,12 @@ vi.mock('@contractor-ops/logger', () => ({
     error: vi.fn(),
     debug: vi.fn(),
     child: vi.fn(),
+  })),
+  createIntegrationLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
   })),
   createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
 }));
@@ -81,7 +91,7 @@ describe('C1 (GULF-02) free-zone payment block — expired UAE_FREE_ZONE_LICENSE
       unknown
     >;
     expect(where.severity).toBe('BLOCKING');
-    expect(where.status).toBe('EXPIRED');
+    expect(where.status).toEqual({ in: ['EXPIRED', 'MISSING'] });
   });
 
   it('surfaces the free-zone item in the PRECONDITION_FAILED cause.contractorReasons (deep-link to /contractors/:id/compliance) [79-03]', async () => {

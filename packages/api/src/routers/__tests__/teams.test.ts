@@ -9,6 +9,13 @@ const { teamCtxDb, mockFindFirst, mockUpdate } = vi.hoisted(() => {
   const mockFindMany = vi.fn();
   const mockUpdate = vi.fn();
   const teamCtxDb = {
+    auditLog: {
+      create: vi.fn(async () => ({ id: 'audit-mock' })),
+      createMany: vi.fn(async () => ({ count: 1 })),
+    },
+    organization: {
+      findUnique: vi.fn().mockResolvedValue({ id: 'org-mock', dataRegion: 'EU', status: 'ACTIVE' }),
+    },
     integrationConnection: {
       findFirst: (...args: unknown[]) => mockFindFirst(...args),
       findMany: (...args: unknown[]) => mockFindMany(...args),
@@ -23,6 +30,11 @@ vi.mock('@contractor-ops/db', () => ({
   withRlsReads: <T>(c: T) => c,
   prisma: teamCtxDb,
   prismaRaw: teamCtxDb,
+  tenantStore: {
+    run: (_ctx: unknown, fn: () => unknown) => fn(),
+    getStore: vi.fn(() => ({ region: 'EU' })),
+  },
+  getRegionalClient: vi.fn(() => teamCtxDb),
 }));
 
 vi.mock('@contractor-ops/logger', () => ({

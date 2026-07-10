@@ -438,6 +438,17 @@ export const jiraRouter = router({
         input.mappings,
       );
 
+      await writeAuditLog({
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user?.id ?? null,
+        action: 'INTEGRATION_JIRA_STATUS_MAPPING_SAVE',
+        resourceType: 'ORGANIZATION',
+        resourceId: ctx.organizationId,
+        newValues: { projectId: input.projectId, mappingCount: input.mappings.length },
+        metadata: { connectionId: input.connectionId, projectId: input.projectId },
+      });
+
       // Re-register webhooks for all projects that have status mappings
       const refreshedConnection = await loadConnection(
         ctx.db,
@@ -497,6 +508,16 @@ export const jiraRouter = router({
         },
       });
 
+      await writeAuditLog({
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user?.id ?? null,
+        action: 'INTEGRATION_JIRA_TASK_CONFIG_SAVE',
+        resourceType: 'WORKFLOW_TASK_TEMPLATE',
+        resourceId: input.taskTemplateId,
+        newValues: { config: input.config },
+      });
+
       return { success: true };
     }),
 
@@ -528,23 +549,24 @@ export const jiraRouter = router({
         log.error({ err: error }, 'failed to deregister webhooks');
       }
 
-      await ctx.db.integrationConnection.update({
-        where: { id: connection.id },
-        data: { status: 'DISCONNECTED' },
-      });
+      await ctx.db.$transaction(async tx => {
+        await tx.integrationConnection.update({
+          where: { id: connection.id },
+          data: { status: 'DISCONNECTED' },
+        });
 
-      // Disconnecting Jira tears down the OAuth grant and webhook sync;
-      // admins must be able to retrace.
-      await writeAuditLog({
-        organizationId: ctx.organizationId,
-        actorType: 'USER',
-        actorId: ctx.user?.id ?? null,
-        action: 'INTEGRATION_DISCONNECT',
-        resourceType: 'ORGANIZATION',
-        resourceId: ctx.organizationId,
-        oldValues: { provider: 'JIRA', status: connection.status },
-        newValues: { status: 'DISCONNECTED' },
-        metadata: { connectionId: connection.id },
+        await writeAuditLog({
+          tx,
+          organizationId: ctx.organizationId,
+          actorType: 'USER',
+          actorId: ctx.user?.id ?? null,
+          action: 'INTEGRATION_DISCONNECT',
+          resourceType: 'ORGANIZATION',
+          resourceId: ctx.organizationId,
+          oldValues: { provider: 'JIRA', status: connection.status },
+          newValues: { status: 'DISCONNECTED' },
+          metadata: { connectionId: connection.id },
+        });
       });
 
       return { success: true };

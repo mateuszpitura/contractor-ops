@@ -163,6 +163,7 @@ enum ReturnRequestStatus {
   APPROVED
   REJECTED
   SHIPMENT_CREATED
+  RECEIVED
   CANCELLED
 }
 

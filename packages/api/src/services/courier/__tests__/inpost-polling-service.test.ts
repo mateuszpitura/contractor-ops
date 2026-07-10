@@ -33,7 +33,7 @@ vi.mock('../shipment-notification', () => ({
 import { pollInPostShipmentStatuses } from '../inpost-polling-service';
 
 function createMockDb() {
-  return {
+  const db = {
     courierConfig: {
       findUnique: vi.fn(),
     },
@@ -49,7 +49,13 @@ function createMockDb() {
       findUnique: vi.fn(),
       update: vi.fn(),
     },
+    auditLog: { create: vi.fn().mockResolvedValue({}) },
+    $transaction: vi.fn(),
   };
+  db.$transaction.mockImplementation(async (callback: (tx: typeof db) => Promise<unknown>) =>
+    callback(db),
+  );
+  return db;
 }
 
 describe('pollInPostShipmentStatuses', () => {

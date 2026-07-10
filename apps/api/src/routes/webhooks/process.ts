@@ -30,7 +30,8 @@ import {
   isSignedCopyPending,
 } from '@contractor-ops/api/services/esign-orchestrator';
 import { processResendWebhookDelivery } from '@contractor-ops/api/services/resend-email-intake';
-import { prisma } from '@contractor-ops/db';
+import type { PrismaClient } from '@contractor-ops/db';
+import { findAcrossRegions } from '@contractor-ops/db';
 import { registerAllAdapters } from '@contractor-ops/integrations/adapters/register-all';
 import { getAdapter } from '@contractor-ops/integrations/registry';
 import { createWebhookLogger, getRequestId } from '@contractor-ops/logger';
@@ -50,11 +51,17 @@ const webhookProcessBodySchema = z.object({
 // Adapter registry is process-singleton — register once at module load.
 registerAllAdapters();
 
-type WebhookDeliveryRow = NonNullable<
-  Awaited<ReturnType<typeof prisma.webhookDelivery.findUnique>>
->;
+type WebhookDeliveryRow = {
+  id: string;
+  organizationId: string | null;
+  integrationConnectionId: string | null;
+  deliveryStatus: string;
+  eventType: string;
+  payloadJson: unknown;
+};
 
 async function dispatchProviderHandlers(
+  db: PrismaClient,
   provider: string,
   effectiveOrgId: string,
   delivery: WebhookDeliveryRow,
@@ -66,7 +73,7 @@ async function dispatchProviderHandlers(
       '@contractor-ops/api/services/jira-webhook-handler'
     );
     await processJiraWebhook(
-      prisma as unknown as Parameters<typeof processJiraWebhook>[0],
+      db as unknown as Parameters<typeof processJiraWebhook>[0],
       effectiveOrgId,
       delivery.integrationConnectionId ?? '',
       delivery.payloadJson,
@@ -78,16 +85,23 @@ async function dispatchProviderHandlers(
       '@contractor-ops/api/services/linear-webhook-handler'
     );
     await processLinearWebhook(
-      prisma as unknown as Parameters<typeof processLinearWebhook>[0],
+      db as unknown as Parameters<typeof processLinearWebhook>[0],
       effectiveOrgId,
       delivery.integrationConnectionId ?? '',
       delivery.payloadJson,
     );
   }
 
+  if (provider === 'slack') {
+    const { processSlackInteractivity } = await import(
+      '@contractor-ops/api/services/slack-interactivity-handler'
+    );
+    await processSlackInteractivity(effectiveOrgId, delivery.payloadJson);
+  }
+
   if (provider === 'resend') {
     await processResendWebhookDelivery(
-      prisma as unknown as Parameters<typeof processResendWebhookDelivery>[0],
+      db as unknown as Parameters<typeof processResendWebhookDelivery>[0],
       {
         organizationId: effectiveOrgId,
         eventType: delivery.eventType,
@@ -101,11 +115,6 @@ async function dispatchProviderHandlers(
     const esignResult = webhookResult as { envelopeId: string; completed: boolean } | undefined;
 
     if (esignResult?.envelopeId && delivery.integrationConnectionId) {
-      // Drive completion when this webhook reports completion OR when the
-      // envelope is already terminal-completed with no signed PDF saved yet.
-      // The latter covers a QStash retry after a prior R2 failure: the
-      // provider's completed event was already recorded, so the redelivery
-      // dedups to completed=false, yet the PDF still needs saving.
       const shouldComplete =
         esignResult.completed || (await isSignedCopyPending(esignResult.envelopeId));
 
@@ -156,23 +165,24 @@ async function dispatchProviderHandlers(
  * updated) delivery row alongside the resolved org id.
  */
 async function resolveDeliveryOrgId(
+  db: PrismaClient,
   delivery: WebhookDeliveryRow,
   deliveryId: string,
 ): Promise<{ effectiveOrgId: string; delivery: WebhookDeliveryRow }> {
   if (delivery.organizationId || !delivery.integrationConnectionId) {
-    return { effectiveOrgId: delivery.organizationId, delivery };
+    return { effectiveOrgId: delivery.organizationId ?? '', delivery };
   }
 
-  const conn = await prisma.integrationConnection.findUnique({
+  const conn = await db.integrationConnection.findUnique({
     where: { id: delivery.integrationConnectionId },
     select: { organizationId: true },
   });
   if (!conn?.organizationId) {
-    return { effectiveOrgId: delivery.organizationId, delivery };
+    return { effectiveOrgId: delivery.organizationId ?? '', delivery };
   }
 
   const effectiveOrgId = conn.organizationId;
-  await prisma.webhookDelivery.update({
+  await db.webhookDelivery.update({
     where: { id: deliveryId },
     data: { organizationId: effectiveOrgId },
   });
@@ -205,13 +215,24 @@ async function handlerInner(
     return reply.code(404).send({ error: 'No handler for provider' });
   }
 
-  let delivery = await prisma.webhookDelivery.findUnique({
-    where: { id: deliveryId },
+  const located = await findAcrossRegions(async client => {
+    const row = await client.webhookDelivery.findUnique({ where: { id: deliveryId } });
+    return row ?? null;
   });
 
-  if (!delivery) {
+  if (!located) {
     return reply.code(404).send({ error: 'Delivery not found' });
   }
+
+  const regionalDb = located.client;
+  let delivery: WebhookDeliveryRow = {
+    id: located.result.id,
+    organizationId: located.result.organizationId,
+    integrationConnectionId: located.result.integrationConnectionId,
+    deliveryStatus: located.result.deliveryStatus,
+    eventType: located.result.eventType,
+    payloadJson: located.result.payloadJson,
+  };
 
   if (delivery.deliveryStatus === 'PROCESSED') {
     log.info({ deliveryId, provider }, 'webhook delivery already PROCESSED; skipping re-delivery');
@@ -221,7 +242,7 @@ async function handlerInner(
   // Compare-and-swap claim. PROCESSING is the sentinel that says "a
   // worker owns this row". If another worker raced ahead, claim.count is
   // 0 and we return without re-invoking the (non-idempotent) handler.
-  const claim = await prisma.webhookDelivery.updateMany({
+  const claim = await regionalDb.webhookDelivery.updateMany({
     where: {
       id: deliveryId,
       deliveryStatus: { in: ['RECEIVED', 'FAILED'] },
@@ -237,12 +258,12 @@ async function handlerInner(
     return reply.code(200).send({ skipped: true, reason: 'already-claimed' });
   }
 
-  const resolved = await resolveDeliveryOrgId(delivery, deliveryId);
+  const resolved = await resolveDeliveryOrgId(regionalDb, delivery, deliveryId);
   const effectiveOrgId = resolved.effectiveOrgId;
   delivery = resolved.delivery;
 
   if (!effectiveOrgId && (provider === 'jira' || provider === 'linear')) {
-    await prisma.webhookDelivery.update({
+    await regionalDb.webhookDelivery.update({
       where: { id: deliveryId },
       data: {
         deliveryStatus: 'FAILED',
@@ -264,9 +285,16 @@ async function handlerInner(
       delivery.integrationConnectionId ?? '',
     );
 
-    await dispatchProviderHandlers(provider, effectiveOrgId, delivery, webhookResult, deliveryId);
+    await dispatchProviderHandlers(
+      regionalDb,
+      provider,
+      effectiveOrgId,
+      delivery,
+      webhookResult,
+      deliveryId,
+    );
 
-    await prisma.webhookDelivery.update({
+    await regionalDb.webhookDelivery.update({
       where: { id: deliveryId },
       data: {
         deliveryStatus: 'PROCESSED',
@@ -291,7 +319,7 @@ async function handlerInner(
       extra: { deliveryId, organizationId: effectiveOrgId, requestId: getRequestId() },
     });
 
-    await prisma.webhookDelivery.update({
+    await regionalDb.webhookDelivery.update({
       where: { id: deliveryId },
       data: {
         deliveryStatus: 'FAILED',

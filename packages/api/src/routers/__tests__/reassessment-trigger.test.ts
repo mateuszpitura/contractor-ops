@@ -58,6 +58,24 @@ const { mockPrisma, triggers, mockHasPermission } = vi.hoisted(() => {
         Object.assign(row, args.data);
         return row;
       }),
+      updateMany: vi.fn(
+        async (args: {
+          where: { id: string; status?: { in?: string[] } };
+          data: Partial<TriggerRow>;
+        }) => {
+          const row = triggers.get(args.where.id);
+          if (!row) return { count: 0 };
+          const statusIn = args.where.status?.in;
+          if (statusIn && !statusIn.includes(row.status)) return { count: 0 };
+          Object.assign(row, args.data);
+          return { count: 1 };
+        },
+      ),
+      findFirstOrThrow: vi.fn(async (args: { where: { id: string } }) => {
+        const row = triggers.get(args.where.id);
+        if (!row) throw new Error('not found');
+        return row;
+      }),
     },
     auditLog: {
       create: vi.fn(async () => ({ id: 'audit-1' })),

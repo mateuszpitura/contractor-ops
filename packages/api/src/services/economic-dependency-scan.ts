@@ -22,7 +22,7 @@
 //   - Numerator AND denominator use `prismaRaw` (non-tenant-scoped) because
 //     the DRV denominator must aggregate across EVERY organisation the
 //     contractor bills from, not just the current one. Every cross-org call
-//     is tagged `// PHASE-60-CROSS-ORG-AGGREGATE` for audit grep.
+//     is tagged `// CROSS-ORG-AGGREGATE` for audit grep.
 //   - Aggregate returns scalars (BigInt/number), never per-row cross-org
 //     data — mitigates information disclosure across org boundaries.
 //   - Recipient fan-out uses `resolveRbacRecipients` (contractor:read gate).
@@ -42,6 +42,7 @@
 // into the transactional outbox in one $transaction, so the notice is durably
 // scheduled iff the band-state upsert commits (drain delivers exactly-once).
 
+import type { Prisma } from '@contractor-ops/db';
 import { prisma, prismaRaw } from '@contractor-ops/db';
 import { pLimit } from '@contractor-ops/integrations/services/concurrency';
 import { createCronLogger } from '@contractor-ops/logger';
@@ -104,6 +105,89 @@ export interface BillingShare {
   share: number; // 0..1
 }
 
+function billingWindowWhere(
+  contractorId: string,
+  windowStart: Date,
+  now: Date,
+): Prisma.InvoiceWhereInput {
+  return {
+    contractorId,
+    issueDate: { gte: windowStart, lte: now },
+    status: { notIn: ['VOID'] },
+    deletedAt: null,
+  };
+}
+
+/** Org-scoped billing total for the assignment's tenant (numerator). */
+async function sumOrgScopedBilling(
+  contractorId: string,
+  organizationId: string,
+  windowStart: Date,
+  now: Date,
+): Promise<number> {
+  // CROSS-ORG-AGGREGATE: raw client + explicit organizationId filter.
+  const agg = await prismaRaw.invoice.aggregate({
+    where: { ...billingWindowWhere(contractorId, windowStart, now), organizationId },
+    _sum: { totalMinor: true },
+  });
+  return Number(agg._sum?.totalMinor ?? 0);
+}
+
+interface ContractorTaxIdentity {
+  taxId: string;
+  countryCode: string;
+}
+
+/** Resolve the anchor contractor's tax identity for cross-org peer matching. */
+async function loadContractorTaxIdentity(
+  contractorId: string,
+  organizationId: string,
+): Promise<ContractorTaxIdentity | null> {
+  const contractor = await prismaRaw.contractor.findFirst({
+    where: { id: contractorId, organizationId, deletedAt: null },
+    select: { taxId: true, countryCode: true },
+  });
+  if (!contractor?.taxId) return null;
+  return { taxId: contractor.taxId, countryCode: contractor.countryCode };
+}
+
+/**
+ * Cross-org billing total (denominator). Contractor ids are org-scoped, so the
+ * DRV denominator joins on normalised `taxId` + `countryCode` to find every
+ * peer contractor row across tenants, then sums their invoices in one pass.
+ */
+async function sumCrossOrgBilling(
+  identity: ContractorTaxIdentity,
+  windowStart: Date,
+  now: Date,
+): Promise<number> {
+  // CROSS-ORG-AGGREGATE: one query resolves every peer contractor sharing the
+  // taxId+countryCode across all tenants; a second sums their billing. No
+  // per-org fan-out — cost is constant in the number of organisations. An
+  // invoice always sits in its contractor's tenant, so filtering by peer
+  // contractorId alone yields the same total the per-org sum produced.
+  const peers = await prismaRaw.contractor.findMany({
+    where: {
+      taxId: identity.taxId,
+      countryCode: identity.countryCode,
+      deletedAt: null,
+    },
+    select: { id: true },
+  });
+  if (peers.length === 0) return 0;
+
+  const agg = await prismaRaw.invoice.aggregate({
+    where: {
+      contractorId: { in: peers.map(p => p.id) },
+      issueDate: { gte: windowStart, lte: now },
+      status: { notIn: ['VOID'] },
+      deletedAt: null,
+    },
+    _sum: { totalMinor: true },
+  });
+  return Number(agg._sum?.totalMinor ?? 0);
+}
+
 /**
  * Computes the contractor's billing share from `currentOrgId` relative to
  * their total cross-org billing over the last 12 months (closed interval).
@@ -114,38 +198,21 @@ export async function computeBillingShare(
   contractorId: string,
   currentOrgId: string,
   now: Date,
+  knownIdentity?: ContractorTaxIdentity | null,
 ): Promise<BillingShare> {
   const windowStart = twelveMonthsAgoFrom(now);
-
-  // Numerator — invoices for this contractor in the current org.
-  // PHASE-60-CROSS-ORG-AGGREGATE: raw client used even for single-org read
-  // because the cron has no tenant frame; scoped via explicit where filter.
-  const numeratorAgg = await prismaRaw.invoice.aggregate({
-    where: {
-      contractorId,
-      organizationId: currentOrgId,
-      issueDate: { gte: windowStart, lte: now },
-      status: { notIn: ['VOID'] },
-      deletedAt: null,
-    },
-    _sum: { totalMinor: true },
-  });
-
-  // Denominator — invoices for this contractor across ALL orgs.
-  // PHASE-60-CROSS-ORG-AGGREGATE: deliberately omits organizationId filter
-  // so the DRV §2 SGB VI cross-client rule is evaluated correctly.
-  const denominatorAgg = await prismaRaw.invoice.aggregate({
-    where: {
-      contractorId,
-      issueDate: { gte: windowStart, lte: now },
-      status: { notIn: ['VOID'] },
-      deletedAt: null,
-    },
-    _sum: { totalMinor: true },
-  });
-
-  const numerator = Number(numeratorAgg._sum.totalMinor ?? 0);
-  const denominator = Number(denominatorAgg._sum.totalMinor ?? 0);
+  const numerator = await sumOrgScopedBilling(contractorId, currentOrgId, windowStart, now);
+  // Reuse the caller's already-resolved identity (the orchestrator loads it to
+  // gate the scan) instead of loading it a second time. `undefined` means the
+  // caller did not resolve it; `null` means the caller resolved "no identity".
+  const identity =
+    knownIdentity === undefined
+      ? await loadContractorTaxIdentity(contractorId, currentOrgId)
+      : knownIdentity;
+  if (!identity) {
+    return { numerator, denominator: 0, share: 0 };
+  }
+  const denominator = await sumCrossOrgBilling(identity, windowStart, now);
   const share = denominator > 0 ? numerator / denominator : 0;
 
   return { numerator, denominator, share };
@@ -227,7 +294,7 @@ export async function updateBandState(
   // `client` defaults to prismaRaw (no tenant frame — organizationId is set
   // explicitly in both branches); the orchestrator passes an interactive `tx`
   // so the upsert commits atomically with the outbox enqueue.
-  // PHASE-60-CROSS-ORG-AGGREGATE: cron context has no tenant frame.
+  // CROSS-ORG-AGGREGATE: cron context has no tenant frame.
   const existing = await client.economicDependencyAlertState.findUnique({
     where: { contractorAssignmentId: assignment.id },
   });
@@ -329,7 +396,7 @@ export async function runEconomicDependencyScan(now: Date = new Date()): Promise
   let crossings = 0;
   let notificationsDispatched = 0;
 
-  // PHASE-60-CROSS-ORG-AGGREGATE: DE-wide scan, no tenant frame.
+  // CROSS-ORG-AGGREGATE: DE-wide scan, no tenant frame.
   const assignments: AssignmentRow[] = await prismaRaw.contractorAssignment.findMany({
     where: {
       status: 'ACTIVE',
@@ -360,10 +427,23 @@ export async function runEconomicDependencyScan(now: Date = new Date()): Promise
       limit(async () => {
         dispatchedCounter.scanned++;
         try {
+          const identity = await loadContractorTaxIdentity(
+            assignment.contractorId,
+            assignment.organizationId,
+          );
+          if (!identity) {
+            log.debug(
+              { contractorId: assignment.contractorId, assignmentId: assignment.id },
+              'economic-dependency scan skipped: contractor has no taxId for cross-org identity',
+            );
+            return;
+          }
+
           const { share } = await computeBillingShare(
             assignment.contractorId,
             assignment.organizationId,
             now,
+            identity,
           );
 
           // Upsert the alert state and (when a band event fires) enqueue the

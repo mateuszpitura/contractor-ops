@@ -1,3 +1,4 @@
+import { mapCountryCodeToJurisdiction } from '@contractor-ops/compliance-policy';
 import type { Prisma } from '@contractor-ops/db';
 import {
   contractorCreateSchema,
@@ -18,6 +19,11 @@ import { writeAuditLog } from '../../services/audit-writer';
 import { encryptBankAccount } from '../../services/bank-account-crypto';
 import { syncSeatCountForOrg } from '../../services/billing-service';
 import { CacheKeys, invalidateByPrefix } from '../../services/cache';
+import { materialiseFromPolicy } from '../../services/compliance-supersession';
+import {
+  revokePortalSessionsForContractor,
+  revokePortalSessionsForEmail,
+} from '../../services/portal-session';
 import { captureEvent } from '../../services/posthog';
 import { sanitizeStrings } from '../../services/sanitize';
 import {
@@ -38,6 +44,40 @@ import {
 const INSIGHTS_EXPIRING_WINDOW_DAYS = 30;
 const INSIGHTS_SPARKLINE_BUCKETS = 6;
 
+type ContractorTx = Parameters<
+  Parameters<import('../../services/types').DbClient['$transaction']>[0]
+>[0];
+
+async function materialiseComplianceIfAbsent(
+  tx: ContractorTx,
+  args: { organizationId: string; contractorId: string; countryCode: string },
+): Promise<void> {
+  const jurisdiction = mapCountryCodeToJurisdiction(args.countryCode);
+  if (!jurisdiction) return;
+
+  const existingItems = await tx.contractorComplianceItem.count({
+    where: {
+      organizationId: args.organizationId,
+      contractorId: args.contractorId,
+      status: { not: 'WAIVED' },
+    },
+  });
+  if (existingItems > 0) return;
+
+  await materialiseFromPolicy(tx, {
+    organizationId: args.organizationId,
+    contractorId: args.contractorId,
+    contractId: null,
+    engagement: {
+      jurisdiction,
+      outcome: '__unclassified__',
+      sector: null,
+      contractorNationality: args.countryCode,
+      requiresRegulatedEquipment: false,
+    },
+  });
+}
+
 export const contractorCoreRouter = router({
   list: tenantProcedure
     .use(requirePermission({ contractor: ['read'] }))
@@ -56,6 +96,7 @@ export const contractorCoreRouter = router({
           skip: (page - 1) * pageSize,
           take: pageSize,
           orderBy: { [sortBy]: sortOrder },
+          omit: { ssnEncrypted: true },
           include: {
             owner: { select: { id: true, name: true, image: true } },
             primaryTeam: { select: { id: true, name: true } },
@@ -575,6 +616,12 @@ export const contractorCoreRouter = router({
             tx,
           });
 
+          await materialiseComplianceIfAbsent(tx, {
+            organizationId: ctx.organizationId,
+            contractorId: created.id,
+            countryCode: created.countryCode,
+          });
+
           return created;
         });
       } catch (err) {
@@ -672,6 +719,21 @@ export const contractorCoreRouter = router({
         omit: { ssnEncrypted: true },
       });
 
+      const emailChanged =
+        companyFields.email !== undefined &&
+        companyFields.email !== null &&
+        companyFields.email !== existing.email;
+      if (emailChanged) {
+        await revokePortalSessionsForEmail(existing.email ?? '');
+        await revokePortalSessionsForContractor(id);
+        if (existing.workerId) {
+          await ctx.db.worker.update({
+            where: { id: existing.workerId },
+            data: { email: companyFields.email },
+          });
+        }
+      }
+
       await writeAuditLog({
         organizationId: ctx.organizationId,
         actorType: 'USER',
@@ -749,10 +811,22 @@ export const contractorCoreRouter = router({
         updateData.status = 'ACTIVE';
       }
 
-      const updated = await ctx.db.contractor.update({
-        where: { id: input.id },
-        data: updateData,
-        omit: { ssnEncrypted: true },
+      const updated = await ctx.db.$transaction(async tx => {
+        const result = await tx.contractor.update({
+          where: { id: input.id },
+          data: updateData,
+          omit: { ssnEncrypted: true },
+        });
+
+        if (input.stage === 'ACTIVE') {
+          await materialiseComplianceIfAbsent(tx, {
+            organizationId: ctx.organizationId,
+            contractorId: input.id,
+            countryCode: contractor.countryCode,
+          });
+        }
+
+        return result;
       });
 
       if (updateData.status) {
@@ -779,32 +853,19 @@ export const contractorCoreRouter = router({
         E.CONTRACTOR_NOT_FOUND,
       );
 
-      const unpaidInvoiceCount = await ctx.db.invoice.count({
+      const inRunInvoiceCount = await ctx.db.invoice.count({
         where: {
           contractorId: input.id,
           organizationId: ctx.organizationId,
-          paymentStatus: { notIn: ['PAID', 'NOT_READY'] },
+          paymentStatus: 'IN_RUN',
+          deletedAt: null,
         },
       });
 
-      if (unpaidInvoiceCount > 0) {
+      if (inRunInvoiceCount > 0) {
         throw new TRPCError({
           code: 'PRECONDITION_FAILED',
           message: E.CONTRACTOR_HAS_UNPAID_INVOICES,
-        });
-      }
-
-      const activeWorkflowCount = await ctx.db.workflowRun.count({
-        where: {
-          contractorId: input.id,
-          status: { in: ['IN_PROGRESS', 'BLOCKED'] },
-        },
-      });
-
-      if (activeWorkflowCount > 0) {
-        throw new TRPCError({
-          code: 'PRECONDITION_FAILED',
-          message: E.CONTRACTOR_HAS_ACTIVE_WORKFLOWS,
         });
       }
 
@@ -824,26 +885,66 @@ export const contractorCoreRouter = router({
         });
       }
 
-      await ctx.db.contractorChangeRequest.updateMany({
-        where: {
-          contractorId: input.id,
-          organizationId: ctx.organizationId,
-          status: 'PENDING',
-        },
-        data: {
-          status: 'REJECTED',
-          reviewComment: 'Auto-rejected: contractor archived',
-        },
-      });
+      const updated = await ctx.db.$transaction(async tx => {
+        const openInvoices = await tx.invoice.findMany({
+          where: {
+            contractorId: input.id,
+            organizationId: ctx.organizationId,
+            deletedAt: null,
+            status: { not: 'VOID' },
+            paymentStatus: { notIn: ['PAID'] },
+          },
+          select: { id: true },
+        });
+        const openInvoiceIds = openInvoices.map(row => row.id);
 
-      const updated = await ctx.db.contractor.update({
-        where: { id: input.id },
-        data: {
-          status: 'ARCHIVED',
-          lifecycleStage: 'ENDED',
-          archivedAt: new Date(),
-        },
-        omit: { ssnEncrypted: true },
+        if (openInvoiceIds.length > 0) {
+          await tx.approvalFlow.updateMany({
+            where: {
+              organizationId: ctx.organizationId,
+              resourceType: 'INVOICE',
+              resourceId: { in: openInvoiceIds },
+              status: 'PENDING',
+            },
+            data: { status: 'CANCELLED', completedAt: new Date() },
+          });
+
+          await tx.invoice.updateMany({
+            where: { id: { in: openInvoiceIds }, organizationId: ctx.organizationId },
+            data: { status: 'VOID', paymentStatus: 'NOT_READY', approvalStatus: 'NOT_STARTED' },
+          });
+        }
+
+        await tx.workflowRun.updateMany({
+          where: {
+            contractorId: input.id,
+            organizationId: ctx.organizationId,
+            status: { in: ['IN_PROGRESS', 'BLOCKED'] },
+          },
+          data: { status: 'CANCELLED' },
+        });
+
+        await tx.contractorChangeRequest.updateMany({
+          where: {
+            contractorId: input.id,
+            organizationId: ctx.organizationId,
+            status: 'PENDING',
+          },
+          data: {
+            status: 'REJECTED',
+            reviewComment: 'Auto-rejected: contractor archived',
+          },
+        });
+
+        return tx.contractor.update({
+          where: { id: input.id },
+          data: {
+            status: 'ARCHIVED',
+            lifecycleStage: 'ENDED',
+            archivedAt: new Date(),
+          },
+          omit: { ssnEncrypted: true },
+        });
       });
 
       await writeAuditLog({

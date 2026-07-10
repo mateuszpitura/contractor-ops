@@ -71,6 +71,11 @@
       "import": "./src/services/pending-upload.ts",
       "default": "./src/services/pending-upload.ts"
     },
+    "./services/document-virus-scan": {
+      "types": "./src/services/document-virus-scan.ts",
+      "import": "./src/services/document-virus-scan.ts",
+      "default": "./src/services/document-virus-scan.ts"
+    },
     "./services/esign-orchestrator": {
       "types": "./src/services/esign-orchestrator.ts",
       "import": "./src/services/esign-orchestrator.ts",
@@ -146,6 +151,11 @@
       "import": "./src/services/zatca-submission.ts",
       "default": "./src/services/zatca-submission.ts"
     },
+    "./services/einvoice-submission-triggers": {
+      "types": "./src/services/einvoice-submission-triggers.ts",
+      "import": "./src/services/einvoice-submission-triggers.ts",
+      "default": "./src/services/einvoice-submission-triggers.ts"
+    },
     "./services/cron-monitor": {
       "types": "./src/services/cron-monitor.ts",
       "import": "./src/services/cron-monitor.ts",
@@ -171,6 +181,11 @@
       "import": "./src/services/teams/teams-bot-handler.ts",
       "default": "./src/services/teams/teams-bot-handler.ts"
     },
+    "./services/slack-interactivity-handler": {
+      "types": "./src/services/slack-interactivity-handler.ts",
+      "import": "./src/services/slack-interactivity-handler.ts",
+      "default": "./src/services/slack-interactivity-handler.ts"
+    },
     "./services/courier/inpost-polling-service": {
       "types": "./src/services/courier/inpost-polling-service.ts",
       "import": "./src/services/courier/inpost-polling-service.ts",
@@ -195,6 +210,11 @@
       "types": "./src/services/economic-dependency-scan.ts",
       "import": "./src/services/economic-dependency-scan.ts",
       "default": "./src/services/economic-dependency-scan.ts"
+    },
+    "./services/contract-expiry-scan": {
+      "types": "./src/services/contract-expiry-scan.ts",
+      "import": "./src/services/contract-expiry-scan.ts",
+      "default": "./src/services/contract-expiry-scan.ts"
     },
     "./services/form-1099k-tracker.service": {
       "types": "./src/services/form-1099k-tracker.service.ts",

@@ -57,7 +57,7 @@ afterEach(() => {
 describe('CreditCard', () => {
   it('renders the used count alongside the OCR-credits label when credits remain', () => {
     const { container } = renderInto(
-      <CreditCard used={30} total={100} isLowCredits={false} onBuyMore={vi.fn()} />,
+      <CreditCard used={30} total={100} remaining={70} isLowCredits={false} onBuyMore={vi.fn()} />,
     );
     expect(container.textContent).toContain('OCR Credits');
     // Big-numeral cell shows the raw `used` count.
@@ -68,14 +68,14 @@ describe('CreditCard', () => {
 
   it('swaps the subtitle to the exhausted copy when used >= total', () => {
     const { container } = renderInto(
-      <CreditCard used={100} total={100} isLowCredits onBuyMore={vi.fn()} />,
+      <CreditCard used={100} total={100} remaining={0} isLowCredits onBuyMore={vi.fn()} />,
     );
     expect(container.textContent).toContain('No credits remaining');
   });
 
   it('shows exhausted state even when used overshoots total (defensive)', () => {
     const { container } = renderInto(
-      <CreditCard used={120} total={100} isLowCredits onBuyMore={vi.fn()} />,
+      <CreditCard used={120} total={100} remaining={-20} isLowCredits onBuyMore={vi.fn()} />,
     );
     expect(container.textContent).toContain('No credits remaining');
   });
@@ -84,26 +84,26 @@ describe('CreditCard', () => {
     // total=0 is the free-tier sentinel: source computes
     // `isExhausted = total > 0 && remaining <= 0` → false.
     const { container } = renderInto(
-      <CreditCard used={0} total={0} isLowCredits={false} onBuyMore={vi.fn()} />,
+      <CreditCard used={0} total={0} remaining={0} isLowCredits={false} onBuyMore={vi.fn()} />,
     );
     expect(container.textContent).not.toContain('No credits remaining');
   });
 
   it('exposes the credit gauge through role="progressbar" (a11y)', () => {
     const { container } = renderInto(
-      <CreditCard used={10} total={100} isLowCredits={false} onBuyMore={vi.fn()} />,
+      <CreditCard used={10} total={100} remaining={90} isLowCredits={false} onBuyMore={vi.fn()} />,
     );
     expect(container.querySelector('[role="progressbar"]')).toBeTruthy();
   });
 
   it('renders the Buy more CTA only when isLowCredits is set', () => {
     const { container: low } = renderInto(
-      <CreditCard used={90} total={100} isLowCredits onBuyMore={vi.fn()} />,
+      <CreditCard used={90} total={100} remaining={10} isLowCredits onBuyMore={vi.fn()} />,
     );
     expect(low.textContent).toContain('Buy more');
 
     const { container: ok } = renderInto(
-      <CreditCard used={10} total={100} isLowCredits={false} onBuyMore={vi.fn()} />,
+      <CreditCard used={10} total={100} remaining={90} isLowCredits={false} onBuyMore={vi.fn()} />,
     );
     expect(ok.textContent).not.toContain('Buy more');
   });
@@ -111,7 +111,7 @@ describe('CreditCard', () => {
   it('invokes onBuyMore when the CTA is clicked', () => {
     const onBuyMore = vi.fn();
     const { container } = renderInto(
-      <CreditCard used={95} total={100} isLowCredits onBuyMore={onBuyMore} />,
+      <CreditCard used={95} total={100} remaining={5} isLowCredits onBuyMore={onBuyMore} />,
     );
     const buttons = Array.from(container.querySelectorAll('button')).filter(b =>
       b.textContent?.includes('Buy more'),

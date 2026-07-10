@@ -1,6 +1,5 @@
 /**
- * RED security net — INTEG-WEBHOOK-07 (PII redaction before persist).
- * Turned GREEN by 100-04 (`services/webhooks/redact.ts`).
+ * PII-redaction-before-persist security net (`services/webhooks/redact.ts`).
  *
  * `include_pii:false` is the RODO-defensible default. National identifiers
  * (PESEL/SSN/NI/Steuer-IdNr/Emirates ID/Iqama), bank identifiers (IBAN) and

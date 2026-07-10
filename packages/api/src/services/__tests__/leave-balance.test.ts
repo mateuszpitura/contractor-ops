@@ -1,10 +1,10 @@
-// LEAVE-01 correctness contract for the append-only leave-balance engine.
+// Correctness contract for the append-only leave-balance engine.
 //
 // balance = Σ signed ledger minutes (ACCRUAL/CARRYOVER positive, DEDUCTION
 // negative); entitlement = round_up(baseEntitlement(tenure) × etat) days, a
 // partial day rounding UP (KP art. 154 §2); a null etat is treated as full-time
 // (1.00) with a logged warning and never throws (an unset employment fraction
-// must not brick balance math). Wave-0: RED until the leave-balance service lands.
+// must not brick balance math).
 
 import { describe, expect, it } from 'vitest';
 

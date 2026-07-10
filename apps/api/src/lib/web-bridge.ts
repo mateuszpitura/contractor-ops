@@ -43,7 +43,7 @@ export function toWebRequest(request: FastifyRequest): Request {
   const init: RequestInit = {
     method,
     headers,
-    body: body && body.length > 0 ? body : undefined,
+    body: body && body.length > 0 ? new Uint8Array(body) : undefined,
   };
   if (hasBody && body && body.length > 0) {
     // Node ≥ 18 requires duplex when constructing a Request with a body;

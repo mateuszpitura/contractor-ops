@@ -23,7 +23,7 @@ const { mockPrismaRaw, txClient } = vi.hoisted(() => {
   };
   const mockPrismaRaw = {
     tax1099KThreshold: { findUnique: vi.fn() },
-    paymentRunItem: { groupBy: vi.fn() },
+    paymentRunItem: { findMany: vi.fn() },
     form1099KTrackerState: { findUnique: vi.fn(async () => null) },
     contractor: { findUnique: vi.fn(async () => ({ displayName: 'Acme LLC' })) },
     $transaction: vi.fn(async (fn: (tx: typeof txClient) => unknown) => fn(txClient)),
@@ -34,6 +34,8 @@ const { mockPrismaRaw, txClient } = vi.hoisted(() => {
 vi.mock('@contractor-ops/db', () => ({
   prisma: mockPrismaRaw,
   prismaRaw: mockPrismaRaw,
+  SUPPORTED_REGIONS: ['EU'],
+  getRegionalClient: vi.fn(() => mockPrismaRaw),
 }));
 
 vi.mock('../rbac-recipients', () => ({
@@ -145,14 +147,14 @@ describe('runForm1099KTrackerScan — heads-up rides inside the tracker-state tx
   });
 
   it('upserts state and enqueues tax.form_1099k_over on an OVER up-crossing', async () => {
-    mockPrismaRaw.paymentRunItem.groupBy.mockResolvedValue([
-      {
+    mockPrismaRaw.paymentRunItem.findMany.mockResolvedValue(
+      Array.from({ length: 205 }, (_, i) => ({
         contractorId: 'c-1',
         organizationId: 'org-1',
-        _sum: { amountMinor: 2_100_000 },
-        _count: { _all: 205 },
-      },
-    ]);
+        grossAmountMinor: i === 0 ? 60_000 : 10_000,
+        amountMinor: i === 0 ? 60_000 : 10_000,
+      })),
+    );
 
     const result = await runForm1099KTrackerScan(NOW);
 
@@ -172,18 +174,46 @@ describe('runForm1099KTrackerScan — heads-up rides inside the tracker-state tx
   });
 
   it('upserts state but enqueues nothing when the band stays SAFE', async () => {
-    mockPrismaRaw.paymentRunItem.groupBy.mockResolvedValue([
+    mockPrismaRaw.paymentRunItem.findMany.mockResolvedValue(
+      Array.from({ length: 5 }, () => ({
+        contractorId: 'c-1',
+        organizationId: 'org-1',
+        grossAmountMinor: 20_000,
+        amountMinor: 20_000,
+      })),
+    );
+
+    await runForm1099KTrackerScan(NOW);
+
+    expect(txClient.form1099KTrackerState.upsert).toHaveBeenCalledOnce();
+    expect(enqueueNotificationOutboxEvent).not.toHaveBeenCalled();
+  });
+
+  it('sums grossAmountMinor when net amountMinor differs after withholding (C-13)', async () => {
+    mockPrismaRaw.paymentRunItem.findMany.mockResolvedValue([
       {
         contractorId: 'c-1',
         organizationId: 'org-1',
-        _sum: { amountMinor: 100_000 },
-        _count: { _all: 5 },
+        grossAmountMinor: 1_000_000,
+        amountMinor: 700_000,
+      },
+      {
+        contractorId: 'c-1',
+        organizationId: 'org-1',
+        grossAmountMinor: 500_000,
+        amountMinor: 350_000,
       },
     ]);
 
     await runForm1099KTrackerScan(NOW);
 
     expect(txClient.form1099KTrackerState.upsert).toHaveBeenCalledOnce();
-    expect(enqueueNotificationOutboxEvent).not.toHaveBeenCalled();
+    const upsertArg = txClient.form1099KTrackerState.upsert.mock.calls[0]?.[0] as {
+      create: { cumulativePayoutMinor: number };
+      update: { cumulativePayoutMinor: number };
+    };
+    expect(upsertArg.create.cumulativePayoutMinor).toBe(1_500_000);
+    expect(upsertArg.update.cumulativePayoutMinor).toBe(1_500_000);
+    expect(upsertArg.create.cumulativePayoutMinor).not.toBe(1_050_000);
   });
 });

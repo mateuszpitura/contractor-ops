@@ -7,6 +7,7 @@ export function useComplianceCsid() {
   const zatcaTrpc = useZatcaTrpc();
   const t = useTranslations('Zatca.complianceCsid');
   const [phase, setPhase] = useState<'idle' | 'submitting' | 'storing' | 'done'>('idle');
+  const [otp, setOtp] = useState('');
 
   const requestMutation = useResourceMutation(
     {
@@ -31,15 +32,21 @@ export function useComplianceCsid() {
   );
 
   const requestComplianceCsid = () => {
-    (requestMutation.mutate as () => void)();
+    const trimmed = otp.trim();
+    if (trimmed.length < 4) return;
+    requestMutation.mutate({ otp: trimmed });
   };
 
   const csrSubmitted = phase === 'submitting' || phase === 'storing' || phase === 'done';
   const csidReceived = phase === 'storing' || phase === 'done';
   const certStored = phase === 'done';
+  const canRequest = otp.trim().length >= 4 && !requestMutation.isPending;
 
   return {
     phase,
+    otp,
+    setOtp,
+    canRequest,
     requestComplianceCsid,
     isPending: requestMutation.isPending,
     csrSubmitted,

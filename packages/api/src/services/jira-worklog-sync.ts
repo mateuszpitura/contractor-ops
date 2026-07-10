@@ -4,6 +4,7 @@ import { decryptCredentials } from '@contractor-ops/integrations/services/creden
 import { createLogger } from '@contractor-ops/logger';
 import { TRPCError } from '@trpc/server';
 import * as E from '../errors';
+import { assertTimesheetEditable } from './time-entry';
 import type { DbClient } from './types';
 
 const log = createLogger({ service: 'jira-worklog-sync' });
@@ -152,8 +153,20 @@ function buildWorklogMetadata(issue: JiraIssue, worklog: JiraWorklog): Record<st
 
 /**
  * Upserts a single Jira worklog as a TimeEntry. Returns 'imported' for new
- * entries, 'skipped' for zero-duration or updated entries.
+ * entries, 'skipped' for zero-duration, locked-sheet, or updated entries.
  */
+async function recalculateTimesheetTotal(prisma: PrismaClient, timesheetId: string): Promise<void> {
+  const totalResult = await prisma.timeEntry.aggregate({
+    where: { timesheetId },
+    _sum: { minutes: true },
+  });
+
+  await prisma.timesheet.update({
+    where: { id: timesheetId },
+    data: { totalMinutes: totalResult._sum.minutes ?? 0 },
+  });
+}
+
 async function upsertWorklogEntry(
   prisma: PrismaClient,
   params: {
@@ -176,14 +189,34 @@ async function upsertWorklogEntry(
 
   const existingEntry = await prisma.timeEntry.findFirst({
     where: { organizationId, contractorId, source: 'JIRA', externalId: String(worklog.id) },
-    select: { id: true },
+    select: { id: true, timesheetId: true },
   });
 
   if (existingEntry) {
+    const timesheet = await prisma.timesheet.findUnique({
+      where: { id: existingEntry.timesheetId },
+      select: { status: true },
+    });
+    if (timesheet?.status !== 'DRAFT' && timesheet?.status !== 'REJECTED') {
+      return 'skipped';
+    }
+
     await prisma.timeEntry.update({
       where: { id: existingEntry.id },
       data: { minutes, description, metadataJson: metadataJson as Prisma.InputJsonValue },
     });
+    await recalculateTimesheetTotal(prisma, existingEntry.timesheetId);
+    return 'skipped';
+  }
+
+  const targetTimesheet = await prisma.timesheet.findUnique({
+    where: { id: timesheetId },
+    select: { status: true },
+  });
+  if (!targetTimesheet) return 'skipped';
+  try {
+    assertTimesheetEditable(targetTimesheet.status);
+  } catch {
     return 'skipped';
   }
 

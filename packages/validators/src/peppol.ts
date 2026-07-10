@@ -5,12 +5,12 @@ import { z } from 'zod';
 // ---------------------------------------------------------------------------
 
 /**
- * UAE Peppol Participant ID: scheme 0192 + 15-digit TRN.
- * Format: "0192:NNNNNNNNNNNNNNN"
+ * UAE Peppol Participant ID: scheme 0235 + 15-digit TRN.
+ * Format: "0235:NNNNNNNNNNNNNNN"
  */
 export const peppolParticipantIdSchema = z
   .string()
-  .regex(/^0192:\d{15}$/, 'Invalid UAE Peppol Participant ID (expected 0192:NNNNNNNNNNNNNNN)');
+  .regex(/^0235:\d{15}$/, 'Invalid UAE Peppol Participant ID (expected 0235:NNNNNNNNNNNNNNN)');
 
 export type PeppolParticipantId = z.infer<typeof peppolParticipantIdSchema>;
 

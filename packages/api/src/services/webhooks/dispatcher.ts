@@ -40,6 +40,8 @@ export const WEBHOOK_BACKOFF_SCHEDULE_MS = [
 export const WEBHOOK_MAX_ATTEMPTS = 6;
 
 const REQUEUE_DELAY_SECONDS = 5;
+/** Requeue delay when the outbound-webhooks module is disabled — long enough to avoid hot-looping. */
+const DISABLED_REQUEUE_DELAY_SECONDS = 60;
 const REQUEST_TIMEOUT_MS = 10_000;
 const WEBHOOK_FAILURE_ALERT_THRESHOLD = 5;
 
@@ -227,6 +229,14 @@ export async function deliverAttempt(attemptId: string): Promise<void> {
         where: { id: attempt.id },
         data: { status: 'PENDING', lastError: 'outbound-webhooks disabled' },
       });
+      await enqueueJob(
+        'webhook.deliver',
+        { attemptId: attempt.id },
+        {
+          delaySeconds: DISABLED_REQUEUE_DELAY_SECONDS,
+          dedupId: `${attempt.id}:disabled:${Date.now()}`,
+        },
+      );
       return;
     }
 

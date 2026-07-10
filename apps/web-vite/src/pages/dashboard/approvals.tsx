@@ -26,6 +26,7 @@ import { ApprovalQueueTable } from '../../components/approvals/approval-queue/da
 import { ApprovalBulkActions } from '../../components/approvals/approval-queue/data-table-bulk-actions.js';
 import { ApprovalQueueToolbar } from '../../components/approvals/approval-queue/data-table-toolbar.js';
 import { ApprovalSidePanel } from '../../components/approvals/approval-queue/side-panel.js';
+import { ComplianceHeldSection } from '../../components/approvals/compliance-held-section.js';
 import { useApprovalQueue } from '../../components/approvals/hooks/use-approval-queue.js';
 import { ChangeRequestDiffCard } from '../../components/settings/change-request-diff-card.js';
 import { AnimateIn } from '../../components/shared/animate-in.js';
@@ -79,6 +80,7 @@ function ApprovalsPageContent() {
     return (
       <section aria-label={t('pageTitle')} className={WORKBENCH_TABLE_SECTION_CLASS}>
         <SectionLabel icon={ClipboardCheck}>{t('pageTitle')}</SectionLabel>
+        <ComplianceHeldSection {...queue.complianceHeldProps} />
         <div className={WORKBENCH_DATA_TABLE_CLASS}>
           <ApprovalQueueToolbar
             activeStatuses={statuses}

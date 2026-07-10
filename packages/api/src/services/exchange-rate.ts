@@ -105,6 +105,12 @@ function rateAgeInDays(rateDate: Date, asOf: Date): number {
   return Math.floor((asOfDay - rateDay) / dayMs);
 }
 
+/** Sign-aware HALF-UP round for integer minor-unit FX products (credit notes may be negative). */
+export function roundHalfUpMinor(value: number): number {
+  if (value >= 0) return Math.round(value);
+  return -Math.round(-value);
+}
+
 /**
  * Build the `source` value for a carried-forward row, preserving the ORIGINAL
  * observation date across a multi-day outage: if the prior row was itself
@@ -440,7 +446,7 @@ export async function convertAmount(
     return null;
   }
   const combinedRate = fromToEur * eurToTarget;
-  const convertedAmount = Math.round(amountMinor * combinedRate);
+  const convertedAmount = roundHalfUpMinor(amountMinor * combinedRate);
 
   // `fromCurrency !== toCurrency` guarantees at least one non-EUR leg, so
   // `observedDates` is non-empty here; the `asOf` fallback is defensive only.

@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
-import { prisma } from '@contractor-ops/db';
+import type { PrismaClient } from '@contractor-ops/db';
+import { findAcrossRegions, prisma } from '@contractor-ops/db';
 import { fetchWithTimeout } from '@contractor-ops/integrations';
 import {
   createSigningEnvelope as createProviderEnvelope,
@@ -502,12 +503,15 @@ export async function getSigningUrl(params: GetSigningUrlParams) {
  * idempotency check and by the loser of a concurrent completion race once the
  * `SIGNED_PDF_SAVED` partial unique has rejected its duplicate write.
  */
-async function loadSavedSignedDocument(envelope: {
-  organizationId: string;
-  contractId: string | null;
-}) {
+async function loadSavedSignedDocument(
+  db: PrismaClient,
+  envelope: {
+    organizationId: string;
+    contractId: string | null;
+  },
+) {
   if (!envelope.contractId) return null;
-  const existingLink = await prisma.documentLink.findFirst({
+  const existingLink = await db.documentLink.findFirst({
     where: {
       organizationId: envelope.organizationId,
       entityType: 'CONTRACT',
@@ -529,31 +533,32 @@ export async function handleSigningCompletion(
   connectionId: string,
   provider: ESignProvider,
 ) {
-  // Fetch envelope with its org context
-  const envelope = await prisma.signingEnvelope.findFirst({
-    where: { id: envelopeId },
-    include: {
-      recipients: true,
-    },
+  const located = await findAcrossRegions(async client => {
+    const row = await client.signingEnvelope.findFirst({
+      where: { id: envelopeId },
+      include: { recipients: true },
+    });
+    return row ?? null;
   });
 
-  if (!envelope?.externalEnvelopeId) {
-    // Permanent: an envelope that never received a provider external id can
-    // never yield a signed PDF. Retrying re-reads the same broken state.
+  if (!located?.result?.externalEnvelopeId) {
     throw new EsignCompletionError(
       `Cannot handle signing completion: envelope ${envelopeId} not found or missing external ID`,
       false,
     );
   }
 
-  // Idempotency fast path: a redelivered "completed" webhook (or a provider
-  // firing the completed status more than once) must not re-download the signed
-  // PDF or insert a duplicate signed Document. SIGNED_PDF_SAVED is written in the
-  // same transaction as the Document + DocumentLink, so its presence proves the
-  // signed copy is already persisted. This is only an optimization — the atomic
-  // guard is the SIGNED_PDF_SAVED partial unique enforced inside the transaction
-  // below, which closes the read-then-write race two concurrent deliveries hit.
-  const alreadySaved = await prisma.signingEvent.findFirst({
+  const db = located.client;
+  const envelope = located.result;
+  const externalEnvelopeId = envelope.externalEnvelopeId;
+  if (!externalEnvelopeId) {
+    throw new EsignCompletionError(
+      `Cannot handle signing completion: envelope ${envelopeId} missing external ID`,
+      false,
+    );
+  }
+
+  const alreadySaved = await db.signingEvent.findFirst({
     where: {
       organizationId: envelope.organizationId,
       signingEnvelopeId: envelope.id,
@@ -563,14 +568,14 @@ export async function handleSigningCompletion(
   });
 
   if (alreadySaved) {
-    return loadSavedSignedDocument(envelope);
+    return loadSavedSignedDocument(db, envelope);
   }
 
   // Download signed PDF from the provider
   const signedDoc = await downloadSignedDocument({
     provider,
     connectionId,
-    envelopeId: envelope.externalEnvelopeId,
+    envelopeId: externalEnvelopeId,
   });
 
   // Generate a storage key for the signed copy
@@ -610,7 +615,7 @@ export async function handleSigningCompletion(
   // Determine document type from original document if available
   let documentType: string = 'OTHER';
   if (envelope.documentId) {
-    const originalDoc = await prisma.document.findUnique({
+    const originalDoc = await db.document.findUnique({
       where: { id: envelope.documentId },
       select: { documentType: true },
     });
@@ -628,7 +633,7 @@ export async function handleSigningCompletion(
   // as an idempotent no-op and return the winner's already-persisted signed
   // Document rather than surfacing an error or leaving a duplicate.
   try {
-    return await prisma.$transaction(async tx => {
+    return await db.$transaction(async tx => {
       // Create Document record with source = ESIGN
       const doc = await tx.document.create({
         data: {
@@ -672,7 +677,7 @@ export async function handleSigningCompletion(
     });
   } catch (err) {
     if (isUniqueViolation(err)) {
-      return loadSavedSignedDocument(envelope);
+      return loadSavedSignedDocument(db, envelope);
     }
     throw err;
   }
@@ -690,16 +695,20 @@ export async function handleSigningCompletion(
  * PROCESSED with the signed PDF permanently missing.
  */
 export async function isSignedCopyPending(envelopeId: string): Promise<boolean> {
-  const envelope = await prisma.signingEnvelope.findFirst({
-    where: { id: envelopeId },
-    select: { id: true, status: true, organizationId: true },
+  const located = await findAcrossRegions(async client => {
+    const envelope = await client.signingEnvelope.findFirst({
+      where: { id: envelopeId },
+      select: { id: true, status: true, organizationId: true },
+    });
+    if (!envelope || envelope.status !== 'COMPLETED') return null;
+    return envelope;
   });
-  if (!envelope || envelope.status !== 'COMPLETED') return false;
+  if (!located) return false;
 
-  const saved = await prisma.signingEvent.findFirst({
+  const saved = await located.client.signingEvent.findFirst({
     where: {
-      organizationId: envelope.organizationId,
-      signingEnvelopeId: envelope.id,
+      organizationId: located.result.organizationId,
+      signingEnvelopeId: located.result.id,
       eventType: 'SIGNED_PDF_SAVED',
     },
     select: { id: true },

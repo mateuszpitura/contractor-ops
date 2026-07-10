@@ -71,7 +71,7 @@ export const portalEquipmentRouter = router({
         contractorId: ctx.contractorId,
         organizationId: ctx.organizationId,
         status: {
-          notIn: ['CANCELLED', 'REJECTED'],
+          notIn: ['CANCELLED', 'REJECTED', 'RECEIVED'],
         },
       },
       orderBy: { createdAt: 'desc' },

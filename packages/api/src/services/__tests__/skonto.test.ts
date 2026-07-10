@@ -187,4 +187,34 @@ describe('evaluateSkontoEligibility', () => {
     expect(result.eligible).toBe(false);
     expect(result.eligibilityReason).toBe('PAST_DISCOUNT_WINDOW');
   });
+
+  it('discounts post-WHT item amount (SA 15% WHT), not invoice totalMinor', () => {
+    const skontoTerm: SkontoTermData = {
+      discountPercent: 2,
+      discountPeriodDays: 14,
+      netPeriodDays: 30,
+    };
+    const postWhtItemAmountMinor = 8_500;
+
+    const wrongBasis = evaluateSkontoEligibility({
+      invoiceTotalMinor: 10_000,
+      invoiceIssueDate: issueDate,
+      skontoTerm,
+      paidAt: null,
+      asOf: new Date('2026-01-12'),
+    });
+
+    const correctBasis = evaluateSkontoEligibility({
+      invoiceTotalMinor: postWhtItemAmountMinor,
+      invoiceIssueDate: issueDate,
+      skontoTerm,
+      paidAt: null,
+      asOf: new Date('2026-01-12'),
+    });
+
+    expect(wrongBasis.discountedAmountMinor).toBe(9_800);
+    expect(correctBasis.discountedAmountMinor).toBe(8_330);
+    expect(correctBasis.discountedAmountMinor).toBeLessThan(postWhtItemAmountMinor);
+    expect(correctBasis.discountAmountMinor).toBe(170);
+  });
 });

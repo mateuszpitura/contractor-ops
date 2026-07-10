@@ -351,11 +351,12 @@ describe('XRechnung CII generator — Skonto BG-20 Payment Terms', () => {
     expect(xml).toContain('#SKONTO#TAGE=7#PROZENT=3.00#BASISBETRAG=');
   });
 
-  it('emits human-readable German description with Skonto parameters', () => {
+  it('emits structured BR-DE-18 Skonto line only (no human-readable prefix)', () => {
     const invoice = makeMinimalInvoice();
     const xml = generateXRechnungCii(invoice, null, skontoTerm);
 
-    expect(xml).toContain('3.00% Skonto bei Zahlung innerhalb von 7 Tagen, sonst netto 30 Tage');
+    expect(xml).toContain('#SKONTO#TAGE=7#PROZENT=3.00#');
+    expect(xml).not.toContain('Skonto bei Zahlung');
   });
 
   it('emits BASISBETRAG from payableAmount', () => {
@@ -401,6 +402,6 @@ describe('XRechnung CII generator — Skonto BG-20 Payment Terms', () => {
     const xml = generateXRechnungCii(invoice, null, term);
 
     expect(xml).toContain('#PROZENT=2.50#');
-    expect(xml).toContain('2.50% Skonto bei Zahlung innerhalb von 14 Tagen, sonst netto 60 Tage');
+    expect(xml).not.toContain('Skonto bei Zahlung');
   });
 });

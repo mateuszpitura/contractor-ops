@@ -2,6 +2,8 @@
  * Shared constants, helpers, and types for the workflow domain routers.
  * Used by workflow-templates.ts and workflow-execution.ts.
  */
+
+import { userRoleToMemberRole } from '@contractor-ops/auth/role-normalization';
 import type { Prisma } from '@contractor-ops/db';
 import { workflowTaskSkipReason } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
@@ -34,6 +36,7 @@ export const WORKFLOW_TEMPLATE_KEYS = {
     returnEquipment: 'workflow.templates.offboarding.returnEquipment',
     financeWrapUp: 'workflow.templates.offboarding.financeWrapUp',
     finalDocumentation: 'workflow.templates.offboarding.finalDocumentation',
+    ipVerification: 'workflow.templates.offboarding.ipVerification',
   },
 } as const;
 
@@ -152,10 +155,12 @@ export async function resolveAssignee(
       return task.assigneeUserId ?? null;
     case 'ROLE_BASED': {
       if (!task.assigneeRole) return null;
+      const memberRole = userRoleToMemberRole(task.assigneeRole);
+      if (!memberRole) return null;
       const member = await tx.member.findFirst({
         where: {
           organizationId: orgId,
-          role: task.assigneeRole,
+          role: memberRole,
           user: { banned: false },
         },
       });

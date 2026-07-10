@@ -86,6 +86,8 @@ interface MatchState {
 type InvoiceInput = {
   id?: string;
   sellerTaxId: string | null;
+  subtotalMinor?: number | null;
+  vatRate?: string | null;
   totalMinor: number;
   currency: string;
   duplicateCheckHash: string | null;
@@ -93,6 +95,44 @@ type InvoiceInput = {
   servicePeriodStart?: Date | null;
   servicePeriodEnd?: Date | null;
 };
+
+/**
+ * Net invoice amount for contract-rate comparison (contract rates are net).
+ * Prefers subtotalMinor; otherwise derives net from gross + vatRate.
+ */
+export function invoiceComparableNetMinor(invoice: {
+  subtotalMinor?: number | null;
+  vatRate?: string | null;
+  totalMinor: number;
+}): number {
+  if (invoice.subtotalMinor != null && invoice.subtotalMinor >= 0) {
+    return invoice.subtotalMinor;
+  }
+
+  const vatRate = invoice.vatRate ? Number(invoice.vatRate) : Number.NaN;
+  if (Number.isFinite(vatRate) && vatRate > 0 && invoice.totalMinor > 0) {
+    return Math.round(invoice.totalMinor / (1 + vatRate / 100));
+  }
+
+  return invoice.totalMinor;
+}
+
+/** Preserve manually linked contractor/contract when auto-match is UNMATCHED. */
+export function resolveInvoiceMatchLinks(
+  matchResult: Pick<MatchResult, 'contractorId' | 'contractId'>,
+  existing: { contractorId: string | null; contractId: string | null },
+): { contractorId: string | null; contractId: string | null } {
+  return {
+    contractorId: matchResult.contractorId ?? existing.contractorId,
+    contractId: matchResult.contractId ?? existing.contractId,
+  };
+}
+
+function isFixedPeriodRateType(rateType: string): boolean {
+  return (
+    rateType === 'MONTHLY_FIXED' || rateType === 'PER_MILESTONE' || rateType === 'PER_DELIVERABLE'
+  );
+}
 
 // ---------------------------------------------------------------------------
 // Pipeline step helpers
@@ -114,17 +154,25 @@ const UNMATCHED_RESULT: MatchResult = {
  * Selects the contract whose rate is closest to the invoice total.
  * Falls back to the first contract if none have rates.
  */
-function pickBestContract<T extends { rateValueMinor: number | null }>(
+function pickBestContract<T extends { rateValueMinor: number | null; rateType: string }>(
   contracts: T[],
-  invoiceTotalMinor: number,
+  invoiceNetMinor: number,
 ): T | null {
+  const comparable = contracts.filter(c => isFixedPeriodRateType(c.rateType));
+  const pool = comparable.length > 0 ? comparable : contracts;
+
   let bestContract: T | null = null;
   let bestDelta = Infinity;
 
-  for (const contract of contracts) {
+  for (const contract of pool) {
+    if (!isFixedPeriodRateType(contract.rateType)) {
+      if (!bestContract) bestContract = contract;
+      continue;
+    }
+
     const rateMinor = contract.rateValueMinor ?? 0;
     if (rateMinor > 0) {
-      const delta = Math.abs(invoiceTotalMinor - rateMinor);
+      const delta = Math.abs(invoiceNetMinor - rateMinor);
       if (delta < bestDelta) {
         bestDelta = delta;
         bestContract = contract;
@@ -134,7 +182,41 @@ function pickBestContract<T extends { rateValueMinor: number | null }>(
     }
   }
 
-  return bestContract ?? contracts[0] ?? null;
+  return bestContract ?? pool[0] ?? null;
+}
+
+function invoiceServicePeriod(invoice: InvoiceInput): { periodStart: Date; periodEnd: Date } {
+  const anchor = invoice.servicePeriodStart ?? invoice.issueDate ?? new Date();
+  const periodStart =
+    invoice.servicePeriodStart ??
+    new Date(Date.UTC(anchor.getUTCFullYear(), anchor.getUTCMonth(), 1));
+  const periodEnd =
+    invoice.servicePeriodEnd ??
+    new Date(Date.UTC(anchor.getUTCFullYear(), anchor.getUTCMonth() + 1, 0));
+  return { periodStart, periodEnd };
+}
+
+async function resolveExpectedAmountMinor(
+  db: DbClient,
+  organizationId: string,
+  contract: { id: string; rateType: string; rateValueMinor: number | null },
+  invoice: InvoiceInput,
+): Promise<number | null> {
+  if (contract.rateType === 'PER_HOUR' || contract.rateType === 'PER_DAY') {
+    const { periodStart, periodEnd } = invoiceServicePeriod(invoice);
+    const invoicedNetMinor = invoiceComparableNetMinor(invoice);
+    const timeRecon = await computeTimeReconciliation(
+      db,
+      organizationId,
+      contract.id,
+      periodStart,
+      periodEnd,
+      invoicedNetMinor,
+    );
+    return timeRecon?.expectedAmountMinor ?? null;
+  }
+
+  return contract.rateValueMinor;
 }
 
 /**
@@ -175,13 +257,8 @@ async function checkTimeDeviation(
     return false;
   }
 
-  const anchor = invoice.servicePeriodStart ?? invoice.issueDate ?? new Date();
-  const periodStart =
-    invoice.servicePeriodStart ??
-    new Date(Date.UTC(anchor.getUTCFullYear(), anchor.getUTCMonth(), 1));
-  const periodEnd =
-    invoice.servicePeriodEnd ??
-    new Date(Date.UTC(anchor.getUTCFullYear(), anchor.getUTCMonth() + 1, 0));
+  const { periodStart, periodEnd } = invoiceServicePeriod(invoice);
+  const invoicedNetMinor = invoiceComparableNetMinor(invoice);
 
   const timeRecon = await computeTimeReconciliation(
     db,
@@ -189,7 +266,7 @@ async function checkTimeDeviation(
     contract.id,
     periodStart,
     periodEnd,
-    invoice.totalMinor,
+    invoicedNetMinor,
   );
 
   return timeRecon != null && !timeRecon.withinThreshold;
@@ -209,6 +286,8 @@ async function findDuplicateInvoice(
   const duplicateWhere: Record<string, unknown> = {
     duplicateCheckHash,
     organizationId,
+    deletedAt: null,
+    status: { not: 'VOID' },
   };
   if (excludeId) {
     duplicateWhere.id = { not: excludeId };
@@ -294,18 +373,26 @@ export async function runAutoMatch(
     if (expired) state.flags.push('EXPIRED_CONTRACT');
   }
 
+  const invoicedNetMinor = invoiceComparableNetMinor(invoice);
+
   // Step 3: Pick best contract and score
   if (contracts.length > 0) {
     state.score += 30; // Has active contract: +30 points
-    const bestContract = pickBestContract(contracts, invoice.totalMinor);
+    const bestContract = pickBestContract(contracts, invoicedNetMinor);
 
     if (bestContract) {
       state.matchedContractId = bestContract.id;
 
-      // Step 4: Deviation calculation
+      // Step 4: Deviation calculation (net vs net; time-based uses approved hours)
+      const expectedAmountMinor = await resolveExpectedAmountMinor(
+        db,
+        organizationId,
+        bestContract,
+        invoice,
+      );
       const deviation = computeDeviation(
-        invoice.totalMinor,
-        bestContract.rateValueMinor,
+        invoicedNetMinor,
+        expectedAmountMinor,
         deviationThresholdPercent,
       );
       state.score += deviation.scoreIncrement;

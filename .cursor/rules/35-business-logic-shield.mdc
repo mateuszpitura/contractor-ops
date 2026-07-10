@@ -1,0 +1,51 @@
+---
+description: Mandatory business-logic shield before domain features, fixes, and multi-layer logic work
+globs: "{packages/api/**,apps/api/**,apps/cron-worker/**,apps/public-api/**,packages/einvoice/**,packages/classification/**,packages/compliance-policy/**,packages/payroll/**,packages/validators/**,packages/db/scripts/**}"
+alwaysApply: false
+---
+
+# Business Logic Shield (binding for matched paths)
+
+Before implementing or reviewing changes under these globs, load and follow:
+
+**`.claude/skills/business-logic-shield/SKILL.md`**
+
+## Activation
+
+| User signal | Agent action |
+|-------------|--------------|
+| `[shield]` or `/shield` | Read SKILL.md + patterns.md; Write `shield-scope.json`; then implement |
+| `[shield-strict]` | Same; Grep/Glob blocked until skill read |
+| Feature / fix / refactor touching logic | Apply shield even without prefix |
+| 3+ files across router/service/UI | Phase 0 Scope map required |
+
+### Hook order (when prefix active)
+
+1. Read `business-logic-shield` skill
+2. Write `.claude/hooks/.state/shield-scope.json` (`flow`, `surfaces`, `patternsAtRisk`)
+3. Logic-path edits allowed
+4. Shield Verdict before done
+
+Off: `/shield-workflow-off` or prompt without prefix next turn.
+
+## Minimum workflow
+
+1. **Phase 0** — Shield Scope block (flow, surfaces, seams, pattern classes)
+2. **Phase 1** — 14-pattern pre-write gate ([patterns.md](../../.claude/skills/business-logic-shield/patterns.md))
+3. **Phase 2** — Hard stops + sibling propagation matrix during edits
+4. **Phase 3** — [verify-commands.md](../../.claude/skills/business-logic-shield/verify-commands.md) + Shield Verdict
+
+## Non-negotiables (from 2026-07-08 review)
+
+- **S1:** new code wired with production caller
+- **S2:** unmocked round-trip test at each changed seam ([seams-registry.md](../../.claude/skills/business-logic-shield/seams-registry.md))
+- **S4:** portal / public-api / cron get same guards as staff
+- **T1:** `writeAuditLog({ tx })` on sensitive mutations
+- **T2:** guarded `updateMany` + `count === 1` on status transitions
+- **T7:** `ctx.db` / regional client — no tenant reads on global prisma
+
+**BLOCK done** if typecheck red, i18n parity red, or FAIL pattern unresolved.
+
+Skip shield only for trivial non-behavior edits (formatting, comments, lockfiles).
+
+Source audits: `.planning/handoffs/business-logic-review-2026-07-08.md`, `.planning/reviews/business-logic-review-2026-07-08.md`.

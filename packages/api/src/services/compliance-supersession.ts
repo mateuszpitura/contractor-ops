@@ -23,9 +23,8 @@ import type { Prisma } from '@contractor-ops/db';
 export type OutcomeShape = { kind: string } & Record<string, unknown>;
 
 /**
- * Extracts the outcome's discriminator (the field that determines which policy
- * rule set applies). Decision: compare ONLY on this field — sub-field changes
- * within the same kind do NOT trigger row churn.
+ * Extracts the outcome kind discriminator (e.g. `IR35`). For policy resolution
+ * and supersession equality use `buildEngagementOutcome` / `outcomesEqualForPolicyResolution`.
  */
 export function extractOutcomeKind(outcome: unknown): string {
   if (!outcome || typeof outcome !== 'object') return '__unknown__';
@@ -36,12 +35,26 @@ export function extractOutcomeKind(outcome: unknown): string {
 }
 
 /**
+ * Maps a scored outcome to the EngagementContext.outcome discriminator used
+ * by resolvePolicyRules (e.g. IR35 inside → `IR35-INSIDE`).
+ */
+export function buildEngagementOutcome(outcome: unknown): string {
+  if (!outcome || typeof outcome !== 'object') return '__unknown__';
+  const o = outcome as { kind?: unknown; type?: unknown; verdict?: unknown };
+  const kind = extractOutcomeKind(outcome);
+  if (kind === 'IR35' && typeof o.verdict === 'string') {
+    return `IR35-${o.verdict.toUpperCase()}`;
+  }
+  return kind;
+}
+
+/**
  * Compares outcomes for materialisation-relevant equality. Returns true when
  * the resolved policy rule set would be identical for both outcomes.
  */
 export function outcomesEqualForPolicyResolution(a: unknown, b: unknown): boolean {
   if (a === null || b === null) return a === b;
-  return extractOutcomeKind(a) === extractOutcomeKind(b);
+  return buildEngagementOutcome(a) === buildEngagementOutcome(b);
 }
 
 /**
@@ -114,12 +127,19 @@ export async function supersedeAndMaterialise(
   client: SupersessionClient,
   ctx: SupersedeContext,
 ): Promise<{ waivedCount: number; insertedCount: number; carriedForwardCount: number }> {
-  // 1. Fetch existing non-WAIVED rows.
+  const newRules = resolvePolicyRules(ctx.engagement);
+  const newDocTypes = newRules.map(
+    r => r.documentType as Prisma.ContractorComplianceItemUncheckedCreateInput['documentType'],
+  );
+
+  // 1. Fetch existing non-WAIVED rows scoped to this contract (when set) and
+  // only document types present in the new rule set — avoids waiving sibling
+  // contracts' items or unrelated types on contractor-wide recomputes.
   //
-  // EXCLUDE out-of-band advisory rows from the
-  // supersession scope. Two families are written OUTSIDE resolvePolicyRules and
-  // keyed off domain state, NOT the classification outcome, so an unrelated
-  // classification recompute would otherwise WAIVE them silently:
+  // EXCLUDE out-of-band advisory rows from the supersession scope. Two families
+  // are written OUTSIDE resolvePolicyRules and keyed off domain state, NOT the
+  // classification outcome, so an unrelated classification recompute would
+  // otherwise WAIVE them silently:
   //   - free-zone license items (uae.free_zone_license@v2) — written by the
   //     FreeZoneAssignment service; WAIVING them orphans the payment-block gate.
   //   - permitted-activity NOC advisories (uae.permitted_activity_noc@v1) —
@@ -132,6 +152,8 @@ export async function supersedeAndMaterialise(
   const oldRows = (await client.contractorComplianceItem.findMany({
     where: {
       contractorId: ctx.contractorId,
+      contractId: ctx.contractId,
+      documentType: { in: newDocTypes },
       status: { not: 'WAIVED' },
       NOT: [
         { policyRuleId: { startsWith: 'uae.free_zone' } },
@@ -169,14 +191,20 @@ export async function supersedeAndMaterialise(
 
   // 3. Insert the new rule set, carrying forward when documentType matches
   const oldByDocType = new Map(oldRows.map(r => [r.documentType, r]));
-  const newRules = resolvePolicyRules(ctx.engagement);
   let insertedCount = 0;
   let carriedForwardCount = 0;
 
   for (const rule of newRules) {
     const carryFrom = oldByDocType.get(rule.documentType);
     const carryDoc = carryFrom?.satisfiedByDocumentId ?? null;
-    if (carryDoc !== null) carriedForwardCount++;
+    const carryStatus = carryFrom?.status;
+    const carryExpiresAt = carryFrom?.expiresAt ?? null;
+    const now = new Date();
+    const carryExpired =
+      carryStatus === 'EXPIRED' ||
+      (carryExpiresAt !== null && carryExpiresAt.getTime() <= now.getTime());
+    const canCarrySatisfied = carryDoc !== null && !carryExpired && carryStatus !== 'EXPIRED';
+    if (canCarrySatisfied) carriedForwardCount++;
     await client.contractorComplianceItem.create({
       data: {
         organizationId: ctx.organizationId,
@@ -188,9 +216,9 @@ export async function supersedeAndMaterialise(
         severity: rule.severity,
         policyRuleId: rule.policyRuleId,
         expiryJurisdictionTz: rule.expiryJurisdictionTz,
-        status: carryDoc === null ? 'MISSING' : 'SATISFIED',
-        satisfiedByDocumentId: carryDoc,
-        expiresAt: carryFrom?.expiresAt ?? null,
+        status: canCarrySatisfied ? 'SATISFIED' : 'MISSING',
+        satisfiedByDocumentId: canCarrySatisfied ? carryDoc : null,
+        expiresAt: canCarrySatisfied ? carryExpiresAt : null,
       },
     });
     insertedCount++;

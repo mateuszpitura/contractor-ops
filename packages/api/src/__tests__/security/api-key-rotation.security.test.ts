@@ -1,13 +1,11 @@
 /**
- * Wave-0 RED contract (INTEG-AUTH-01) — key rotation with a grace window.
+ * Key rotation with a grace window.
  *
  * `rotate` issues a NEW `co_live_*` key inheriting the old key's name/scopes/
  * actingUserId, marks the OLD key superseded with a bounded grace window, and
  * audits `API_KEY_ROTATE`. During the grace window the OLD key still resolves;
  * after `graceExpiresAt` it hard-stops. A revoked key never resolves (revocation
  * wins). A superseded key cannot be rotated again (single grace chain).
- *
- * Turn-green plan: 99-05 (grace-aware `resolveByPrefix` + the `rotate` mutation).
  *
  * NOTE: `resolveByPrefix` filters at the DB `where` level, so the grace behavior
  * is asserted structurally (the query must admit superseded-within-grace keys
@@ -55,21 +53,26 @@ vi.mock('@contractor-ops/auth', () => ({
   },
 }));
 
-vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T>(c: T) => c,
-  withRlsReads: <T>(c: T) => c,
-  prisma: mockPrisma,
-  prismaRaw: mockPrisma,
-  tenantStore: {
-    run: (_c: unknown, fn: () => unknown) => fn(),
-    getStore: vi.fn(() => ({ region: 'EU' })),
-  },
-  withTenantScope: vi.fn((c: unknown) => c),
-  withSoftDelete: vi.fn((c: unknown) => c),
-  createTenantClient: vi.fn(() => mockPrisma),
-  createTenantClientFrom: vi.fn(() => mockPrisma),
-  getRegionalClient: vi.fn(() => mockPrisma),
-}));
+vi.mock('@contractor-ops/db', async importOriginal => {
+  const actual = await importOriginal<typeof import('@contractor-ops/db')>();
+  return {
+    ...actual,
+    withRlsTransactions: <T>(c: T) => c,
+    withRlsReads: <T>(c: T) => c,
+    prisma: mockPrisma,
+    prismaRaw: mockPrisma,
+    tenantStore: {
+      run: (_c: unknown, fn: () => unknown) => fn(),
+      getStore: vi.fn(() => ({ region: 'EU' })),
+    },
+    withTenantScope: vi.fn((c: unknown) => c),
+    withSoftDelete: vi.fn((c: unknown) => c),
+    createTenantClient: vi.fn(() => mockPrisma),
+    createTenantClientFrom: vi.fn(() => mockPrisma),
+    getRegionalClient: vi.fn(() => mockPrisma),
+    tryGetRegionalClient: vi.fn(() => mockPrisma),
+  };
+});
 
 vi.mock('../../services/billing-service', () => ({
   getSubscription: vi.fn(async () => ({ id: 'sub_1', status: 'ACTIVE', tier: 'ENTERPRISE' })),
@@ -81,15 +84,11 @@ vi.mock('../../services/org-cache', () => ({
   invalidateOrgMeta: vi.fn(async () => undefined),
 }));
 
-vi.mock('../../services/cache', () => ({
-  cacheKey: vi.fn((...s: string[]) => s.join(':')),
-  cachedSingleflight: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  cached: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  invalidate: vi.fn(async () => undefined),
-  invalidateByPrefix: vi.fn(async () => undefined),
-  CacheKeys: { subscription: (o: string) => `sub:${o}` },
-  CacheTTL: { SUBSCRIPTION: 300 },
-}));
+vi.mock('../../services/cache', async importOriginal => {
+  const actual = await importOriginal<typeof import('../../services/cache')>();
+  const { createPassthroughCacheMock } = await import('../../__tests__/__mocks__/cache-service');
+  return createPassthroughCacheMock(actual);
+});
 
 vi.mock('@contractor-ops/logger', () => {
   const stub = { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() };

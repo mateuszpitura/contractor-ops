@@ -1,7 +1,7 @@
-// LEAVE-03 team-calendar contract: overlapping same-team approved leave renders
+// Team-calendar contract: overlapping same-team approved leave renders
 // an accessible conflict marker (icon + text, never color alone) and the
 // capacity band aggregates the share of the team out into success/warning/danger
-// tiers. Wave-0: RED until the TeamCalendarView component lands (Plan 13).
+// tiers.
 
 import { describe, expect, it } from 'vitest';
 

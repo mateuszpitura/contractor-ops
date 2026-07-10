@@ -17,7 +17,8 @@ import { findOrThrow } from '../../lib/find-or-throw';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
 import { uploadRateLimitMiddleware } from '../../middleware/upload-rate-limit';
-import { isAllowedMimeType, validateMimeType } from '../../services/mime-validator';
+import { scheduleDocumentVirusScan } from '../../services/document-virus-scan';
+import { isAllowedMimeType } from '../../services/mime-validator';
 import { generateStorageKey, getR2BucketName, maxBytesForMime } from '../../services/r2';
 import {
   createRegionalPresignedDownloadUrl,
@@ -25,7 +26,6 @@ import {
   deleteRegionalObject,
   headRegionalObject,
 } from '../../services/regional-storage';
-import { isClamAvailable, scanBuffer } from '../../services/virus-scanner';
 
 const log = createLogger({ service: 'document-router' });
 
@@ -40,9 +40,9 @@ const log = createLogger({ service: 'document-router' });
  *
  * This is the single-call helper used by `confirmUpload` to reject the
  * "PDF declared, HTML uploaded" attack synchronously (no waiting for the
- * async ClamAV pipeline). The same code path lives inside `scanAndUpdate`
- * for the async retry; both share the same 4 KB Range size so an attacker
- * can't tailor a payload that passes one but trips the other.
+ * async ClamAV pipeline). The same code path lives inside the shared virus
+ * scan service; both share the same 4 KB Range size so an attacker can't
+ * tailor a payload that passes one but trips the other.
  */
 async function sniffStoredMime(storageKey: string): Promise<string | null> {
   const { GetObjectCommand } = await import('@aws-sdk/client-s3');
@@ -62,98 +62,6 @@ async function sniffStoredMime(storageKey: string): Promise<string | null> {
   const { fileTypeFromBuffer } = await import('file-type');
   const result = await fileTypeFromBuffer(Buffer.from(bodyBytes));
   return result?.mime ?? null;
-}
-
-/**
- * Async fire-and-forget: validates MIME type and scans for viruses.
- * Updates document virusScanStatus accordingly.
- * Never throws — all errors are caught and logged.
- */
-/** Prisma-like client for document updates (regional or global). */
-type DocumentDb = {
-  document: {
-    update: (args: { where: { id: string }; data: Record<string, unknown> }) => Promise<unknown>;
-  };
-};
-
-async function scanAndUpdate(
-  db: DocumentDb,
-  documentId: string,
-  storageKey: string,
-): Promise<void> {
-  try {
-    // Fetch first 4100 bytes for MIME validation (magic bytes are in the header)
-    const { GetObjectCommand } = await import('@aws-sdk/client-s3');
-    const { createR2Client } = await import('../../services/r2');
-    const client = createR2Client();
-
-    const getCmd = new GetObjectCommand({
-      Bucket: getR2BucketName(),
-      Key: storageKey,
-      Range: 'bytes=0-4099',
-    });
-
-    const response = await client.send(getCmd);
-    const bodyBytes = await response.Body?.transformToByteArray();
-
-    if (!bodyBytes) {
-      log.error({ storageKey }, 'could not read object body');
-      await db.document.update({
-        where: { id: documentId },
-        data: { virusScanStatus: 'FAILED' },
-      });
-      return;
-    }
-
-    const buffer = Buffer.from(bodyBytes);
-
-    // Step 1: MIME validation via magic bytes
-    const mimeResult = await validateMimeType(buffer);
-    if (!mimeResult.valid) {
-      log.warn(
-        { documentId, detectedMime: mimeResult.detectedMime ?? 'unknown' },
-        'invalid mime type',
-      );
-      await db.document.update({
-        where: { id: documentId },
-        data: { virusScanStatus: 'FAILED' },
-      });
-      return;
-    }
-
-    // Step 2: Virus scan via ClamAV
-    const clamReady = await isClamAvailable();
-    if (!clamReady) {
-      log.error({}, 'clamav not available — marking failed');
-      await db.document.update({
-        where: { id: documentId },
-        data: { virusScanStatus: 'FAILED' },
-      });
-      return;
-    }
-
-    const scanResult = await scanBuffer(buffer);
-    if (scanResult.isClean) {
-      await db.document.update({
-        where: { id: documentId },
-        data: { virusScanStatus: 'CLEAN' },
-      });
-    } else {
-      log.warn({ documentId, virusName: scanResult.virusName ?? 'unknown' }, 'virus detected');
-      await db.document.update({
-        where: { id: documentId },
-        data: { virusScanStatus: 'INFECTED' },
-      });
-    }
-  } catch (error) {
-    log.error({ err: error, documentId }, 'scan pipeline failed');
-    await db.document
-      .update({
-        where: { id: documentId },
-        data: { virusScanStatus: 'FAILED' },
-      })
-      .catch(e => log.error({ err: e }, 'failed to update status'));
-  }
 }
 
 // ---------------------------------------------------------------------------
@@ -327,7 +235,7 @@ export const documentRouter = router({
       });
 
       // Fire-and-forget async scan pipeline (ClamAV — slow path)
-      void scanAndUpdate(ctx.db, doc.id, doc.storageKey);
+      scheduleDocumentVirusScan(ctx.db, doc.id, doc.storageKey);
 
       return updated;
     }),

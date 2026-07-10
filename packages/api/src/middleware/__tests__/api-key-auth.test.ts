@@ -209,7 +209,7 @@ describe('apiKeyTenantProcedure', () => {
     });
 
     await caller.secured();
-    expect(mockTouchLastUsed).toHaveBeenCalledWith('key-1');
+    expect(mockTouchLastUsed).toHaveBeenCalledWith('key-1', 'EU');
   });
 
   it('throws UNAUTHORIZED when Authorization header is missing', async () => {

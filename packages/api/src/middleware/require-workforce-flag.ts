@@ -14,6 +14,7 @@ import { evaluate } from '@contractor-ops/feature-flags';
 import { createLogger } from '@contractor-ops/logger';
 import { TRPCError } from '@trpc/server';
 import { WORKFORCE_DISABLED } from '../errors';
+import { hasQaDefaultOrg } from './raw-env';
 
 const log = createLogger({ service: 'workforce-flag-guard' });
 
@@ -50,5 +51,5 @@ export function assertWorkforceEnabled(organizationId: string, region: string): 
  */
 export function isWorkforceRegistered(): boolean {
   const base = evaluate('module.workforce-employees', { organizationId: 'ROOT', region: 'EU' });
-  return base.enabled || Boolean(process.env.QA_DEFAULT_ORG_ID);
+  return base.enabled || hasQaDefaultOrg();
 }

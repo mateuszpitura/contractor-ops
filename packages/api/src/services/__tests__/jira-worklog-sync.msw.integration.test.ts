@@ -36,6 +36,7 @@ const { mockPrisma } = vi.hoisted(() => {
       aggregate: vi.fn().mockResolvedValue({ _sum: { minutes: 60 } }),
     },
     timesheet: {
+      findUnique: vi.fn().mockResolvedValue({ status: 'DRAFT' }),
       update: vi.fn().mockResolvedValue({}),
     },
   };
@@ -157,7 +158,10 @@ describe('jira-worklog-sync + MSW', () => {
     });
 
     // Existing entry found — should update (skipped)
-    mockPrisma.timeEntry.findFirst.mockResolvedValue({ id: 'existing-te-001' });
+    mockPrisma.timeEntry.findFirst.mockResolvedValue({
+      id: 'existing-te-001',
+      timesheetId: TIMESHEET_ID,
+    });
 
     const result = await syncJiraWorklogs(
       mockPrisma as never,

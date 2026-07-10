@@ -225,7 +225,7 @@ export class BambooHrAdapter extends BaseAdapter {
 
   /**
    * Pull the un-paginated employee directory. Standard fields always; custom
-   * fields only when the custom-attribute contract is verified (D-06 gate).
+   * fields only when the custom-attribute contract is verified.
    */
   async listEmployees(
     creds: CredentialBlob,
@@ -235,7 +235,9 @@ export class BambooHrAdapter extends BaseAdapter {
     const res = await this.fetchImpl(`${this.apiBaseUrl}/v1/employees/directory`, {
       headers: { Authorization: `Bearer ${creds.accessToken}`, Accept: 'application/json' },
     });
-    if (!res.ok) return [];
+    if (!res.ok) {
+      throw new Error(`BambooHR list failed with status ${res.status}`);
+    }
     return normalizeBambooDirectory(await res.json(), this.includeCustomAttributes);
   }
 
@@ -245,7 +247,9 @@ export class BambooHrAdapter extends BaseAdapter {
    * integration.bamboohr-sync flag are granted.
    */
   async pushEmployeeEvent(creds: CredentialBlob, input: HrisPushInput): Promise<void> {
-    if (!input.externalId) return;
+    if (!input.externalId) {
+      throw new Error('BambooHR push requires a linked HRIS external id');
+    }
     await this.limiter.acquire();
     const res = await this.fetchImpl(
       `${this.apiBaseUrl}/v1/employees/${encodeURIComponent(input.externalId)}`,

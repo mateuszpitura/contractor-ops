@@ -39,9 +39,9 @@ const CONTRACTOR_K2 = 'clcontractork2aaaaaaaaaaaaa';
 
 // Valid Leitweg-IDs — fixtures round-tripped through computeLeitwegCheckDigit
 // against the Plan 01 ground-truth corpus.
-const VALID_LWID_1 = '991-12345-06';
-const VALID_LWID_2 = '99133333-TEST-07';
-const VALID_LWID_3 = '12-ABCDE-02';
+const VALID_LWID_1 = '991-12345-73';
+const VALID_LWID_2 = '99133333-TEST-33';
+const VALID_LWID_3 = '12-ABCDE-59';
 
 // ---------------------------------------------------------------------------
 // Hoisted mocks

@@ -11,6 +11,7 @@
 // Mirrors isWorkforceRegistered / isUsExpansionRegistered.
 
 import { evaluate } from '@contractor-ops/feature-flags';
+import { hasQaDefaultOrg } from './raw-env';
 
 /**
  * Decides whether the portalEmployee / portalManager namespaces are spread into
@@ -20,5 +21,5 @@ import { evaluate } from '@contractor-ops/feature-flags';
  */
 export function isEmployeePortalRegistered(): boolean {
   const base = evaluate('module.employee-portal', { organizationId: 'ROOT', region: 'EU' });
-  return base.enabled || Boolean(process.env.QA_DEFAULT_ORG_ID);
+  return base.enabled || hasQaDefaultOrg();
 }

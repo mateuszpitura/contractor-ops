@@ -13,6 +13,10 @@ const { ORG_ID, USER_ID, mockPrisma, mockLinearGraphQL, mockRegisterLinearWebhoo
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const mockPrisma: Record<string, unknown> = {
+      auditLog: {
+        create: vi.fn(async () => ({ id: 'audit-mock' })),
+        createMany: vi.fn(async () => ({ count: 1 })),
+      },
       organization: {
         findUnique: vi
           .fn()
@@ -141,19 +145,11 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
   metrics: { increment: vi.fn(), distribution: vi.fn(), histogram: vi.fn() },
 }));
 
-vi.mock('../../services/cache', () => ({
-  cacheKey: vi.fn((...s: string[]) => s.join(':')),
-  cachedSingleflight: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  cached: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  invalidate: vi.fn(async () => undefined),
-  invalidateByPrefix: vi.fn(async () => undefined),
-  CacheKeys: {
-    subscription: (orgId: string) => `co:${orgId}:billing:sub`,
-  },
-  CacheTTL: {
-    SUBSCRIPTION: 15 * 60,
-  },
-}));
+vi.mock('../../services/cache', async importOriginal => {
+  const actual = await importOriginal<typeof import('../../services/cache')>();
+  const { createPassthroughCacheMock } = await import('../../__tests__/__mocks__/cache-service');
+  return createPassthroughCacheMock(actual);
+});
 
 vi.mock('@contractor-ops/integrations/services/credential-service', () => ({
   decryptCredentials: vi.fn(() => ({ accessToken: 'lin-token' })),

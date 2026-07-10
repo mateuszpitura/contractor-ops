@@ -31,6 +31,7 @@ import { IntegrationsTab } from '../../../components/settings/integrations-tab.j
 import { InvoiceMatchingSettings } from '../../../components/settings/invoice-matching-settings.js';
 import { LanguageCard } from '../../../components/settings/language-card.js';
 import { NotificationPreferences } from '../../../components/settings/notification-preferences.js';
+import { OrgBankSettings } from '../../../components/settings/org-bank-settings.js';
 import { OrgSettingsFormContainer } from '../../../components/settings/org-settings-form.js';
 import { OutOfOfficeSection } from '../../../components/settings/out-of-office-section.js';
 import { PinTabButton } from '../../../components/settings/pin-tab-button.js';
@@ -158,6 +159,7 @@ function SettingsIndexContent() {
             <ExpiryReminderDefaults />
             <InvoiceMatchingSettings />
             <TransferTitleSettings />
+            <OrgBankSettings />
             <AdminBrandingSection />
             <PortalSubdomainSection />
           </TabsContent>

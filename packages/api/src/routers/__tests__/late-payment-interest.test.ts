@@ -45,6 +45,10 @@ const {
       findFirst: vi.fn(),
       create: vi.fn(),
       update: vi.fn(),
+      updateMany: vi.fn().mockResolvedValue({ count: 1 }),
+    },
+    auditLog: {
+      create: vi.fn().mockResolvedValue({ id: 'audit-1' }),
     },
     invoiceInterestClaim: {
       findFirst: vi.fn(),
@@ -660,7 +664,7 @@ describe('latePaymentInterestRouter', () => {
         invoiceId: INVOICE_ID,
         revokedAt: null,
       });
-      mockPrisma.invoiceInterestWaiver.update.mockResolvedValueOnce({ id: WAIVER_ID });
+      mockPrisma.invoiceInterestWaiver.updateMany.mockResolvedValueOnce({ count: 1 });
 
       const result = await caller.revokeWaiver({
         waiverId: WAIVER_ID,
@@ -698,15 +702,15 @@ describe('latePaymentInterestRouter', () => {
         invoiceId: INVOICE_ID,
         revokedAt: null,
       });
-      mockPrisma.invoiceInterestWaiver.update.mockResolvedValueOnce({ id: WAIVER_ID });
+      mockPrisma.invoiceInterestWaiver.updateMany.mockResolvedValueOnce({ count: 1 });
 
       await caller.revokeWaiver({
         waiverId: WAIVER_ID,
         revokeReason: 'Correcting admin error',
       });
 
-      expect(mockPrisma.invoiceInterestWaiver.update.mock.calls[0]?.[0]).toMatchObject({
-        where: { id: WAIVER_ID },
+      expect(mockPrisma.invoiceInterestWaiver.updateMany.mock.calls[0]?.[0]).toMatchObject({
+        where: { id: WAIVER_ID, organizationId: ORG_ID, revokedAt: null },
         data: {
           revokedByUserId: USER_ID,
           revokeReason: 'Correcting admin error',

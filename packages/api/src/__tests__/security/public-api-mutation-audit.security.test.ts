@@ -1,14 +1,14 @@
 /**
- * Wave-0 RED contract (INTEG-AUTH-05) — every external mutation is audited.
+ * Every external mutation is audited.
  *
  * Each public write emits exactly one AuditLog row carrying the API-key actor
  * (`actorType:'API_KEY'`, `actorId = apiKeyId`), the captured `ipAddress`
  * (sourceIp) and `userAgent`, plus `metadata.actingUserId`. This is the
  * non-repudiation contract for the external write surface.
  *
- * Turn-green plan: 99-04 (the write procedures pass ctx.sourceIp / ctx.userAgent
- * / ctx.apiKeyId into `writeAuditLog`). The sourceIp/userAgent ctx fields are
- * threaded in 99-02; here they are seeded on the caller ctx directly.
+ * The write procedures pass ctx.sourceIp / ctx.userAgent / ctx.apiKeyId into
+ * `writeAuditLog`; here the sourceIp/userAgent ctx fields are seeded on the
+ * caller ctx directly.
  */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -121,15 +121,11 @@ vi.mock('../../services/api-key-service', () => ({
 
 vi.mock('../../services/billing-service', () => ({ getSubscription: mockGetSubscription }));
 
-vi.mock('../../services/cache', () => ({
-  cacheKey: vi.fn((...s: string[]) => s.join(':')),
-  cachedSingleflight: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  cached: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  invalidate: vi.fn(async () => undefined),
-  invalidateByPrefix: vi.fn(async () => undefined),
-  CacheKeys: {},
-  CacheTTL: {},
-}));
+vi.mock('../../services/cache', async importOriginal => {
+  const actual = await importOriginal<typeof import('../../services/cache')>();
+  const { createPassthroughCacheMock } = await import('../../__tests__/__mocks__/cache-service');
+  return createPassthroughCacheMock(actual);
+});
 
 vi.mock('@contractor-ops/logger', () => {
   const stub = { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() };

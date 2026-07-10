@@ -159,15 +159,11 @@ vi.mock('../../services/exports/index', () => ({
   parseExportParams: vi.fn(),
 }));
 
-vi.mock('../../services/cache', () => ({
-  cacheKey: vi.fn((...s: string[]) => s.join(':')),
-  cachedSingleflight: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  cached: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  invalidate: vi.fn(async () => undefined),
-  invalidateByPrefix: vi.fn(async () => undefined),
-  CacheKeys: {},
-  CacheTTL: {},
-}));
+vi.mock('../../services/cache', async importOriginal => {
+  const actual = await importOriginal<typeof import('../../services/cache')>();
+  const { createPassthroughCacheMock } = await import('../../__tests__/__mocks__/cache-service');
+  return createPassthroughCacheMock(actual);
+});
 
 vi.mock('@sentry/node', () => {
   const mockSpan = { setStatus: vi.fn(), setAttribute: vi.fn(), end: vi.fn() };
@@ -419,7 +415,8 @@ describe('report router', () => {
             lastPaidAt: new Date('2025-06-15'),
           },
         ])
-        .mockResolvedValueOnce([{ count: 1 }]);
+        .mockResolvedValueOnce([{ count: 1 }])
+        .mockResolvedValueOnce([{ grandTotalMinor: 500000n }]);
 
       const result = await caller.report.spendByContractor({
         ...DATE_RANGE,
@@ -437,13 +434,17 @@ describe('report router', () => {
         totalMinor: 500000,
       });
       expect(result.total).toBe(1);
+      expect(result.grandTotalMinor).toBe(500000);
 
-      // Two raw queries: data + count
-      expect(mockPrisma.$queryRaw).toHaveBeenCalledTimes(2);
+      // Three raw queries: data + count + grand total
+      expect(mockPrisma.$queryRaw).toHaveBeenCalledTimes(3);
     });
 
     it('supports pagination with page and pageSize', async () => {
-      mockPrisma.$queryRaw.mockResolvedValueOnce([]).mockResolvedValueOnce([{ count: 50 }]);
+      mockPrisma.$queryRaw
+        .mockResolvedValueOnce([])
+        .mockResolvedValueOnce([{ count: 50 }])
+        .mockResolvedValueOnce([{ grandTotalMinor: 0n }]);
 
       const result = await caller.report.spendByContractor({
         ...DATE_RANGE,
@@ -455,7 +456,7 @@ describe('report router', () => {
 
       expect(result.total).toBe(50);
       // Verify the raw query was invoked (offset = (3-1)*10 = 20)
-      expect(mockPrisma.$queryRaw).toHaveBeenCalledTimes(2);
+      expect(mockPrisma.$queryRaw).toHaveBeenCalledTimes(3);
     });
 
     it('supports sorting by totalSpend, invoiceCount, contractorName', async () => {
@@ -588,7 +589,10 @@ describe('report router', () => {
     });
 
     it('supports pagination and sorting', async () => {
-      mockPrisma.$queryRaw.mockResolvedValueOnce([]).mockResolvedValueOnce([{ count: 15 }]);
+      mockPrisma.$queryRaw
+        .mockResolvedValueOnce([])
+        .mockResolvedValueOnce([{ count: 15 }])
+        .mockResolvedValueOnce([{ grandTotalMinor: 0n }]);
 
       const result = await caller.report.spendByTeam({
         ...DATE_RANGE,
@@ -599,7 +603,7 @@ describe('report router', () => {
       });
 
       expect(result.total).toBe(15);
-      expect(mockPrisma.$queryRaw).toHaveBeenCalledTimes(2);
+      expect(mockPrisma.$queryRaw).toHaveBeenCalledTimes(3);
     });
   });
 

@@ -2,26 +2,33 @@
  * Shared helpers for invoice sub-routers.
  */
 
+import { userRoleToMemberRole } from '@contractor-ops/auth';
 import type { TaxIdType, ValidationStatus } from '@contractor-ops/db';
 import { TRPCError } from '@trpc/server';
 import * as E from '../../errors';
 import { getHmrcVatClient, getViesClient } from '../../gov-api-clients';
-import type { TenantScopedDb } from '../../lib/tenant-db';
+import type { TenantDbTx, TenantScopedDb } from '../../lib/tenant-db';
 import { computeDuplicateCheckHash } from '../../services/invoice-matching';
 import { applyKleinunternehmerOverride } from '../../services/kleinunternehmer.service';
+import type { OutboxTransactionalClient } from '../../services/outbox';
+import { enqueueNotificationOutboxEvent } from '../../services/outbox';
 import type { DE13bServiceType } from '../../services/reverse-charge.service';
 import {
   detectReverseCharge,
+  resolveBuyerHasVatId,
   resolveReverseChargeDecision,
 } from '../../services/reverse-charge.service';
 import { isValidationFresh, validateTaxId } from '../../services/tax-id-validation.service';
 import { getDefaultRateCode } from '../../services/tax-rate.service';
 
 export async function getFinanceTeamUserIds(db: TenantScopedDb, orgId: string): Promise<string[]> {
+  const memberRole = userRoleToMemberRole('FINANCE_ADMIN');
+  if (!memberRole) return [];
+
   const members = await db.member.findMany({
     where: {
       organizationId: orgId,
-      role: 'FINANCE_ADMIN',
+      role: memberRole,
     },
     select: { userId: true },
   });
@@ -182,13 +189,14 @@ export function resolveReverseCharge(
   orgCountryCode: string | null,
   serviceType: string | undefined,
   userOverride: boolean | null | undefined,
+  orgBuyerTaxId?: string | null,
 ): boolean {
   let rcShouldApply = false;
   if (contractor && orgCountryCode) {
     const rc = detectReverseCharge({
       sellerCountry: contractor.countryCode,
       buyerCountry: orgCountryCode,
-      buyerHasVatId: !!contractor.vatId,
+      buyerHasVatId: resolveBuyerHasVatId(orgCountryCode, orgBuyerTaxId),
       isB2B: contractor.type === 'COMPANY' || contractor.type === 'SOLE_TRADER',
       serviceType: serviceType as DE13bServiceType | undefined,
     });
@@ -222,4 +230,70 @@ export async function resolveEffectiveVatRate(
   }
 
   return rate;
+}
+
+/** Link uploaded documents to an invoice inside the caller transaction. */
+export async function linkDocumentsToInvoice(
+  tx: TenantDbTx,
+  organizationId: string,
+  invoiceId: string,
+  documentIds: readonly string[],
+): Promise<void> {
+  if (documentIds.length === 0) return;
+
+  await tx.invoiceFile.createMany({
+    data: documentIds.map(documentId => ({
+      organizationId,
+      invoiceId,
+      documentId,
+      role: 'SOURCE_ORIGINAL' as const,
+    })),
+  });
+
+  await tx.documentLink.createMany({
+    data: documentIds.map(documentId => ({
+      organizationId,
+      documentId,
+      entityType: 'INVOICE' as const,
+      entityId: invoiceId,
+      linkRole: 'PRIMARY' as const,
+    })),
+  });
+}
+
+/** Enqueue INVOICE_RECEIVED inside the caller transaction (exactly-once via outbox). */
+export async function enqueueInvoiceReceivedNotification(
+  tx: OutboxTransactionalClient,
+  params: {
+    organizationId: string;
+    recipientUserIds: string[];
+    invoiceId: string;
+    invoiceNumber: string;
+    sellerName: string | null;
+    totalMinor: number;
+    currency: string;
+  },
+): Promise<void> {
+  if (params.recipientUserIds.length === 0) return;
+
+  const amount = (params.totalMinor / 100).toFixed(2);
+  await enqueueNotificationOutboxEvent({
+    tx,
+    event: {
+      organizationId: params.organizationId,
+      type: 'INVOICE_RECEIVED',
+      recipientUserIds: params.recipientUserIds,
+      title: `New invoice received: ${params.invoiceNumber}`,
+      body: `From ${params.sellerName ?? 'Unknown'} - ${amount} ${params.currency}`,
+      entityType: 'INVOICE',
+      entityId: params.invoiceId,
+      metadata: {
+        invoiceNumber: params.invoiceNumber,
+        contractorName: params.sellerName ?? 'Unknown',
+        amount,
+        currency: params.currency,
+      },
+    },
+    dedupKey: `invoice-received:${params.invoiceId}`,
+  });
 }

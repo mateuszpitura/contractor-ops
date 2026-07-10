@@ -92,7 +92,9 @@ function sectionRetention(
   sectionDocumentDate: Date | null,
   now: Date,
 ): RetentionPosture {
-  const rules = jurisdiction ? getPersonnelRetentionRules(jurisdiction, section) : [];
+  const rules = jurisdiction
+    ? getPersonnelRetentionRules(jurisdiction, section, file.hireDate ?? null)
+    : [];
   const result = getPersonnelRetentionCutoff(rules, {
     hireDate: file.hireDate ?? null,
     terminationDate: file.terminatedAt ?? null,

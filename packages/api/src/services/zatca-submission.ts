@@ -9,10 +9,16 @@
 // QStash: 3 retries, exponential backoff, dead letter queue.
 // ---------------------------------------------------------------------------
 
-import { createHash, randomUUID } from 'node:crypto';
+import { randomUUID } from 'node:crypto';
 import type { PrismaClient } from '@contractor-ops/db';
-import { prisma as defaultPrisma } from '@contractor-ops/db';
-import type { Prisma } from '@contractor-ops/db/generated/prisma/client';
+import {
+  prisma as defaultPrisma,
+  getRegionalClient,
+  resolveOrganizationRegion,
+  SUPPORTED_REGIONS,
+} from '@contractor-ops/db';
+import type { Prisma as PrismaTypes } from '@contractor-ops/db/generated/prisma/client';
+import { Prisma } from '@contractor-ops/db/generated/prisma/client';
 import type {
   CertificateInfo,
   EInvoice,
@@ -27,11 +33,11 @@ import {
   ZatcaApiError,
   ZatcaProfile,
 } from '@contractor-ops/einvoice';
+import { computeZatcaInvoiceHash } from '@contractor-ops/einvoice/zatca/hash';
 import { createZatcaSecretStore, ZATCA_SECRET_NAMES } from '@contractor-ops/integrations';
-import { getQStashClient } from '@contractor-ops/integrations/services/qstash-client';
 import { createLogger } from '@contractor-ops/logger';
-import { getServerEnv } from '@contractor-ops/validators';
 import { isDemoOrg } from '../lib/demo';
+import { enqueueJob } from './queue';
 import type { PrismaLike } from './zatca-hash-chain';
 import { acquireChainLock, getNextChainEntry, recordChainEntry } from './zatca-hash-chain';
 
@@ -66,7 +72,10 @@ interface ChainCoords {
 /** Signed-XML artifacts produced for one submission attempt. */
 interface SubmissionArtifacts {
   invoiceXml: string;
+  /** Hex digest — persisted on the chain row and used as the next PIH */
   invoiceHash: string;
+  /** Base64 digest — sent to ZATCA in the clearance/reporting payload */
+  invoiceHashBase64: string;
   qrBase64: string;
 }
 
@@ -75,8 +84,6 @@ interface ChainSubmission extends SubmissionArtifacts {
   id: string;
   zatcaUuid: string;
 }
-
-/** Outcome of a `reconcilePendingZatcaChains` sweep. */
 export interface ReconcileResult {
   /** PENDING chains found older than the cutoff. */
   scanned: number;
@@ -85,17 +92,6 @@ export interface ReconcileResult {
   /** Chains whose resubmission still threw (left PENDING for the next run). */
   failed: number;
 }
-
-// ---------------------------------------------------------------------------
-// QStash Configuration
-// ---------------------------------------------------------------------------
-
-/** QStash retry config: 3 retries, exponential backoff */
-const QSTASH_CONFIG = {
-  retries: 3,
-  /** Backoff intervals: 1s, 4s, 16s (exponential base 4) */
-  delay: '1s' as const,
-};
 
 // ---------------------------------------------------------------------------
 // Main Submission Orchestrator
@@ -149,7 +145,9 @@ export async function submitToZatca(
   }
 
   const config = connection.configJson as unknown as ZatcaConnectionConfig;
-  const environment = config?.environment ?? 'test';
+  const rawEnvironment = (config?.environment as string) ?? 'sandbox';
+  const environment: 'test' | 'prod' =
+    rawEnvironment === 'production' || rawEnvironment === 'prod' ? 'prod' : 'test';
 
   // Retrieve certificates from Infisical
   const secretStore = createZatcaSecretStore(organizationId);
@@ -185,10 +183,20 @@ export async function submitToZatca(
   let chainRecord: ChainSubmission;
 
   if (existingChain) {
-    // Only a PENDING row is safe to (re)submit. Any settled state
-    // (CLEARED/REPORTED/WARNING/REJECTED/SUBMITTED) is terminal — resubmitting
-    // would duplicate a ZATCA call or resurrect a rejected invoice.
-    if (existingChain.zatcaStatus !== 'PENDING') {
+    if (existingChain.zatcaStatus === 'REJECTED') {
+      await prisma.zatcaInvoiceChain.update({
+        where: { id: existingChain.id },
+        data: {
+          zatcaStatus: 'PENDING',
+          submittedAt: null,
+          rejectedAt: null,
+          rejectionReason: null,
+          clearedAt: null,
+          reportedAt: null,
+          zatcaResponse: Prisma.JsonNull,
+        },
+      });
+    } else if (existingChain.zatcaStatus !== 'PENDING') {
       log.info(
         { organizationId, invoiceId, status: existingChain.zatcaStatus },
         'ZATCA chain already settled — skipping resubmission',
@@ -196,10 +204,6 @@ export async function submitToZatca(
       return;
     }
 
-    // Rebuild the submission from the persisted chain coordinates, reusing the
-    // original zatcaUuid so ZATCA treats the resubmit as idempotent. The signed
-    // XML is regenerated (it is not persisted) but carries the original
-    // icv/pih/uuid, so the hash chain stays anchored on this invoice.
     const artifacts = await buildSubmissionArtifacts(
       invoice,
       {
@@ -210,6 +214,10 @@ export async function submitToZatca(
       certInfo,
       certificate,
     );
+    await prisma.zatcaInvoiceChain.update({
+      where: { id: existingChain.id },
+      data: { invoiceHash: artifacts.invoiceHash },
+    });
     chainRecord = { id: existingChain.id, zatcaUuid: existingChain.zatcaUuid, ...artifacts };
   } else {
     // First submit: advisory-locked transaction allocates the next ICV/PIH,
@@ -268,8 +276,8 @@ async function buildSubmissionArtifacts(
   const profile = new ZatcaProfile();
 
   const unsignedXml = await profile.generate(eInvoice);
+  const { hex: invoiceHash, base64: invoiceHashBase64 } = computeZatcaInvoiceHash(unsignedXml);
   const signedXml = await profile.sign.sign(unsignedXml, certInfo);
-  const invoiceHash = createHash('sha256').update(signedXml).digest('hex');
 
   const qrEInvoice: EInvoice = {
     ...eInvoice,
@@ -282,7 +290,12 @@ async function buildSubmissionArtifacts(
   };
   const qrBuffer = await profile.qrCode.generateQR(qrEInvoice);
 
-  return { invoiceXml: signedXml, invoiceHash, qrBase64: qrBuffer.toString('base64') };
+  return {
+    invoiceXml: signedXml,
+    invoiceHash,
+    invoiceHashBase64,
+    qrBase64: qrBuffer.toString('base64'),
+  };
 }
 
 /**
@@ -317,7 +330,7 @@ async function submitAndSettle(args: {
   });
 
   const payload = {
-    invoiceHash: chainRecord.invoiceHash,
+    invoiceHash: chainRecord.invoiceHashBase64,
     uuid: chainRecord.zatcaUuid,
     invoice: Buffer.from(chainRecord.invoiceXml).toString('base64'),
   };
@@ -342,7 +355,7 @@ async function submitAndSettle(args: {
       where: { id: chainRecord.id },
       data: {
         zatcaStatus: mapZatcaStatus(status),
-        zatcaResponse: response as unknown as Prisma.InputJsonValue,
+        zatcaResponse: response as unknown as PrismaTypes.InputJsonValue,
         submittedAt: now,
         ...(status === 'CLEARED' && { clearedAt: now }),
         ...(status === 'REPORTED' && { reportedAt: now }),
@@ -391,7 +404,34 @@ export async function reconcilePendingZatcaChains(
   opts: { olderThanMinutes: number; limit?: number },
   db?: PrismaClient,
 ): Promise<ReconcileResult> {
-  const prisma = db ?? defaultPrisma;
+  if (db) {
+    return reconcilePendingZatcaChainsForClient(db, opts);
+  }
+
+  const total: ReconcileResult = { scanned: 0, settled: 0, failed: 0 };
+
+  for (const region of SUPPORTED_REGIONS) {
+    let client: PrismaClient;
+    try {
+      client = getRegionalClient(region);
+    } catch (err) {
+      log.warn({ err, region }, 'ZATCA reconcile: region client unavailable; skipping region');
+      continue;
+    }
+
+    const result = await reconcilePendingZatcaChainsForClient(client, opts);
+    total.scanned += result.scanned;
+    total.settled += result.settled;
+    total.failed += result.failed;
+  }
+
+  return total;
+}
+
+async function reconcilePendingZatcaChainsForClient(
+  prisma: PrismaClient,
+  opts: { olderThanMinutes: number; limit?: number },
+): Promise<ReconcileResult> {
   const cutoff = new Date(Date.now() - opts.olderThanMinutes * 60_000);
 
   const stale = await prisma.zatcaInvoiceChain.findMany({
@@ -433,11 +473,19 @@ export async function reconcilePendingZatcaChains(
  * - auth: logged as auth gate, no retry
  */
 export async function handleZatcaSubmissionJob(payload: ZatcaSubmissionJobPayload): Promise<void> {
+  const located = await resolveOrganizationRegion(payload.organizationId);
+  if (!located) {
+    throw new Error(`Organization ${payload.organizationId} not found in any configured region`);
+  }
+
   try {
-    await submitToZatca({
-      invoiceId: payload.invoiceId,
-      organizationId: payload.organizationId,
-    });
+    await submitToZatca(
+      {
+        invoiceId: payload.invoiceId,
+        organizationId: payload.organizationId,
+      },
+      located.client,
+    );
   } catch (error) {
     if (error instanceof ZatcaApiError) {
       if (error.errorType === 'non-retryable' || error.errorType === 'auth') {
@@ -470,23 +518,59 @@ export async function queueZatcaSubmission(
   invoiceId: string,
   organizationId: string,
 ): Promise<void> {
-  const qstash = getQStashClient();
-  const apiUrl = getServerEnv().API_URL;
-
-  await qstash.publishJSON({
-    url: `${apiUrl}/zatca/_submit`,
-    body: {
-      invoiceId,
-      organizationId,
-    } satisfies ZatcaSubmissionJobPayload,
-    retries: QSTASH_CONFIG.retries,
-    delay: QSTASH_CONFIG.delay,
-  });
+  await enqueueJob(
+    'zatca.submit',
+    { organizationId, invoiceId },
+    { dedupId: `zatca:${organizationId}:${invoiceId}` },
+  );
 }
 
 // ---------------------------------------------------------------------------
 // EInvoice Builder
 // ---------------------------------------------------------------------------
+
+function lineVatRate(line: Record<string, unknown>, headerVatRate: string | null): string {
+  const fromLine = line.vatRate as string | undefined;
+  if (fromLine !== undefined && fromLine !== null && fromLine !== '') {
+    return fromLine;
+  }
+  return headerVatRate ?? '15.00';
+}
+
+function buildTaxBreakdownFromLines(
+  lines: Record<string, unknown>[],
+  headerVatRate: string | null,
+): EInvoiceTaxSubtotal[] {
+  const groups = new Map<string, { taxable: number; tax: number; rate: number }>();
+
+  for (const line of lines) {
+    const rateStr = lineVatRate(line, headerVatRate);
+    const rate = parseFloat(rateStr) || 0;
+    const key = rateStr;
+    const existing = groups.get(key) ?? { taxable: 0, tax: 0, rate };
+    existing.taxable += (line.netAmountMinor as number) ?? (line.amountMinor as number) ?? 0;
+    existing.tax += (line.vatAmountMinor as number) ?? 0;
+    groups.set(key, existing);
+  }
+
+  if (groups.size === 0) {
+    return [
+      {
+        taxableAmountMinor: 0,
+        taxAmountMinor: 0,
+        taxCategory: 'S',
+        percent: parseFloat(headerVatRate ?? '15'),
+      },
+    ];
+  }
+
+  return Array.from(groups.values()).map(group => ({
+    taxableAmountMinor: group.taxable,
+    taxAmountMinor: group.tax,
+    taxCategory: group.rate > 0 ? 'S' : 'Z',
+    percent: group.rate,
+  }));
+}
 
 /**
  * Converts a Prisma invoice record (with relations) to the canonical EInvoice
@@ -539,21 +623,14 @@ function buildEInvoiceFromPrisma(
       quantity: (line.quantity as number) ?? 1,
       unitPriceMinor: (line.unitPriceMinor as number) ?? 0,
       netAmountMinor: (line.netAmountMinor as number) ?? (line.amountMinor as number) ?? 0,
-      vatRate: invoice.vatRate ?? '15.00',
+      vatRate: lineVatRate(line, invoice.vatRate),
       vatAmountMinor: (line.vatAmountMinor as number) ?? 0,
       grossAmountMinor: (line.grossAmountMinor as number) ?? 0,
     })),
     taxExclusiveAmount: invoice.subtotalMinor,
     taxInclusiveAmount: invoice.totalMinor,
     payableAmount: invoice.amountToPayMinor,
-    taxBreakdown: [
-      {
-        taxableAmountMinor: invoice.subtotalMinor,
-        taxAmountMinor: invoice.vatAmountMinor ?? 0,
-        taxCategory: 'S',
-        percent: parseFloat(invoice.vatRate ?? '15'),
-      } satisfies EInvoiceTaxSubtotal,
-    ],
+    taxBreakdown: buildTaxBreakdownFromLines(invoice.lines ?? [], invoice.vatRate),
     profileId: 'zatca',
     extensions: {
       icv: opts.icv,

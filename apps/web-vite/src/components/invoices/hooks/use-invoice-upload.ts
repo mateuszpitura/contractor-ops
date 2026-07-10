@@ -41,6 +41,7 @@ export function useInvoiceUpload(
   const [creditExhausted, setCreditExhausted] = useState(false);
   const [isDragActive, setIsDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const pendingInvoiceIdRef = useRef<string | null>(null);
   const [extractionId, setExtractionId] = useState<string | null>(null);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [showPdfReview, setShowPdfReview] = useState(false);
@@ -69,6 +70,11 @@ export function useInvoiceUpload(
     invalidate: [trpc.invoice.pathFilter()],
   });
 
+  const updateInvoiceMutation = useResourceMutation(trpc.invoice.update.mutationOptions(), {
+    ...uploadStepConfig,
+    invalidate: [trpc.invoice.pathFilter()],
+  });
+
   const ocrTriggerMutation = useResourceMutation(trpc.ocr.trigger.mutationOptions(), {
     ...uploadStepConfig,
     invalidate: [trpc.ocr.pathFilter()],
@@ -80,9 +86,9 @@ export function useInvoiceUpload(
   });
 
   const triggerOcrForPdf = useCallback(
-    async (file: File, documentId: string, storageKey: string) => {
+    async (file: File, documentId: string) => {
       try {
-        const ocrResult = await ocrTriggerMutation.mutateAsync({ documentId, storageKey });
+        const ocrResult = await ocrTriggerMutation.mutateAsync({ documentId });
         setExtractionId(ocrResult.extractionId);
         setPdfUrl(prev => {
           if (prev) URL.revokeObjectURL(prev);
@@ -105,11 +111,44 @@ export function useInvoiceUpload(
   );
 
   const handleOcrAccept = useCallback(
-    (data: ExtractedInvoiceData) => {
+    async (data: ExtractedInvoiceData) => {
+      const invoiceId = pendingInvoiceIdRef.current;
+      if (invoiceId) {
+        try {
+          await updateInvoiceMutation.mutateAsync({
+            id: invoiceId,
+            data: {
+              invoiceNumber: data.invoiceNumber,
+              issueDate: data.issueDate,
+              dueDate: data.dueDate,
+              currency: data.currency,
+              subtotalMinor: data.subtotalMinor,
+              vatAmountMinor: data.vatAmountMinor,
+              totalMinor: data.totalMinor,
+              amountToPayMinor: data.totalMinor,
+              sellerTaxId: data.sellerTaxId || undefined,
+              sellerName: data.sellerName || undefined,
+            },
+          });
+          queryClient.invalidateQueries({ queryKey: trpc.invoice.list.queryKey() });
+          queryClient.invalidateQueries({ queryKey: trpc.invoice.statusCounts.queryKey() });
+        } catch (error) {
+          Sentry.captureException(error, { tags: { feature: 'invoice-upload-ocr-accept' } });
+          toast.error(t('error'));
+        }
+      }
       onOcrAccept?.(data);
+      pendingInvoiceIdRef.current = null;
       setShowPdfReview(false);
     },
-    [onOcrAccept],
+    [
+      onOcrAccept,
+      queryClient,
+      t,
+      trpc.invoice.list,
+      trpc.invoice.statusCounts,
+      updateInvoiceMutation,
+    ],
   );
 
   const handleOcrDiscard = useCallback(() => {
@@ -182,7 +221,7 @@ export function useInvoiceUpload(
           prev.map(f => (f.id === fileId ? { ...f, status: 'creating', progress: 90 } : f)),
         );
 
-        await createInvoiceMutation.mutateAsync({
+        const createdInvoice = await createInvoiceMutation.mutateAsync({
           invoiceNumber: file.name.replace(/\.pdf$/i, ''),
           issueDate: new Date().toISOString().split('T')[0] ?? '',
           dueDate: new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0] ?? '',
@@ -192,14 +231,15 @@ export function useInvoiceUpload(
           amountToPayMinor: 0,
           documentIds: [documentId],
         });
+        pendingInvoiceIdRef.current = (createdInvoice as { id: string }).id;
 
         setFiles(prev =>
           prev.map(f => (f.id === fileId ? { ...f, status: 'complete', progress: 100 } : f)),
         );
 
         const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
-        if (isPdf && storageKey) {
-          await triggerOcrForPdf(file, documentId, storageKey);
+        if (isPdf) {
+          await triggerOcrForPdf(file, documentId);
         }
       } catch {
         setFiles(prev =>

@@ -1,4 +1,3 @@
-import { Prisma as PrismaClient } from '@contractor-ops/db/generated/prisma/client';
 import { minorToMajor, minorUnitDigits } from '@contractor-ops/shared';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
@@ -7,14 +6,19 @@ import { router } from '../../init';
 import { findOrThrow } from '../../lib/find-or-throw';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
-import type { TxClient } from '../../services/approval-engine';
+import type { ComplianceHold, TxClient } from '../../services/approval-engine';
 import { createApprovalFlow, routeToChain } from '../../services/approval-engine';
 import { writeAuditLog } from '../../services/audit-writer';
 import { syncApprovalSlaDeadline } from '../../services/calendar-deadline-sync';
 import { assertContractorPaymentEligibility } from '../../services/compliance-payment-gate';
+import { resumeApprovalFlowFromCompliance } from '../../services/compliance-recovery';
 import type { OutboxTransactionalClient } from '../../services/outbox';
 import { enqueueNotificationOutboxEvent } from '../../services/outbox';
 import { buildAuditEvents, plain } from './approval-shared';
+
+const SUBMITTABLE_INVOICE_STATUSES = new Set(['RECEIVED', 'UNDER_REVIEW', 'REJECTED']);
+
+const PAYMENT_PIPELINE_BLOCKING_STATUSES = new Set(['READY', 'IN_RUN', 'PAID', 'PARTIALLY_PAID']);
 
 /**
  * Enqueue the APPROVAL_REQUEST notification for the first approver INSIDE the
@@ -108,6 +112,20 @@ export const approvalSubmitRouter = router({
           });
         }
 
+        if (!SUBMITTABLE_INVOICE_STATUSES.has(invoice.status)) {
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: E.INVOICE_NOT_SUBMITTABLE,
+          });
+        }
+
+        if (PAYMENT_PIPELINE_BLOCKING_STATUSES.has(invoice.paymentStatus)) {
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: E.INVOICE_NOT_SUBMITTABLE,
+          });
+        }
+
         const chainConfig = await routeToChain(tx as TxClient, ctx.organizationId, {
           totalMinor: invoice.totalMinor,
         });
@@ -129,7 +147,11 @@ export const approvalSubmitRouter = router({
 
         await tx.invoice.update({
           where: { id: invoice.id },
-          data: { status: 'APPROVAL_PENDING' },
+          data: {
+            status: 'APPROVAL_PENDING',
+            paymentStatus: 'NOT_READY',
+            readyForPaymentAt: null,
+          },
         });
 
         // The first step was just created by createApprovalFlow inside this
@@ -241,6 +263,73 @@ export const approvalSubmitRouter = router({
       return plain({ events, flow: flowSummary });
     }),
 
+  listComplianceHeld: tenantProcedure
+    .use(requirePermission({ invoice: ['approve'] }))
+    .input(
+      z.object({
+        tab: z.enum(['my', 'all']).default('my'),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const flows = await ctx.db.approvalFlow.findMany({
+        where: {
+          organizationId: ctx.organizationId,
+          status: 'PENDING_COMPLIANCE',
+          resourceType: 'INVOICE',
+        },
+        orderBy: { startedAt: 'desc' },
+        include: {
+          steps: {
+            orderBy: { stepOrder: 'asc' },
+            include: {
+              approver: { select: { id: true, name: true, email: true } },
+            },
+          },
+        },
+      });
+
+      const userId = ctx.user?.id;
+      const visible =
+        input.tab === 'my' && userId
+          ? flows.filter(flow => {
+              const lastApproved = [...flow.steps].reverse().find(s => s.status === 'APPROVED');
+              return lastApproved?.approverUserId === userId;
+            })
+          : flows;
+
+      const invoiceIds = visible.map(f => f.resourceId);
+      const invoices =
+        invoiceIds.length > 0
+          ? await ctx.db.invoice.findMany({
+              where: { id: { in: invoiceIds }, organizationId: ctx.organizationId },
+              select: {
+                id: true,
+                invoiceNumber: true,
+                totalMinor: true,
+                currency: true,
+                contractor: { select: { id: true, legalName: true } },
+              },
+            })
+          : [];
+      const invoiceMap = new Map(invoices.map(inv => [inv.id, inv]));
+
+      const items = visible.map(flow => {
+        const hold = flow.complianceHoldsJson as ComplianceHold | null;
+        const lastApproved = [...flow.steps].reverse().find(s => s.status === 'APPROVED');
+        return {
+          approvalFlowId: flow.id,
+          resourceId: flow.resourceId,
+          heldAt: hold?.heldAt ?? null,
+          heldItemIds: hold?.itemIds ?? [],
+          heldByOperator: hold?.heldByOperator ?? null,
+          lastApprover: lastApproved?.approver ?? null,
+          invoice: invoiceMap.get(flow.resourceId) ?? null,
+        };
+      });
+
+      return plain({ items, total: items.length });
+    }),
+
   resumeFromCompliance: tenantProcedure
     .use(requirePermission({ invoice: ['approve'] }))
     .input(
@@ -250,7 +339,7 @@ export const approvalSubmitRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      return await ctx.db.$transaction(async tx => {
+      const result = await ctx.db.$transaction(async tx => {
         const flow = await tx.approvalFlow.findUniqueOrThrow({
           where: { id: input.approvalFlowId },
           select: {
@@ -299,10 +388,16 @@ export const approvalSubmitRouter = router({
           });
         }
 
-        await tx.approvalFlow.update({
-          where: { id: input.approvalFlowId },
-          data: { status: 'PENDING', complianceHoldsJson: PrismaClient.DbNull },
+        const resumeResult = await resumeApprovalFlowFromCompliance(tx as TxClient, {
+          flowId: input.approvalFlowId,
+          organizationId: ctx.organizationId,
         });
+        if (!resumeResult.reopenedStepId) {
+          throw new TRPCError({
+            code: 'PRECONDITION_FAILED',
+            message: E.APPROVAL_COMPLIANCE_RESUME_NO_STEP,
+          });
+        }
         await writeAuditLog({
           organizationId: ctx.organizationId,
           actorType: 'USER',
@@ -317,7 +412,28 @@ export const approvalSubmitRouter = router({
           },
           tx,
         });
-        return { resumed: true, approvalFlowId: input.approvalFlowId };
+        return { resumed: true, approvalFlowId: input.approvalFlowId, resumeResult };
       });
+
+      if (result.resumeResult.slaDeadline && result.resumeResult.resourceType === 'INVOICE') {
+        const invoice = await ctx.db.invoice.findUnique({
+          where: { id: result.resumeResult.resourceId },
+          select: { invoiceNumber: true },
+        });
+        if (invoice) {
+          void syncApprovalSlaDeadline(ctx.db, {
+            organizationId: ctx.organizationId,
+            approvalFlowId: input.approvalFlowId,
+            itemType: 'Invoice',
+            itemName: invoice.invoiceNumber ?? `INV-${result.resumeResult.resourceId.slice(-6)}`,
+            deadline: new Date(result.resumeResult.slaDeadline),
+            userId: ctx.user?.id,
+          }).catch(_err => {
+            /* fire-and-forget */
+          });
+        }
+      }
+
+      return plain({ resumed: result.resumed, approvalFlowId: result.approvalFlowId });
     }),
 });

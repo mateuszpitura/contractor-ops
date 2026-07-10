@@ -1,5 +1,6 @@
 import type { Prisma } from '@contractor-ops/db';
 import { createLogger } from '@contractor-ops/logger';
+import { writeAuditLog } from '../audit-writer';
 import { checkShipmentTaskCompletion } from '../equipment-workflow';
 import type { DbClient } from '../types';
 import { NOTIFICATION_STATUSES } from './inpost-status-mapper';
@@ -25,6 +26,35 @@ type PrismaClient = DbClient;
 export const TERMINAL_STATUSES = ['DELIVERED', 'FAILED', 'RETURNED'] as unknown as NonNullable<
   Extract<Prisma.ShipmentWhereInput['currentStatus'], { notIn?: unknown }>['notIn']
 >;
+
+/** Monotonic progression rank — prevents webhook/poll status regression. */
+const SHIPMENT_STATUS_RANK: Record<string, number> = {
+  CREATED: 0,
+  LABEL_GENERATED: 1,
+  PICKED_UP: 2,
+  IN_TRANSIT: 3,
+  OUT_FOR_DELIVERY: 4,
+  DELIVERED: 5,
+  FAILED: 5,
+  RETURNED: 5,
+};
+
+/**
+ * Returns false when `next` would regress a non-terminal shipment (e.g.
+ * DELIVERED → IN_TRANSIT). DELIVERED/RETURNED rows are immutable; FAILED may
+ * still progress to a delivery outcome — couriers retry failed deliveries
+ * (InPost `not_delivered` → `returned_to_sender`, or a redelivery attempt).
+ */
+export function shouldApplyShipmentStatusUpdate(current: string, next: string): boolean {
+  if (current === 'DELIVERED' || current === 'RETURNED') return false;
+  if (current === 'FAILED') {
+    return next === 'DELIVERED' || next === 'RETURNED' || next === 'OUT_FOR_DELIVERY';
+  }
+  if ((TERMINAL_STATUSES as readonly string[]).includes(next)) return true;
+  const currentRank = SHIPMENT_STATUS_RANK[current] ?? 0;
+  const nextRank = SHIPMENT_STATUS_RANK[next] ?? 0;
+  return nextRank >= currentRank;
+}
 
 /**
  * Maps (shipment status, direction) to equipment status.
@@ -82,23 +112,66 @@ export async function processShipmentStatusChange(
   carrierName: string,
   eventNotes: string,
 ): Promise<void> {
-  // 1. Create shipment event
-  await db.shipmentEvent.create({
-    data: {
+  if (!shouldApplyShipmentStatusUpdate(shipment.currentStatus, mappedStatus)) {
+    log.info(
+      {
+        shipmentId: shipment.id,
+        currentStatus: shipment.currentStatus,
+        mappedStatus,
+      },
+      'shipment status regression blocked',
+    );
+    return;
+  }
+
+  await db.$transaction(async tx => {
+    await tx.shipmentEvent.create({
+      data: {
+        organizationId,
+        shipmentId: shipment.id,
+        status: mappedStatus as Prisma.ShipmentEventCreateInput['status'],
+        notes: eventNotes,
+      },
+    });
+
+    await tx.shipment.update({
+      where: { id: shipment.id },
+      data: { currentStatus: mappedStatus as Prisma.ShipmentUpdateInput['currentStatus'] },
+    });
+
+    const equipmentUpdate = await computeEquipmentStatusUpdate(
+      tx,
+      shipment.equipmentId,
+      mappedStatus,
+      shipment.direction,
+    );
+
+    if (equipmentUpdate) {
+      await tx.equipment.update({
+        where: { id: shipment.equipmentId },
+        data: { status: equipmentUpdate as Prisma.EquipmentUpdateInput['status'] },
+      });
+    }
+
+    await writeAuditLog({
+      tx,
       organizationId,
-      shipmentId: shipment.id,
-      status: mappedStatus as Prisma.ShipmentEventCreateInput['status'],
-      notes: eventNotes,
-    },
+      actorType: 'SYSTEM',
+      actorId: null,
+      action: 'shipment.updateStatus',
+      resourceType: 'SHIPMENT',
+      resourceId: shipment.id,
+      oldValues: { status: shipment.currentStatus },
+      newValues: {
+        status: mappedStatus,
+        equipmentId: shipment.equipmentId,
+        ...(equipmentUpdate ? { equipmentStatus: equipmentUpdate } : {}),
+      },
+      metadata: { carrier: carrierName, source: 'courier_poll_or_webhook' },
+    });
   });
 
-  // 2. Update shipment current status
-  await db.shipment.update({
-    where: { id: shipment.id },
-    data: { currentStatus: mappedStatus as Prisma.ShipmentUpdateInput['currentStatus'] },
-  });
-
-  // 3. Dispatch notification for notable statuses
+  // Dispatch notification for notable statuses (outside tx — external side effects)
   if ((NOTIFICATION_STATUSES as readonly string[]).includes(mappedStatus)) {
     void dispatchShipmentNotification(
       db,
@@ -113,7 +186,6 @@ export async function processShipmentStatusChange(
     );
   }
 
-  // 4. Fire-and-forget: check workflow task auto-completion
   void checkShipmentTaskCompletion(db, organizationId, {
     id: shipment.id,
     workflowTaskRunId: shipment.workflowTaskRunId,
@@ -122,40 +194,37 @@ export async function processShipmentStatusChange(
   }).catch(err => {
     log.error({ err, shipmentId: shipment.id }, 'checkShipmentTaskCompletion failed');
   });
-
-  // 5. Auto-advance equipment status
-  await tryAdvanceEquipmentStatus(db, shipment.equipmentId, mappedStatus, shipment.direction);
 }
 
+type EquipmentTx = Pick<PrismaClient, 'equipment'>;
+
 /**
- * Attempts to advance equipment status based on shipment status change.
- * Only transitions if the target status is in the allowed transition list.
+ * Returns the target equipment status when the transition is allowed, else null.
  */
-async function tryAdvanceEquipmentStatus(
-  db: PrismaClient,
+async function computeEquipmentStatusUpdate(
+  db: EquipmentTx,
   equipmentId: string,
   shipmentStatus: string,
   direction: string,
-): Promise<void> {
+): Promise<string | null> {
   const directionMap = SHIPMENT_TO_EQUIPMENT_STATUS[shipmentStatus];
   const newEquipmentStatus = directionMap?.[direction];
 
-  if (!newEquipmentStatus) return;
+  if (!newEquipmentStatus) return null;
 
   const equipment = await db.equipment.findUnique({
     where: { id: equipmentId },
     select: { id: true, status: true },
   });
 
-  if (!equipment) return;
+  if (!equipment) return null;
 
   const allowed = EQUIPMENT_STATUS_TRANSITIONS[equipment.status] ?? [];
   if (allowed.includes(newEquipmentStatus)) {
-    await db.equipment.update({
-      where: { id: equipmentId },
-      data: { status: newEquipmentStatus as Prisma.EquipmentUpdateInput['status'] },
-    });
+    return newEquipmentStatus;
   }
+
+  return null;
 }
 
 // ---------------------------------------------------------------------------

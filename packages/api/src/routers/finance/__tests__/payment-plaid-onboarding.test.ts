@@ -289,6 +289,7 @@ function seedDb(profiles: Profile[]) {
   const db = {
     contractorBillingProfile: { findFirst, update },
     auditLog: { create: auditCreate },
+    $transaction: vi.fn(async (fn: (tx: typeof db) => Promise<void>) => fn(db)),
   };
   dbState.current = db;
   return { profiles, auditCreate, findFirst, update };

@@ -86,6 +86,7 @@ describe('useSpendContractorReport', () => {
           },
         ],
         total: 2,
+        grandTotalMinor: 1500,
       }),
       'report.spendByContractorChart': () => [
         { contractorId: 'c-1', contractorName: 'Acme', totalMinor: 1000 },

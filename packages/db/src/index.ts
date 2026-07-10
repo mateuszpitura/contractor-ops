@@ -28,8 +28,15 @@ export type {
 } from './generated/prisma/client/client.js';
 // Raw (non-tenant-scoped) client for cron-only cross-org aggregates.
 export { prismaRaw } from './raw.js';
-export type { DataRegion } from './region.js';
-export { getRegionalClient, preWarmRegionalClients, SUPPORTED_REGIONS } from './region.js';
+export type { DataRegion, RegionalFindResult } from './region.js';
+export {
+  findAcrossRegions,
+  getRegionalClient,
+  preWarmRegionalClients,
+  resolveOrganizationRegion,
+  SUPPORTED_REGIONS,
+  tryGetRegionalClient,
+} from './region.js';
 // Opt-in read-replica routing with circuit-breaker fallback.
 export { getReplicaClient, readReplica, resetReplicaStateForTests } from './replica.js';
 // Statutory retention resolver shared by the three deletion chokepoints

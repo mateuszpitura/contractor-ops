@@ -13,6 +13,7 @@
  * resubmission that still fails leaves the row PENDING for the next tick.
  */
 
+import { reconcileMissingZatcaSubmissionEnqueues } from '@contractor-ops/api/services/einvoice-submission-triggers';
 import { reconcilePendingZatcaChains } from '@contractor-ops/api/services/zatca-submission';
 import { metrics } from '@contractor-ops/logger/metrics';
 import { loadEnv } from '../../env.js';
@@ -24,8 +25,17 @@ export const zatcaReconcileHandler: JobHandler = async ctx => {
   const olderThanMinutes = loadEnv().CRON_ZATCA_RECONCILE_STALE_MINUTES;
 
   try {
+    let missingEnqueue = { scanned: 0, enqueued: 0, failed: 0 };
+    try {
+      missingEnqueue = await reconcileMissingZatcaSubmissionEnqueues();
+    } catch (err) {
+      ctx.log.warn(
+        { err },
+        'zatca-reconcile missing-enqueue sweep failed; continuing to chain reconcile',
+      );
+    }
     const result = await reconcilePendingZatcaChains({ olderThanMinutes });
-    ctx.log.info(result, 'zatca-reconcile tick complete');
+    ctx.log.info({ missingEnqueue, ...result }, 'zatca-reconcile tick complete');
     metrics.gauge('cron.zatca_reconcile.scanned', result.scanned);
     metrics.gauge('cron.zatca_reconcile.settled', result.settled);
     metrics.gauge('cron.zatca_reconcile.failed', result.failed);

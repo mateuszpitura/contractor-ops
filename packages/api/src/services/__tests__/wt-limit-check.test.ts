@@ -1,8 +1,8 @@
-// TIME-EMP-02 on-save half: the synchronous per-jurisdiction working-time
+// On-save half: the synchronous per-jurisdiction working-time
 // check. A pure function (no DB) that resolves resolveWtLimits(jurisdiction) and
 // flags a daily-ceiling / current-week heuristic breach; the true rolling
 // weekly average is the daily scan's job. The UK weekly breach is suppressed
-// when the worker holds a written opt-out. Wave-0: RED until the service lands.
+// when the worker holds a written opt-out.
 
 import { describe, expect, it } from 'vitest';
 

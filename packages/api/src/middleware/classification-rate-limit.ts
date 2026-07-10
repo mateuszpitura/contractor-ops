@@ -27,6 +27,7 @@ import {
   CLASSIFICATION_RATE_LIMITER_UNAVAILABLE,
 } from '../errors';
 import { t } from '../init';
+import { runtimeEnv, upstashToken, upstashUrl } from './raw-env';
 
 const log = createLogger({ service: 'api', component: 'classification-rate-limit' });
 
@@ -49,8 +50,6 @@ const FALLBACK_MAX_MAP_ENTRIES = 10_000;
 // Upstash limiter (only when env configured)
 // ---------------------------------------------------------------------------
 
-const upstashUrl = process.env.UPSTASH_REDIS_REST_URL;
-const upstashToken = process.env.UPSTASH_REDIS_REST_TOKEN;
 const hasRedis = Boolean(upstashUrl && upstashToken);
 
 const upstashLimiter: Ratelimit | null = hasRedis
@@ -150,7 +149,7 @@ async function isRateLimitAllowed(
     const result = await upstashLimiter.limit(key);
     return result.success;
   } catch (err) {
-    const env = process.env.NODE_ENV ?? 'development';
+    const env = runtimeEnv();
     if (env === 'production') {
       log.error(
         { err, organizationId, assessmentId },

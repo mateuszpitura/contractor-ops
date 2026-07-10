@@ -31,17 +31,37 @@ const { mockPrisma, mockHasPermission, form1099Rows, irisSubmissionRows, whereLo
     const scope = (rows: R[], where: R) =>
       rows.filter(r => r.organizationId === where.organizationId);
 
+    const orgMeta = (id: string): R => ({
+      id,
+      countryCode: 'US',
+      dataRegion: 'EU',
+      status: 'ACTIVE',
+      name: id === ORG_B ? 'Org B' : 'Acme',
+      legalName: id === ORG_B ? 'Org B LLC' : 'Acme LLC',
+      slug: id === ORG_B ? 'org-b' : 'org-a',
+      logo: null,
+    });
+
     const mockPrisma: R = {
       organization: {
-        findUnique: vi.fn(async () => ({
-          countryCode: 'US',
-          dataRegion: 'EU',
-          status: 'ACTIVE',
-          name: 'Acme',
-          legalName: 'Acme LLC',
-        })),
-        findUniqueOrThrow: vi.fn(async () => ({ countryCode: 'US' })),
+        findUnique: vi.fn(async (args: { where?: R }) => {
+          const id = (args?.where?.id as string | undefined) ?? ORG_A;
+          return orgMeta(id);
+        }),
+        findUniqueOrThrow: vi.fn(async (args: { where?: R }) => {
+          const id = (args?.where?.id as string | undefined) ?? ORG_A;
+          return orgMeta(id);
+        }),
       },
+      subscription: {
+        findUnique: vi.fn(async () => ({
+          id: 'sub-1',
+          tier: 'STARTER',
+          status: 'ACTIVE',
+          addOns: ['us-cross-border'],
+        })),
+      },
+      $transaction: vi.fn(async (fn: (tx: R) => Promise<unknown>) => fn(mockPrisma)),
       form1099Nec: {
         findMany: vi.fn(async (args: { where?: R }) => {
           const where = args?.where ?? {};
@@ -52,7 +72,11 @@ const { mockPrisma, mockHasPermission, form1099Rows, irisSubmissionRows, whereLo
           const where = args?.where ?? {};
           whereLog.push({ model: 'form1099Nec.findFirst', where });
           return (
-            scope(form1099Rows, where).find(r => (where.id ? r.id === where.id : true)) ?? null
+            scope(form1099Rows, where).find(r => {
+              if (where.id && r.id !== where.id) return false;
+              if (where.status && r.status !== where.status) return false;
+              return true;
+            }) ?? null
           );
         }),
       },
@@ -79,26 +103,50 @@ const { mockPrisma, mockHasPermission, form1099Rows, irisSubmissionRows, whereLo
     };
   });
 
-vi.mock('@contractor-ops/auth', () => ({
-  auth: { api: { getSession: vi.fn(), hasPermission: mockHasPermission } },
-  authApi: { hasPermission: mockHasPermission },
-}));
+vi.mock('@contractor-ops/auth', async importOriginal => {
+  const actual = await importOriginal<typeof import('@contractor-ops/auth')>();
+  return {
+    ...actual,
+    auth: {
+      api: {
+        getSession: vi.fn(),
+        hasPermission: mockHasPermission,
+      },
+    },
+    authApi: {
+      getSession: vi.fn(),
+      hasPermission: mockHasPermission,
+      getFullOrganization: vi.fn(),
+    },
+  };
+});
 
-vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T>(c: T) => c,
-  withRlsReads: <T>(c: T) => c,
-  prisma: mockPrisma,
-  prismaRaw: mockPrisma,
-  tenantStore: {
-    run: (_c: unknown, fn: () => unknown) => fn(),
-    getStore: vi.fn(() => ({ region: 'EU' })),
-  },
-  withTenantScope: vi.fn((c: unknown) => c),
-  withSoftDelete: vi.fn((c: unknown) => c),
-  createTenantClient: vi.fn(() => mockPrisma),
-  createTenantClientFrom: vi.fn(() => mockPrisma),
-  getRegionalClient: vi.fn(() => mockPrisma),
-}));
+vi.mock('@contractor-ops/db', async importOriginal => {
+  const actual = await importOriginal<typeof import('@contractor-ops/db')>();
+  return {
+    ...actual,
+    withRlsTransactions: <T>(c: T) => c,
+    withRlsReads: <T>(c: T) => c,
+    prisma: mockPrisma,
+    prismaRaw: mockPrisma,
+    tenantStore: {
+      run: (_c: unknown, fn: () => unknown) => fn(),
+      getStore: vi.fn(() => ({ region: 'EU' })),
+    },
+    withTenantScope: vi.fn((c: unknown) => c),
+    withSoftDelete: vi.fn((c: unknown) => c),
+    createTenantClient: vi.fn(() => mockPrisma),
+    createTenantClientFrom: vi.fn(() => mockPrisma),
+    getRegionalClient: vi.fn(() => mockPrisma),
+    preWarmRegionalClients: vi.fn(),
+  };
+});
+
+vi.mock('../../services/cache', async importOriginal => {
+  const actual = await importOriginal<typeof import('../../services/cache')>();
+  const { createPassthroughCacheMock } = await import('../../__tests__/__mocks__/cache-service');
+  return createPassthroughCacheMock(actual);
+});
 
 vi.mock('@contractor-ops/feature-flags', () => ({
   evaluate: vi.fn(() => ({ enabled: flagEnabled.value, reason: 'unleash' })),

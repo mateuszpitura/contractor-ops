@@ -42,28 +42,38 @@ export async function refreshExpiring(): Promise<{
   let failed = 0;
 
   for (const conn of connections) {
+    const providerSlug = conn.provider.toLowerCase();
+
+    // Providers without a refreshToken handler self-mint their bearer on demand
+    // (client-credentials, e.g. Personio) or authenticate with a non-expiring
+    // key. They hold no stored refresh token to rotate, so proactive refresh
+    // must skip them rather than fail them into REAUTH_REQUIRED.
+    if (!getAdapter(providerSlug)?.refreshToken) continue;
+
+    // Optimistic lock: set refreshLockedAt, skip if already locked
+    const locked = await prisma.integrationConnection.updateMany({
+      where: {
+        id: conn.id,
+        OR: [
+          { refreshLockedAt: null },
+          { refreshLockedAt: { lte: new Date(Date.now() - LOCK_TTL_MS) } },
+        ],
+      },
+      data: { refreshLockedAt: new Date() },
+    });
+
+    // Another process holds the lock. Skip BEFORE the try/finally below so the
+    // finally never releases a lock this iteration did not acquire.
+    if (locked.count === 0) continue;
+
     try {
-      // Optimistic lock: set refreshLockedAt, skip if already locked
-      const locked = await prisma.integrationConnection.updateMany({
-        where: {
-          id: conn.id,
-          OR: [
-            { refreshLockedAt: null },
-            { refreshLockedAt: { lte: new Date(Date.now() - LOCK_TTL_MS) } },
-          ],
-        },
-        data: { refreshLockedAt: new Date() },
-      });
-
-      if (locked.count === 0) continue; // another process got the lock
-
-      await refreshSingleConnection(conn.id, conn.provider.toLowerCase(), conn.credentialsRef);
+      await refreshSingleConnection(conn.id, providerSlug, conn.credentialsRef);
       refreshed++;
     } catch (error) {
       failed++;
       await markRefreshFailed(conn.id, error);
     } finally {
-      // Release lock
+      // Release the lock this iteration acquired.
       await prisma.integrationConnection
         .update({
           where: { id: conn.id },
@@ -152,13 +162,15 @@ async function refreshSingleConnection(
   const newCredentials = await adapter.refreshToken(credentials);
   const encrypted = encryptCredentials(newCredentials, providerSlug);
 
+  // Persist only the rotated credentials + expiry. Do NOT stamp lastSyncAt here:
+  // the HRIS pull orchestrator reuses lastSyncAt as its hourly throttle, so a
+  // token refresh would masquerade as a completed sync and suppress pulls
+  // indefinitely. (No dedicated lastTokenRefreshAt column exists in the schema.)
   await prisma.integrationConnection.update({
     where: { id: connectionId },
     data: {
       credentialsRef: encrypted,
       tokenExpiresAt: newCredentials.expiresAt ? new Date(newCredentials.expiresAt) : null,
-      lastSyncAt: new Date(),
-      lastSuccessAt: new Date(),
       refreshLockedAt: null,
     },
   });

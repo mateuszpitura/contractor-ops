@@ -94,7 +94,7 @@ describe('CacheKeys', () => {
   });
 
   it('approvalChains key', () => {
-    expect(CacheKeys.approvalChains(orgId)).toBe('co:org_123:approval:chains');
+    expect(CacheKeys.approvalChains(orgId)).toBe('co:org_123:approval:chains:all');
   });
 
   it('dashboardPrefix for broad invalidation', () => {

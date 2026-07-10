@@ -23,6 +23,8 @@ import {
   COMPLIANCE_DOCUMENT_NOT_PENDING_REVIEW,
   COMPLIANCE_ITEM_ALREADY_WAIVED,
   COMPLIANCE_ITEM_NOT_FOUND,
+  DOCUMENT_INFECTED,
+  DOCUMENT_SCAN_PENDING,
 } from '../../errors';
 import { router } from '../../init';
 import { auditedMutation, auditMutationCtx } from '../../lib/audited-mutation';
@@ -36,7 +38,10 @@ import {
   listBlockedPayments,
   listUpcomingRenewals,
 } from '../../services/compliance-dashboard';
-import { onComplianceItemSatisfied } from '../../services/compliance-recovery';
+import {
+  onComplianceItemExpiresAtChanged,
+  onComplianceItemSatisfied,
+} from '../../services/compliance-recovery';
 import type { OutboxTransactionalClient } from '../../services/outbox';
 import { enqueueNotificationOutboxEvent } from '../../services/outbox';
 import { resolveRbacRecipients } from '../../services/rbac-recipients';
@@ -261,12 +266,24 @@ export const complianceAdminRouter = router({
         // satisfiedByDocumentId with an arbitrary same-org document.
         const doc = await tx.document.findFirst({
           where: { id: input.documentId, organizationId: ctx.organizationId },
-          select: { id: true, status: true },
+          select: { id: true, status: true, virusScanStatus: true },
         });
         if (!doc || doc.status !== 'PENDING_REVIEW') {
           throw new TRPCError({
             code: 'PRECONDITION_FAILED',
             message: COMPLIANCE_DOCUMENT_NOT_PENDING_REVIEW,
+          });
+        }
+        if (doc.virusScanStatus === 'INFECTED') {
+          throw new TRPCError({
+            code: 'FORBIDDEN',
+            message: DOCUMENT_INFECTED,
+          });
+        }
+        if (doc.virusScanStatus !== 'CLEAN') {
+          throw new TRPCError({
+            code: 'PRECONDITION_FAILED',
+            message: DOCUMENT_SCAN_PENDING,
           });
         }
         const ownerLink = await tx.documentLink.findFirst({
@@ -311,6 +328,15 @@ export const complianceAdminRouter = router({
           },
           async () => updated,
           tx,
+        );
+
+        await onComplianceItemExpiresAtChanged(
+          tx as Parameters<typeof onComplianceItemExpiresAtChanged>[0],
+          {
+            itemId: input.itemId,
+            organizationId: ctx.organizationId,
+            triggerEvent: 'status_satisfied',
+          },
         );
 
         // Re-assert contractor eligibility for the approved item so any

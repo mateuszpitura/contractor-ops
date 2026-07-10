@@ -63,6 +63,8 @@ beforeEach(() => {
     connection: { provider: 'PERSONIO' },
     provider: 'PERSONIO',
     region: 'EU',
+    externalId: 'hris-ext-w1',
+    creds: {},
   });
 });
 

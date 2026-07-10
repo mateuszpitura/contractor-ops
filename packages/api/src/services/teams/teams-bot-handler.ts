@@ -28,9 +28,14 @@ import type {
 } from '@microsoft/agents-hosting-extensions-teams';
 import { TeamsActivityHandler } from '@microsoft/agents-hosting-extensions-teams';
 import { z } from 'zod';
-import { advanceFlow } from '../approval-engine';
+import {
+  executeIntegrationApprovalApprove,
+  executeIntegrationApprovalReject,
+  IntegrationApprovalError,
+} from '../approval-integration-action';
 import { buildApprovalResultCard } from './cards/approval-result-card';
 import { buildRejectModalCard } from './cards/reject-modal-card';
+import { storeConversationReference } from './conversation-reference';
 
 const log = createLogger({ service: 'teams-bot-handler' });
 
@@ -39,119 +44,36 @@ const log = createLogger({ service: 'teams-bot-handler' });
 // external inputs with schema validation)
 // ---------------------------------------------------------------------------
 
-const approveInvokeSchema = z.object({
+export const approveInvokeSchema = z.object({
   action: z.literal('approve_invoice'),
-  invoiceId: z.uuid(),
-  flowId: z.uuid(),
+  invoiceId: z.string().min(1),
+  flowId: z.string().min(1),
 });
 
 const rejectInvokeSchema = z.object({
   action: z.literal('reject_invoice'),
-  invoiceId: z.uuid(),
-  flowId: z.uuid(),
+  invoiceId: z.string().min(1),
+  flowId: z.string().min(1),
 });
 
 const submitRejectionSchema = z.object({
   action: z.literal('submit_rejection'),
-  invoiceId: z.uuid(),
-  flowId: z.uuid(),
+  invoiceId: z.string().min(1),
+  flowId: z.string().min(1),
   comment: z.string().min(1, 'Rejection comment is required'),
 });
 
 const taskModuleFetchSchema = z.object({
-  invoiceId: z.uuid(),
-  flowId: z.uuid(),
+  invoiceId: z.string().min(1),
+  flowId: z.string().min(1),
 });
 
 // ---------------------------------------------------------------------------
-// ConversationReference Storage
+// ConversationReference Storage — moved to `conversation-reference.ts`
+// (import-cycle break); re-exported here for existing importers.
 // ---------------------------------------------------------------------------
 
-interface TeamsConnectionConfig {
-  conversationReferences?: Record<string, ConversationReference>;
-  teamConversationReferences?: Record<string, ConversationReference>;
-  channelMapping?: Record<string, string>;
-  [key: string]: unknown;
-}
-
-/**
- * Stores a ConversationReference for proactive messaging.
- * Personal refs are keyed by the user's AAD Object ID.
- * Channel refs are keyed by conversation.id (channel thread ID,
- * e.g. "19:xxx@thread.tacv2") within the MICROSOFT_TEAMS
- * IntegrationConnection configJson.
- */
-export async function storeConversationReference(
-  organizationId: string,
-  ref: Partial<ConversationReference>,
-): Promise<void> {
-  const aadObjectId = ref.user?.aadObjectId;
-  if (!aadObjectId) {
-    log.warn({}, 'cannot store ConversationReference: no aadObjectId');
-    return;
-  }
-
-  const connection = await prisma.integrationConnection.findFirst({
-    where: {
-      organizationId,
-      provider: 'MICROSOFT_TEAMS',
-      status: 'CONNECTED',
-    },
-    select: { id: true, configJson: true },
-  });
-
-  if (!connection) {
-    log.warn({ organizationId }, 'no MICROSOFT_TEAMS connection for org');
-    return;
-  }
-
-  const config = (connection.configJson as TeamsConnectionConfig) ?? {};
-  const conversationReferences = config.conversationReferences ?? {};
-
-  conversationReferences[aadObjectId] = ref as ConversationReference;
-
-  // For channel-scoped conversations, store under teamConversationReferences
-  // keyed by conversation.id (channel thread ID like "19:xxx@thread.tacv2")
-  // so sendChannelAlert can look up by params.channelId
-  const teamConversationReferences = config.teamConversationReferences ?? {};
-  const channelId = ref.conversation?.id;
-  if (channelId && ref.conversation?.conversationType === 'channel') {
-    teamConversationReferences[channelId] = ref as ConversationReference;
-  }
-
-  await prisma.integrationConnection.update({
-    where: { id: connection.id },
-    data: {
-      configJson: {
-        ...config,
-        conversationReferences,
-        teamConversationReferences,
-      } as unknown as Prisma.InputJsonValue,
-    },
-  });
-}
-
-/**
- * Retrieves a stored ConversationReference for a user by AAD Object ID.
- */
-export async function getConversationReference(
-  organizationId: string,
-  aadObjectId: string,
-): Promise<ConversationReference | null> {
-  const connection = await prisma.integrationConnection.findFirst({
-    where: {
-      organizationId,
-      provider: 'MICROSOFT_TEAMS',
-      status: 'CONNECTED',
-    },
-    select: { configJson: true },
-  });
-
-  if (!connection) return null;
-
-  const config = (connection.configJson as TeamsConnectionConfig) ?? {};
-  return config.conversationReferences?.[aadObjectId] ?? null;
-}
+export { getConversationReference, storeConversationReference } from './conversation-reference';
 
 // ---------------------------------------------------------------------------
 // User Resolution
@@ -185,9 +107,13 @@ async function resolveTeamsUser(
   return { userId: user.id, userName: user.name ?? 'Unknown' };
 }
 
-// ---------------------------------------------------------------------------
-// Error Helpers
-// ---------------------------------------------------------------------------
+async function resolveFlowOrganizationId(flowId: string): Promise<string | null> {
+  const flow = await prisma.approvalFlow.findUnique({
+    where: { id: flowId },
+    select: { organizationId: true },
+  });
+  return flow?.organizationId ?? null;
+}
 
 function errorInvokeResponse(statusCode: number, message: string): AdaptiveCardInvokeResponse {
   return {
@@ -311,8 +237,18 @@ export class TeamsBotHandler extends TeamsActivityHandler {
     }
 
     try {
-      // Process rejection in a transaction
-      await this.processRejection(flowId, user.userId, comment);
+      const organizationId = await resolveFlowOrganizationId(flowId);
+      if (!organizationId) {
+        return { task: { type: 'message', value: 'Approval flow not found.' } };
+      }
+
+      await executeIntegrationApprovalReject(prisma, {
+        organizationId,
+        flowId,
+        actorUserId: user.userId,
+        actorName: user.userName,
+        comment,
+      });
 
       const flow = await prisma.approvalFlow.findUnique({
         where: { id: flowId },
@@ -394,21 +330,36 @@ export class TeamsBotHandler extends TeamsActivityHandler {
     }
 
     try {
-      const result = await this.processApproval(flowId, user.userId);
+      const organizationId = await resolveFlowOrganizationId(flowId);
+      if (!organizationId) {
+        return errorInvokeResponse(404, 'Approval flow not found');
+      }
 
+      const result = await executeIntegrationApprovalApprove(prisma, {
+        organizationId,
+        flowId,
+        actorUserId: user.userId,
+        actorName: user.userName,
+      });
+
+      const resultCurrency = result.invoice?.currency ?? 'PLN';
       const resultCard = buildApprovalResultCard({
         result: 'approved',
-        invoiceNumber: result.invoiceNumber,
-        amount: result.amount,
-        currency: result.currency,
+        invoiceNumber: result.invoice?.invoiceNumber ?? 'N/A',
+        amount: minorToMajor(result.invoice?.totalMinor ?? 0, resultCurrency).toFixed(
+          minorUnitDigits(resultCurrency),
+        ),
+        currency: resultCurrency,
         approverName: user.userName,
-        viewUrl: result.viewUrl,
+        viewUrl: result.invoice
+          ? `${getServerEnv().PUBLIC_APP_URL}/invoices/${result.invoice.id}`
+          : '',
       });
 
       return cardInvokeResponse(resultCard);
     } catch (error) {
-      if (error instanceof Error) {
-        if (error.message === 'APPROVAL_STEP_NOT_PENDING') {
+      if (error instanceof IntegrationApprovalError) {
+        if (error.code === 'NOT_PENDING') {
           return cardInvokeResponse(
             buildApprovalResultCard({
               result: 'approved',
@@ -420,7 +371,7 @@ export class TeamsBotHandler extends TeamsActivityHandler {
             }),
           );
         }
-        if (error.message === 'APPROVAL_NOT_ASSIGNED') {
+        if (error.code === 'NOT_ASSIGNED' || error.code === 'FORBIDDEN') {
           return errorInvokeResponse(403, "You don't have permission to approve this invoice.");
         }
       }
@@ -445,173 +396,6 @@ export class TeamsBotHandler extends TeamsActivityHandler {
       type: 'AdaptiveCard',
       version: '1.5',
       body: [{ type: 'TextBlock', text: 'Opening rejection form...', wrap: true }],
-    });
-  }
-
-  // -------------------------------------------------------------------------
-  // Private: Process approval via Prisma transaction
-  // -------------------------------------------------------------------------
-
-  private async processApproval(
-    flowId: string,
-    userId: string,
-  ): Promise<{
-    invoiceNumber: string;
-    amount: string;
-    currency: string;
-    viewUrl: string;
-  }> {
-    return prisma.$transaction(async tx => {
-      // Find the pending step assigned to this user
-      const step = await tx.approvalStep.findFirst({
-        where: {
-          approvalFlowId: flowId,
-          approverUserId: userId,
-          status: 'PENDING',
-        },
-        include: {
-          approvalFlow: {
-            select: {
-              id: true,
-              resourceId: true,
-              resourceType: true,
-            },
-          },
-        },
-      });
-
-      if (!step) {
-        // Check if the step exists but is not pending
-        const existingStep = await tx.approvalStep.findFirst({
-          where: { approvalFlowId: flowId, approverUserId: userId },
-        });
-        if (existingStep) {
-          throw new Error('APPROVAL_STEP_NOT_PENDING');
-        }
-        throw new Error('APPROVAL_NOT_ASSIGNED');
-      }
-
-      const flow = step.approvalFlow;
-      const invoice =
-        flow.resourceType === 'INVOICE'
-          ? await tx.invoice.findUnique({
-              where: { id: flow.resourceId },
-              select: {
-                id: true,
-                invoiceNumber: true,
-                totalMinor: true,
-                currency: true,
-              },
-            })
-          : null;
-
-      // Create decision
-      await tx.approvalDecision.create({
-        data: {
-          organizationId: step.organizationId,
-          approvalStepId: step.id,
-          actorUserId: userId,
-          decision: 'APPROVE',
-        },
-      });
-
-      // Update step
-      await tx.approvalStep.update({
-        where: { id: step.id },
-        data: {
-          status: 'APPROVED',
-          actedAt: new Date(),
-          decision: 'APPROVE',
-        },
-      });
-
-      // Advance flow
-      const advanceResult = await advanceFlow(tx, step.approvalFlowId);
-
-      // If flow completed, update invoice
-      if (advanceResult.completed && flow.resourceType === 'INVOICE') {
-        await tx.invoice.update({
-          where: { id: flow.resourceId },
-          data: {
-            status: 'READY_FOR_PAYMENT',
-            approvalStatus: 'APPROVED',
-            paymentStatus: 'READY',
-            approvedAt: new Date(),
-            readyForPaymentAt: new Date(),
-          },
-        });
-      }
-
-      const resultCurrency = invoice?.currency ?? 'PLN';
-      return {
-        invoiceNumber: invoice?.invoiceNumber ?? 'N/A',
-        amount: minorToMajor(invoice?.totalMinor ?? 0, resultCurrency).toFixed(
-          minorUnitDigits(resultCurrency),
-        ),
-        currency: resultCurrency,
-        viewUrl: `${getServerEnv().PUBLIC_APP_URL}/invoices/${flow.resourceId}`,
-      };
-    });
-  }
-
-  // -------------------------------------------------------------------------
-  // Private: Process rejection via Prisma transaction
-  // -------------------------------------------------------------------------
-
-  private async processRejection(flowId: string, userId: string, comment: string): Promise<void> {
-    await prisma.$transaction(async tx => {
-      const step = await tx.approvalStep.findFirst({
-        where: {
-          approvalFlowId: flowId,
-          approverUserId: userId,
-          status: 'PENDING',
-        },
-      });
-
-      if (!step) {
-        throw new Error('No pending approval step found for this user');
-      }
-
-      // Create decision
-      await tx.approvalDecision.create({
-        data: {
-          organizationId: step.organizationId,
-          approvalStepId: step.id,
-          actorUserId: userId,
-          decision: 'REJECT',
-          comment,
-        },
-      });
-
-      // Update step
-      await tx.approvalStep.update({
-        where: { id: step.id },
-        data: {
-          status: 'REJECTED',
-          actedAt: new Date(),
-          decision: 'REJECT',
-          comment,
-        },
-      });
-
-      // Mark flow as REJECTED
-      await tx.approvalFlow.update({
-        where: { id: flowId },
-        data: { status: 'REJECTED' },
-      });
-
-      // Update invoice status
-      const flow = await tx.approvalFlow.findUnique({
-        where: { id: flowId },
-        select: { resourceId: true },
-      });
-
-      if (flow?.resourceId) {
-        await tx.invoice.update({
-          where: { id: flow.resourceId },
-          data: { status: 'REJECTED' },
-        });
-      }
     });
   }
 

@@ -7,6 +7,27 @@ import { router } from '../../init';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
 
+const countryFieldsConfigInput = z
+  .object({
+    countryCode: z.string().length(2).optional(),
+  })
+  .optional();
+
+function resolveCountryFieldsMeta(countryCode: string | null | undefined) {
+  if (!(countryCode && countryFieldsSchemaMap[countryCode])) {
+    return { hasCountryFields: false as const, countryCode: countryCode ?? null };
+  }
+  let fields: string[];
+  if (countryCode === 'US') {
+    fields = ['entityType', 'ein', 'addressLine1', 'city', 'state', 'zipCode'];
+  } else if (countryCode === 'AE') {
+    fields = ['freelancePermitNumber'];
+  } else {
+    fields = ['freelanceSaLicense', 'commercialRegistration', 'commercialRegistrationExpiry'];
+  }
+  return { hasCountryFields: true as const, countryCode, fields };
+}
+
 export const contractorCountryRouter = router({
   companyLookup: tenantProcedure
     .use(requirePermission({ contractor: ['create'] }))
@@ -26,24 +47,15 @@ export const contractorCountryRouter = router({
       };
     }),
 
-  getCountryFieldsConfig: tenantProcedure.query(async ({ ctx }) => {
-    const org = await ctx.db.organization.findUniqueOrThrow({
-      where: { id: ctx.organizationId },
-      select: { countryCode: true },
-    });
-    if (!(org.countryCode && countryFieldsSchemaMap[org.countryCode])) {
-      return { hasCountryFields: false, countryCode: org.countryCode };
-    }
-    let fields: string[];
-    if (org.countryCode === 'US') {
-      fields = ['entityType', 'ein', 'addressLine1', 'city', 'state', 'zipCode'];
-    } else if (org.countryCode === 'AE') {
-      fields = ['freelancePermitNumber'];
-    } else {
-      fields = ['freelanceSaLicense', 'commercialRegistration', 'commercialRegistrationExpiry'];
-    }
-    return { hasCountryFields: true, countryCode: org.countryCode, fields };
-  }),
+  getCountryFieldsConfig: tenantProcedure
+    .input(countryFieldsConfigInput)
+    .query(async ({ ctx, input }) => {
+      const org = await ctx.db.organization.findUniqueOrThrow({
+        where: { id: ctx.organizationId },
+        select: { countryCode: true },
+      });
+      return resolveCountryFieldsMeta(input?.countryCode ?? org.countryCode);
+    }),
 
   getCountryFields: tenantProcedure
     .input(z.object({ contractorId: z.string() }))
@@ -66,18 +78,24 @@ export const contractorCountryRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const org = await ctx.db.organization.findUniqueOrThrow({
-        where: { id: ctx.organizationId },
+      const contractor = await ctx.db.contractor.findFirst({
+        where: { id: input.contractorId, organizationId: ctx.organizationId },
         select: { countryCode: true },
       });
-      if (!org.countryCode) {
-        throw new TRPCError({ code: 'BAD_REQUEST', message: E.ORG_NO_COUNTRY });
+      if (!contractor) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: E.CONTRACTOR_NOT_FOUND });
       }
-      const schema = countryFieldsSchemaMap[org.countryCode];
+      if (contractor.countryCode !== input.countryCode) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: E.CONTRACTOR_COUNTRY_MISMATCH,
+        });
+      }
+      const schema = countryFieldsSchemaMap[input.countryCode];
       if (!schema) {
         throw new TRPCError({
           code: 'BAD_REQUEST',
-          message: `No country-specific fields defined for ${org.countryCode}`,
+          message: `No country-specific fields defined for ${input.countryCode}`,
         });
       }
       const parsed = schema.safeParse(input.fields);

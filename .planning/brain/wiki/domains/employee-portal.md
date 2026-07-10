@@ -2,7 +2,7 @@
 title: Employee self-service portal
 type: domain
 tags: [portal, employee-portal, self-service, manager, reporting-line, idor, leave, akta, feature-flags]
-source_commit: 84855c0a77958c231d262d8ec883a7c6a6d70a77
+source_commit: e0d533fa
 verify_with:
   - packages/api/src/routers/portal/portal-employee-router.ts
   - packages/api/src/routers/portal/portal-employee-akta.ts
@@ -15,7 +15,7 @@ verify_with:
   - packages/validators/src/portal-employee.ts
   - packages/validators/src/portal-manager.ts
   - apps/web-vite/src/components/portal/employee/hooks/use-employee-dashboard.ts
-updated: 2026-07-05
+updated: 2026-07-10
 ---
 
 # Employee self-service portal
@@ -78,11 +78,30 @@ personnel-file / approval services; it never re-implements policy.
   reports are resolved server-side from `EmployeeProfile.managerWorkerId =
   ctx.workerId` (same org, enforced because the reference is not an FK); every
   mutation re-derives the request's own workerId and calls `assertIsDirectReport`
-  before the shared approval transition (`finalizeApprovedLeave`) under an
+  before the shared approval transition (`closeLeaveFlowAsApproved` →
+  `finalizeApprovedLeave`, PENDING-guarded + idempotent) under an
   `EMPLOYEE`-actor audit.
 - **Pay stubs are external in v7.0.** `getPayStubAvailability` returns
   `{ available:false, reason:'EXTERNAL_PAYROLL' }` — payroll is export-only, there
   is no payslip model to fabricate a stub from.
+- **Portal traffic gets the strict rate-limit tier.** Portal tRPC
+  (`/api/trpc/portal/*`) is matched by the `portalLimiter` (10/min) via the
+  `usesPortalLimiter()` selector in `apps/api/src/plugins/rate-limit.ts` — not
+  the general 60/min `apiLimiter`.
+- **Magic-link requests are throttled per email, not just per IP.**
+  `requestMagicLink` carries a 5-requests / 15-min throttle keyed on the hashed
+  email, fail-closed
+  (`packages/api/src/middleware/magic-link-rate-limit.ts`) — bulk email-bombing
+  via the magic-link endpoint is capped independently of source IP.
+- **Credit-burning portal procedures are capped per subject.**
+  `portalSubjectRateLimitMiddleware`
+  (`packages/api/src/middleware/portal-rate-limit.ts`) caps 10/min per portal
+  subject on the portal OCR trigger (`portalTrigger` in
+  `packages/api/src/routers/core/ocr.ts`) and e-sign URL minting
+  (`getPortalSigningUrl` in `packages/api/src/routers/core/esign.ts`) — both
+  drain org credits / QStash and must not be burnable by one contractor.
+- Rate-limit error copy has locale keys in all 4 languages (`magicLink*` /
+  `portal*` keys).
 
 ## UI surface
 

@@ -4,6 +4,7 @@
 // that owns the marketplace + status surfaces). Every mutation is audited.
 
 import { createLogger } from '@contractor-ops/logger';
+import { entityIdSchema } from '@contractor-ops/validators';
 import { z } from 'zod';
 import { router } from '../../init';
 import { findOrThrow } from '../../lib/find-or-throw';
@@ -131,7 +132,7 @@ export const incidentRouter = router({
    */
   resolve: tenantProcedure
     .use(requirePermission({ 'admin:marketplace': ['write'] }))
-    .input(z.object({ id: z.string(), message: z.string().min(1).max(4000).optional() }))
+    .input(entityIdSchema.extend({ message: z.string().min(1).max(4000).optional() }))
     .mutation(async ({ ctx, input }) => {
       const existing = await findOrThrow(
         () => ctx.db.incidentReport.findUnique({ where: { id: input.id } }),

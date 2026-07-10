@@ -126,19 +126,19 @@ export const freeZoneRouter = router({
           },
         });
 
-        // Materialise the BLOCKING free-zone compliance item out-of-band via
-        // the compliance service. Only fires for non-Mainland licenses with an
-        // expiry date; the service gates Mainland assignments. Composes inside
-        // this tx so the assignment + item + audit commit atomically.
+        // Materialise or waive the free-zone compliance item via the service.
+        // MAINLAND switches waive any stale BLOCKING row; non-Mainland rows need
+        // a license expiry. Composes inside this tx so assignment + item commit
+        // atomically.
         let compliance: Awaited<ReturnType<typeof writeFreeZoneComplianceItem>> | null = null;
-        if (assignment.zone !== 'MAINLAND' && assignment.licenseExpiresAt) {
+        if (assignment.zone === 'MAINLAND' || assignment.licenseExpiresAt) {
           compliance = await writeFreeZoneComplianceItem(tx as FreeZoneComplianceClient, {
             assignment: {
               organizationId: assignment.organizationId,
               contractorId: assignment.contractorId,
               zone: assignment.zone,
               licenseNumber: assignment.licenseNumber ?? '',
-              licenseExpiresAt: assignment.licenseExpiresAt,
+              licenseExpiresAt: assignment.licenseExpiresAt ?? new Date(0),
             },
             actorType: 'USER',
             actorId: ctx.user?.id ?? null,
@@ -198,33 +198,36 @@ export const freeZoneRouter = router({
         data.qiwaContractAuthenticated = input.qiwaContractAuthenticated;
       }
 
-      const updated = await ctx.db.contractorAssignment.update({
-        where: { id: existing.id },
-        data,
-        select: {
-          id: true,
-          contractorId: true,
-          isSaudi: true,
-          nationality: true,
-          qiwaContractAuthenticated: true,
-        },
-      });
+      return ctx.db.$transaction(async tx => {
+        const updated = await tx.contractorAssignment.update({
+          where: { id: existing.id },
+          data,
+          select: {
+            id: true,
+            contractorId: true,
+            isSaudi: true,
+            nationality: true,
+            qiwaContractAuthenticated: true,
+          },
+        });
 
-      await writeAuditLog({
-        organizationId: ctx.organizationId,
-        actorType: 'USER',
-        actorId: ctx.user?.id ?? null,
-        action: 'gulf.saudi_assignment_fields.update',
-        resourceType: 'CONTRACTOR',
-        resourceId: existing.contractorId,
-        metadata: {
-          assignmentId: updated.id,
-          isSaudi: updated.isSaudi,
-          nationality: updated.nationality,
-          qiwaContractAuthenticated: updated.qiwaContractAuthenticated,
-        },
-      });
+        await writeAuditLog({
+          tx,
+          organizationId: ctx.organizationId,
+          actorType: 'USER',
+          actorId: ctx.user?.id ?? null,
+          action: 'gulf.saudi_assignment_fields.update',
+          resourceType: 'CONTRACTOR',
+          resourceId: existing.contractorId,
+          metadata: {
+            assignmentId: updated.id,
+            isSaudi: updated.isSaudi,
+            nationality: updated.nationality,
+            qiwaContractAuthenticated: updated.qiwaContractAuthenticated,
+          },
+        });
 
-      return updated;
+        return updated;
+      });
     }),
 });

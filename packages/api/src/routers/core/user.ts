@@ -1,10 +1,11 @@
-import { authApi } from '@contractor-ops/auth';
+import { authApi, userRoleToMemberRole } from '@contractor-ops/auth';
 import { inviteUserSchema, updateUserRoleSchema } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import {
   CANNOT_DEACTIVATE_SELF,
   LAST_ADMIN_CANNOT_DEACTIVATE,
+  MEMBER_HAS_PENDING_APPROVALS,
   PERMISSION_DENIED,
 } from '../../errors';
 import { router } from '../../init';
@@ -87,14 +88,14 @@ async function guardLastAdmin(
 }
 
 /**
- * Reassigns pending approval steps from a deactivated user to another member
- * with the same role, or clears the assignment.
+ * Plans reassignment for pending approval steps. Returns null replacement when
+ * no same-role peer or admin fallback exists.
  */
-async function reassignPendingApprovalSteps(
+async function planPendingApprovalReassignments(
   db: DbClient,
   organizationId: string,
   deactivatedUserId: string,
-) {
+): Promise<Array<{ stepId: string; replacementUserId: string | null }>> {
   const pendingSteps = await db.approvalStep.findMany({
     where: {
       organizationId,
@@ -104,29 +105,79 @@ async function reassignPendingApprovalSteps(
     select: { id: true, approverRole: true },
   });
 
+  const adminFallback = await db.member.findFirst({
+    where: {
+      organizationId,
+      role: { in: ['owner', 'admin'] },
+      userId: { not: deactivatedUserId },
+      disabledAt: null,
+    },
+    orderBy: { createdAt: 'asc' },
+    select: { userId: true },
+  });
+
+  const plans: Array<{ stepId: string; replacementUserId: string | null }> = [];
+
   for (const step of pendingSteps) {
     let replacementUserId: string | null = null;
 
     if (step.approverRole) {
-      const replacement = await db.member.findFirst({
-        where: {
-          organizationId,
-          role: step.approverRole,
-          userId: { not: deactivatedUserId },
-          // Replacement must be an active (non-disabled) member of the same
-          // org; the prior `user.banned` global filter is no longer used.
-          disabledAt: null,
-        },
-        select: { userId: true },
-      });
+      const memberRole = userRoleToMemberRole(step.approverRole);
+      const replacement = memberRole
+        ? await db.member.findFirst({
+            where: {
+              organizationId,
+              role: memberRole,
+              userId: { not: deactivatedUserId },
+              disabledAt: null,
+            },
+            select: { userId: true },
+          })
+        : null;
       replacementUserId = replacement?.userId ?? null;
     }
 
+    if (!replacementUserId) {
+      replacementUserId = adminFallback?.userId ?? null;
+    }
+
+    plans.push({ stepId: step.id, replacementUserId });
+  }
+
+  return plans;
+}
+
+async function applyPendingApprovalReassignments(
+  db: DbClient,
+  plans: Array<{ stepId: string; replacementUserId: string | null }>,
+): Promise<void> {
+  for (const plan of plans) {
+    if (!plan.replacementUserId) continue;
     await db.approvalStep.update({
-      where: { id: step.id },
-      data: { approverUserId: replacementUserId },
+      where: { id: plan.stepId },
+      data: { approverUserId: plan.replacementUserId },
     });
   }
+}
+
+/**
+ * Blocks deactivation when pending approval steps cannot be reassigned.
+ */
+async function assertPendingApprovalsReassignable(
+  db: DbClient,
+  organizationId: string,
+  deactivatedUserId: string,
+): Promise<Array<{ stepId: string; replacementUserId: string | null }>> {
+  const plans = await planPendingApprovalReassignments(db, organizationId, deactivatedUserId);
+  const orphaned = plans.filter(p => !p.replacementUserId);
+  if (orphaned.length > 0) {
+    throw new TRPCError({
+      code: 'PRECONDITION_FAILED',
+      message: MEMBER_HAS_PENDING_APPROVALS,
+      cause: { orphanedStepIds: orphaned.map(p => p.stepId) },
+    });
+  }
+  return plans;
 }
 
 /**
@@ -323,6 +374,12 @@ export const userRouter = router({
 
       const targetMember = await guardLastAdmin(ctx.db, ctx.organizationId, input.userId);
 
+      const reassignmentPlans = await assertPendingApprovalsReassignable(
+        ctx.db,
+        ctx.organizationId,
+        input.userId,
+      );
+
       const updated = await ctx.db.member.update({
         where: { id: targetMember.id },
         data: {
@@ -341,7 +398,7 @@ export const userRouter = router({
       // Reassign pending approval steps and transfer contractor ownership
       // within the active org. These helpers operate scoped by
       // `organizationId` so cross-org state is untouched.
-      await reassignPendingApprovalSteps(ctx.db, ctx.organizationId, input.userId);
+      await applyPendingApprovalReassignments(ctx.db, reassignmentPlans);
       await transferContractorOwnership(ctx.db, ctx.organizationId, input.userId);
 
       // Deactivation transfers approvals + contractor ownership;

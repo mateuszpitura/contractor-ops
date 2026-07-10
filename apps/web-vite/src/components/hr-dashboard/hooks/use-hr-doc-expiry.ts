@@ -6,12 +6,12 @@ import { useTRPC } from '../../../providers/trpc-provider.js';
 
 type RouterOutputs = inferRouterOutputs<AppRouter>;
 
-/** Section-filtered employee document-expiry read model (HR-DASH-03). */
+/** Section-filtered employee document-expiry read model. */
 export type HrDocExpiry = RouterOutputs['hrDashboard']['getDocumentExpiry'];
 export type DocExpiryItem = HrDocExpiry['items'][number];
 
 /**
- * Sole tRPC boundary for the HR-DASH-03 document-expiry section. The server has
+ * Sole tRPC boundary for the document-expiry section. The server has
  * already filtered every row to the sections the caller may read (payroll_officer
  * sees only its section, etc.) — the UI renders ONLY what it receives and never
  * reconstructs a full section set. Returns a props bag + variant flags; the wired

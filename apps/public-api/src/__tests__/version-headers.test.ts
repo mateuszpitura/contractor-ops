@@ -1,17 +1,13 @@
 /**
- * Wave-0 RED contract (INTEG-API-03) — RFC 8594 Sunset/Deprecation.
+ * RFC 8594 Sunset/Deprecation headers.
  *
  * A `versionHeaders` middleware must emit `Sunset` + `Link; rel="sunset"` +
  * `Deprecation` ONLY when a version policy sets them — the mechanism exists even
  * though the current `v1` has no sunset (nothing emitted yet).
- *
- * RED until 98-05 adds `../lib/version-headers`. Terminal Cannot-find-module on
- * the missing middleware is the accepted Wave-0 state.
  */
 
 import { Hono } from 'hono';
 import { describe, expect, it } from 'vitest';
-// RED: this middleware + policy map do not exist yet (added in 98-05).
 import { VERSION_POLICY, versionHeaders } from '../lib/version-headers.js';
 
 function appWith() {

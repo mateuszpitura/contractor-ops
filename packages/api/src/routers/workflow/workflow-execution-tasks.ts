@@ -98,6 +98,69 @@ export const workflowExecutionTasksRouter = router({
   // =========================================================================
 
   /**
+   * Start a task (TODO → IN_PROGRESS).
+   */
+  startTask: tenantProcedure
+    .use(requirePermission({ workflow: ['execute'] }))
+    .input(taskActionSchema)
+    .mutation(async ({ ctx, input }) => {
+      const result = await ctx.db.$transaction(async tx => {
+        const task = await findOrThrow(
+          () =>
+            tx.workflowTaskRun.findFirst({
+              where: {
+                id: input.taskRunId,
+                organizationId: ctx.organizationId,
+              },
+              include: {
+                workflowRun: { select: { id: true, status: true } },
+              },
+            }),
+          E.WORKFLOW_TASK_NOT_FOUND,
+        );
+
+        assertWorkflowRunInProgress(task.workflowRun.status);
+        assertTaskAssignee(task, ctx.user.id);
+
+        if (!validateTransition(task.status, 'IN_PROGRESS')) {
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: E.WORKFLOW_TASK_INVALID_STATUS,
+          });
+        }
+
+        const now = new Date();
+        const updated = await tx.workflowTaskRun.update({
+          where: { id: input.taskRunId },
+          data: {
+            status: 'IN_PROGRESS',
+            startedAt: task.startedAt ?? now,
+          },
+        });
+
+        await writeAuditLog({
+          organizationId: ctx.organizationId,
+          actorType: 'USER',
+          actorId: ctx.user.id,
+          action: 'workflow.task.started',
+          resourceType: 'WORKFLOW_TASK_RUN',
+          resourceId: input.taskRunId,
+          newValues: {
+            status: 'IN_PROGRESS',
+            workflowRunId: task.workflowRun.id,
+            previousStatus: task.status,
+          },
+          tx,
+        });
+
+        return updated;
+      });
+
+      void invalidateByPrefix(CacheKeys.dashboardPrefix(ctx.organizationId));
+      return result;
+    }),
+
+  /**
    * Complete a task. Unblocks dependent tasks and recomputes progress.
    */
   completeTask: tenantProcedure
@@ -122,7 +185,16 @@ export const workflowExecutionTasksRouter = router({
         assertWorkflowRunInProgress(task.workflowRun.status);
         assertTaskAssignee(task, ctx.user.id);
 
-        if (!validateTransition(task.status, 'DONE')) {
+        let effectiveStatus = task.status;
+        if (effectiveStatus === 'TODO') {
+          const started = await tx.workflowTaskRun.update({
+            where: { id: input.taskRunId },
+            data: { status: 'IN_PROGRESS', startedAt: task.startedAt ?? new Date() },
+          });
+          effectiveStatus = started.status;
+        }
+
+        if (!validateTransition(effectiveStatus, 'DONE')) {
           throw new TRPCError({
             code: 'BAD_REQUEST',
             message: E.WORKFLOW_TASK_INVALID_STATUS,
@@ -194,6 +266,13 @@ export const workflowExecutionTasksRouter = router({
           E.WORKFLOW_TASK_NOT_FOUND,
         );
 
+        if (task.taskType === 'IP_VERIFICATION') {
+          throw new TRPCError({
+            code: 'FORBIDDEN',
+            message: E.WORKFLOW_IP_VERIFICATION_OPEN,
+          });
+        }
+
         if (!validateTransition(task.status, 'SKIPPED')) {
           throw new TRPCError({
             code: 'BAD_REQUEST',
@@ -250,17 +329,6 @@ export const workflowExecutionTasksRouter = router({
     .use(requirePermission({ workflow: ['update'] }))
     .input(reassignTaskSchema)
     .mutation(async ({ ctx, input }) => {
-      await findOrThrow(
-        () =>
-          ctx.db.workflowTaskRun.findFirst({
-            where: {
-              id: input.taskRunId,
-              organizationId: ctx.organizationId,
-            },
-          }),
-        E.WORKFLOW_TASK_NOT_FOUND,
-      );
-
       const assigneeMember = await ctx.db.member.findFirst({
         where: {
           organizationId: ctx.organizationId,
@@ -276,6 +344,29 @@ export const workflowExecutionTasksRouter = router({
       }
 
       const updated = await ctx.db.$transaction(async tx => {
+        const task = await findOrThrow(
+          () =>
+            tx.workflowTaskRun.findFirst({
+              where: {
+                id: input.taskRunId,
+                organizationId: ctx.organizationId,
+              },
+              include: {
+                workflowRun: {
+                  select: {
+                    id: true,
+                    status: true,
+                    workflowTemplate: { select: { name: true } },
+                    contractor: { select: { legalName: true, displayName: true } },
+                  },
+                },
+              },
+            }),
+          E.WORKFLOW_TASK_NOT_FOUND,
+        );
+
+        assertWorkflowRunInProgress(task.workflowRun.status);
+
         const row = await tx.workflowTaskRun.update({
           where: { id: input.taskRunId },
           data: { assigneeUserId: input.newAssigneeUserId },
@@ -294,6 +385,22 @@ export const workflowExecutionTasksRouter = router({
           row.workflowRun.contractor?.legalName ??
           row.workflowRun.contractor?.displayName ??
           'Unknown';
+
+        await writeAuditLog({
+          organizationId: ctx.organizationId,
+          actorType: 'USER',
+          actorId: ctx.user.id,
+          action: 'workflow.task.reassigned',
+          resourceType: 'WORKFLOW_TASK_RUN',
+          resourceId: row.id,
+          oldValues: { assigneeUserId: task.assigneeUserId },
+          newValues: { assigneeUserId: input.newAssigneeUserId },
+          metadata: {
+            workflowRunId: row.workflowRun.id,
+            taskTitle: row.title,
+          },
+          tx,
+        });
 
         // Enqueue TASK_ASSIGNED durably inside the tx so the new assignee is
         // notified iff the reassignment commits (drain delivers exactly-once).

@@ -43,7 +43,7 @@ export interface HrDocExpiryViewProps {
   formatDate: (value: Date | string | null | undefined) => string;
 }
 
-/** Presentational document-expiry (HR-DASH-03). Props-in → JSX-out. */
+/** Presentational document-expiry. Props-in → JSX-out. */
 export function HrDocExpiryView({ items, byBand, formatDate }: HrDocExpiryViewProps) {
   const t = useTranslations('HrDashboard');
   const [pageIndex, setPageIndex] = useState(0);

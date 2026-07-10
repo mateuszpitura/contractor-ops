@@ -1,10 +1,10 @@
-import { getQStashClient } from '@contractor-ops/integrations/services/qstash-client';
-import { billingCreditDenialReason, getServerEnv } from '@contractor-ops/validators';
+import { billingCreditDenialReason } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import * as E from '../../errors';
 import { router } from '../../init';
 import { portalProcedure } from '../../middleware/portal-auth';
+import { portalSubjectRateLimitMiddleware } from '../../middleware/portal-rate-limit';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
 import { requireTier } from '../../middleware/tier';
@@ -24,7 +24,6 @@ import {
 
 const triggerInput = z.object({
   documentId: z.string(),
-  storageKey: z.string(),
   invoiceId: z.string().optional(),
 });
 
@@ -59,9 +58,9 @@ export const ocrRouter = router({
     .input(triggerInput)
     .mutation(async ({ ctx, input }) => {
       const result = await triggerOcrExtraction({
+        db: ctx.db,
         organizationId: ctx.organizationId,
         documentId: input.documentId,
-        storageKey: input.storageKey,
         invoiceId: input.invoiceId,
       });
 
@@ -82,26 +81,32 @@ export const ocrRouter = router({
   /**
    * Get OCR extraction result by extraction ID.
    */
-  getResult: tenantProcedure.input(getResultInput).query(async ({ ctx, input }) => {
-    const extraction = await getExtractionResult({
-      organizationId: ctx.organizationId,
-      extractionId: input.extractionId,
-    });
+  getResult: tenantProcedure
+    .use(requirePermission({ invoice: ['read'] }))
+    .input(getResultInput)
+    .query(async ({ ctx, input }) => {
+      const extraction = await getExtractionResult({
+        organizationId: ctx.organizationId,
+        extractionId: input.extractionId,
+      });
 
-    return extraction ? extraction : null;
-  }),
+      return extraction ? extraction : null;
+    }),
 
   /**
    * Get the latest OCR extraction for a document.
    */
-  getByDocument: tenantProcedure.input(getByDocumentInput).query(async ({ ctx, input }) => {
-    const extraction = await getExtractionByDocument({
-      organizationId: ctx.organizationId,
-      documentId: input.documentId,
-    });
+  getByDocument: tenantProcedure
+    .use(requirePermission({ invoice: ['read'] }))
+    .input(getByDocumentInput)
+    .query(async ({ ctx, input }) => {
+      const extraction = await getExtractionByDocument({
+        organizationId: ctx.organizationId,
+        documentId: input.documentId,
+      });
 
-    return extraction ? extraction : null;
-  }),
+      return extraction ? extraction : null;
+    }),
 
   /**
    * Retrigger OCR extraction for a previously processed document.
@@ -112,7 +117,6 @@ export const ocrRouter = router({
     .use(requireTier('PRO'))
     .input(retriggerInput)
     .mutation(async ({ ctx, input }) => {
-      // Find the existing extraction to get documentId and storageKey
       const existing = await ctx.db.ocrExtraction.findFirst({
         where: {
           id: input.extractionId,
@@ -124,44 +128,25 @@ export const ocrRouter = router({
         throw new TRPCError({ code: 'NOT_FOUND', message: E.OCR_EXTRACTION_NOT_FOUND });
       }
 
-      // Look up the document to get storageKey
-      const document = await ctx.db.document.findFirst({
-        where: {
-          id: existing.documentId,
-          organizationId: ctx.organizationId,
-        },
-        select: { storageKey: true },
+      const result = await triggerOcrExtraction({
+        db: ctx.db,
+        organizationId: ctx.organizationId,
+        documentId: existing.documentId,
+        invoiceId: existing.invoiceId ?? undefined,
       });
 
-      if (!document?.storageKey) {
-        throw new TRPCError({ code: 'NOT_FOUND', message: E.DOCUMENT_NOT_IN_STORAGE });
+      if ('error' in result) {
+        throw new TRPCError({
+          code: 'PRECONDITION_FAILED',
+          message:
+            result.error === billingCreditDenialReason.creditsExhausted
+              ? 'OCR credits exhausted'
+              : 'No active subscription',
+          cause: { reason: result.error, remaining: result.remaining },
+        });
       }
 
-      // Create a new extraction for the same document
-      const newExtraction = await ctx.db.ocrExtraction.create({
-        data: {
-          organizationId: ctx.organizationId,
-          documentId: existing.documentId,
-          invoiceId: existing.invoiceId,
-          provider: 'CLAUDE',
-          status: 'PENDING',
-        },
-      });
-
-      // Dispatch QStash job
-      const qstash = getQStashClient();
-      await qstash.publishJSON({
-        url: `${getServerEnv().API_URL}/ocr/_process`,
-        body: {
-          extractionId: newExtraction.id,
-          organizationId: ctx.organizationId,
-          storageKey: document.storageKey,
-        },
-        retries: 2,
-        timeout: '60s',
-      });
-
-      return { extractionId: newExtraction.id };
+      return { extractionId: result.extractionId };
     }),
 
   // -------------------------------------------------------------------------
@@ -171,27 +156,31 @@ export const ocrRouter = router({
   /**
    * Trigger OCR extraction from the portal (contractor-initiated).
    */
-  portalTrigger: portalProcedure.input(triggerInput).mutation(async ({ ctx, input }) => {
-    const result = await triggerOcrExtraction({
-      organizationId: ctx.organizationId,
-      documentId: input.documentId,
-      storageKey: input.storageKey,
-      invoiceId: input.invoiceId,
-    });
-
-    if ('error' in result) {
-      throw new TRPCError({
-        code: 'PRECONDITION_FAILED',
-        message:
-          result.error === billingCreditDenialReason.creditsExhausted
-            ? 'OCR credits exhausted'
-            : 'No active subscription',
-        cause: { reason: result.error, remaining: result.remaining },
+  portalTrigger: portalProcedure
+    .use(portalSubjectRateLimitMiddleware)
+    .use(requireTier('PRO'))
+    .input(triggerInput)
+    .mutation(async ({ ctx, input }) => {
+      const result = await triggerOcrExtraction({
+        db: ctx.db,
+        organizationId: ctx.organizationId,
+        documentId: input.documentId,
+        invoiceId: input.invoiceId,
       });
-    }
 
-    return result;
-  }),
+      if ('error' in result) {
+        throw new TRPCError({
+          code: 'PRECONDITION_FAILED',
+          message:
+            result.error === billingCreditDenialReason.creditsExhausted
+              ? 'OCR credits exhausted'
+              : 'No active subscription',
+          cause: { reason: result.error, remaining: result.remaining },
+        });
+      }
+
+      return result;
+    }),
 
   /**
    * Get OCR extraction result from the portal.

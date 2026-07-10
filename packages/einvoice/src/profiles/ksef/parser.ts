@@ -20,23 +20,45 @@ const parser = new XMLParser({
 // Per-field helpers
 // ---------------------------------------------------------------------------
 
-function computeVatAmount(
-  netAmount: number,
-  rawVat: unknown,
+function computeVatFromRate(
+  netAmountMinor: number,
   vatRateStr: string | undefined,
 ): number | undefined {
-  if (rawVat != null) return toMinorUnits(rawVat);
-  if (vatRateStr && !Number.isNaN(parseFloat(vatRateStr))) {
-    return Math.round(netAmount * (parseFloat(vatRateStr) / 100));
-  }
-  return;
+  if (!vatRateStr || Number.isNaN(parseFloat(vatRateStr))) return;
+  return Math.round(netAmountMinor * (parseFloat(vatRateStr) / 100));
 }
 
+/**
+ * FA(3) line amounts: P_11 = net, P_11A = gross (kwota brutto), P_11Vat = VAT when present.
+ * P_11A is NOT a VAT amount — treating it as VAT double-counts on inbound KSeF sync.
+ */
 function parseFa3Line(line: Record<string, unknown>) {
   const netAmount = toMinorUnits(line.P_11);
   const vatRateStr = line.P_12 == null ? undefined : String(line.P_12);
-  const vatAmount = computeVatAmount(netAmount, line.P_11A, vatRateStr);
-  const grossAmount = vatAmount === undefined ? undefined : netAmount + vatAmount;
+  const grossFromField = line.P_11A == null ? undefined : toMinorUnits(line.P_11A);
+  const vatFromField = line.P_11Vat == null ? undefined : toMinorUnits(line.P_11Vat);
+
+  let vatAmount: number | undefined;
+  let grossAmount: number | undefined;
+
+  if (vatFromField != null) {
+    vatAmount = vatFromField;
+    grossAmount = grossFromField ?? (netAmount ? netAmount + vatFromField : undefined);
+  } else if (grossFromField != null && netAmount) {
+    const derived = grossFromField - netAmount;
+    // KOR lines are negative throughout, so VAT must carry the net's sign; a sign
+    // mismatch means P_11A held something other than gross (legacy emitters put VAT there).
+    if (derived === 0 || Math.sign(derived) === Math.sign(netAmount)) {
+      grossAmount = grossFromField;
+      vatAmount = derived;
+    } else {
+      vatAmount = computeVatFromRate(netAmount, vatRateStr);
+      grossAmount = vatAmount === undefined ? undefined : netAmount + vatAmount;
+    }
+  } else {
+    vatAmount = computeVatFromRate(netAmount, vatRateStr);
+    grossAmount = vatAmount === undefined ? undefined : netAmount + vatAmount;
+  }
 
   return {
     lineNumber: Number(line.NrWierszaFa ?? 0),
@@ -87,18 +109,30 @@ function ensureArray(raw: unknown): Record<string, unknown>[] {
   return [];
 }
 
+function sumFaHeaderMinor(
+  fa: Record<string, unknown>,
+  prefix: 'P_13' | 'P_14',
+): number | undefined {
+  let sum = 0;
+  let found = false;
+  for (let band = 1; band <= 5; band += 1) {
+    const key = `${prefix}_${band}`;
+    if (fa[key] != null) {
+      sum += toMinorUnits(fa[key]);
+      found = true;
+    }
+  }
+  return found ? sum : undefined;
+}
+
 function computeTotals(
   fa: Record<string, unknown>,
   lines: Array<{ netAmountMinor?: number; vatAmountMinor?: number }>,
 ) {
   const netTotal =
-    fa.P_13_1 == null
-      ? lines.reduce((s, l) => s + (l.netAmountMinor ?? 0), 0)
-      : toMinorUnits(fa.P_13_1);
+    sumFaHeaderMinor(fa, 'P_13') ?? lines.reduce((s, l) => s + (l.netAmountMinor ?? 0), 0);
   const vatTotal =
-    fa.P_14_1 == null
-      ? lines.reduce((s, l) => s + (l.vatAmountMinor ?? 0), 0)
-      : toMinorUnits(fa.P_14_1);
+    sumFaHeaderMinor(fa, 'P_14') ?? lines.reduce((s, l) => s + (l.vatAmountMinor ?? 0), 0);
   const grossTotal = fa.P_15 == null ? netTotal + vatTotal : toMinorUnits(fa.P_15);
   return { netMinor: netTotal, vatMinor: vatTotal, grossMinor: grossTotal };
 }

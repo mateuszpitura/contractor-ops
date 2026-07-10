@@ -18,6 +18,7 @@ import { evaluate } from '@contractor-ops/feature-flags';
 import { createLogger } from '@contractor-ops/logger';
 import { TRPCError } from '@trpc/server';
 import { US_EXPANSION_DISABLED } from '../errors';
+import { hasQaDefaultOrg } from './raw-env';
 
 const log = createLogger({ service: 'us-expansion-flag-guard' });
 
@@ -54,5 +55,5 @@ export function assertUsExpansionEnabled(organizationId: string, region: string)
  */
 export function isUsExpansionRegistered(): boolean {
   const base = evaluate('module.us-expansion', { organizationId: 'ROOT', region: 'EU' });
-  return base.enabled || Boolean(process.env.QA_DEFAULT_ORG_ID);
+  return base.enabled || hasQaDefaultOrg();
 }

@@ -4,12 +4,21 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 // Mocks
 // ---------------------------------------------------------------------------
 
-vi.mock('@contractor-ops/db', () => {
+vi.mock('@contractor-ops/db', async importOriginal => {
+  const actual = await importOriginal<typeof import('@contractor-ops/db')>();
   const MockDbPrisma = {
     paymentRunItem: { findUnique: vi.fn() },
-    whtCertificate: { count: vi.fn(), create: vi.fn(), findMany: vi.fn() },
+    whtCertificate: {
+      count: vi.fn(),
+      create: vi.fn(),
+      findMany: vi.fn(),
+      findFirst: vi.fn().mockResolvedValue(null),
+    },
+    auditLog: { create: vi.fn().mockResolvedValue({}) },
+    $transaction: vi.fn(async (fn: (tx: typeof MockDbPrisma) => unknown) => fn(MockDbPrisma)),
   };
   return {
+    ...actual,
     withRlsTransactions: <T>(c: T) => c,
     withRlsReads: <T>(c: T) => c,
     prisma: MockDbPrisma,
@@ -62,6 +71,7 @@ function makePaymentRunItem(overrides: Record<string, unknown> = {}) {
       countryCode: 'PL',
     },
     paymentRun: {
+      id: 'payment-run-1',
       createdAt: new Date('2026-03-01'),
     },
     ...overrides,
@@ -194,7 +204,7 @@ describe('listWhtCertificates', () => {
     ];
     mockPrisma.whtCertificate.findMany.mockResolvedValue(certs);
 
-    const result = await listWhtCertificates(ORG_ID);
+    const result = await listWhtCertificates(ORG_ID, mockPrisma as never);
 
     expect(result).toEqual(certs);
     expect(mockPrisma.whtCertificate.findMany).toHaveBeenCalledWith({
@@ -207,7 +217,7 @@ describe('listWhtCertificates', () => {
   it('returns empty array when no certificates exist', async () => {
     mockPrisma.whtCertificate.findMany.mockResolvedValue([]);
 
-    const result = await listWhtCertificates(ORG_ID);
+    const result = await listWhtCertificates(ORG_ID, mockPrisma as never);
     expect(result).toEqual([]);
   });
 });

@@ -16,7 +16,6 @@
 
 import nodeCrypto from 'node:crypto';
 import type { Prisma } from '@contractor-ops/db';
-import { prisma as defaultPrisma } from '@contractor-ops/db';
 import type {
   ZatcaConnectionConfig,
   ZatcaOnboardingState,
@@ -26,18 +25,29 @@ import {
   buildComplianceTestInvoices,
   generateZatcaCsr,
   generateZatcaXml,
+  ZATCA_PRODUCTION_URL,
+  ZATCA_SANDBOX_URL,
+  ZatcaApiClient,
   zatcaTaxDetailsSchema,
 } from '@contractor-ops/einvoice';
+import { computeZatcaInvoiceHash } from '@contractor-ops/einvoice/zatca/hash';
 import { createZatcaSecretStore, ZATCA_SECRET_NAMES } from '@contractor-ops/integrations';
 import { TRPCError } from '@trpc/server';
 import {
-  ZATCA_API_CLIENT_UNAVAILABLE,
   ZATCA_COMPLIANCE_CHECKS_MUST_PASS,
   ZATCA_COMPLIANCE_CSID_REQUIRED,
   ZATCA_CSR_REQUIRED,
   ZATCA_TAX_DETAILS_REQUIRED,
   ZATCA_TAX_DETAILS_REQUIRED_FOR_COMPLIANCE,
 } from '../errors';
+import { writeAuditLog } from './audit-writer';
+import type { DbClient } from './types';
+
+export interface ZatcaOnboardingAuditContext {
+  db: DbClient;
+  actorId: string;
+  actorName?: string | null;
+}
 
 // ---------------------------------------------------------------------------
 // Types
@@ -52,64 +62,37 @@ export interface ComplianceCheckResult {
   message?: string;
 }
 
-/** Minimal shape of the ZatcaApiClient we expect */
-interface ZatcaApiClientLike {
-  requestComplianceCsid(csrBase64: string): Promise<{
-    binarySecurityToken: string;
-    secret: string;
-    requestID: string;
-  }>;
-  requestProductionCsid(requestId: string): Promise<{
-    binarySecurityToken: string;
-    secret: string;
-  }>;
-  submitComplianceInvoice(
-    hash: string,
-    uuid: string,
-    xml: string,
-  ): Promise<{
-    validationResults?: {
-      status?: string;
-      warningMessages?: Array<{ message?: string }>;
-    };
-  }>;
-}
-
 // ---------------------------------------------------------------------------
 // Internal Helpers
 // ---------------------------------------------------------------------------
 
-/**
- * Dynamically load the ZatcaApiClient from the einvoice package.
- */
-async function loadZatcaApiClient(options: Record<string, unknown>): Promise<ZatcaApiClientLike> {
-  try {
-    const mod = await import('@contractor-ops/einvoice');
-    const ClientClass = (mod as Record<string, unknown>).ZatcaApiClient as
-      | (new (
-          opts: Record<string, unknown>,
-        ) => ZatcaApiClientLike)
-      | undefined;
+function resolveZatcaBaseUrl(environment: string): string {
+  return environment === 'production' ? ZATCA_PRODUCTION_URL : ZATCA_SANDBOX_URL;
+}
 
-    if (!ClientClass) {
-      throw new Error('ZatcaApiClient not found in einvoice exports');
-    }
+function createZatcaApiClient(args: {
+  environment: string;
+  certificate?: string;
+  secret?: string;
+}): ZatcaApiClient {
+  return new ZatcaApiClient({
+    baseUrl: resolveZatcaBaseUrl(args.environment),
+    binarySecurityToken: args.certificate ?? '',
+    secret: args.secret ?? '',
+  });
+}
 
-    return new ClientClass(options);
-  } catch {
-    throw new TRPCError({
-      code: 'INTERNAL_SERVER_ERROR',
-      message: ZATCA_API_CLIENT_UNAVAILABLE,
-    });
-  }
+function resolveDb(db: DbClient): DbClient {
+  return db;
 }
 
 /**
  * Load or create ZATCA IntegrationConnection for an organization.
  * Returns the connection record with parsed config.
  */
-async function getOrCreateConnection(organizationId: string, userId?: string) {
-  let connection = await defaultPrisma.integrationConnection.findFirst({
+async function getOrCreateConnection(organizationId: string, db: DbClient, userId?: string) {
+  const client = resolveDb(db);
+  let connection = await client.integrationConnection.findFirst({
     where: {
       organizationId,
       provider: 'ZATCA',
@@ -123,7 +106,7 @@ async function getOrCreateConnection(organizationId: string, userId?: string) {
       certificateStatus: 'none',
     };
 
-    connection = await defaultPrisma.integrationConnection.create({
+    connection = await client.integrationConnection.create({
       data: {
         organizationId,
         provider: 'ZATCA',
@@ -144,16 +127,18 @@ async function getOrCreateConnection(organizationId: string, userId?: string) {
 async function updateConnectionConfig(
   connectionId: string,
   update: Record<string, unknown>,
+  db: DbClient,
   statusOverride?: 'CONNECTED' | 'DISCONNECTED' | 'ERROR' | 'REAUTH_REQUIRED' | 'PENDING_MAPPING',
 ) {
-  const connection = await defaultPrisma.integrationConnection.findUniqueOrThrow({
+  const client = resolveDb(db);
+  const connection = await client.integrationConnection.findUniqueOrThrow({
     where: { id: connectionId },
   });
 
   const currentConfig = (connection.configJson as Record<string, unknown>) ?? {};
   const newConfig = { ...currentConfig, ...update };
 
-  await defaultPrisma.integrationConnection.update({
+  await client.integrationConnection.update({
     where: { id: connectionId },
     data: {
       configJson: newConfig as unknown as Prisma.InputJsonValue,
@@ -169,25 +154,24 @@ async function updateConnectionConfig(
 /**
  * Validate and save organization tax details for ZATCA onboarding.
  * Creates or updates the ZATCA IntegrationConnection.
- *
- * @param organizationId - Organization performing onboarding
- * @param taxDetails - Saudi tax details (VAT number, Arabic name, address)
- * @param userId - User performing the action (for audit trail)
  */
 export async function saveTaxDetails(
   organizationId: string,
   taxDetails: ZatcaTaxDetails,
-  userId?: string,
+  userId: string | undefined,
+  db: DbClient,
 ): Promise<void> {
-  // Validate input — Zod schema enforces VAT format
   const validated = zatcaTaxDetailsSchema.parse(taxDetails);
+  const connection = await getOrCreateConnection(organizationId, db, userId);
 
-  const connection = await getOrCreateConnection(organizationId, userId);
-
-  await updateConnectionConfig(connection.id, {
-    taxDetails: validated,
-    currentStep: 'csr_generation',
-  });
+  await updateConnectionConfig(
+    connection.id,
+    {
+      taxDetails: validated,
+      currentStep: 'csr_generation',
+    },
+    db,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -197,15 +181,12 @@ export async function saveTaxDetails(
 /**
  * Generate ECDSA P-256 CSR with ZATCA-required attributes.
  * Stores the private key in Infisical immediately after generation.
- * Returns the CSR PEM (public, safe for UI preview).
- *
- * SECURITY: Private key is stored in Infisical and never returned to the caller.
- *
- * @param organizationId - Organization performing onboarding
- * @returns CSR in PEM format for display/preview
  */
-export async function generateAndStoreCsr(organizationId: string): Promise<{ csrPem: string }> {
-  const connection = await getOrCreateConnection(organizationId);
+export async function generateAndStoreCsr(
+  organizationId: string,
+  db: DbClient,
+): Promise<{ csrPem: string }> {
+  const connection = await getOrCreateConnection(organizationId, db);
   const config = connection.configJson as Record<string, unknown> | null;
   const taxDetails = config?.taxDetails as ZatcaTaxDetails | undefined;
 
@@ -216,7 +197,6 @@ export async function generateAndStoreCsr(organizationId: string): Promise<{ csr
     });
   }
 
-  // Derive invoice types title code
   const invoiceTypes = taxDetails.invoiceTypes ?? [];
   let title: '0100' | '1000' | '1100' = '1100';
   if (invoiceTypes.includes('standard') && !invoiceTypes.includes('simplified')) {
@@ -225,7 +205,6 @@ export async function generateAndStoreCsr(organizationId: string): Promise<{ csr
     title = '1000';
   }
 
-  // Build CSR attributes from tax details
   const csrAttributes = {
     commonName: 'contractor-ops',
     orgName: taxDetails.orgNameArabic,
@@ -237,18 +216,19 @@ export async function generateAndStoreCsr(organizationId: string): Promise<{ csr
     businessCategory: 'Technology',
   };
 
-  // Generate CSR and key pair
   const { csr, privateKey } = generateZatcaCsr(csrAttributes);
 
-  // Store private key in Infisical immediately — never return to client
   const secretStore = createZatcaSecretStore(organizationId);
   await secretStore.set(ZATCA_SECRET_NAMES.PRIVATE_KEY, privateKey);
 
-  // Store CSR in configJson for the next step (CSR is public, safe to store)
-  await updateConnectionConfig(connection.id, {
-    currentStep: 'compliance_csid',
-    csrPem: csr,
-  });
+  await updateConnectionConfig(
+    connection.id,
+    {
+      currentStep: 'compliance_csid',
+      csrPem: csr,
+    },
+    db,
+  );
 
   return { csrPem: csr };
 }
@@ -260,14 +240,14 @@ export async function generateAndStoreCsr(organizationId: string): Promise<{ csr
 /**
  * Submit CSR to ZATCA for a compliance certificate.
  * Stores the compliance certificate and API secret in Infisical.
- *
- * @param organizationId - Organization performing onboarding
- * @returns The compliance request ID for later production certificate exchange
  */
 export async function requestComplianceCsid(
   organizationId: string,
+  otp: string,
+  audit: ZatcaOnboardingAuditContext,
 ): Promise<{ requestId: string }> {
-  const connection = await getOrCreateConnection(organizationId);
+  const db = audit.db;
+  const connection = await getOrCreateConnection(organizationId, db);
   const config = connection.configJson as Record<string, unknown> | null;
   const csrPem = config?.csrPem as string | undefined;
 
@@ -278,26 +258,44 @@ export async function requestComplianceCsid(
     });
   }
 
-  // Base64-encode the CSR PEM for ZATCA API
   const csrBase64 = Buffer.from(csrPem).toString('base64');
-
-  // Create API client with sandbox configuration
   const environment = (config?.environment as string) ?? 'sandbox';
-  const apiClient = await loadZatcaApiClient({ environment });
+  const apiClient = createZatcaApiClient({ environment });
 
-  // Submit CSR to ZATCA
-  const response = await apiClient.requestComplianceCsid(csrBase64);
+  const response = await apiClient.requestComplianceCsid(csrBase64, otp);
 
-  // Store compliance credentials in Infisical — never persist in DB
   const secretStore = createZatcaSecretStore(organizationId);
   await secretStore.set(ZATCA_SECRET_NAMES.X509_CERTIFICATE, response.binarySecurityToken);
   await secretStore.set(ZATCA_SECRET_NAMES.API_SECRET, response.secret);
   await secretStore.set(ZATCA_SECRET_NAMES.COMPLIANCE_REQUEST_ID, response.requestID);
 
-  // Update connection config (no secrets in configJson)
-  await updateConnectionConfig(connection.id, {
+  const configUpdate = {
     currentStep: 'compliance_checks',
     certificateStatus: 'compliance',
+  };
+
+  await audit.db.$transaction(async tx => {
+    const row = await tx.integrationConnection.findUniqueOrThrow({
+      where: { id: connection.id },
+    });
+    const currentConfig = (row.configJson as Record<string, unknown>) ?? {};
+    await tx.integrationConnection.update({
+      where: { id: connection.id },
+      data: {
+        configJson: { ...currentConfig, ...configUpdate } as unknown as Prisma.InputJsonValue,
+      },
+    });
+    await writeAuditLog({
+      tx,
+      organizationId,
+      actorType: 'USER',
+      actorId: audit.actorId,
+      actorName: audit.actorName,
+      action: 'zatca.compliance_csid_requested',
+      resourceType: 'ORGANIZATION',
+      resourceId: organizationId,
+      metadata: { requestId: response.requestID, connectionId: connection.id },
+    });
   });
 
   return { requestId: response.requestID };
@@ -310,14 +308,12 @@ export async function requestComplianceCsid(
 /**
  * Submit 6 test invoices to ZATCA compliance endpoint.
  * All must pass (CLEARED for standard, REPORTED for simplified) to proceed.
- *
- * @param organizationId - Organization performing onboarding
- * @returns Array of results for each test invoice
  */
 export async function runComplianceChecks(
   organizationId: string,
+  db: DbClient,
 ): Promise<ComplianceCheckResult[]> {
-  const connection = await getOrCreateConnection(organizationId);
+  const connection = await getOrCreateConnection(organizationId, db);
   const config = connection.configJson as Record<string, unknown> | null;
   const taxDetails = config?.taxDetails as ZatcaTaxDetails | undefined;
 
@@ -328,7 +324,6 @@ export async function runComplianceChecks(
     });
   }
 
-  // Load compliance credentials from Infisical
   const secretStore = createZatcaSecretStore(organizationId);
   const [certificate, apiSecret] = await Promise.all([
     secretStore.get(ZATCA_SECRET_NAMES.X509_CERTIFICATE),
@@ -343,13 +338,8 @@ export async function runComplianceChecks(
   }
 
   const environment = (config?.environment as string) ?? 'sandbox';
-  const apiClient = await loadZatcaApiClient({
-    environment,
-    certificate,
-    secret: apiSecret,
-  });
+  const apiClient = createZatcaApiClient({ environment, certificate, secret: apiSecret });
 
-  // Build 6 compliance test invoices
   const testInvoices = buildComplianceTestInvoices(taxDetails);
   const results: ComplianceCheckResult[] = [];
 
@@ -359,22 +349,24 @@ export async function runComplianceChecks(
     const invoiceSubtype = ext.invoiceSubtype as string;
 
     try {
-      // Generate XML
       const xml = await generateZatcaXml(invoice);
-
-      // Compute hash
-      const hash = nodeCrypto.createHash('sha256').update(xml, 'utf-8').digest('base64');
-
+      const { base64: invoiceHash } = computeZatcaInvoiceHash(xml);
       const uuid = ext.uuid as string;
 
-      // Submit to ZATCA compliance endpoint
-      const response = await apiClient.submitComplianceInvoice(hash, uuid, xml);
+      const response = await apiClient.submitComplianceInvoice({
+        invoiceHash,
+        uuid,
+        invoice: Buffer.from(xml, 'utf8').toString('base64'),
+      });
+
+      const status =
+        response.clearanceStatus ?? response.reportingStatus ?? response.validationResults?.status;
 
       results.push({
         type: `${invoiceType} ${invoice.invoiceTypeCode}`,
         invoiceTypeCode: invoice.invoiceTypeCode,
         subtype: invoiceSubtype,
-        status: (response.validationResults?.status as ComplianceCheckResult['status']) ?? 'ERROR',
+        status: (status as ComplianceCheckResult['status']) ?? 'ERROR',
         message: response.validationResults?.warningMessages?.[0]?.message,
       });
     } catch (error) {
@@ -389,13 +381,16 @@ export async function runComplianceChecks(
     }
   }
 
-  // Check if all passed
   const allPassed = results.every(r => r.status === 'CLEARED' || r.status === 'REPORTED');
 
   if (allPassed) {
-    await updateConnectionConfig(connection.id, {
-      currentStep: 'production_certificate',
-    });
+    await updateConnectionConfig(
+      connection.id,
+      {
+        currentStep: 'production_certificate',
+      },
+      db,
+    );
   }
 
   return results;
@@ -408,14 +403,15 @@ export async function runComplianceChecks(
 /**
  * Exchange compliance CSID for production certificate.
  * Overwrites compliance credentials with production ones in Infisical.
- *
- * @param organizationId - Organization performing onboarding
  */
-export async function exchangeProductionCertificate(organizationId: string): Promise<void> {
-  const connection = await getOrCreateConnection(organizationId);
+export async function exchangeProductionCertificate(
+  organizationId: string,
+  audit: ZatcaOnboardingAuditContext,
+): Promise<void> {
+  const db = audit.db;
+  const connection = await getOrCreateConnection(organizationId, db);
   const config = connection.configJson as Record<string, unknown> | null;
 
-  // Load compliance requestId from Infisical
   const secretStore = createZatcaSecretStore(organizationId);
   const [requestId, certificate, apiSecret] = await Promise.all([
     secretStore.get(ZATCA_SECRET_NAMES.COMPLIANCE_REQUEST_ID),
@@ -431,25 +427,17 @@ export async function exchangeProductionCertificate(organizationId: string): Pro
   }
 
   const environment = (config?.environment as string) ?? 'sandbox';
-  const apiClient = await loadZatcaApiClient({
-    environment,
-    certificate,
-    secret: apiSecret,
-  });
+  const apiClient = createZatcaApiClient({ environment, certificate, secret: apiSecret });
 
-  // Exchange for production certificate
   const response = await apiClient.requestProductionCsid(requestId);
 
-  // Overwrite compliance credentials with production ones in Infisical
   await Promise.all([
     secretStore.set(ZATCA_SECRET_NAMES.X509_CERTIFICATE, response.binarySecurityToken),
     secretStore.set(ZATCA_SECRET_NAMES.API_SECRET, response.secret),
   ]);
 
-  // Clean up compliance request ID
   await secretStore.delete(ZATCA_SECRET_NAMES.COMPLIANCE_REQUEST_ID);
 
-  // Update connection to CONNECTED + production
   const productionConfig = {
     ...(config ?? {}),
     currentStep: 'production_certificate',
@@ -457,13 +445,26 @@ export async function exchangeProductionCertificate(organizationId: string): Pro
     environment: 'production',
   };
 
-  await defaultPrisma.integrationConnection.update({
-    where: { id: connection.id },
-    data: {
-      status: 'CONNECTED',
-      connectedAt: new Date(),
-      configJson: productionConfig as unknown as Prisma.InputJsonValue,
-    },
+  await audit.db.$transaction(async tx => {
+    await tx.integrationConnection.update({
+      where: { id: connection.id },
+      data: {
+        status: 'CONNECTED',
+        connectedAt: new Date(),
+        configJson: productionConfig as unknown as Prisma.InputJsonValue,
+      },
+    });
+    await writeAuditLog({
+      tx,
+      organizationId,
+      actorType: 'USER',
+      actorId: audit.actorId,
+      actorName: audit.actorName,
+      action: 'zatca.production_certificate_exchanged',
+      resourceType: 'ORGANIZATION',
+      resourceId: organizationId,
+      metadata: { connectionId: connection.id, environment: 'production' },
+    });
   });
 }
 
@@ -473,12 +474,12 @@ export async function exchangeProductionCertificate(organizationId: string): Pro
 
 /**
  * Get the current onboarding state for an organization's ZATCA connection.
- *
- * @param organizationId - Organization to query
- * @returns Current onboarding step and progress flags
  */
-export async function getOnboardingState(organizationId: string): Promise<ZatcaOnboardingState> {
-  const connection = await defaultPrisma.integrationConnection.findFirst({
+export async function getOnboardingState(
+  organizationId: string,
+  db: DbClient,
+): Promise<ZatcaOnboardingState> {
+  const connection = await db.integrationConnection.findFirst({
     where: {
       organizationId,
       provider: 'ZATCA',

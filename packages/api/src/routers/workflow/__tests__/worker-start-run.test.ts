@@ -1,15 +1,11 @@
-// Worker-keyed WorkflowRun start — Wave-0 RED scaffold (EMP-OFF-02).
+// Worker-keyed WorkflowRun start.
 //
-// Pins the contract that Plan 03 turns GREEN: a single exported
+// Pins the contract: a single exported
 // `startWorkflowRun(tx, input, { organizationId, actorUserId })` helper owns the
 // ONE `tx.workflowRun.create`, and an `{ subjectType: 'EMPLOYEE', workerId }`
 // input instantiates a run through the reused v1.0 engine with
 // `entityType='EMPLOYEE'`, `entityId=worker.id`, `workerId=worker.id`, and
 // `contractorId=null`. The contractor path stays byte-identical (regression).
-//
-// Terminal-RED today because `startWorkflowRun` is not yet exported from
-// `workflow-execution-runs` — the import resolves to `undefined` and calling it
-// throws. That is the expected Wave-0 state.
 
 import { describe, expect, it, vi } from 'vitest';
 

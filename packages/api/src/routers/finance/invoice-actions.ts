@@ -9,6 +9,7 @@ import * as E from '../../errors';
 import { router } from '../../init';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
+import { writeAuditLog } from '../../services/audit-writer';
 import { CacheKeys, invalidateByPrefix } from '../../services/cache';
 import { deleteCalendarEvent } from '../../services/calendar-event-service';
 
@@ -88,12 +89,34 @@ export const invoiceActionsRouter = router({
             organizationId: ctx.organizationId,
             resourceType: 'INVOICE',
             resourceId: input.id,
-            status: { in: ['NOT_STARTED', 'PENDING'] },
+            status: { in: ['NOT_STARTED', 'PENDING', 'PENDING_COMPLIANCE'] },
           },
           data: {
             status: 'CANCELLED',
             completedAt: new Date(),
             cancelledAt: new Date(),
+          },
+        });
+
+        await writeAuditLog({
+          tx,
+          organizationId: ctx.organizationId,
+          actorType: 'USER',
+          actorId: ctx.user?.id,
+          actorName: ctx.user?.name,
+          action: 'invoice.void',
+          resourceType: 'INVOICE',
+          resourceId: input.id,
+          resourceName: invoice.invoiceNumber,
+          oldValues: {
+            status: invoice.status,
+            paymentStatus: invoice.paymentStatus,
+            approvalStatus: invoice.approvalStatus,
+          },
+          newValues: {
+            status: 'VOID',
+            paymentStatus: 'NOT_READY',
+            approvalStatus: 'CANCELLED',
           },
         });
 
@@ -133,15 +156,72 @@ export const invoiceActionsRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const invoice = await ctx.db.invoice.update({
+      const existing = await ctx.db.invoice.findFirst({
         where: {
           id: input.invoiceId,
           organizationId: ctx.organizationId,
         },
-        data: {
-          isReverseCharge: input.isReverseCharge,
-          reverseChargeOverride: input.isReverseCharge,
+        select: {
+          id: true,
+          invoiceNumber: true,
+          status: true,
+          paymentStatus: true,
+          isReverseCharge: true,
+          reverseChargeOverride: true,
         },
+      });
+
+      if (!existing) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: E.INVOICE_NOT_FOUND,
+        });
+      }
+
+      if (
+        existing.status === 'VOID' ||
+        existing.paymentStatus === 'PAID' ||
+        existing.paymentStatus === 'IN_RUN'
+      ) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: E.INVOICE_VOID_NOT_ALLOWED,
+        });
+      }
+
+      const invoice = await ctx.db.$transaction(async tx => {
+        const updated = await tx.invoice.update({
+          where: {
+            id: input.invoiceId,
+            organizationId: ctx.organizationId,
+          },
+          data: {
+            isReverseCharge: input.isReverseCharge,
+            reverseChargeOverride: input.isReverseCharge,
+          },
+        });
+
+        await writeAuditLog({
+          tx,
+          organizationId: ctx.organizationId,
+          actorType: 'USER',
+          actorId: ctx.user?.id,
+          actorName: ctx.user?.name,
+          action: 'invoice.reverse-charge.toggle',
+          resourceType: 'INVOICE',
+          resourceId: existing.id,
+          resourceName: existing.invoiceNumber,
+          oldValues: {
+            isReverseCharge: existing.isReverseCharge,
+            reverseChargeOverride: existing.reverseChargeOverride,
+          },
+          newValues: {
+            isReverseCharge: input.isReverseCharge,
+            reverseChargeOverride: input.isReverseCharge,
+          },
+        });
+
+        return updated;
       });
       return invoice;
     }),

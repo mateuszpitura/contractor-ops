@@ -47,7 +47,7 @@ export interface ZatcaApiClientConfig {
 }
 
 export interface ZatcaSubmissionPayload {
-  /** SHA-256 hash of the signed invoice XML (hex) */
+  /** SHA-256 hash of the canonicalized invoice XML (base64) */
   invoiceHash: string;
   /** UUID v4 for this invoice */
   uuid: string;

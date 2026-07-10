@@ -9,13 +9,21 @@
     "id": "DE123456789",
     "name": "Acme Beratung GmbH",
     "address": "Hauptstraße 1, 10115 Berlin",
-    "country": "DE"
+    "country": "DE",
+    "additionalIds": {
+      "contactName": "Rechnungswesen",
+      "phone": "+49 30 1234567",
+      "email": "billing@acme.de"
+    }
   },
   "customer": {
     "id": "DE987654321",
     "name": "Bundesamt für Beispiel",
     "address": "Friedrichstraße 50, 10117 Berlin",
-    "country": "DE"
+    "country": "DE",
+    "additionalIds": {
+      "email": "buyer@bundesamt.de"
+    }
   },
   "lines": [
     {
@@ -44,7 +52,7 @@
   "paymentMeans": {
     "code": "58",
     "dueDate": "2026-05-14",
-    "bankAccount": "DE89370400440532013000",
+    "bankAccount": "DE02120300000000202051",
     "bankName": "Commerzbank",
     "paymentReference": "INV-2026-NOSKONTO"
   }

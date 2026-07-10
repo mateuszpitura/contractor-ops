@@ -65,19 +65,30 @@ vi.mock('@contractor-ops/api/services/peppol-orchestrator', () => ({
   },
 }));
 
-vi.mock('@contractor-ops/db', () => ({
-  prisma: {
+vi.mock('@contractor-ops/db', () => {
+  const client = {
     integrationConnection: {
       findFirst: (...a: unknown[]) =>
         (mockConnectionFindFirst as (...a: unknown[]) => unknown)(...a),
       update: vi.fn(async () => ({})),
     },
     peppolParticipant: { findMany: vi.fn(async () => []) },
-  },
-  prismaRaw: {},
-  getRegionalClient: () => ({}),
-  SUPPORTED_REGIONS: ['EU', 'ME', 'US'],
-}));
+  };
+  return {
+    prisma: client,
+    prismaRaw: {},
+    getRegionalClient: () => client,
+    tryGetRegionalClient: () => client,
+    SUPPORTED_REGIONS: ['EU'],
+    findAcrossRegions: async <T>(
+      finder: (dbClient: typeof client, region: string) => Promise<T | null>,
+    ) => {
+      const result = await finder(client, 'EU');
+      return result == null ? null : { result, region: 'EU', client };
+    },
+    resolveOrganizationRegion: async () => ({ result: 'EU', region: 'EU', client }),
+  };
+});
 
 vi.mock('@contractor-ops/integrations', async importOriginal => {
   const actual = await importOriginal<typeof import('@contractor-ops/integrations')>();

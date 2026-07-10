@@ -6,14 +6,15 @@ import * as E from '../../errors';
 import { router } from '../../init';
 import { clear, complete, reserve } from '../../lib/idempotency';
 import { requirePermission } from '../../middleware/rbac';
-import { assertUsExpansionEnabled } from '../../middleware/require-us-expansion-flag';
-import { tenantProcedure } from '../../middleware/tenant';
+import { usExpansionProcedure } from '../../middleware/us-expansion-procedures';
 import { writeAuditLog } from '../../services/audit-writer';
 import type { BatchRecipient, SettledPayment } from '../../services/form-1099-nec.service';
 import {
   buildForm1099NecSnapshot,
   fileCorrection,
   generateBatch,
+  resolveW9TinMismatch,
+  sumBackupWithholdingUsdMinor,
 } from '../../services/form-1099-nec.service';
 import { parseIrisAck } from '../../services/iris-ack-parser';
 import { buildStateFilingOutput } from '../../services/state-filing-output';
@@ -124,12 +125,10 @@ export const tax1099Router = router({
    * recipient's legal name and TIN last-4 for the staff review surface. Scoped
    * to the caller's org; the full TIN is never selected.
    */
-  list: tenantProcedure
+  list: usExpansionProcedure
     .use(requirePermission({ contractor: ['read'] }))
     .input(z.object({ taxYear: z.number().int().min(2020).max(2100).optional() }).strict())
     .query(async ({ ctx, input }) => {
-      assertUsExpansionEnabled(ctx.organizationId, ctx.region);
-
       return ctx.db.form1099Nec.findMany({
         where: {
           organizationId: ctx.organizationId,
@@ -161,12 +160,10 @@ export const tax1099Router = router({
    * audited (delegated to the service). Review-before-file — this never
    * transmits.
    */
-  generateBatch: tenantProcedure
+  generateBatch: usExpansionProcedure
     .use(requirePermission({ contractor: ['update'] }))
     .input(taxYearInput)
     .mutation(async ({ ctx, input }) => {
-      assertUsExpansionEnabled(ctx.organizationId, ctx.region);
-
       const org = await ctx.db.organization.findUnique({
         where: { id: ctx.organizationId },
         select: { name: true, legalName: true },
@@ -180,9 +177,10 @@ export const tax1099Router = router({
         where: {
           organizationId: ctx.organizationId,
           formType: 'W9',
-          supersededById: null,
+          status: 'ACTIVE',
         },
         select: {
+          snapshotJson: true,
           contractor: {
             select: { id: true, legalName: true, ssnLast4: true, backupWithholdingFlagged: true },
           },
@@ -201,7 +199,10 @@ export const tax1099Router = router({
             paymentRun: { completedAt: { gte: from, lt: to } },
           },
           select: {
+            grossAmountMinor: true,
             amountMinor: true,
+            whtAmountMinor: true,
+            whtRate: true,
             currency: true,
             paymentRun: { select: { completedAt: true } },
           },
@@ -214,9 +215,15 @@ export const tax1099Router = router({
           recipientId: contractor.id,
           payerOrgId: ctx.organizationId,
           paymentDate: item.paymentRun.completedAt ?? from,
-          amountMinor: item.amountMinor,
+          amountMinor: item.grossAmountMinor ?? item.amountMinor,
           currency: item.currency,
         }));
+
+        const recordedBackupWithholdingMinor = await sumBackupWithholdingUsdMinor(ctx.db, items);
+        const tinMismatch = resolveW9TinMismatch({
+          contractorSsnLast4: contractor.ssnLast4,
+          w9SnapshotJson: submission.snapshotJson,
+        });
 
         recipients.push({
           recipientId: contractor.id,
@@ -225,8 +232,8 @@ export const tax1099Router = router({
           recipientTinLast4: contractor.ssnLast4 ?? '',
           payments,
           backupWithholdingFlagged: contractor.backupWithholdingFlagged ?? false,
-          tinMismatch: false,
-          recordedBackupWithholdingMinor: 0,
+          tinMismatch,
+          recordedBackupWithholdingMinor,
           cfsfStateCode: null,
         });
       }
@@ -255,12 +262,10 @@ export const tax1099Router = router({
    * is placed the report is BUNDLE_UNAVAILABLE (validity unproven) — nothing
    * files on that outcome.
    */
-  buildAndValidateXml: tenantProcedure
+  buildAndValidateXml: usExpansionProcedure
     .use(requirePermission({ contractor: ['read'] }))
     .input(taxYearInput)
     .query(async ({ ctx, input }) => {
-      assertUsExpansionEnabled(ctx.organizationId, ctx.region);
-
       const assembled = await assembleIrisInput(ctx.db, ctx.organizationId, input.taxYear);
       const result = await createTaxFilingTransmitter('manual').transmit(assembled);
 
@@ -279,12 +284,10 @@ export const tax1099Router = router({
    * once per (org, tax year) via idempotency so a retried download does not
    * create duplicate submission rows. Audited.
    */
-  downloadValidatedXml: tenantProcedure
+  downloadValidatedXml: usExpansionProcedure
     .use(requirePermission({ contractor: ['update'] }))
     .input(taxYearInput)
     .mutation(async ({ ctx, input }) => {
-      assertUsExpansionEnabled(ctx.organizationId, ctx.region);
-
       const assembled = await assembleIrisInput(ctx.db, ctx.organizationId, input.taxYear);
       const result = await createTaxFilingTransmitter('manual').transmit(assembled);
 
@@ -345,7 +348,7 @@ export const tax1099Router = router({
    * status, and append an immutable IrisAck row with the Error Information Group.
    * The ack file is untrusted — `parseIrisAck` is XXE-safe and never `as`-casts.
    */
-  uploadAck: tenantProcedure
+  uploadAck: usExpansionProcedure
     .use(requirePermission({ contractor: ['update'] }))
     .input(
       z
@@ -357,8 +360,6 @@ export const tax1099Router = router({
         .strict(),
     )
     .mutation(async ({ ctx, input }) => {
-      assertUsExpansionEnabled(ctx.organizationId, ctx.region);
-
       let parsed: ReturnType<typeof parseIrisAck>;
       try {
         parsed = parseIrisAck(input.ackXml);
@@ -370,6 +371,7 @@ export const tax1099Router = router({
         where: {
           organizationId: ctx.organizationId,
           taxYear: input.taxYear,
+          schemaVersionNum: IRIS_SCHEMA_VERSION.versionNum,
           ...(input.submissionId ? { id: input.submissionId } : {}),
         },
         orderBy: [{ createdAt: 'desc' }],
@@ -428,12 +430,10 @@ export const tax1099Router = router({
    * TIN-mismatch / W-9-flag population. Amber advisory only: this is a review
    * surface, never a gate on generation.
    */
-  listTinMismatches: tenantProcedure
+  listTinMismatches: usExpansionProcedure
     .use(requirePermission({ contractor: ['read'] }))
     .input(taxYearInput)
     .query(async ({ ctx, input }) => {
-      assertUsExpansionEnabled(ctx.organizationId, ctx.region);
-
       const rows = await ctx.db.form1099Nec.findMany({
         where: {
           organizationId: ctx.organizationId,
@@ -461,7 +461,7 @@ export const tax1099Router = router({
     }),
 
   /** Escalate a TIN mismatch for admin follow-up (advisory — audit only). */
-  escalateMismatch: tenantProcedure
+  escalateMismatch: usExpansionProcedure
     .use(requirePermission({ contractor: ['update'] }))
     .input(
       z
@@ -473,8 +473,6 @@ export const tax1099Router = router({
         .strict(),
     )
     .mutation(async ({ ctx, input }) => {
-      assertUsExpansionEnabled(ctx.organizationId, ctx.region);
-
       const contractor = await ctx.db.contractor.findFirst({
         where: { id: input.recipientId, organizationId: ctx.organizationId },
         select: { id: true },
@@ -497,7 +495,7 @@ export const tax1099Router = router({
     }),
 
   /** Resolve a TIN mismatch (advisory — audit only). */
-  resolveMismatch: tenantProcedure
+  resolveMismatch: usExpansionProcedure
     .use(requirePermission({ contractor: ['update'] }))
     .input(
       z
@@ -509,8 +507,6 @@ export const tax1099Router = router({
         .strict(),
     )
     .mutation(async ({ ctx, input }) => {
-      assertUsExpansionEnabled(ctx.organizationId, ctx.region);
-
       const contractor = await ctx.db.contractor.findFirst({
         where: { id: input.recipientId, organizationId: ctx.organizationId },
         select: { id: true },
@@ -537,12 +533,10 @@ export const tax1099Router = router({
    * supersede the prior ACTIVE row, and insert the new ACTIVE row in one audited
    * transaction. The filed row is never mutated in place.
    */
-  fileCorrection: tenantProcedure
+  fileCorrection: usExpansionProcedure
     .use(requirePermission({ contractor: ['update'] }))
     .input(z.object({ formId: z.string().min(1), reason: z.string().min(1).max(500) }).strict())
     .mutation(async ({ ctx, input }) => {
-      assertUsExpansionEnabled(ctx.organizationId, ctx.region);
-
       const form = await ctx.db.form1099Nec.findFirst({
         where: { id: input.formId, organizationId: ctx.organizationId, status: 'ACTIVE' },
         select: {
@@ -603,7 +597,7 @@ export const tax1099Router = router({
    * auto-forwarded via the IRIS B-record (no separate file); a non-CFSF /
    * direct-filing state gets a downloadable CSV + manual-portal guidance.
    */
-  getStateFilingOutput: tenantProcedure
+  getStateFilingOutput: usExpansionProcedure
     .use(requirePermission({ contractor: ['read'] }))
     .input(
       z
@@ -614,8 +608,6 @@ export const tax1099Router = router({
         .strict(),
     )
     .query(async ({ ctx, input }) => {
-      assertUsExpansionEnabled(ctx.organizationId, ctx.region);
-
       const config = await ctx.db.stateFilingConfig.findUnique({
         where: { stateCode_taxYear: { stateCode: input.stateCode, taxYear: input.taxYear } },
         select: {

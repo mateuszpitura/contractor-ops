@@ -319,6 +319,8 @@
       "!**/dist",
       "!**/.turbo",
       "!**/.claude",
+      "!**/.codex",
+      "!**/.impeccable",
       "!**/.cursor",
       "!**/.agents",
       "!**/.github",

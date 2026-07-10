@@ -12,12 +12,16 @@ import {
 } from '../answers.js';
 
 describe('yesNoAnswerSchema', () => {
-  it('accepts "yes"', () => {
-    expect(yesNoAnswerSchema.parse('yes')).toBe('yes');
+  it('accepts bare "yes" and normalises to envelope', () => {
+    expect(yesNoAnswerSchema.parse('yes')).toEqual({ value: 'yes' });
   });
 
-  it('accepts "no"', () => {
-    expect(yesNoAnswerSchema.parse('no')).toBe('no');
+  it('accepts bare "no" and normalises to envelope', () => {
+    expect(yesNoAnswerSchema.parse('no')).toEqual({ value: 'no' });
+  });
+
+  it('accepts canonical envelope', () => {
+    expect(yesNoAnswerSchema.parse({ value: 'no' })).toEqual({ value: 'no' });
   });
 
   it('rejects other strings', () => {
@@ -39,7 +43,11 @@ describe('yesNoAnswerSchema', () => {
 
 describe('likert5AnswerSchema', () => {
   it.each([1, 2, 3, 4, 5])('accepts integer %d', val => {
-    expect(likert5AnswerSchema.parse(val)).toBe(val);
+    expect(likert5AnswerSchema.parse(val)).toEqual({ value: val });
+  });
+
+  it('accepts canonical envelope', () => {
+    expect(likert5AnswerSchema.parse({ value: 3 })).toEqual({ value: 3 });
   });
 
   it('rejects 0 (below min)', () => {
@@ -100,15 +108,19 @@ describe('score03AnswerSchema', () => {
 
 describe('billingRatioSchema', () => {
   it('accepts 0 (lower bound)', () => {
-    expect(billingRatioSchema.parse(0)).toBe(0);
+    expect(billingRatioSchema.parse(0)).toEqual({ value: 0 });
   });
 
   it('accepts 100 (upper bound)', () => {
-    expect(billingRatioSchema.parse(100)).toBe(100);
+    expect(billingRatioSchema.parse(100)).toEqual({ value: 100 });
   });
 
   it('accepts 50 (mid value)', () => {
-    expect(billingRatioSchema.parse(50)).toBe(50);
+    expect(billingRatioSchema.parse(50)).toEqual({ value: 50 });
+  });
+
+  it('accepts canonical envelope from DE wizard autosave', () => {
+    expect(billingRatioSchema.parse({ value: 84 })).toEqual({ value: 84 });
   });
 
   it('rejects -1', () => {
@@ -130,17 +142,17 @@ describe('billingRatioSchema', () => {
 
 describe('rationaleSchema', () => {
   it('accepts empty string', () => {
-    expect(rationaleSchema.parse('')).toBe('');
+    expect(rationaleSchema.parse('')).toEqual({ value: '' });
   });
 
   it('accepts string within 1000 chars', () => {
     const text = 'Valid rationale text for assessment.';
-    expect(rationaleSchema.parse(text)).toBe(text);
+    expect(rationaleSchema.parse(text)).toEqual({ value: text });
   });
 
   it('accepts exactly 1000 chars', () => {
     const text = 'a'.repeat(1000);
-    expect(rationaleSchema.parse(text)).toBe(text);
+    expect(rationaleSchema.parse(text)).toEqual({ value: text });
   });
 
   it('rejects string exceeding 1000 chars', () => {
@@ -156,13 +168,13 @@ describe('rationaleSchema', () => {
 describe('getAnswerSchemaForType', () => {
   it('returns yesNoAnswerSchema for "yes-no"', () => {
     const schema = getAnswerSchemaForType('yes-no');
-    expect(schema.parse('yes')).toBe('yes');
+    expect(schema.parse('yes')).toEqual({ value: 'yes' });
     expect(() => schema.parse('maybe')).toThrow();
   });
 
   it('returns likert5AnswerSchema for "likert-5"', () => {
     const schema = getAnswerSchemaForType('likert-5');
-    expect(schema.parse(3)).toBe(3);
+    expect(schema.parse(3)).toEqual({ value: 3 });
     expect(() => schema.parse(0)).toThrow();
   });
 
@@ -173,11 +185,12 @@ describe('getAnswerSchemaForType', () => {
 
   it('returns billingRatioSchema for "billing-ratio"', () => {
     const schema = getAnswerSchemaForType('billing-ratio');
-    expect(schema.parse(75)).toBe(75);
+    expect(schema.parse(75)).toEqual({ value: 75 });
+    expect(schema.parse({ value: 75 })).toEqual({ value: 75 });
   });
 
   it('returns rationaleSchema for "rationale"', () => {
     const schema = getAnswerSchemaForType('rationale');
-    expect(schema.parse('some text')).toBe('some text');
+    expect(schema.parse('some text')).toEqual({ value: 'some text' });
   });
 });

@@ -1,3 +1,4 @@
+import { QueryErrorPanel } from '@contractor-ops/ui';
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
@@ -76,6 +77,21 @@ export function CountryComplianceLoadingCard() {
     <Card>
       <CardContent className="flex items-center justify-center py-6">
         <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+      </CardContent>
+    </Card>
+  );
+}
+
+export function CountryComplianceErrorCard({ onRetry }: { onRetry: () => void }) {
+  const t = useTranslations('Contractors.countryCompliance');
+  return (
+    <Card>
+      <CardContent className="py-6">
+        <QueryErrorPanel
+          message={t('error.message')}
+          retryLabel={t('error.retry')}
+          onRetry={onRetry}
+        />
       </CardContent>
     </Card>
   );
@@ -406,6 +422,10 @@ export function CountryComplianceSectionContainer({
 
   if (compliance.isLoading) {
     return <CountryComplianceLoadingCard />;
+  }
+
+  if (compliance.configQuery.isError) {
+    return <CountryComplianceErrorCard onRetry={() => void compliance.configQuery.refetch()} />;
   }
 
   const config = compliance.configQuery.data;

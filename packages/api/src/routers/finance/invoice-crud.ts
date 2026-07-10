@@ -18,6 +18,7 @@ import { findOrThrow } from '../../lib/find-or-throw';
 import type { TenantDbTx } from '../../lib/tenant-db';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
+import { writeAuditLog } from '../../services/audit-writer';
 import { CacheKeys, invalidateByPrefix } from '../../services/cache';
 import { computeDuplicateCheckHash } from '../../services/invoice-matching';
 import type { OutboxTransactionalClient } from '../../services/outbox';
@@ -26,7 +27,9 @@ import { sanitizeStrings } from '../../services/sanitize';
 import type { ContractorTaxSnapshot } from './invoice-shared';
 import {
   coerceInvoiceDateFields,
+  enqueueInvoiceReceivedNotification,
   getFinanceTeamUserIds,
+  linkDocumentsToInvoice,
   recomputeDuplicateHash,
   resolveEffectiveVatRate,
   resolveReverseCharge,
@@ -34,80 +37,6 @@ import {
   validateInvoiceAmounts,
   validateServicePeriod,
 } from './invoice-shared';
-
-/**
- * Link each source document to a freshly-created invoice: an
- * `InvoiceFile` row (SOURCE_ORIGINAL) plus a `DocumentLink` (PRIMARY/INVOICE).
- * No-op when there are no documents. Runs inside the caller's transaction.
- */
-async function linkDocumentsToInvoice(
-  tx: TenantDbTx,
-  organizationId: string,
-  invoiceId: string,
-  documentIds: readonly string[],
-): Promise<void> {
-  if (documentIds.length === 0) return;
-
-  await tx.invoiceFile.createMany({
-    data: documentIds.map(documentId => ({
-      organizationId,
-      invoiceId,
-      documentId,
-      role: 'SOURCE_ORIGINAL' as const,
-    })),
-  });
-
-  await tx.documentLink.createMany({
-    data: documentIds.map(documentId => ({
-      organizationId,
-      documentId,
-      entityType: 'INVOICE' as const,
-      entityId: invoiceId,
-      linkRole: 'PRIMARY' as const,
-    })),
-  });
-}
-
-/**
- * Enqueue the INVOICE_RECEIVED notification for the finance team INSIDE the
- * caller's transaction, so it commits atomically with the invoice insert and
- * is delivered exactly-once by the outbox drain. No-op with no recipients.
- */
-async function enqueueInvoiceReceivedNotification(
-  tx: OutboxTransactionalClient,
-  params: {
-    organizationId: string;
-    recipientUserIds: string[];
-    invoiceId: string;
-    invoiceNumber: string;
-    sellerName: string | null;
-    totalMinor: number;
-    currency: string;
-  },
-): Promise<void> {
-  if (params.recipientUserIds.length === 0) return;
-
-  const amount = (params.totalMinor / 100).toFixed(2);
-  await enqueueNotificationOutboxEvent({
-    tx,
-    event: {
-      organizationId: params.organizationId,
-      type: 'INVOICE_RECEIVED',
-      recipientUserIds: params.recipientUserIds,
-      title: `New invoice received: ${params.invoiceNumber}`,
-      body: `From ${params.sellerName ?? 'Unknown'} - ${amount} ${params.currency}`,
-      entityType: 'INVOICE',
-      entityId: params.invoiceId,
-      metadata: {
-        invoiceNumber: params.invoiceNumber,
-        contractorName: params.sellerName ?? 'Unknown',
-        amount,
-        currency: params.currency,
-      },
-    },
-    dedupKey: `invoice-received:${params.invoiceId}`,
-  });
-}
 
 export const invoiceCrudRouter = router({
   /**
@@ -130,21 +59,6 @@ export const invoiceCrudRouter = router({
           invoiceData.sellerTaxId,
           invoiceData.totalMinor,
         );
-
-        const existing = await ctx.db.invoice.findFirst({
-          where: {
-            organizationId: ctx.organizationId,
-            duplicateCheckHash,
-          },
-          select: { id: true, invoiceNumber: true },
-        });
-
-        if (existing) {
-          throw new TRPCError({
-            code: 'CONFLICT',
-            message: E.INVOICE_DUPLICATE,
-          });
-        }
       }
 
       // ---------------------------------------------------------------------
@@ -154,8 +68,10 @@ export const invoiceCrudRouter = router({
       // ---------------------------------------------------------------------
       const org = await ctx.db.organization.findUniqueOrThrow({
         where: { id: ctx.organizationId },
-        select: { countryCode: true, isKleinunternehmer: true },
+        select: { countryCode: true, isKleinunternehmer: true, settingsJson: true },
       });
+      const settingsJson = (org.settingsJson as Record<string, unknown> | null) ?? {};
+      const orgBuyerTaxId = settingsJson.taxId as string | undefined;
 
       let contractor: ContractorTaxSnapshot | null = null;
       if (invoiceData.contractorId) {
@@ -189,12 +105,14 @@ export const invoiceCrudRouter = router({
         org.countryCode,
         invoiceData.serviceType,
         invoiceData.reverseChargeOverride,
+        orgBuyerTaxId,
       );
       const rcShouldApply = resolveReverseCharge(
         contractor,
         org.countryCode,
         invoiceData.serviceType,
         undefined,
+        orgBuyerTaxId,
       );
 
       const effectiveVatRate = await resolveEffectiveVatRate(
@@ -209,84 +127,137 @@ export const invoiceCrudRouter = router({
       // row, so resolve them before opening the tx; the enqueue happens inside.
       const financeUserIds = await getFinanceTeamUserIds(ctx.db, ctx.organizationId);
 
-      const invoice = await ctx.db.$transaction(async tx => {
-        // Create invoice record
-        const inv = await tx.invoice.create({
-          data: {
-            organizationId: ctx.organizationId,
-            invoiceNumber: invoiceData.invoiceNumber,
-            issueDate: new Date(invoiceData.issueDate),
-            dueDate: new Date(invoiceData.dueDate),
-            servicePeriodStart: invoiceData.servicePeriodStart
-              ? new Date(invoiceData.servicePeriodStart)
-              : null,
-            servicePeriodEnd: invoiceData.servicePeriodEnd
-              ? new Date(invoiceData.servicePeriodEnd)
-              : null,
-            currency: invoiceData.currency,
-            subtotalMinor: invoiceData.subtotalMinor,
-            vatRate: effectiveVatRate,
-            vatAmountMinor: invoiceData.vatAmountMinor ?? null,
-            totalMinor: invoiceData.totalMinor,
-            withholdingMinor: invoiceData.withholdingMinor ?? null,
-            amountToPayMinor: invoiceData.amountToPayMinor,
-            sellerTaxId: invoiceData.sellerTaxId ?? null,
-            sellerName: invoiceData.sellerName ?? null,
-            sellerBankAccount: invoiceData.sellerBankAccount ?? null,
-            isReverseCharge: finalIsReverseCharge,
-            reverseChargeOverride: invoiceData.reverseChargeOverride ?? null,
-            contractorId: contractor?.id ?? null,
-            status: 'RECEIVED',
-            matchStatus: 'UNMATCHED',
-            source: 'MANUAL_UPLOAD',
-            duplicateCheckHash,
-          },
-        });
-
-        // --- Step 6: Override-with-reason audit ------------------------------
-        if (
-          invoiceData.reverseChargeOverride === false &&
-          rcShouldApply &&
-          invoiceData.reverseChargeOverrideReason
-        ) {
-          await auditedMutation(
-            auditMutationCtx(ctx),
-            {
-              action: 'invoice.reverse-charge-override',
-              resourceType: 'INVOICE',
-              resourceId: inv.id,
-              metadata: {
-                reason: invoiceData.reverseChargeOverrideReason,
-                autoDetected: true,
-                userDisabled: true,
+      try {
+        const invoice = await ctx.db.$transaction(async tx => {
+          if (duplicateCheckHash) {
+            const existing = await tx.invoice.findFirst({
+              where: {
+                organizationId: ctx.organizationId,
+                duplicateCheckHash,
+                deletedAt: null,
+                status: { not: 'VOID' },
               },
+              select: { id: true },
+            });
+            if (existing) {
+              throw new TRPCError({
+                code: 'CONFLICT',
+                message: E.INVOICE_DUPLICATE,
+              });
+            }
+          }
+
+          // Create invoice record
+          const inv = await tx.invoice.create({
+            data: {
+              organizationId: ctx.organizationId,
+              invoiceNumber: invoiceData.invoiceNumber,
+              issueDate: new Date(invoiceData.issueDate),
+              dueDate: new Date(invoiceData.dueDate),
+              servicePeriodStart: invoiceData.servicePeriodStart
+                ? new Date(invoiceData.servicePeriodStart)
+                : null,
+              servicePeriodEnd: invoiceData.servicePeriodEnd
+                ? new Date(invoiceData.servicePeriodEnd)
+                : null,
+              currency: invoiceData.currency,
+              subtotalMinor: invoiceData.subtotalMinor,
+              vatRate: effectiveVatRate,
+              vatAmountMinor: invoiceData.vatAmountMinor ?? null,
+              totalMinor: invoiceData.totalMinor,
+              withholdingMinor: invoiceData.withholdingMinor ?? null,
+              amountToPayMinor: invoiceData.amountToPayMinor,
+              sellerTaxId: invoiceData.sellerTaxId ?? null,
+              sellerName: invoiceData.sellerName ?? null,
+              sellerBankAccount: invoiceData.sellerBankAccount ?? null,
+              isReverseCharge: finalIsReverseCharge,
+              reverseChargeOverride: invoiceData.reverseChargeOverride ?? null,
+              contractorId: contractor?.id ?? null,
+              status: 'RECEIVED',
+              matchStatus: 'UNMATCHED',
+              source: 'MANUAL_UPLOAD',
+              duplicateCheckHash,
             },
-            async () => inv,
+          });
+
+          await writeAuditLog({
             tx,
-          );
-        }
+            organizationId: ctx.organizationId,
+            actorType: 'USER',
+            actorId: ctx.user?.id ?? null,
+            action: 'invoice.create',
+            resourceType: 'INVOICE',
+            resourceId: inv.id,
+            newValues: {
+              invoiceNumber: inv.invoiceNumber,
+              status: inv.status,
+              contractorId: inv.contractorId,
+              totalMinor: inv.totalMinor,
+              currency: inv.currency,
+            },
+            metadata: { source: 'MANUAL_UPLOAD', documentIds },
+          });
 
-        // Link each source document: InvoiceFile + DocumentLink rows.
-        await linkDocumentsToInvoice(tx, ctx.organizationId, inv.id, documentIds);
+          // --- Step 6: Override-with-reason audit ------------------------------
+          if (
+            invoiceData.reverseChargeOverride === false &&
+            rcShouldApply &&
+            invoiceData.reverseChargeOverrideReason
+          ) {
+            await auditedMutation(
+              auditMutationCtx(ctx),
+              {
+                action: 'invoice.reverse-charge-override',
+                resourceType: 'INVOICE',
+                resourceId: inv.id,
+                metadata: {
+                  reason: invoiceData.reverseChargeOverrideReason,
+                  autoDetected: true,
+                  userDisabled: true,
+                },
+              },
+              async () => inv,
+              tx,
+            );
+          }
 
-        // Notify the finance team through the outbox (see helper) so the
-        // send commits atomically with the invoice insert (exactly-once).
-        await enqueueInvoiceReceivedNotification(tx as unknown as OutboxTransactionalClient, {
-          organizationId: ctx.organizationId,
-          recipientUserIds: financeUserIds,
-          invoiceId: inv.id,
-          invoiceNumber: inv.invoiceNumber,
-          sellerName: invoiceData.sellerName ?? null,
-          totalMinor: invoiceData.totalMinor,
-          currency: invoiceData.currency,
+          // Link each source document: InvoiceFile + DocumentLink rows.
+          await linkDocumentsToInvoice(tx, ctx.organizationId, inv.id, documentIds);
+
+          // Notify the finance team through the outbox (see helper) so the
+          // send commits atomically with the invoice insert (exactly-once).
+          await enqueueInvoiceReceivedNotification(tx as unknown as OutboxTransactionalClient, {
+            organizationId: ctx.organizationId,
+            recipientUserIds: financeUserIds,
+            invoiceId: inv.id,
+            invoiceNumber: inv.invoiceNumber,
+            sellerName: invoiceData.sellerName ?? null,
+            totalMinor: invoiceData.totalMinor,
+            currency: invoiceData.currency,
+          });
+
+          return inv;
         });
 
-        return inv;
-      });
+        void invalidateByPrefix(CacheKeys.dashboardPrefix(ctx.organizationId));
 
-      void invalidateByPrefix(CacheKeys.dashboardPrefix(ctx.organizationId));
-
-      return invoice;
+        return invoice;
+      } catch (err) {
+        if (
+          err &&
+          typeof err === 'object' &&
+          (err as { code?: string }).code === 'P2002' &&
+          ((err as { meta?: { target?: readonly string[] } }).meta?.target ?? []).includes(
+            'duplicateCheckHash',
+          )
+        ) {
+          throw new TRPCError({
+            code: 'CONFLICT',
+            message: E.INVOICE_DUPLICATE,
+          });
+        }
+        throw err;
+      }
     }),
 
   /**
@@ -394,34 +365,61 @@ export const invoiceCrudRouter = router({
       validateInvoiceAmounts(updateData, existing);
       recomputeDuplicateHash(updateData, existing);
 
-      const updated = await ctx.db.invoice.update({
-        where: { id: input.id },
-        data: updateData,
-        select: {
-          id: true,
-          organizationId: true,
-          invoiceNumber: true,
-          issueDate: true,
-          dueDate: true,
-          servicePeriodStart: true,
-          servicePeriodEnd: true,
-          currency: true,
-          subtotalMinor: true,
-          vatRate: true,
-          vatAmountMinor: true,
-          totalMinor: true,
-          withholdingMinor: true,
-          amountToPayMinor: true,
-          sellerTaxId: true,
-          sellerName: true,
-          status: true,
-          matchStatus: true,
-          source: true,
-          contractorId: true,
-          contractId: true,
-          createdAt: true,
-          updatedAt: true,
-        },
+      const updated = await ctx.db.$transaction(async tx => {
+        const inv = await tx.invoice.update({
+          where: { id: input.id },
+          data: updateData,
+          select: {
+            id: true,
+            organizationId: true,
+            invoiceNumber: true,
+            issueDate: true,
+            dueDate: true,
+            servicePeriodStart: true,
+            servicePeriodEnd: true,
+            currency: true,
+            subtotalMinor: true,
+            vatRate: true,
+            vatAmountMinor: true,
+            totalMinor: true,
+            withholdingMinor: true,
+            amountToPayMinor: true,
+            sellerTaxId: true,
+            sellerName: true,
+            status: true,
+            matchStatus: true,
+            source: true,
+            contractorId: true,
+            contractId: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        });
+
+        await auditedMutation(
+          auditMutationCtx(ctx),
+          {
+            action: 'invoice.update',
+            resourceType: 'INVOICE',
+            resourceId: inv.id,
+            resourceName: inv.invoiceNumber,
+            oldValues: {
+              invoiceNumber: existing.invoiceNumber,
+              issueDate: existing.issueDate,
+              dueDate: existing.dueDate,
+              currency: existing.currency,
+              subtotalMinor: existing.subtotalMinor,
+              totalMinor: existing.totalMinor,
+              sellerTaxId: existing.sellerTaxId,
+              sellerName: existing.sellerName,
+            },
+            newValues: updateData,
+          },
+          async () => inv,
+          tx,
+        );
+
+        return inv;
       });
 
       return updated;
@@ -457,11 +455,10 @@ export const invoiceCrudRouter = router({
       }
       if (filters?.overdue) {
         where.dueDate = { lt: new Date() };
-        // Mirror UI helper in columns.tsx: terminal states (PAID/VOID) cannot
-        // be "overdue".
+        where.paymentStatus = { notIn: ['PAID'] };
         where.status = where.status
-          ? { ...(where.status as object), notIn: ['PAID', 'VOID'] }
-          : { notIn: ['PAID', 'VOID'] };
+          ? { ...(where.status as object), not: 'VOID' }
+          : { not: 'VOID' };
       }
 
       // Search via invoiceNumber OR contractor legalName (case-insensitive)

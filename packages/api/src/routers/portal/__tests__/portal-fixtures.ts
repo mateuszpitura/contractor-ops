@@ -75,17 +75,19 @@ function makeProfile(
 }
 
 function makeLeaveRequest(id: string, workerId: string, organizationId: string): Rec {
+  const leaveTypeId = organizationId === ORG_C ? 'lt-vacation-c' : LEAVE_TYPE_ID;
   return {
     id,
     organizationId,
     workerId,
-    leaveTypeId: LEAVE_TYPE_ID,
+    leaveTypeId,
     startDate: new Date('2026-08-01'),
     endDate: new Date('2026-08-05'),
     requestedMinutes: 2400,
     status: 'PENDING',
     approvalFlowId: null,
     deletedAt: null,
+    leaveType: { kind: 'ANNUAL' },
   };
 }
 

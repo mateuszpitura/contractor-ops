@@ -32,6 +32,7 @@ const allowList = [
   /^packages\/validators\/src\/minimal-server-env\.ts$/,
   /^apps\/cms\/src\/lib\/env\.ts$/,
   /^scripts\//,
+  /^packages\/db\/scripts\//,
   /^load-tests\//,
   /^infra\//,
   /vitest\.config\.(ts|mts|js|mjs)$/,

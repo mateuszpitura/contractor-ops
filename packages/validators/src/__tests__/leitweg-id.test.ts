@@ -1,6 +1,6 @@
 // packages/validators/src/__tests__/leitweg-id.test.ts
 //
-// Leitweg-ID Zod schema + MOD-11-10 check-digit round-trip test against the
+// Leitweg-ID Zod schema + MOD 97-10 check-digit round-trip test against the
 // ground-truth fixture corpus.
 
 import { describe, expect, it } from 'vitest';
@@ -37,9 +37,8 @@ describe('leitwegIdSchema — invalid fixtures', () => {
 });
 
 describe('computeLeitwegCheckDigit', () => {
-  it('pads single-digit MOD-11-10 result to 2 chars with leading zero', () => {
-    // payload '99' → ISO 7064 MOD-11-10 result should be 0 → '00'
-    expect(computeLeitwegCheckDigit('99')).toBe('00');
+  it('returns 2-digit MOD 97-10 check for coarse-only payload', () => {
+    expect(computeLeitwegCheckDigit('99')).toBe('92');
   });
 
   it('decomposes letters into base-10 digit pairs (A=10 → [1,0])', () => {
@@ -57,16 +56,22 @@ describe('computeLeitwegCheckDigit', () => {
 });
 
 describe('validateLeitwegCheckDigit', () => {
-  it('returns valid + expected when input matches computed digit', () => {
-    const result = validateLeitwegCheckDigit('991', '07');
+  it('returns valid + expected when input matches computed digit (spec coarse example)', () => {
+    const result = validateLeitwegCheckDigit('991', '35');
     expect(result.valid).toBe(true);
-    expect(result.expected).toBe('07');
+    expect(result.expected).toBe('35');
+  });
+
+  it('returns valid for KoSIT spec example payload', () => {
+    const result = validateLeitwegCheckDigit('99133333TEST', '33');
+    expect(result.valid).toBe(true);
+    expect(result.expected).toBe('33');
   });
 
   it('returns invalid + expected when input mismatches', () => {
     const result = validateLeitwegCheckDigit('991', '99');
     expect(result.valid).toBe(false);
-    expect(result.expected).toBe('07');
+    expect(result.expected).toBe('35');
   });
 
   it('returns invalid + sentinel when payload has bad chars', () => {

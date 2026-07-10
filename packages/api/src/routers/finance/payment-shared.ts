@@ -10,6 +10,7 @@ import {
 } from '../../lib/idempotency';
 import { writeAuditLog } from '../../services/audit-writer';
 import { decryptBankAccount } from '../../services/bank-account-crypto';
+import { assertContractorPaymentEligibility } from '../../services/compliance-payment-gate';
 import { StaleExchangeRateError } from '../../services/exchange-rate';
 import type {
   ExportItem,
@@ -26,6 +27,8 @@ import {
   generateSwiftXml,
   resolveTransferTitle,
 } from '../../services/payment-export';
+import type { ExportFormat } from '../../services/payment-format-detection';
+import { groupItemsByFormat } from '../../services/payment-format-detection';
 import { convertForSettlement, resolveSettlementCurrency } from '../../services/payment-settlement';
 import { calculateWht } from '../../services/tax-rate.service';
 import { applyTreaty } from '../../services/treaty-rate.service';
@@ -189,27 +192,37 @@ export async function allocateRunNumber(tx: TxClient, organizationId: string): P
   const year = new Date().getFullYear();
   const prefix = `PR-${year}-`;
 
-  const lastRun = await tx.paymentRun.findFirst({
+  const lastRuns = await tx.paymentRun.findMany({
     where: { organizationId, runNumber: { startsWith: prefix } },
-    orderBy: { runNumber: 'desc' },
     select: { runNumber: true },
   });
 
-  const seq = lastRun?.runNumber ? parseInt(lastRun.runNumber.replace(prefix, ''), 10) + 1 : 1;
+  const seq =
+    lastRuns.reduce((max, run) => {
+      const runNumber = run.runNumber;
+      if (!runNumber) return max;
+      const parsed = Number.parseInt(runNumber.slice(prefix.length), 10);
+      return Number.isFinite(parsed) && parsed > max ? parsed : max;
+    }, 0) + 1;
 
   return `${prefix}${String(seq).padStart(3, '0')}`;
 }
 
 /**
- * Maps an {@link ExportItem} to the NACHA per-entry shape. Routing/account come
- * from the decrypted US bank fields when present; the masked account is the
- * fallback so the dispatch never emits an empty account field.
+ * Maps an {@link ExportItem} to the NACHA per-entry shape. Routing/account must
+ * already be decrypted by `_buildExportItems` — masked values are never emitted.
  */
 function toNachaItem(item: ExportItem): NachaExportItem {
+  if (!(item.usRoutingNumber && item.usAccountNumber)) {
+    throw new TRPCError({
+      code: 'PRECONDITION_FAILED',
+      message: `ACH export requires US bank details for ${item.contractorName}`,
+    });
+  }
   return {
     receiverName: item.contractorName,
-    routingNumber: item.usRoutingNumber ?? '',
-    accountNumber: item.usAccountNumber ?? item.iban,
+    routingNumber: item.usRoutingNumber,
+    accountNumber: item.usAccountNumber,
     amountMinor: item.amountMinor,
     individualId: item.invoiceNumber,
   };
@@ -284,6 +297,205 @@ export async function autoCompleteRunIfTerminal(tx: TxClient, paymentRunId: stri
       completedAt: new Date(),
     },
   });
+}
+
+/** Source kinds accepted by {@link applyInvoicePaymentOutcome}. */
+export type InvoicePaymentSource = 'PAYMENT_RUN' | 'BANK_STATEMENT' | 'MANUAL';
+
+/**
+ * Records an {@link InvoicePayment} row and syncs {@link InvoiceStatus} /
+ * {@link PaymentStatus} from cumulative paid amount vs `amountToPayMinor`.
+ */
+export async function applyInvoicePaymentOutcome(
+  tx: TxClient,
+  args: {
+    organizationId: string;
+    invoiceId: string;
+    amountMinor: number;
+    paidAt: Date;
+    sourceKind: InvoicePaymentSource;
+    sourcePaymentRunItemId?: string;
+    createdByUserId?: string;
+  },
+): Promise<void> {
+  await tx.invoicePayment.create({
+    data: {
+      organizationId: args.organizationId,
+      invoiceId: args.invoiceId,
+      amountMinor: args.amountMinor,
+      paidAt: args.paidAt,
+      sourceKind: args.sourceKind,
+      sourcePaymentRunItemId: args.sourcePaymentRunItemId ?? null,
+      createdByUserId: args.createdByUserId ?? null,
+    },
+  });
+
+  const invoice = await tx.invoice.findUnique({
+    where: { id: args.invoiceId },
+    select: { amountToPayMinor: true },
+  });
+  if (!invoice) return;
+
+  const paidAgg = await tx.invoicePayment.aggregate({
+    where: { invoiceId: args.invoiceId },
+    _sum: { amountMinor: true },
+  });
+  const totalPaidMinor = paidAgg._sum.amountMinor ?? 0;
+
+  if (totalPaidMinor >= invoice.amountToPayMinor) {
+    await tx.invoice.update({
+      where: { id: args.invoiceId },
+      data: {
+        status: 'PAID',
+        paymentStatus: 'PAID',
+        paidAt: args.paidAt,
+      },
+    });
+    return;
+  }
+
+  await tx.invoice.update({
+    where: { id: args.invoiceId },
+    data: {
+      status: 'PARTIALLY_PAID',
+      paymentStatus: 'PARTIALLY_PAID',
+      paidAt: args.paidAt,
+    },
+  });
+}
+
+/**
+ * Reverses a payment-run item's {@link InvoicePayment} row and re-syncs invoice
+ * status when an ACH return (or similar reversal) voids a settled payout.
+ */
+export async function revertInvoicePaymentOutcome(
+  tx: TxClient,
+  args: {
+    organizationId: string;
+    invoiceId: string;
+    sourcePaymentRunItemId: string;
+  },
+): Promise<void> {
+  await tx.invoicePayment.deleteMany({
+    where: {
+      organizationId: args.organizationId,
+      invoiceId: args.invoiceId,
+      sourcePaymentRunItemId: args.sourcePaymentRunItemId,
+    },
+  });
+
+  const invoice = await tx.invoice.findUnique({
+    where: { id: args.invoiceId },
+    select: { amountToPayMinor: true },
+  });
+  if (!invoice) return;
+
+  const paidAgg = await tx.invoicePayment.aggregate({
+    where: { invoiceId: args.invoiceId },
+    _sum: { amountMinor: true },
+  });
+  const totalPaidMinor = paidAgg._sum.amountMinor ?? 0;
+
+  if (totalPaidMinor >= invoice.amountToPayMinor) {
+    await tx.invoice.update({
+      where: { id: args.invoiceId },
+      data: {
+        status: 'PAID',
+        paymentStatus: 'PAID',
+      },
+    });
+    return;
+  }
+
+  if (totalPaidMinor > 0) {
+    await tx.invoice.update({
+      where: { id: args.invoiceId },
+      data: {
+        status: 'PARTIALLY_PAID',
+        paymentStatus: 'PARTIALLY_PAID',
+      },
+    });
+    return;
+  }
+
+  await tx.invoice.update({
+    where: { id: args.invoiceId },
+    data: {
+      status: 'APPROVED',
+      paymentStatus: 'READY',
+      paidAt: null,
+      readyForPaymentAt: new Date(),
+    },
+  });
+}
+
+const REQUESTED_EXPORT_TO_DETECTED: Record<string, ExportFormat> = {
+  BANK_FILE: 'BANK_FILE',
+  SEPA_XML: 'SEPA_XML',
+  SWIFT_XML: 'SWIFT_XML',
+  ACH_NACHA: 'ACH_NACHA',
+  FEDWIRE: 'FEDWIRE',
+};
+
+const FORMAT_REQUIRED_CURRENCY: Partial<Record<string, string>> = {
+  SEPA_XML: 'EUR',
+  BANK_FILE: 'PLN',
+  ACH_NACHA: 'USD',
+  FEDWIRE: 'USD',
+};
+
+/**
+ * Ensures every export item matches the requested bank-file format and currency
+ * rail (defence-in-depth beyond BACS-only gating).
+ */
+export function assertExportItemsMatchRequestedFormat(format: string, items: ExportItem[]): void {
+  if (format === 'CSV' || items.length === 0) return;
+
+  const requiredCurrency = FORMAT_REQUIRED_CURRENCY[format];
+  if (requiredCurrency) {
+    const mismatch = items.find(item => item.currency !== requiredCurrency);
+    if (mismatch) {
+      throw new TRPCError({
+        code: 'PRECONDITION_FAILED',
+        message: E.PAYMENT_EXPORT_FORMAT_MISMATCH,
+      });
+    }
+  }
+
+  const groups = groupItemsByFormat(items);
+  if (groups.size > 1) {
+    throw new TRPCError({
+      code: 'PRECONDITION_FAILED',
+      message: E.PAYMENT_EXPORT_FORMAT_MISMATCH,
+    });
+  }
+
+  const expected = REQUESTED_EXPORT_TO_DETECTED[format];
+  if (!expected) return;
+
+  const detected = [...groups.keys()][0];
+  if (detected !== expected) {
+    throw new TRPCError({
+      code: 'PRECONDITION_FAILED',
+      message: E.PAYMENT_EXPORT_FORMAT_MISMATCH,
+    });
+  }
+}
+
+/**
+ * Verifies all non-skipped run items share the run's settlement currency.
+ */
+export function assertRunItemCurrenciesMatchRun(
+  runCurrency: string,
+  itemCurrencies: Array<{ currency: string }>,
+): void {
+  const mismatched = itemCurrencies.filter(item => item.currency !== runCurrency);
+  if (mismatched.length > 0) {
+    throw new TRPCError({
+      code: 'BAD_REQUEST',
+      message: E.PAYMENT_MIXED_CURRENCIES,
+    });
+  }
 }
 
 /**
@@ -412,6 +624,7 @@ export async function _buildExportItems(
     contractor: { legalName: string; taxId: string | null; currency: string };
     billingProfile: {
       bankAccountMasked: string | null;
+      bankAccountEncrypted?: string | null;
       swiftBic: string | null;
       bankName: string | null;
       usRoutingNumberEncrypted?: string | null;
@@ -461,19 +674,31 @@ export async function _buildExportItems(
       });
     }
 
-    // Decrypt the US routing/account only when both are present. The plaintext
-    // stays inside this function and reaches only the export file buffer — it is
-    // never logged, and the export audit trail carries no routing/account.
+    // Decrypt bank credentials only inside this function — plaintext reaches the
+    // export file buffer alone; it is never logged and the audit trail omits it.
+    const bankAccountEncrypted = item.billingProfile?.bankAccountEncrypted;
     const usRoutingEncrypted = item.billingProfile?.usRoutingNumberEncrypted;
     const usAccountEncrypted = item.billingProfile?.usAccountNumberEncrypted;
-    const usRoutingNumber =
-      usRoutingEncrypted && usAccountEncrypted ? decryptBankAccount(usRoutingEncrypted) : undefined;
-    const usAccountNumber =
-      usRoutingEncrypted && usAccountEncrypted ? decryptBankAccount(usAccountEncrypted) : undefined;
+    let usRoutingNumber: string | undefined;
+    let usAccountNumber: string | undefined;
+    if (usRoutingEncrypted && usAccountEncrypted) {
+      usRoutingNumber = decryptBankAccount(usRoutingEncrypted);
+      usAccountNumber = decryptBankAccount(usAccountEncrypted);
+    }
+
+    let iban = '';
+    if (bankAccountEncrypted) {
+      iban = decryptBankAccount(bankAccountEncrypted);
+    } else if (!(usRoutingNumber && usAccountNumber)) {
+      throw new TRPCError({
+        code: 'PRECONDITION_FAILED',
+        message: `Export requires bank account details for ${item.contractor.legalName}`,
+      });
+    }
 
     exportItems.push({
       contractorName: item.contractor.legalName,
-      iban: item.billingProfile?.bankAccountMasked ?? '',
+      iban,
       amountMinor: settled.amountMinor,
       currency: settlementCurrency,
       invoiceNumber,
@@ -498,10 +723,33 @@ export async function _buildExportItems(
  * deferred for the US payout rail). It is a flat statutory rate, not a
  * per-recipient lookup.
  */
-const US_BACKUP_WITHHOLDING_RATE = 24;
+/** Statutory IRC §3406 backup-withholding rate — exported for 1099 box-4 filtering. */
+export const US_BACKUP_WITHHOLDING_RATE = 24;
+
+/** Statutory US chapter-3 rate when no valid W-8 substantiates a treaty claim. */
+const US_CHAPTER3_STATUTORY_RATE = 30;
 
 /** Which legal basis produced a withholding deduction, for the audit trail. */
 export type WithholdingBasis = 'sa_wht' | 'us_backup' | 'treaty_1042s';
+
+/** W-8 chain state from the ACTIVE form on file (not contractor nationality). */
+export interface WithholdingW8Input {
+  /** Residency claimed on the ACTIVE W-8 (ISO-2); null when no form on file. */
+  contractorResidency: string | null;
+  /** Signed, unexpired W-8BEN / W-8BEN-E — required before a treaty rate applies. */
+  w8ChainComplete: boolean;
+}
+
+/** A W-8 chain is complete when the form is signed and not past its expiry. */
+export function isW8ChainComplete(submission: {
+  signedAt: Date | null;
+  expiresAt: Date | null;
+}): boolean {
+  if (!submission.signedAt) {
+    return false;
+  }
+  return submission.expiresAt === null || submission.expiresAt.getTime() > Date.now();
+}
 
 export interface WithholdingOrgInput {
   countryCode: string | null;
@@ -514,9 +762,16 @@ export interface WithholdingContractorInput {
   backupWithholdingFlagged?: boolean | null;
 }
 
+/** ACTIVE W-form on file — drives US withholding routing (not countryCode alone). */
+export type TaxFormOnFile = 'W9' | 'W8BEN' | 'W8BENE';
+
 export interface WithholdingItemInput {
   grossAmountMinor: number;
   contractor: WithholdingContractorInput;
+  /** ACTIVE W-8 on file — gates the 1042-S treaty branch (§875(d)). */
+  w8?: WithholdingW8Input;
+  /** ACTIVE W-9 / W-8 on file; mirrors `routeFormType` at payout time. */
+  taxFormOnFile?: TaxFormOnFile | null;
 }
 
 export interface WithholdingDecision {
@@ -596,10 +851,39 @@ export async function applyWithholding(args: {
     };
   }
 
-  // 1042-S withholding on a foreign recipient: the resolved treaty rate, or the
-  // 30% statutory default when no treaty row applies.
-  if (item.contractor.countryCode !== 'US') {
-    const treaty = await applyTreaty({ contractorResidency: item.contractor.countryCode });
+  const formOnFile = item.taxFormOnFile ?? null;
+
+  // W-9 on file => domestic US-person path (1099-NEC); never chapter-3, even when
+  // countryCode is foreign (a foreign national who filed W-9 is a US-person election).
+  if (formOnFile === 'W9') {
+    return null;
+  }
+
+  // Chapter-3 (1042-S): W-8 on file, or legacy fallback when no form and non-US countryCode.
+  const isChapter3Recipient =
+    formOnFile === 'W8BEN' ||
+    formOnFile === 'W8BENE' ||
+    (formOnFile === null && item.contractor.countryCode !== 'US');
+
+  if (isChapter3Recipient) {
+    const w8Complete = item.w8?.w8ChainComplete ?? false;
+    if (!w8Complete) {
+      const whtAmountMinor = Math.round((gross * US_CHAPTER3_STATUTORY_RATE) / 100);
+      if (whtAmountMinor <= 0) return null;
+      return {
+        grossAmountMinor: gross,
+        amountMinor: gross - whtAmountMinor,
+        whtAmountMinor,
+        whtRate: US_CHAPTER3_STATUTORY_RATE,
+        whtTreatyApplied: false,
+        whtTreatyReference: null,
+        whtServiceType: null,
+        basis: 'treaty_1042s',
+      };
+    }
+
+    const residency = item.w8?.contractorResidency ?? 'XX';
+    const treaty = await applyTreaty({ contractorResidency: residency });
     const whtAmountMinor = Math.round((gross * treaty.rate) / 100);
     if (whtAmountMinor <= 0) return null;
     return {
@@ -614,7 +898,7 @@ export async function applyWithholding(args: {
     };
   }
 
-  // US domestic recipient, not backup-flagged → no withholding.
+  // US domestic recipient with no W-8 on file, not backup-flagged → no withholding.
   return null;
 }
 
@@ -647,7 +931,48 @@ export async function applyWithholdingToRun(
     },
   });
 
+  const contractorIds = [...new Set(items.map(i => i.contractorId))];
+  const taxFormSubmissions =
+    contractorIds.length === 0
+      ? []
+      : await tx.taxFormSubmission.findMany({
+          where: {
+            organizationId,
+            contractorId: { in: contractorIds },
+            formType: { in: ['W9', 'W8BEN', 'W8BENE'] },
+            status: 'ACTIVE',
+          },
+          select: {
+            contractorId: true,
+            formType: true,
+            contractorResidency: true,
+            signedAt: true,
+            expiresAt: true,
+          },
+        });
+
+  const taxFormByContractor = new Map<string, TaxFormOnFile>();
+  const w8ByContractor = new Map<
+    string,
+    {
+      contractorResidency: string | null;
+      signedAt: Date | null;
+      expiresAt: Date | null;
+    }
+  >();
+  for (const submission of taxFormSubmissions) {
+    if (submission.formType === 'W9') {
+      taxFormByContractor.set(submission.contractorId, 'W9');
+      continue;
+    }
+    if (!taxFormByContractor.has(submission.contractorId)) {
+      taxFormByContractor.set(submission.contractorId, submission.formType as 'W8BEN' | 'W8BENE');
+    }
+    w8ByContractor.set(submission.contractorId, submission);
+  }
+
   for (const item of items) {
+    const w8 = w8ByContractor.get(item.contractorId);
     const decision = await applyWithholding({
       org: { countryCode: org.countryCode, dataRegion: org.dataRegion },
       item: {
@@ -655,6 +980,11 @@ export async function applyWithholdingToRun(
         contractor: {
           countryCode: item.contractor.countryCode,
           backupWithholdingFlagged: item.contractor.backupWithholdingFlagged,
+        },
+        taxFormOnFile: taxFormByContractor.get(item.contractorId) ?? null,
+        w8: {
+          contractorResidency: w8?.contractorResidency ?? null,
+          w8ChainComplete: w8 ? isW8ChainComplete(w8) : false,
         },
       },
     });
@@ -708,13 +1038,15 @@ export async function _resolveOrgBankInfo(
 ): Promise<{ orgBank: OrgBankInfo; transferTitleTemplate: string }> {
   const org = await tx.organization.findUnique({
     where: { id: organizationId },
-    select: { name: true, metadata: true },
+    select: { name: true, metadata: true, settingsJson: true },
   });
 
   const parsedMetadata = org?.metadata
     ? (JSON.parse(org.metadata) as Record<string, unknown>)
     : null;
-  const settingsJson = (parsedMetadata?.settingsJson ?? {}) as Record<string, unknown>;
+  const columnSettings = (org?.settingsJson as Record<string, unknown> | null) ?? {};
+  const metadataSettings = (parsedMetadata?.settingsJson ?? {}) as Record<string, unknown>;
+  const settingsJson = { ...metadataSettings, ...columnSettings };
 
   const bankAccountParse = orgBankInfoSchema.safeParse(settingsJson.bankAccount ?? {});
   if (!bankAccountParse.success) {
@@ -834,10 +1166,25 @@ export async function _initiatePayoutForRun(
   }
 
   try {
+    const run = await db.paymentRun.findFirst({
+      where: { id: args.runId, organizationId: args.organizationId },
+      select: { status: true },
+    });
+    if (!run) {
+      throw new TRPCError({ code: 'NOT_FOUND', message: E.PAYMENT_RUN_NOT_FOUND });
+    }
+    if (run.status !== 'LOCKED') {
+      throw new TRPCError({ code: 'BAD_REQUEST', message: E.PAYMENT_RUN_INVALID_STATUS });
+    }
+
     // Tenant-scoped item load. The Plaid advisory reads the per-item profile the
     // run actually pays out to (via billingProfileId) — never contractor.billingProfiles[].
     const items = await db.paymentRunItem.findMany({
-      where: { paymentRunId: args.runId, organizationId: args.organizationId },
+      where: {
+        paymentRunId: args.runId,
+        organizationId: args.organizationId,
+        status: { in: ['PENDING'] },
+      },
       include: {
         billingProfile: {
           select: {
@@ -851,8 +1198,16 @@ export async function _initiatePayoutForRun(
     });
 
     if (items.length === 0) {
-      throw new TRPCError({ code: 'NOT_FOUND', message: E.PAYMENT_RUN_NOT_FOUND });
+      throw new TRPCError({ code: 'BAD_REQUEST', message: E.PAYMENT_RUN_INVALID_STATUS });
     }
+
+    const contractorIds = [
+      ...new Set(items.map(i => i.contractorId).filter((x): x is string => Boolean(x))),
+    ];
+    await assertContractorPaymentEligibility(contractorIds, {
+      organizationId: args.organizationId,
+      tx: db,
+    });
 
     const paymentDate = args.paymentDate ?? new Date();
     const orders: PayoutItemResult[] = [];
@@ -903,6 +1258,22 @@ export async function _initiatePayoutForRun(
         advisoryWarning,
       });
     }
+
+    await db.$transaction(async tx => {
+      for (const order of orders) {
+        await tx.paymentRunItem.update({
+          where: { id: order.itemId, organizationId: args.organizationId },
+          data: {
+            status: 'EXPORTED',
+            paymentReference: order.orderId,
+          },
+        });
+      }
+      await tx.paymentRun.update({
+        where: { id: args.runId },
+        data: { status: 'EXPORTED', exportedAt: new Date() },
+      });
+    });
 
     const result: InitiatePayoutResult = {
       runId: args.runId,

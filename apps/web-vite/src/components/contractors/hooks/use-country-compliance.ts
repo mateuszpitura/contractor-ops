@@ -15,9 +15,16 @@ export function useCountryCompliance(contractorId: string) {
   const queryClient = useQueryClient();
   const t = useTranslations('Contractors.countryCompliance');
 
-  const configQuery = useQuery(trpc.contractor.getCountryFieldsConfig.queryOptions());
   const fieldsQuery = useQuery(trpc.contractor.getCountryFields.queryOptions({ contractorId }));
   const contractorQuery = useQuery(trpc.contractor.getById.queryOptions({ id: contractorId }));
+  const contractorCountry = contractorQuery.data?.countryCode;
+
+  const configQuery = useQuery({
+    ...trpc.contractor.getCountryFieldsConfig.queryOptions(
+      contractorCountry ? { countryCode: contractorCountry } : undefined,
+    ),
+    enabled: Boolean(contractorCountry),
+  });
 
   const updateMutation = useMutation(
     trpc.contractor.updateCountryFields.mutationOptions({

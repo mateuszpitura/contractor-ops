@@ -42,6 +42,13 @@ function PortalIndexPageContent() {
   const { formatDate } = usePortalDateFormatter();
   const { overview, session, isLoading } = usePortalIndex();
 
+  const welcomeName =
+    session?.subjectType === 'EMPLOYEE'
+      ? getFirstName(session.worker.displayName ?? '')
+      : session?.subjectType === 'CONTRACTOR'
+        ? getFirstName(session.contractor.displayName ?? '')
+        : '';
+
   function formatRelativeTime(date: Date | string): string {
     const d = typeof date === 'string' ? new Date(date) : date;
     const now = new Date();
@@ -66,7 +73,7 @@ function PortalIndexPageContent() {
         {isLoading ? (
           <Skeleton className="h-9 w-64" />
         ) : (
-          t('dashboard.welcomeBack', { name: getFirstName(session?.contractor.displayName ?? '') })
+          t('dashboard.welcomeBack', { name: welcomeName })
         )}
       </h1>
 

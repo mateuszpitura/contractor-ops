@@ -31,6 +31,13 @@ type ContractRow = {
   assignments: AssignmentRow[];
 };
 
+type ContractorRow = {
+  id: string;
+  organizationId: string;
+  countryCode: string;
+  assignments: Array<{ id: string }>;
+};
+
 type AssessmentRow = {
   id: string;
   organizationId: string;
@@ -53,6 +60,7 @@ type TriggerRow = {
 const state = {
   audits: [] as AuditRow[],
   assignments: new Map<string, AssignmentRow>(),
+  contractors: new Map<string, ContractorRow>(),
   contracts: new Map<string, ContractRow>(),
   assessments: [] as AssessmentRow[],
   triggers: new Map<string, TriggerRow>(),
@@ -93,6 +101,18 @@ mockPrismaRaw.contractorAssignment = {
   findMany: vi.fn(async (args: { where?: { id?: { in?: string[] } } }) => {
     const ids = args?.where?.id?.in ?? [];
     return ids.map(id => state.assignments.get(id)).filter(Boolean);
+  }),
+};
+mockPrismaRaw.contractor = {
+  findFirst: vi.fn(async (args: { where?: { id?: string; organizationId?: string } }) => {
+    const id = args?.where?.id;
+    if (!id) return null;
+    const row = state.contractors.get(id);
+    if (!row) return null;
+    if (args?.where?.organizationId && args.where.organizationId !== row.organizationId) {
+      return null;
+    }
+    return row;
   }),
 };
 mockPrismaRaw.contract = {
@@ -260,6 +280,7 @@ import { runReassessmentTriggerScan } from '../reassessment-trigger-scan';
 function resetState() {
   state.audits.length = 0;
   state.assignments.clear();
+  state.contractors.clear();
   state.contracts.clear();
   state.assessments.length = 0;
   state.triggers.clear();
@@ -406,6 +427,38 @@ describe('runReassessmentTriggerScan — material-fields allowlist (60-02-02)', 
       resourceId: 'con-3',
       oldValuesJson: { rateValueMinor: 10000 },
       newValuesJson: { rateValueMinor: 12500 },
+      createdAt: new Date('2026-04-10'),
+    });
+    state.scanState.set('classification-reassessment-triggers', {
+      name: 'classification-reassessment-triggers',
+      lastScanCompletedAt: new Date('2026-04-01'),
+    });
+
+    const result = await runReassessmentTriggerScan();
+    expect(result.triggersCreated).toBe(1);
+  });
+});
+
+describe('runReassessmentTriggerScan — contractor id resource (production audit path)', () => {
+  beforeEach(resetState);
+
+  it('creates a trigger when contractor.primaryProjectId changes (resourceId = contractor.id)', async () => {
+    const contractorId = 'ctr-gb-1';
+    seedGbEngagementWithIr35('asg-contractor-id');
+    state.contractors.set(contractorId, {
+      id: contractorId,
+      organizationId: 'org-a',
+      countryCode: 'GB',
+      assignments: [{ id: 'asg-contractor-id' }],
+    });
+    state.audits.push({
+      id: 'a-contractor-id',
+      organizationId: 'org-a',
+      action: 'UPDATE',
+      resourceType: 'CONTRACTOR',
+      resourceId: contractorId,
+      oldValuesJson: { primaryProjectId: 'p1' },
+      newValuesJson: { primaryProjectId: 'p2' },
       createdAt: new Date('2026-04-10'),
     });
     state.scanState.set('classification-reassessment-triggers', {

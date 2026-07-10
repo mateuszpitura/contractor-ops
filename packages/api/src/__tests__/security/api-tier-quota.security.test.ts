@@ -1,5 +1,5 @@
 /**
- * Wave-0 RED contract (INTEG-AUTH-04) — per-tier monthly request quota.
+ * Per-tier monthly request quota.
  *
  * A post-auth tRPC middleware (`enforceApiTierQuota`, chained into
  * `apiKeyTenantProcedure`) resolves the org's subscription tier and increments a
@@ -7,9 +7,6 @@
  * 10 000) the request throws `TOO_MANY_REQUESTS`; ENTERPRISE is unlimited and
  * never throws (and never writes a counter). The pre-auth flat burst limiter is
  * a separate concern (two limiters, two jobs).
- *
- * Turn-green plan: 99-03 (the tier-limits table + monthly-counter service +
- * the `enforceApiTierQuota` middleware wired into the chain).
  */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -43,8 +40,8 @@ const {
     mockResolveApiKey: vi.fn(),
     mockTouchLastUsed: vi.fn(),
     mockGetSubscription: vi.fn(),
-    // The 99-03 monthly counter — mocked here so the over-quota path is
-    // deterministic. Inert until the middleware imports it (99-03).
+    // The monthly counter — mocked here so the over-quota path is
+    // deterministic.
     incrCounter: vi.fn(async () => 1),
     evaluateMock: vi.fn(() => ({ enabled: true, reason: 'unleash' })),
   };
@@ -89,15 +86,11 @@ vi.mock('../../services/api-quota-counter', () => ({
   incrementMonthlyRequestCount: incrCounter,
 }));
 
-vi.mock('../../services/cache', () => ({
-  cacheKey: vi.fn((...s: string[]) => s.join(':')),
-  cachedSingleflight: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  cached: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  invalidate: vi.fn(async () => undefined),
-  invalidateByPrefix: vi.fn(async () => undefined),
-  CacheKeys: {},
-  CacheTTL: {},
-}));
+vi.mock('../../services/cache', async importOriginal => {
+  const actual = await importOriginal<typeof import('../../services/cache')>();
+  const { createPassthroughCacheMock } = await import('../../__tests__/__mocks__/cache-service');
+  return createPassthroughCacheMock(actual);
+});
 
 vi.mock('@contractor-ops/logger', () => {
   const stub = { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() };

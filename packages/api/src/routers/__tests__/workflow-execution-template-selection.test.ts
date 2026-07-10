@@ -28,7 +28,11 @@ const { mockPrisma, ORG_ID, USER_ID, CONTRACTOR_ID } = vi.hoisted(() => {
       findFirstOrThrow: vi.fn(),
     },
     workflowRoleTemplate: {
+      findFirst: vi.fn(),
       findFirstOrThrow: vi.fn(),
+    },
+    workflowTemplate: {
+      findFirst: vi.fn(),
     },
     member: {
       findFirst: vi.fn().mockResolvedValue({ role: 'admin', userId: USER_ID }),
@@ -182,11 +186,13 @@ describe('workflowRoles.selectForContractor — D-02 + D-03 template auto-select
     mockPrisma.contractor.findFirstOrThrow.mockResolvedValueOnce({
       workflowRoleId: 'tmpl-software-engineer',
     });
+    mockPrisma.workflowTemplate.findFirst.mockResolvedValueOnce({ id: 'wf-tpl-offboarding' });
 
     const result = await caller.selectForContractor({ contractorId: CONTRACTOR_ID });
 
     expect(result).toEqual({
-      templateId: 'tmpl-software-engineer',
+      templateId: 'wf-tpl-offboarding',
+      roleTemplateId: 'tmpl-software-engineer',
       source: 'contractor_role_id',
     });
 
@@ -195,24 +201,26 @@ describe('workflowRoles.selectForContractor — D-02 + D-03 template auto-select
     expect(contractorCall.where).toMatchObject({ id: CONTRACTOR_ID, organizationId: ORG_ID });
 
     // Generic-consultant fallback must NOT run when the contractor has a role.
-    expect(mockPrisma.workflowRoleTemplate.findFirstOrThrow).not.toHaveBeenCalled();
+    expect(mockPrisma.workflowRoleTemplate.findFirst).not.toHaveBeenCalled();
   });
 
   it('falls back to generic_consultant when workflowRoleId is NULL', async () => {
     mockPrisma.contractor.findFirstOrThrow.mockResolvedValueOnce({ workflowRoleId: null });
-    mockPrisma.workflowRoleTemplate.findFirstOrThrow.mockResolvedValueOnce({
+    mockPrisma.workflowTemplate.findFirst.mockResolvedValueOnce({ id: 'wf-tpl-offboarding' });
+    mockPrisma.workflowRoleTemplate.findFirst.mockResolvedValueOnce({
       id: 'seed-generic-consultant',
     });
 
     const result = await caller.selectForContractor({ contractorId: CONTRACTOR_ID });
 
     expect(result).toEqual({
-      templateId: 'seed-generic-consultant',
+      templateId: 'wf-tpl-offboarding',
+      roleTemplateId: 'seed-generic-consultant',
       source: 'fallback_generic_consultant',
     });
 
     // Fallback uses the seed generic_consultant row scoped to the org.
-    const fallbackCall = mockPrisma.workflowRoleTemplate.findFirstOrThrow.mock.calls[0]?.[0];
+    const fallbackCall = mockPrisma.workflowRoleTemplate.findFirst.mock.calls[0]?.[0];
     expect(fallbackCall.where).toMatchObject({
       organizationId: ORG_ID,
       role: 'generic_consultant',
@@ -229,7 +237,7 @@ describe('workflowRoles.selectForContractor — D-02 + D-03 template auto-select
       caller.selectForContractor({ contractorId: 'nonexistent' }),
     ).rejects.toBeInstanceOf(Error);
 
-    expect(mockPrisma.workflowRoleTemplate.findFirstOrThrow).not.toHaveBeenCalled();
+    expect(mockPrisma.workflowRoleTemplate.findFirst).not.toHaveBeenCalled();
   });
 
   it('rejects empty contractorId at the Zod boundary', async () => {

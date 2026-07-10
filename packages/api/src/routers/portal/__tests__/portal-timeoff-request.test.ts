@@ -80,6 +80,10 @@ vi.mock('../../../services/approval-engine', () => ({
   advanceFlow: async () => ({ status: 'PENDING' }),
 }));
 
+vi.mock('../../../services/approval-flow-creator', () => ({
+  resolveApprovalFlowCreatorUserId: async () => 'portal-admin-user',
+}));
+
 vi.mock('../../../services/leave-balance', () => ({
   MINUTES_PER_LEAVE_DAY: 480,
   computeLeaveBalance: () => 9600,

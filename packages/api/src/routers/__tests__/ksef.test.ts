@@ -29,6 +29,7 @@ const {
     },
     integrationConnection: {
       findFirst: vi.fn(),
+      findUniqueOrThrow: vi.fn(),
       update: vi.fn(),
       create: vi.fn(),
     },
@@ -131,15 +132,11 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
   metrics: { increment: vi.fn(), distribution: vi.fn(), histogram: vi.fn() },
 }));
 
-vi.mock('../../services/cache', () => ({
-  cacheKey: vi.fn((...s: string[]) => s.join(':')),
-  cachedSingleflight: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  cached: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  invalidate: vi.fn(async () => undefined),
-  invalidateByPrefix: vi.fn(async () => undefined),
-  CacheKeys: {},
-  CacheTTL: {},
-}));
+vi.mock('../../services/cache', async importOriginal => {
+  const actual = await importOriginal<typeof import('../../services/cache')>();
+  const { createPassthroughCacheMock } = await import('../../__tests__/__mocks__/cache-service');
+  return createPassthroughCacheMock(actual);
+});
 
 vi.mock('@contractor-ops/einvoice', () => ({
   KsefApiClient: class KsefApiClientMock {
@@ -244,6 +241,14 @@ describe('ksefRouter', () => {
       lastErrorMessage: null,
       connectedAt: new Date(),
     });
+    // The router re-selects with `omit: { credentialsRef, connectedByUserId }`
+    // so credential ciphertext never reaches the browser.
+    mockPrisma.integrationConnection.findUniqueOrThrow.mockResolvedValue({
+      id: 'ksef-1',
+      status: 'CONNECTED',
+      configJson: { authMethod: 'token' },
+      connectedAt: new Date(),
+    });
 
     const result = await caller.connectionStatus();
 
@@ -251,6 +256,10 @@ describe('ksefRouter', () => {
       id: 'ksef-1',
       status: 'CONNECTED',
     });
+    expect(result).not.toHaveProperty('credentialsRef');
+    expect(result).not.toHaveProperty('connectedByUserId');
+    const selectCall = mockPrisma.integrationConnection.findUniqueOrThrow.mock.calls[0][0];
+    expect(selectCall.omit).toEqual({ credentialsRef: true, connectedByUserId: true });
   });
 
   it('syncHistory returns empty logs when no connection', async () => {
@@ -345,6 +354,15 @@ describe('ksefRouter', () => {
       lastErrorMessage: null,
     });
     mockPrisma.integrationConnection.update.mockResolvedValue({});
+    // Router returns the safe re-select (no credentialsRef / connectedByUserId).
+    mockPrisma.integrationConnection.findUniqueOrThrow.mockResolvedValue({
+      id: 'new-ksef-conn',
+      organizationId: ORG_ID,
+      provider: 'KSEF',
+      status: 'CONNECTED',
+      configJson: { authMethod: 'token', environment: 'test', qstashScheduleId: 'sched-ksef-1' },
+      connectedAt: new Date(),
+    });
 
     const result = await caller.connect({
       authMethod: 'token',
@@ -353,8 +371,12 @@ describe('ksefRouter', () => {
     });
 
     expect(result.id).toBe('new-ksef-conn');
+    expect(result).not.toHaveProperty('credentialsRef');
+    expect(result).not.toHaveProperty('connectedByUserId');
     expect(mockPrisma.integrationConnection.create).toHaveBeenCalled();
     expect(mockSchedulesCreate).toHaveBeenCalled();
+    const selectCall = mockPrisma.integrationConnection.findUniqueOrThrow.mock.calls[0][0];
+    expect(selectCall.omit).toEqual({ credentialsRef: true, connectedByUserId: true });
   });
 
   it('triggerSync throws NOT_FOUND when no connected KSeF integration', async () => {

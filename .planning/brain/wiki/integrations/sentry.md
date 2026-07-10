@@ -2,7 +2,7 @@
 title: Sentry error tracking
 type: integration
 tags: [sentry, observability, glitchtip]
-source_commit: a691aface4b1b0f4ec333f2f69d9705e0c0338fa
+source_commit: e0d533fa
 verify_with:
   - apps/api/src/lib/sentry.ts
   - packages/api/src/middleware/observability.ts
@@ -12,7 +12,7 @@ verify_with:
   - apps/cron-worker/src/lib/sentry-scrub.ts
   - apps/web-vite/src/lib/sentry-scrub.ts
   - packages/logger/src/pii-mask.ts
-updated: 2026-07-05
+updated: 2026-07-10
 ---
 
 # Sentry (error tracking)
@@ -36,6 +36,7 @@ flowchart LR
 | Surface | Path |
 |---------|------|
 | API init | `apps/api/src/lib/sentry.ts` |
+| Fastify error handler | `apps/api/src/plugins/sentry.ts` |
 | tRPC capture | `packages/api/src/middleware/observability.ts` |
 | PII scrub (4 copies) | `apps/{api,public-api,cron-worker,web-vite}/src/lib/sentry-scrub.ts` |
 | Shared PII keyword list | `packages/logger/src/pii-mask.ts` → `PII_SCRUB_KEYWORDS` / `isPiiScrubKey` |
@@ -49,6 +50,7 @@ flowchart LR
 
 - Structured logging still via `@contractor-ops/logger` — Sentry complements, not replaces
 - **Single shared PII keyword list**: the four `sentry-scrub.ts` `beforeSend` copies (one per runtime, differing only in `@sentry/node` vs `@sentry/react`) import `isPiiScrubKey` / `PII_SCRUB_KEYWORDS` from the dependency-free `@contractor-ops/logger/pii-mask` subpath — no local hand-lists, so Node services and the browser bundle can no longer drift apart. Add a redaction keyword there (aligned with `PII_MASK_PATHS`), never in a copy. Matching is case-insensitive substring, so short tokens are deliberately broad (e.g. `ein` also redacts `eInvoiceId`) — over-redacting a crash report is the safe side
+- **Generic 5xx bodies in production**: the Fastify error handler in `apps/api/src/plugins/sentry.ts` replies with a generic `Internal Server Error` body for ≥500 in production while the full error still goes to Sentry — raw messages on plain-Fastify (non-tRPC) routes leaked Prisma model/column/constraint names and the DB host. The tRPC error formatter already strips INTERNAL messages separately; this handler covers the non-tRPC routes
 - SPA boundary should call `Sentry.captureException` — tech debt: [[decisions/tech-debt-hotspots]]
 
 ## Related

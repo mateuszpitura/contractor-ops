@@ -7,7 +7,12 @@ import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
 import { writeAuditLog } from '../../services/audit-writer';
 import { matchStatementToRun, parseBankStatement } from '../../services/bank-statement';
-import { autoCompleteRunIfTerminal } from './payment-shared';
+import type { OutboxTransactionalClient } from '../../services/outbox';
+import {
+  enqueuePaymentStatusNotification,
+  getPaymentNotifyUserIds,
+} from '../../services/payment-notification';
+import { applyInvoicePaymentOutcome, autoCompleteRunIfTerminal } from './payment-shared';
 
 /**
  * Upper bound on the raw statement text. `fileContent` is parsed as UTF-8
@@ -75,11 +80,23 @@ export const paymentImportRouter = router({
     .use(requirePermission({ payment: ['create'] }))
     .input(bankStatementConfirmSchema)
     .mutation(async ({ ctx, input }) => {
+      const financeRecipients = await getPaymentNotifyUserIds(ctx.db, ctx.organizationId);
+
       const result = await ctx.db.$transaction(async tx => {
         const run = await tx.paymentRun.findFirst({
           where: {
             id: input.runId,
             organizationId: ctx.organizationId,
+          },
+          include: {
+            items: {
+              include: {
+                billingProfile: {
+                  select: { bankAccountMasked: true },
+                },
+                invoice: { select: { invoiceNumber: true, currency: true } },
+              },
+            },
           },
         });
 
@@ -90,31 +107,90 @@ export const paymentImportRouter = router({
           });
         }
 
+        if (run.status !== 'EXPORTED') {
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: E.PAYMENT_BANK_STATEMENT_EXPORTED_ONLY,
+          });
+        }
+
+        const transactions = parseBankStatement(input.fileContent, input.fileName);
+        const eligibleItems = run.items.filter(
+          item => item.status === 'PENDING' || item.status === 'EXPORTED',
+        );
+        const matchItems = eligibleItems.map(item => ({
+          id: item.id,
+          amountMinor: item.amountMinor,
+          iban: item.billingProfile?.bankAccountMasked ?? '',
+        }));
+
+        const serverMatches = matchStatementToRun(transactions, matchItems);
+        const serverMatchByItemId = new Map(
+          serverMatches
+            .filter(m => m.paymentRunItemId && m.confidence !== 'unmatched' && m.amountMatched)
+            .map(m => [m.paymentRunItemId, m]),
+        );
+
+        const confirmedItemIds: string[] = [];
+        for (const clientMatch of input.matches) {
+          const serverMatch = serverMatchByItemId.get(clientMatch.itemId);
+          if (!serverMatch || serverMatch.transactionIndex !== clientMatch.transactionIndex) {
+            throw new TRPCError({
+              code: 'BAD_REQUEST',
+              message: E.PAYMENT_STATEMENT_MATCH_INVALID,
+            });
+          }
+          confirmedItemIds.push(clientMatch.itemId);
+        }
+
         const now = new Date();
 
-        const matchedItemIds = input.matches.map(m => m.itemId);
-        const validItems = await tx.paymentRunItem.findMany({
-          where: {
-            id: { in: matchedItemIds },
-            paymentRunId: run.id,
-            organizationId: ctx.organizationId,
-          },
-          select: { id: true, invoiceId: true },
-        });
+        const validItems = eligibleItems.filter(i => confirmedItemIds.includes(i.id));
 
         if (validItems.length > 0) {
           const validItemIds = validItems.map(i => i.id);
-          const invoiceIds = validItems.map(i => i.invoiceId);
 
-          await tx.paymentRunItem.updateMany({
-            where: { id: { in: validItemIds } },
+          const updated = await tx.paymentRunItem.updateMany({
+            where: {
+              id: { in: validItemIds },
+              paymentRunId: run.id,
+              organizationId: ctx.organizationId,
+              status: { in: ['PENDING', 'EXPORTED'] },
+            },
             data: { status: 'PAID', markedPaidAt: now },
           });
 
-          await tx.invoice.updateMany({
-            where: { id: { in: invoiceIds } },
-            data: { paymentStatus: 'PAID', paidAt: now },
-          });
+          if (updated.count !== validItemIds.length) {
+            throw new TRPCError({
+              code: 'CONFLICT',
+              message: E.PAYMENT_STATEMENT_MATCH_INVALID,
+            });
+          }
+
+          for (const item of validItems) {
+            await applyInvoicePaymentOutcome(tx, {
+              organizationId: ctx.organizationId,
+              invoiceId: item.invoiceId,
+              amountMinor: item.amountMinor,
+              paidAt: now,
+              sourceKind: 'BANK_STATEMENT',
+              sourcePaymentRunItemId: item.id,
+              createdByUserId: ctx.user.id,
+            });
+
+            await enqueuePaymentStatusNotification(tx as unknown as OutboxTransactionalClient, {
+              organizationId: ctx.organizationId,
+              paymentRunId: run.id,
+              runNumber: run.runNumber,
+              itemId: item.id,
+              invoiceId: item.invoiceId,
+              invoiceNumber: item.invoice?.invoiceNumber ?? null,
+              status: 'PAID',
+              amountMinor: item.amountMinor,
+              currency: item.invoice?.currency ?? 'EUR',
+              recipientUserIds: validItems.length > 0 ? financeRecipients : [],
+            });
+          }
         }
 
         await autoCompleteRunIfTerminal(tx, run.id);

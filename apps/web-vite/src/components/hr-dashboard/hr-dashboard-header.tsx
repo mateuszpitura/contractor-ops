@@ -122,6 +122,7 @@ export function HrDashboardHeader() {
         underUtilizedCount: summary.kpiProps.underUtilizedCount,
         probationDueCount: summary.kpiProps.probationDueCount,
         expiringDocCount: summary.kpiProps.expiringDocCount,
+        degradedEntitlementCount: summary.kpiProps.degradedEntitlementCount,
       }}
     />
   );

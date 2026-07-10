@@ -42,7 +42,8 @@ const {
   };
 });
 
-vi.mock('@contractor-ops/db', () => {
+vi.mock('@contractor-ops/db', async importOriginal => {
+  const actual = await importOriginal<typeof import('@contractor-ops/db')>();
   const MockDbPrisma = {
     signingEnvelope: {
       findFirst: mockSigningEnvelopeFindFirst,
@@ -60,10 +61,17 @@ vi.mock('@contractor-ops/db', () => {
     $transaction: mockTransaction,
   };
   return {
+    ...actual,
     withRlsTransactions: <T>(c: T) => c,
     withRlsReads: <T>(c: T) => c,
     prisma: MockDbPrisma,
     prismaRaw: MockDbPrisma,
+    tryGetRegionalClient: vi.fn(() => MockDbPrisma),
+    findAcrossRegions: vi.fn(async (finder: (client: typeof MockDbPrisma) => Promise<unknown>) => {
+      const result = await finder(MockDbPrisma, 'EU');
+      if (result != null) return { result, region: 'EU', client: MockDbPrisma };
+      return null;
+    }),
   };
 });
 

@@ -24,7 +24,7 @@ import {
   withQueueObservability,
 } from '@contractor-ops/api/services/cron-monitor';
 import { drainOutboxBatch } from '@contractor-ops/api/services/outbox';
-import { prismaRaw } from '@contractor-ops/db';
+import { SUPPORTED_REGIONS, tryGetRegionalClient } from '@contractor-ops/db';
 import { createCronLogger } from '@contractor-ops/logger';
 import { metrics } from '@contractor-ops/logger/metrics';
 import type { FastifyInstance, FastifyReply } from 'fastify';
@@ -35,13 +35,18 @@ const log = createCronLogger('outbox-drain');
 
 async function getPendingCount(): Promise<number | null> {
   try {
-    // safe-raw-sql: queue.depth gauge is a global metric across all
-    // tenants — intentionally not org-scoped.
-    const rows = await prismaRaw.$queryRawUnsafe<Array<{ count: bigint | number }>>(
-      `SELECT COUNT(*)::bigint AS count FROM "OutboxEvent" WHERE "status" = 'PENDING' AND "nextAttemptAt" <= NOW()`,
-    );
-    const raw = rows[0]?.count ?? 0;
-    return Number(raw);
+    let total = 0;
+    for (const region of SUPPORTED_REGIONS) {
+      const client = tryGetRegionalClient(region);
+      if (!client) continue;
+      // safe-raw-sql: cross-tenant queue-depth gauge for the drain metric — aggregate count only, no row data leaves the query
+      const rows = await client.$queryRawUnsafe<Array<{ count: bigint | number }>>(
+        `SELECT COUNT(*)::bigint AS count FROM "OutboxEvent" WHERE "status" = 'PENDING' AND "nextAttemptAt" <= NOW()`,
+      );
+      const raw = rows[0]?.count ?? 0;
+      total += Number(raw);
+    }
+    return total;
   } catch (err) {
     log.warn({ err }, 'queue depth count failed — skipping gauge');
     return null;

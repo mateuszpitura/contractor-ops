@@ -236,4 +236,18 @@ describe('tax-rate.service — calculateWht non-breakage after US treaty rows (U
     // Gate short-circuits before any DB read — US rows are never queried here.
     expect(mockWht.findFirst).not.toHaveBeenCalled();
   });
+
+  it('prefers specific residency treaty over XX fallback (ZA sorts after XX lexicographically)', async () => {
+    mockWht.findFirst
+      .mockResolvedValueOnce({
+        contractorResidency: 'ZA',
+        treatyRate: 5,
+        standardRate: 20,
+        treatyReference: 'DTA',
+      })
+      .mockResolvedValueOnce(null);
+    const result = await calculateWht('SA', 'ZA', 'CONSULTING', 100_000);
+    expect(result?.whtRate).toBe(5);
+    expect(mockWht.findFirst).toHaveBeenCalledTimes(1); // XX fallback not needed
+  });
 });

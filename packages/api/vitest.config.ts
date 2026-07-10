@@ -31,6 +31,10 @@ export default defineConfig({
         replacement: path.join(packagesDir, 'einvoice/src/profiles/zatca/schemas.ts'),
       },
       {
+        find: '@contractor-ops/einvoice/zatca/hash',
+        replacement: path.join(packagesDir, 'einvoice/src/profiles/zatca/hash.ts'),
+      },
+      {
         find: '@contractor-ops/einvoice/zatca/types',
         replacement: path.join(packagesDir, 'einvoice/src/profiles/zatca/types.ts'),
       },

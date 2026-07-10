@@ -1,7 +1,7 @@
 /**
- * RED gate — INTEG-SEC-04 (OWASP API Top-10 as executable assertions).
- * Turned GREEN by 100-09, which is the PRECONDITION for the P99 write flag-flip:
- * the write routes stay `hide:true` until every class below is green.
+ * OWASP API Top-10 as executable assertions — the PRECONDITION for the public
+ * write flag-flip: the write routes stay `hide:true` until every class below
+ * is green.
  *
  * One describe per OWASP API class asserting the live surface:
  *   BOLA · BFLA · SSRF · mass-assignment · security-misconfig · injection.

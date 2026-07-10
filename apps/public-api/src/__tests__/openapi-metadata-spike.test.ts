@@ -1,10 +1,10 @@
 /**
- * Wave-0 load-bearing spike: does a Zod-4 schema authored in
+ * Load-bearing spike: does a Zod-4 schema authored in
  * `@contractor-ops/validators` (plain `zod`) register into the OpenAPI 3.1
  * document produced by `@hono/zod-openapi`'s `getOpenAPI31Document()`?
  *
- * This resolves the single highest-risk unknown of the phase (RESEARCH seam A2 /
- * Pitfall 1) and locks WHERE every later route DTO lives. The test asserts the
+ * This resolves the single highest-risk unknown of the public-API surface and
+ * locks WHERE every later route DTO lives. The test asserts the
  * ACTUAL behaviour of every branch so it documents reality rather than a guess:
  *
  *   - Query PARAMETERS surface into `paths[...].get.parameters` from a
@@ -41,8 +41,6 @@ const honoResponseNamed = zHono
   .object({ ok: zHono.boolean() })
   .openapi('SpikeHonoAuthoredResponse');
 
-// biome-ignore lint/suspicious/noExplicitAny: throwaway spike harness — plain
-// validators schemas and package-`z` schemas are fed through the same builder.
 function buildDoc(querySchema: any, responseSchema: any) {
   const app = new OpenAPIHono();
   const route = createRoute({

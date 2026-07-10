@@ -26,6 +26,8 @@ const { mockPrisma } = vi.hoisted(() => {
       create: vi.fn(),
       createMany: vi.fn(),
       update: vi.fn(),
+      updateMany: vi.fn(),
+      findFirstOrThrow: vi.fn(),
       delete: vi.fn(),
       findUniqueOrThrow: vi.fn(),
     },
@@ -37,6 +39,9 @@ const { mockPrisma } = vi.hoisted(() => {
     },
     member: {
       findFirst: vi.fn(async () => ({ role: 'admin' })),
+    },
+    auditLog: {
+      create: vi.fn().mockResolvedValue({}),
     },
     $transaction: vi.fn(async (fn: (tx: Rec) => Promise<unknown>) => fn(mockPrisma)),
   };
@@ -117,15 +122,11 @@ vi.mock('../../services/calendar-deadline-sync', () => ({
   syncApprovalSlaDeadline: vi.fn(async () => undefined),
 }));
 
-vi.mock('../../services/cache', () => ({
-  cacheKey: vi.fn((...s: string[]) => s.join(':')),
-  cachedSingleflight: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  cached: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  invalidate: vi.fn(async () => undefined),
-  invalidateByPrefix: vi.fn(async () => undefined),
-  CacheKeys: { approvalChains: (orgId: string) => `approval-chains:${orgId}` },
-  CacheTTL: { APPROVAL_CHAINS: 300 },
-}));
+vi.mock('../../services/cache', async importOriginal => {
+  const actual = await importOriginal<typeof import('../../services/cache')>();
+  const { createPassthroughCacheMock } = await import('../../__tests__/__mocks__/cache-service');
+  return createPassthroughCacheMock(actual);
+});
 
 vi.mock('../../services/mime-validator', () => ({
   isAllowedMimeType: vi.fn(() => true),
@@ -463,7 +464,8 @@ describe('ir35Chain.upsertParticipant', () => {
       orderIndex: 2,
       displayName: 'Updated Agency',
     };
-    mockPrisma.ir35ChainParticipant.update.mockResolvedValueOnce(updated);
+    mockPrisma.ir35ChainParticipant.updateMany.mockResolvedValueOnce({ count: 1 });
+    mockPrisma.ir35ChainParticipant.findFirstOrThrow.mockResolvedValueOnce(updated);
 
     const result = await caller.ir35Chain.upsertParticipant({
       id: 'p-existing',
@@ -474,7 +476,7 @@ describe('ir35Chain.upsertParticipant', () => {
     });
 
     expect(result).toMatchObject({ id: 'p-existing', displayName: 'Updated Agency' });
-    expect(mockPrisma.ir35ChainParticipant.update).toHaveBeenCalledTimes(1);
+    expect(mockPrisma.ir35ChainParticipant.updateMany).toHaveBeenCalledTimes(1);
   });
 
   it('throws BAD_REQUEST when CLIENT role has linkedContractorId', async () => {
@@ -575,6 +577,8 @@ describe('ir35Chain.markDelivered', () => {
   it('sets sdsDeliveredAt and preserves note', async () => {
     mockPrisma.ir35ChainParticipant.update.mockResolvedValueOnce({
       id: 'p-1',
+      contractorAssignmentId: ASSIGNMENT_ID,
+      role: 'AGENCY',
       sdsDeliveredAt: new Date(),
       sdsDeliveredNote: 'Sent via email',
     });
@@ -593,6 +597,8 @@ describe('ir35Chain.markDelivered', () => {
   it('sets sdsDeliveredNote to null when no note provided', async () => {
     mockPrisma.ir35ChainParticipant.update.mockResolvedValueOnce({
       id: 'p-1',
+      contractorAssignmentId: ASSIGNMENT_ID,
+      role: 'AGENCY',
       sdsDeliveredAt: new Date(),
       sdsDeliveredNote: null,
     });
@@ -612,6 +618,8 @@ describe('ir35Chain.markAcknowledged', () => {
   it('sets sdsAcknowledgedAt and preserves note', async () => {
     mockPrisma.ir35ChainParticipant.update.mockResolvedValueOnce({
       id: 'p-1',
+      contractorAssignmentId: ASSIGNMENT_ID,
+      role: 'AGENCY',
       sdsAcknowledgedAt: new Date(),
       sdsAcknowledgedNote: 'Confirmed receipt',
     });
@@ -628,6 +636,8 @@ describe('ir35Chain.markAcknowledged', () => {
   it('sets sdsAcknowledgedNote to null when no note provided', async () => {
     mockPrisma.ir35ChainParticipant.update.mockResolvedValueOnce({
       id: 'p-1',
+      contractorAssignmentId: ASSIGNMENT_ID,
+      role: 'AGENCY',
       sdsAcknowledgedAt: new Date(),
       sdsAcknowledgedNote: null,
     });

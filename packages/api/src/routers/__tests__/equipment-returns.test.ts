@@ -36,7 +36,9 @@ const { mockPrisma, mockInPostCreateShipment, mockDispatch } = vi.hoisted(() => 
     returnRequest: {
       findFirst: vi.fn(),
       findMany: vi.fn(),
+      findUniqueOrThrow: vi.fn(),
       update: vi.fn(),
+      updateMany: vi.fn(async () => ({ count: 1 })),
     },
     equipmentAssignment: {
       findMany: vi.fn(async () => []),
@@ -139,21 +141,11 @@ vi.mock('../../services/outbox', () => ({
   enqueueNotificationOutboxEvent: vi.fn(async () => 'oxe_test'),
 }));
 
-vi.mock('../../services/cache', () => ({
-  cacheKey: vi.fn((...s: string[]) => s.join(':')),
-  cachedSingleflight: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  cached: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  invalidate: vi.fn(async () => undefined),
-  invalidateByPrefix: vi.fn(async () => undefined),
-  CacheKeys: {
-    orgSettings: (orgId: string) => `org-settings:${orgId}`,
-    orgSettingsJson: (orgId: string, key: string) => `org-settings-json:${orgId}:${key}`,
-    orgBranding: (orgId: string) => `org-branding:${orgId}`,
-    settingsPrefix: (orgId: string) => `org-settings:${orgId}`,
-    approvalChains: (orgId: string) => `approval-chains:${orgId}`,
-  },
-  CacheTTL: { ORG_SETTINGS: 300, ORG_SETTINGS_JSON: 300, ORG_BRANDING: 300, APPROVAL_CHAINS: 300 },
-}));
+vi.mock('../../services/cache', async importOriginal => {
+  const actual = await importOriginal<typeof import('../../services/cache')>();
+  const { createPassthroughCacheMock } = await import('../../__tests__/__mocks__/cache-service');
+  return createPassthroughCacheMock(actual);
+});
 
 vi.mock('../../services/invoice-matching', () => ({
   computeDuplicateCheckHash: vi.fn(() => 'hash'),
@@ -389,6 +381,7 @@ const caller = makeCaller();
 beforeEach(() => {
   vi.clearAllMocks();
   vi.mocked(auth.api.hasPermission).mockResolvedValue({ success: true } as never);
+  mockPrisma.returnRequest.updateMany.mockImplementation(async () => ({ count: 1 }));
 });
 
 // ===========================================================================
@@ -420,9 +413,7 @@ describe('equipmentReturns.approveReturnRequest', () => {
       configJson: { organizationId: 123, token: 'tok' },
     });
     mockPrisma.organization.findUnique.mockResolvedValueOnce({ name: 'Test Org' });
-    mockPrisma.shipment.create.mockResolvedValue({ id: 'ship-1' });
-    mockPrisma.shipmentEvent.create.mockResolvedValue({});
-    mockPrisma.equipment.update.mockResolvedValue({});
+    mockPrisma.equipment.updateMany.mockResolvedValueOnce({ count: 2 });
     const updatedRequest = {
       ...returnRequest,
       status: 'SHIPMENT_CREATED',
@@ -430,7 +421,7 @@ describe('equipmentReturns.approveReturnRequest', () => {
       contractor: { id: 'contractor-1', displayName: 'John Doe' },
       shipment: { id: 'ship-1' },
     };
-    mockPrisma.returnRequest.update.mockResolvedValueOnce(updatedRequest);
+    mockPrisma.returnRequest.findUniqueOrThrow.mockResolvedValueOnce(updatedRequest);
     mockPrisma.auditLog.create.mockResolvedValue({});
 
     const result = await caller.approveReturnRequest({

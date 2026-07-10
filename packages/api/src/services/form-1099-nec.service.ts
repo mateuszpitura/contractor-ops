@@ -1,6 +1,7 @@
 import type { Prisma } from '@contractor-ops/db';
 
 import { clear, complete, reserve } from '../lib/idempotency';
+import { US_BACKUP_WITHHOLDING_RATE } from '../routers/finance/payment-shared';
 import { writeAuditLog } from './audit-writer';
 import { convertAmount, FX_CONVERSION_MAX_AGE_DAYS } from './exchange-rate';
 import type { DbClient } from './types';
@@ -230,10 +231,85 @@ export interface Box4Input {
  * later-phase concern.
  */
 export function computeBox4Minor(input: Box4Input): number {
+  const recorded = Math.max(0, Math.trunc(input.recordedBackupWithholdingMinor));
+  // Report withholding that actually occurred even when the flag was cleared pre-year-end.
+  if (recorded > 0) {
+    return recorded;
+  }
   if (!(input.backupWithholdingFlagged || input.tinMismatch)) {
     return 0;
   }
-  return Math.max(0, Math.trunc(input.recordedBackupWithholdingMinor));
+  return recorded;
+}
+
+/** Compare the W-9 snapshot TIN reference against the contractor registry last-4. */
+export function resolveW9TinMismatch(args: {
+  contractorSsnLast4: string | null;
+  w9SnapshotJson: unknown;
+}): boolean {
+  const snapshot = args.w9SnapshotJson as
+    | { fields?: { tin?: { ssnLast4?: string; ein?: string } } }
+    | null
+    | undefined;
+  const tin = snapshot?.fields?.tin;
+  if (!tin) return false;
+
+  if (tin.ssnLast4) {
+    return args.contractorSsnLast4 != null && tin.ssnLast4 !== args.contractorSsnLast4;
+  }
+
+  if (tin.ein) {
+    const einLast4 = tin.ein.replace(/\D/g, '').slice(-4);
+    return (
+      args.contractorSsnLast4 != null &&
+      einLast4.length === 4 &&
+      einLast4 !== args.contractorSsnLast4
+    );
+  }
+
+  return false;
+}
+
+export interface BackupWithholdingPaymentItem {
+  whtAmountMinor: number | null;
+  whtRate: unknown;
+  currency: string;
+  paymentRun: { completedAt: Date | null };
+}
+
+/** Sum IRC §3406 backup withholding only (24%), FX-converted to USD like box 1. */
+export async function sumBackupWithholdingUsdMinor(
+  db: DbClient,
+  items: readonly BackupWithholdingPaymentItem[],
+): Promise<number> {
+  let sum = 0;
+  for (const item of items) {
+    if (!item.whtAmountMinor || item.whtAmountMinor <= 0) continue;
+    const rate = item.whtRate == null ? Number.NaN : Number(item.whtRate);
+    if (!Number.isFinite(rate) || rate !== US_BACKUP_WITHHOLDING_RATE) continue;
+
+    const paymentDate = item.paymentRun.completedAt ?? new Date();
+    if (item.currency === USD) {
+      sum += item.whtAmountMinor;
+      continue;
+    }
+
+    const conversion = await convertAmount(
+      db,
+      item.whtAmountMinor,
+      item.currency,
+      USD,
+      paymentDate,
+      FX_CONVERSION_MAX_AGE_DAYS,
+    );
+    if (!conversion) {
+      throw new Error(
+        `sumBackupWithholdingUsdMinor: no payment-date FX rate for ${item.currency}->USD on ${String(paymentDate)}`,
+      );
+    }
+    sum += conversion.amountMinor;
+  }
+  return sum;
 }
 
 // ---------------------------------------------------------------------------
@@ -469,6 +545,16 @@ export interface GenerateBatchResult {
 export interface Form1099NecCreateClient {
   form1099Nec: {
     create: (args: { data: Prisma.Form1099NecUncheckedCreateInput }) => Promise<{ id: string }>;
+    updateMany: (args: {
+      where: Prisma.Form1099NecWhereInput;
+      data: Prisma.Form1099NecUpdateManyMutationInput;
+    }) => Promise<{ count: number }>;
+  };
+  auditLog: {
+    create: (args: { data: Prisma.AuditLogUncheckedCreateInput }) => Promise<unknown>;
+    createMany: (args: {
+      data: Prisma.AuditLogUncheckedCreateInput[];
+    }) => Promise<{ count: number }>;
   };
 }
 
@@ -624,8 +710,32 @@ export async function generateBatch(
       try {
         await persist.$transaction(async tx => {
           for (const data of rowsToPersist) {
+            await tx.form1099Nec.updateMany({
+              where: {
+                organizationId: data.organizationId,
+                payerOrgId: data.payerOrgId,
+                recipientId: data.recipientId,
+                taxYear: data.taxYear,
+                status: 'ACTIVE',
+              },
+              data: { status: 'SUPERSEDED' },
+            });
             await tx.form1099Nec.create({ data });
           }
+          await writeAuditLog({
+            tx,
+            organizationId,
+            actorType,
+            actorId,
+            action: 'form1099.generate',
+            resourceType: 'ORGANIZATION',
+            resourceId: payerOrgId,
+            metadata: {
+              taxYear,
+              generatedCount: generated.length,
+              suppressedCount: suppressedRecipientIds.length,
+            },
+          });
         });
       } catch (err) {
         if (isActive1099NecKeyViolation(err)) {
@@ -640,20 +750,6 @@ export async function generateBatch(
         throw err;
       }
     }
-
-    await writeAuditLog({
-      organizationId,
-      actorType,
-      actorId,
-      action: 'form1099.generate',
-      resourceType: 'ORGANIZATION',
-      resourceId: payerOrgId,
-      metadata: {
-        taxYear,
-        generatedCount: generated.length,
-        suppressedCount: suppressedRecipientIds.length,
-      },
-    });
 
     const result: GenerateBatchResult = {
       idempotent: false,

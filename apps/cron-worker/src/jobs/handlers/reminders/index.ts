@@ -41,6 +41,7 @@ import type { JobHandler } from '../../runner.js';
 import { executeComplianceReminderScan } from '../compliance-reminder.js';
 import { detectOverdueApprovals } from './approval-sla.js';
 import { detectDrvClearanceExpiries } from './drv-clearance-expiries.js';
+import { executeLeaveAccrualScan } from './leave-accrual-scan.js';
 import { addDays, startOfDay } from './shared.js';
 import { executeWtLimitScan } from './wt-limit-scan.js';
 
@@ -479,6 +480,9 @@ export const remindersHandler: JobHandler = async ctx => {
             complianceReminderDigests: 0,
             wtLimitBreaches: 0,
             wtLimitDigests: 0,
+            leaveAccrualWorkers: 0,
+            leaveAccrualAccrued: 0,
+            leaveAccrualCarryovers: 0,
           };
         }
 
@@ -492,6 +496,7 @@ export const remindersHandler: JobHandler = async ctx => {
           idpProvenanceGced,
           complianceReminderResult,
           wtLimitScanResult,
+          leaveAccrualScanResult,
         ] = await Promise.all([
           runIsolated(
             ctx.log,
@@ -519,6 +524,7 @@ export const remindersHandler: JobHandler = async ctx => {
           // regional clients and never rejects; the dedup unique index is the
           // idempotency guard, not the lock-holding tx above.
           executeWtLimitScan(),
+          executeLeaveAccrualScan(),
         ]);
 
         return {
@@ -534,6 +540,9 @@ export const remindersHandler: JobHandler = async ctx => {
           complianceReminderDigests: complianceReminderResult.digests,
           wtLimitBreaches: wtLimitScanResult.breaches,
           wtLimitDigests: wtLimitScanResult.digests,
+          leaveAccrualWorkers: leaveAccrualScanResult.workers,
+          leaveAccrualAccrued: leaveAccrualScanResult.accrued,
+          leaveAccrualCarryovers: leaveAccrualScanResult.carryovers,
         };
       },
       { timeout: 60_000, maxWait: 10_000 },
@@ -551,6 +560,9 @@ export const remindersHandler: JobHandler = async ctx => {
       metrics.gauge('cron.reminders.compliance_reminder_digests', result.complianceReminderDigests);
       metrics.gauge('cron.reminders.wt_limit_breaches', result.wtLimitBreaches);
       metrics.gauge('cron.reminders.wt_limit_digests', result.wtLimitDigests);
+      metrics.gauge('cron.reminders.leave_accrual_workers', result.leaveAccrualWorkers);
+      metrics.gauge('cron.reminders.leave_accrual_accrued', result.leaveAccrualAccrued);
+      metrics.gauge('cron.reminders.leave_accrual_carryovers', result.leaveAccrualCarryovers);
     }
 
     return {

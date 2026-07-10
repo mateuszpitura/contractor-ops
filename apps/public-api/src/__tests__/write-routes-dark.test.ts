@@ -1,5 +1,5 @@
 /**
- * Double-dark contract for the public WRITE surface (INTEG-API-01/02).
+ * Double-dark contract for the public WRITE surface.
  *
  * Two independent darkness layers, both asserted here:
  *   1. Runtime flag gate — a write route 404s while `module.public-api` is OFF.
@@ -7,13 +7,11 @@
  *      here the caller is stubbed to throw that same NOT_FOUND so the assertion
  *      is on the Hono route wiring + error mapping (the REAL flag gate 404 is
  *      proven at the tRPC layer in `packages/api` public-api-flag.security.test).
- *   2. Spec/SDK visibility — after the Phase-100 OWASP gate passed, the write
- *      routes are un-hidden, so the derived OpenAPI 3.1 document now carries the
- *      write operations (they enter the spec / Scalar / SDK). The per-org flag
- *      gate is UNCHANGED, so layer 1 (404 when the module is off) still holds —
+ *   2. Spec/SDK visibility — after the OWASP gate passed, the write routes are
+ *      un-hidden, so the derived OpenAPI 3.1 document now carries the write
+ *      operations (they enter the spec / Scalar / SDK). The per-org flag gate
+ *      is UNCHANGED, so layer 1 (404 when the module is off) still holds —
  *      un-hiding a route ≠ enabling it for an org.
- *
- * Phase 99 built the transport double-dark; Phase 100 flipped it behind the gate.
  */
 
 import { TRPCError } from '@trpc/server';

@@ -105,21 +105,11 @@ vi.mock('../../services/r2', () => ({
   deleteObject: vi.fn(async () => undefined),
 }));
 
-vi.mock('../../services/cache', () => ({
-  cacheKey: vi.fn((...s: string[]) => s.join(':')),
-  cachedSingleflight: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  cached: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  invalidate: vi.fn(async () => undefined),
-  invalidateByPrefix: vi.fn(async () => undefined),
-  CacheKeys: {
-    orgSettings: (orgId: string) => `org-settings:${orgId}`,
-    orgSettingsJson: (orgId: string, key: string) => `org-settings-json:${orgId}:${key}`,
-    orgBranding: (orgId: string) => `org-branding:${orgId}`,
-    settingsPrefix: (orgId: string) => `org-settings:${orgId}`,
-    approvalChains: (orgId: string) => `approval-chains:${orgId}`,
-  },
-  CacheTTL: { ORG_SETTINGS: 300, ORG_SETTINGS_JSON: 300, ORG_BRANDING: 300, APPROVAL_CHAINS: 300 },
-}));
+vi.mock('../../services/cache', async importOriginal => {
+  const actual = await importOriginal<typeof import('../../services/cache')>();
+  const { createPassthroughCacheMock } = await import('../../__tests__/__mocks__/cache-service');
+  return createPassthroughCacheMock(actual);
+});
 
 vi.mock('../../services/notification-service', () => ({
   dispatch: vi.fn(async () => undefined),

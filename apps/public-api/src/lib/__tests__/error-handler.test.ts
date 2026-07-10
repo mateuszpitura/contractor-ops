@@ -125,6 +125,26 @@ describe('handleError', () => {
         status: 404,
       });
     });
+
+    it('redacts the raw message for 5xx tRPC errors', () => {
+      const c = makeContext();
+      const err = new TRPCError({
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'connect ECONNREFUSED 10.0.0.5:5432 password=hunter2',
+      });
+      handleError(err, c);
+      const [body] = (c.json as ReturnType<typeof vi.fn>).mock.calls[0] as [
+        { error: { code: string; message: string; status: number } },
+      ];
+      expect(body.error).toEqual({
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'An unexpected error occurred.',
+        status: 500,
+      });
+      // The sensitive raw detail must not survive into the client body.
+      expect(JSON.stringify(body)).not.toContain('hunter2');
+      expect(JSON.stringify(body)).not.toContain('ECONNREFUSED');
+    });
   });
 
   describe('TIER_REQUIRED structured message', () => {

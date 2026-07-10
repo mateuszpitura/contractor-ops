@@ -57,12 +57,12 @@ describe('package barrel exports', () => {
   describe('answer schema exports', () => {
     it('exports yesNoAnswerSchema', () => {
       expect(yesNoAnswerSchema).toBeDefined();
-      expect(yesNoAnswerSchema.parse('yes')).toBe('yes');
+      expect(yesNoAnswerSchema.parse('yes')).toEqual({ value: 'yes' });
     });
 
     it('exports likert5AnswerSchema', () => {
       expect(likert5AnswerSchema).toBeDefined();
-      expect(likert5AnswerSchema.parse(3)).toBe(3);
+      expect(likert5AnswerSchema.parse(3)).toEqual({ value: 3 });
     });
 
     it('exports score03AnswerSchema', () => {
@@ -71,7 +71,7 @@ describe('package barrel exports', () => {
 
     it('exports billingRatioSchema', () => {
       expect(billingRatioSchema).toBeDefined();
-      expect(billingRatioSchema.parse(50)).toBe(50);
+      expect(billingRatioSchema.parse(50)).toEqual({ value: 50 });
     });
 
     it('exports rationaleSchema', () => {

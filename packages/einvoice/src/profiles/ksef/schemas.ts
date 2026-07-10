@@ -51,13 +51,20 @@ export type KsefConnectionConfig = z.infer<typeof ksefConnectionConfigSchema>;
 // KSeF Parsed Invoice (FA(3) XML mapped structure)
 // ---------------------------------------------------------------------------
 
-const ksefPartySchema = z.object({
+/** Polish seller on KSeF inbound — must carry a valid 10-digit NIP. */
+const ksefSellerPartySchema = z.object({
   nip: z
     .string()
     .length(10)
     .regex(/^\d{10}$/, 'NIP must be exactly 10 digits'),
   name: z.string(),
   address: z.string().optional(),
+});
+
+/** Buyer may be B2C or foreign — NIP optional / non-PL formats allowed. */
+const ksefBuyerPartySchema = z.object({
+  nip: z.string().default(''),
+  name: z.string(),
 });
 
 const ksefInvoiceLineSchema = z.object({
@@ -93,8 +100,8 @@ export const ksefParsedInvoiceSchema = z.object({
   issueDate: z.string(),
   invoiceType: z.string(),
   currency: z.string().length(3),
-  seller: ksefPartySchema,
-  buyer: ksefPartySchema.omit({ address: true }),
+  seller: ksefSellerPartySchema,
+  buyer: ksefBuyerPartySchema,
   lines: z.array(ksefInvoiceLineSchema).min(1),
   totals: ksefTotalsSchema,
   payment: ksefPaymentSchema.optional(),

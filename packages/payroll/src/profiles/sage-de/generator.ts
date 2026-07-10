@@ -1,6 +1,9 @@
+import { createLogger } from '@contractor-ops/logger';
 import { toCsvBuffer } from '../../lib/csv-writer.js';
 import { cf, isoDate, splitName } from '../../lib/format.js';
 import type { PayrollFeed } from '../../types/feed.js';
+
+const log = createLogger({ module: 'payroll/sage-de-generator' });
 
 // Sage HR / Personalwirtschaft (DE) employee-import column contract. UTF-8 CSV
 // (umlauts preserved, unlike the ASCII DATEV file). Locked by a golden fixture;
@@ -18,6 +21,18 @@ export const SAGE_DE_COLUMNS = [
   'Austrittsdatum',
 ] as const;
 
+function sageKirchensteuerLabel(raw: unknown): string {
+  if (raw === null || raw === undefined || raw === '') return '';
+  if (typeof raw === 'boolean') {
+    // Legacy boolean carries no confession — never guess a code; export blank until migrated.
+    if (raw)
+      log.warn('kirchensteuer legacy boolean=true exported blank; migrate to confession code');
+    return '';
+  }
+  if (typeof raw === 'string') return raw;
+  return '';
+}
+
 export async function generateSageDeCsv(feed: PayrollFeed): Promise<Buffer> {
   const rows = feed.employees.map(e => {
     const { firstNames, surname } = splitName(e.displayName);
@@ -26,7 +41,7 @@ export async function generateSageDeCsv(feed: PayrollFeed): Promise<Buffer> {
       surname,
       firstNames,
       cf(e, 'lohnsteuerklasse'),
-      cf(e, 'kirchensteuer'),
+      sageKirchensteuerLabel(e.countryFields.kirchensteuer),
       cf(e, 'steuerIdNr'),
       cf(e, 'svNummer'),
       cf(e, 'krankenkasse'),

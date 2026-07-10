@@ -294,7 +294,6 @@ describe('ocr.trigger', () => {
 
     const result = await tenantCaller.ocr.trigger({
       documentId: 'doc-1',
-      storageKey: 'org/docs/file.pdf',
     });
 
     expect(result.extractionId).toBe('ext-1');
@@ -302,7 +301,7 @@ describe('ocr.trigger', () => {
       expect.objectContaining({
         organizationId: ORG_ID,
         documentId: 'doc-1',
-        storageKey: 'org/docs/file.pdf',
+        invoiceId: undefined,
       }),
     );
   });
@@ -382,38 +381,16 @@ describe('ocr.retrigger', () => {
       invoiceId: 'inv-1',
     });
 
-    mockPrisma.document.findFirst.mockResolvedValue({
-      storageKey: 'org/docs/retrigger.pdf',
-    });
-
-    mockPrisma.ocrExtraction.create.mockResolvedValue({
-      id: 'ext-new',
-    });
-
-    mockQStashPublish.mockResolvedValue({});
+    mockTriggerOcr.mockResolvedValue({ extractionId: 'ext-new' });
 
     const result = await tenantCaller.ocr.retrigger({ extractionId: 'ext-old' });
 
     expect(result.extractionId).toBe('ext-new');
-
-    // Verify the new extraction inherits documentId and invoiceId
-    const createCall = mockPrisma.ocrExtraction.create.mock.calls[0][0];
-    expect(createCall.data).toMatchObject({
-      organizationId: ORG_ID,
-      documentId: 'doc-retrigger',
-      invoiceId: 'inv-1',
-      provider: 'CLAUDE',
-      status: 'PENDING',
-    });
-
-    // Verify QStash job was dispatched
-    expect(mockQStashPublish).toHaveBeenCalledWith(
+    expect(mockTriggerOcr).toHaveBeenCalledWith(
       expect.objectContaining({
-        body: expect.objectContaining({
-          extractionId: 'ext-new',
-          organizationId: ORG_ID,
-          storageKey: 'org/docs/retrigger.pdf',
-        }),
+        organizationId: ORG_ID,
+        documentId: 'doc-retrigger',
+        invoiceId: 'inv-1',
       }),
     );
   });
@@ -437,7 +414,6 @@ describe('ocr.portalTrigger', () => {
 
     const result = await portalCaller.ocr.portalTrigger({
       documentId: 'doc-portal',
-      storageKey: 'org/portal/file.pdf',
     });
 
     expect(result.extractionId).toBe('ext-portal');
@@ -469,7 +445,7 @@ describe('ocr.portalGetResult', () => {
   });
 
   describe('tier gating', () => {
-    it('trigger and retrigger include requireTier(PRO)', async () => {
+    it('trigger, retrigger, and portalTrigger include requireTier(PRO)', async () => {
       const fs = await import('node:fs');
       const path = await import('node:path');
       const sourceDir = path.resolve(import.meta.dirname, '../../routers');
@@ -479,7 +455,7 @@ describe('ocr.portalGetResult', () => {
       expect(source).toContain("requireTier('PRO')");
 
       const matches = source.match(/\.use\(requireTier\('PRO'\)\)/g);
-      expect(matches).toHaveLength(2);
+      expect(matches).toHaveLength(3);
     });
 
     it('read-only procedures do NOT include requireTier', async () => {

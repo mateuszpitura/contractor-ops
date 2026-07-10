@@ -31,6 +31,7 @@ const { mockPrisma, mockDecryptCredentials } = vi.hoisted(() => {
       aggregate: vi.fn().mockResolvedValue({ _sum: { minutes: 120 } }),
     },
     timesheet: {
+      findUnique: vi.fn().mockResolvedValue({ status: 'DRAFT' }),
       update: vi.fn().mockResolvedValue({}),
     },
   };
@@ -382,7 +383,10 @@ describe('syncJiraWorklogs', () => {
 
   it('skips existing worklogs and updates them instead', async () => {
     mockPrisma.integrationConnection.findUnique.mockResolvedValue(connectedConnection());
-    mockPrisma.timeEntry.findFirst.mockResolvedValue({ id: 'existing-entry' });
+    mockPrisma.timeEntry.findFirst.mockResolvedValue({
+      id: 'existing-entry',
+      timesheetId: TIMESHEET_ID,
+    });
 
     const searchResponse = {
       issues: [{ key: 'PROJ-1', fields: { summary: 'Existing task' } }],

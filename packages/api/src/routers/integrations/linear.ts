@@ -14,6 +14,7 @@ import * as E from '../../errors';
 import { router } from '../../init';
 import { loadOrgIntegrationConnection } from '../../lib/integration-connection.js';
 import { integrationProcedure } from '../../lib/integration-procedure';
+import { writeAuditLog } from '../../services/audit-writer';
 import { linearGraphQL } from '../../services/linear-issue-sync';
 import { registerLinearWebhook } from '../../services/linear-webhook-handler';
 
@@ -230,6 +231,17 @@ export const linearRouter = router({
         },
       });
 
+      await writeAuditLog({
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user?.id ?? null,
+        action: 'INTEGRATION_LINEAR_STATUS_MAPPING_SAVE',
+        resourceType: 'ORGANIZATION',
+        resourceId: ctx.organizationId,
+        newValues: { teamId: input.teamId, mappingCount: input.mappings.length },
+        metadata: { connectionId: connection.id, teamId: input.teamId },
+      });
+
       // Fire-and-forget: register webhook for this team if not yet registered
       const webhooks = (config.webhooks as Record<string, string> | undefined) ?? {};
       if (!webhooks[input.teamId]) {
@@ -329,6 +341,16 @@ export const linearRouter = router({
             ...input.config,
           },
         },
+      });
+
+      await writeAuditLog({
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user?.id ?? null,
+        action: 'INTEGRATION_LINEAR_TASK_CONFIG_SAVE',
+        resourceType: 'WORKFLOW_TASK_TEMPLATE',
+        resourceId: input.taskTemplateId,
+        newValues: { config: input.config },
       });
 
       return { success: true };

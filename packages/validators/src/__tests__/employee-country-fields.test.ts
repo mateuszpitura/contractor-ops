@@ -46,8 +46,14 @@ describe('validateEmployeeCountryFields — minimal valid payloads', () => {
 
   it('parses a minimal valid DE field object', () => {
     expect(() =>
-      validateEmployeeCountryFields('DE', { lohnsteuerklasse: 'I', kirchensteuer: false }),
+      validateEmployeeCountryFields('DE', { lohnsteuerklasse: 'I', kirchensteuer: 'rk' }),
     ).not.toThrow();
+  });
+
+  it('rejects the legacy boolean kirchensteuer shape', () => {
+    expect(() =>
+      validateEmployeeCountryFields('DE', { lohnsteuerklasse: 'I', kirchensteuer: false }),
+    ).toThrow();
   });
 
   it('parses a minimal valid GB field object', () => {
@@ -90,7 +96,7 @@ describe('validateEmployeeCountryFields — required-field enforcement', () => {
 // ---------------------------------------------------------------------------
 
 describe('validateEmployeeCountryFields — national-ID keys are never accepted into JSON', () => {
-  const NATIONAL_ID_PAYLOADS: Array<[string, Record<string, unknown>]> = [
+  const NATIONAL_ID_PAYLOADS: [string, Record<string, unknown>][] = [
     ['PL', { stanowisko: 'Programista', etat: '1.00', pesel: '44051401359' }],
     ['US', { filingStatus: 'SINGLE', stateWithholding: 'CA', ssn: '078051120' }],
     ['SA', { saudizationCategory: 'GREEN', iqama: '2000000004' }],

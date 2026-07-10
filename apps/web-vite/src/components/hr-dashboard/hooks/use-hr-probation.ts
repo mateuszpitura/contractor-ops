@@ -6,12 +6,12 @@ import { useTRPC } from '../../../providers/trpc-provider.js';
 
 type RouterOutputs = inferRouterOutputs<AppRouter>;
 
-/** Probation-watchlist read model bucketed 14 / 7 / 0-day (HR-DASH-04). */
+/** Probation-watchlist read model bucketed 14 / 7 / 0-day. */
 export type HrProbation = RouterOutputs['hrDashboard']['getProbationWatchlist'];
 export type ProbationItem = HrProbation['dueToday'][number];
 
 /**
- * Sole tRPC boundary for the HR-DASH-04 probation-watchlist section. Reads the
+ * Sole tRPC boundary for the probation-watchlist section. Reads the
  * 0 / <=7 / <=14-day buckets of workers whose probation ends soon. Returns a
  * props bag + variant flags; the wired section owns loading / empty (nothing due)
  * / error.

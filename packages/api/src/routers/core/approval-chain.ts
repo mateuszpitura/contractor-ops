@@ -1,5 +1,6 @@
 import {
   approvalChainCreateSchema,
+  approvalChainListSchema,
   approvalChainUpdateSchema,
   entityIdSchema,
 } from '@contractor-ops/validators';
@@ -16,15 +17,17 @@ import { plain } from './approval-shared';
 export const approvalChainRouter = router({
   listChains: tenantProcedure
     .use(requirePermission({ settings: ['read'] }))
-    .query(async ({ ctx }) => {
+    .input(approvalChainListSchema.optional())
+    .query(async ({ ctx, input }) => {
+      const resourceType = input?.resourceType;
       return cached(
-        CacheKeys.approvalChains(ctx.organizationId),
+        CacheKeys.approvalChains(ctx.organizationId, resourceType),
         CacheTTL.APPROVAL_CHAINS,
         async () => {
           const chains = await ctx.db.approvalChainConfig.findMany({
             where: {
               organizationId: ctx.organizationId,
-              resourceType: 'INVOICE',
+              ...(resourceType ? { resourceType } : {}),
             },
             orderBy: { createdAt: 'asc' },
           });
@@ -61,7 +64,7 @@ export const approvalChainRouter = router({
           await tx.approvalChainConfig.updateMany({
             where: {
               organizationId: ctx.organizationId,
-              resourceType: 'INVOICE',
+              resourceType: input.resourceType,
               isDefault: true,
             },
             data: { isDefault: false },
@@ -71,7 +74,7 @@ export const approvalChainRouter = router({
         return tx.approvalChainConfig.create({
           data: {
             organizationId: ctx.organizationId,
-            resourceType: 'INVOICE',
+            resourceType: input.resourceType,
             name: input.name,
             isDefault: input.isDefault,
             conditionsJson: input.conditionsJson ?? undefined,
@@ -107,7 +110,7 @@ export const approvalChainRouter = router({
       const { id, ...data } = input;
 
       const updated = await ctx.db.$transaction(async tx => {
-        await findOrThrow(
+        const existing = await findOrThrow(
           () =>
             tx.approvalChainConfig.findFirst({
               where: { id, organizationId: ctx.organizationId },
@@ -119,7 +122,7 @@ export const approvalChainRouter = router({
           await tx.approvalChainConfig.updateMany({
             where: {
               organizationId: ctx.organizationId,
-              resourceType: 'INVOICE',
+              resourceType: existing.resourceType,
               isDefault: true,
               id: { not: id },
             },

@@ -75,6 +75,6 @@ describe('EntraProviderSectionView', () => {
       <EntraProviderSectionView {...buildProps({ flagApproved: true, onToggle })} />,
     );
     await user.click(screen.getByRole('switch'));
-    expect(onToggle).toHaveBeenCalledWith(true);
+    expect(onToggle).toHaveBeenCalledWith(true, expect.anything());
   });
 });

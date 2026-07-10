@@ -13,6 +13,7 @@ import { createLogger } from '@contractor-ops/logger';
 import { TRPCError } from '@trpc/server';
 import { HR_DASHBOARD_DISABLED } from '../errors';
 import { t } from '../init';
+import { hasQaDefaultOrg } from './raw-env';
 
 const log = createLogger({ service: 'hr-dashboard-flag-guard' });
 
@@ -28,6 +29,19 @@ export const assertHrDashboardEnabled = t.middleware(async ({ ctx, next }) => {
     throw new TRPCError({ code: 'UNAUTHORIZED' });
   }
   const evalRegion = region === 'ME' ? ('ME' as const) : ('EU' as const);
+
+  const workforce = evaluate('module.workforce-employees', { organizationId, region: evalRegion });
+  if (!workforce.enabled) {
+    log.warn(
+      { organizationId, reason: workforce.reason, flag: 'module.workforce-employees' },
+      'HR dashboard procedure blocked: workforce prerequisite disabled',
+    );
+    throw new TRPCError({
+      code: 'FORBIDDEN',
+      message: HR_DASHBOARD_DISABLED,
+      cause: { flag: 'module.workforce-employees', reason: workforce.reason },
+    });
+  }
 
   const result = evaluate('module.hr-dashboard', { organizationId, region: evalRegion });
   if (!result.enabled) {
@@ -52,5 +66,5 @@ export const assertHrDashboardEnabled = t.middleware(async ({ ctx, next }) => {
  */
 export function isHrDashboardRegistered(): boolean {
   const base = evaluate('module.hr-dashboard', { organizationId: 'ROOT', region: 'EU' });
-  return base.enabled || Boolean(process.env.QA_DEFAULT_ORG_ID);
+  return base.enabled || hasQaDefaultOrg();
 }

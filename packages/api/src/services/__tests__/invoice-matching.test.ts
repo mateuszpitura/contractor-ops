@@ -1,5 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { computeDuplicateCheckHash, runAutoMatch } from '../invoice-matching';
+import {
+  computeDuplicateCheckHash,
+  invoiceComparableNetMinor,
+  resolveInvoiceMatchLinks,
+  runAutoMatch,
+} from '../invoice-matching';
+import type { DbClient } from '../types';
 
 const { mockComputeTimeReconciliation } = vi.hoisted(() => ({
   mockComputeTimeReconciliation: vi.fn(),
@@ -12,6 +18,17 @@ vi.mock('../time-reconciliation', () => ({
 const ORG_ID = 'org-1';
 const CONTRACTOR_ID = 'contractor-1';
 const CONTRACT_ID = 'contract-1';
+
+function mockDb(overrides: Partial<DbClient> = {}): DbClient {
+  return {
+    contractor: { findFirst: vi.fn() },
+    contract: { findMany: vi.fn(), findFirst: vi.fn() },
+    invoice: { findFirst: vi.fn() },
+    organization: { findUniqueOrThrow: vi.fn() },
+    timeEntry: { aggregate: vi.fn() },
+    ...overrides,
+  } as unknown as DbClient;
+}
 
 function makeInvoice(overrides: Record<string, unknown> = {}) {
   return {
@@ -57,16 +74,48 @@ const mockPrisma = {
 };
 
 beforeEach(() => {
-  vi.clearAllMocks();
+  mockPrisma.contractor.findFirst.mockReset();
+  mockPrisma.contract.findMany.mockReset();
+  mockPrisma.contract.findFirst.mockReset();
+  mockPrisma.invoice.findFirst.mockReset();
+  mockComputeTimeReconciliation.mockReset();
   mockPrisma.contractor.findFirst.mockResolvedValue(null);
   mockPrisma.contract.findMany.mockResolvedValue([]);
   mockPrisma.contract.findFirst.mockResolvedValue(null);
   mockPrisma.invoice.findFirst.mockResolvedValue(null);
 });
 
-// ---------------------------------------------------------------------------
-// computeDuplicateCheckHash
-// ---------------------------------------------------------------------------
+describe('invoiceComparableNetMinor', () => {
+  it('uses subtotalMinor when present', () => {
+    expect(
+      invoiceComparableNetMinor({ subtotalMinor: 10_000, vatRate: '23', totalMinor: 12_300 }),
+    ).toBe(10_000);
+  });
+
+  it('derives net from gross and vatRate when subtotal missing', () => {
+    expect(invoiceComparableNetMinor({ vatRate: '23', totalMinor: 12_300 })).toBe(10_000);
+  });
+});
+
+describe('resolveInvoiceMatchLinks', () => {
+  it('preserves existing links when auto-match returns null ids', () => {
+    expect(
+      resolveInvoiceMatchLinks(
+        { contractorId: null, contractId: null },
+        { contractorId: 'ctr_portal', contractId: 'ctr_contract' },
+      ),
+    ).toEqual({ contractorId: 'ctr_portal', contractId: 'ctr_contract' });
+  });
+
+  it('prefers auto-match ids when present', () => {
+    expect(
+      resolveInvoiceMatchLinks(
+        { contractorId: 'ctr_nip', contractId: 'ctr_active' },
+        { contractorId: 'ctr_portal', contractId: 'ctr_contract' },
+      ),
+    ).toEqual({ contractorId: 'ctr_nip', contractId: 'ctr_active' });
+  });
+});
 
 describe('computeDuplicateCheckHash', () => {
   it('returns a deterministic hex string', () => {
@@ -101,14 +150,89 @@ describe('computeDuplicateCheckHash', () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// runAutoMatch
-// ---------------------------------------------------------------------------
-
 describe('runAutoMatch', () => {
-  // -------------------------------------------------------------------------
-  // Step 1: NIP matching -- early exits
-  // -------------------------------------------------------------------------
+  it('matches MONTHLY_FIXED on net amount not VAT gross', async () => {
+    const db = mockDb();
+    vi.mocked(db.contractor.findFirst).mockResolvedValue({ id: 'ctr_1' } as never);
+    vi.mocked(db.contract.findMany).mockResolvedValue([
+      {
+        id: 'contract_1',
+        rateType: 'MONTHLY_FIXED',
+        rateValueMinor: 10_000,
+        currency: 'PLN',
+      },
+    ] as never);
+    vi.mocked(db.invoice.findFirst).mockResolvedValue(null);
+
+    const result = await runAutoMatch(db, 'org_1', {
+      sellerTaxId: '1234567890',
+      subtotalMinor: 10_000,
+      vatRate: '23',
+      totalMinor: 12_300,
+      currency: 'PLN',
+      duplicateCheckHash: null,
+    });
+
+    expect(result.matchStatus).toBe('MATCHED');
+    expect(result.amountDeltaPercent).toBe(0);
+    expect(result.expectedAmountMinor).toBe(10_000);
+  });
+
+  it('uses time reconciliation expected amount for PER_HOUR contracts', async () => {
+    const db = mockDb();
+    vi.mocked(db.contractor.findFirst).mockResolvedValue({ id: 'ctr_1' } as never);
+    vi.mocked(db.contract.findMany).mockResolvedValue([
+      {
+        id: 'contract_hourly',
+        rateType: 'PER_HOUR',
+        rateValueMinor: 100_00,
+        currency: 'PLN',
+      },
+    ] as never);
+    vi.mocked(db.invoice.findFirst).mockResolvedValue(null);
+    mockComputeTimeReconciliation.mockResolvedValue({
+      approvedMinutes: 600,
+      rateValueMinor: 100_00,
+      rateType: 'PER_HOUR',
+      hoursPerDay: 8,
+      expectedAmountMinor: 100_000,
+      invoicedAmountMinor: 100_000,
+      deviationMinor: 0,
+      deviationPercent: 0,
+      withinThreshold: true,
+      thresholdPercent: 10,
+    });
+
+    const result = await runAutoMatch(db, 'org_1', {
+      sellerTaxId: '1234567890',
+      subtotalMinor: 100_000,
+      vatRate: '23',
+      totalMinor: 123_000,
+      currency: 'PLN',
+      duplicateCheckHash: null,
+      issueDate: new Date('2026-06-15'),
+    });
+
+    expect(result.expectedAmountMinor).toBe(100_000);
+    expect(result.matchStatus).toBe('MATCHED');
+    expect(result.amountDeltaPercent).toBe(0);
+    expect(mockComputeTimeReconciliation).toHaveBeenCalled();
+  });
+
+  it('returns UNMATCHED without contractor when sellerTaxId missing', async () => {
+    const db = mockDb();
+
+    const result = await runAutoMatch(db, 'org_1', {
+      sellerTaxId: null,
+      totalMinor: 12_300,
+      currency: 'PLN',
+      duplicateCheckHash: null,
+    });
+
+    expect(result.matchStatus).toBe('UNMATCHED');
+    expect(result.contractorId).toBeNull();
+    expect(db.contractor.findFirst).not.toHaveBeenCalled();
+  });
 
   it('returns UNMATCHED when sellerTaxId is null', async () => {
     const result = await runAutoMatch(
@@ -136,10 +260,6 @@ describe('runAutoMatch', () => {
     expect(result.flags).toEqual([]);
   });
 
-  // -------------------------------------------------------------------------
-  // Score accumulation: full 100 = 50 (NIP) + 30 (contract) + 20 (amount)
-  // -------------------------------------------------------------------------
-
   it('accumulates score 100 = 50 NIP + 30 contract + 20 amount within threshold', async () => {
     mockPrisma.contractor.findFirst.mockResolvedValue(makeContractor());
     mockPrisma.contract.findMany.mockResolvedValue([makeContract({ rateValueMinor: 500000 })]);
@@ -150,7 +270,6 @@ describe('runAutoMatch', () => {
       makeInvoice({ totalMinor: 500000 }),
     );
 
-    // 50 (NIP match) + 30 (active contract) + 20 (amount within 10%) = 100
     expect(result.score).toBe(100);
     expect(result.matchStatus).toBe('MATCHED');
     expect(result.contractorId).toBe(CONTRACTOR_ID);
@@ -160,15 +279,8 @@ describe('runAutoMatch', () => {
     expect(result.amountDeltaPercent).toBe(0);
   });
 
-  // -------------------------------------------------------------------------
-  // Score boundary: 80 = NIP + contract, no amount bonus
-  // -------------------------------------------------------------------------
-
   it('score 80 (NIP + contract, amount outside threshold) is still MATCHED', async () => {
     mockPrisma.contractor.findFirst.mockResolvedValue(makeContractor());
-    // Contract rate 100000, invoice 115000 => 15% deviation > 10% threshold
-    // No +20 amount bonus, but 50+30=80 >= 80 threshold
-    // However 15% > 10% triggers DISCREPANCY override
     mockPrisma.contract.findMany.mockResolvedValue([
       makeContract({ rateValueMinor: 100000, currency: 'PLN' }),
     ]);
@@ -179,9 +291,7 @@ describe('runAutoMatch', () => {
       makeInvoice({ totalMinor: 115000 }),
     );
 
-    // Score is 80 (50+30, no amount bonus since 15% > 10%)
     expect(result.score).toBe(80);
-    // BUT deviation override makes it DISCREPANCY regardless of score
     expect(result.matchStatus).toBe('DISCREPANCY');
   });
 
@@ -191,15 +301,10 @@ describe('runAutoMatch', () => {
 
     const result = await runAutoMatch(mockPrisma as never, ORG_ID, makeInvoice());
 
-    // 50 (NIP) + 30 (contract) = 80, no deviation calc since no rate
     expect(result.score).toBe(80);
     expect(result.matchStatus).toBe('MATCHED');
     expect(result.expectedAmountMinor).toBeNull();
   });
-
-  // -------------------------------------------------------------------------
-  // Score boundary: 50 = NIP only, no contracts
-  // -------------------------------------------------------------------------
 
   it('score 50 (NIP only, no active contracts) yields PARTIAL', async () => {
     mockPrisma.contractor.findFirst.mockResolvedValue(makeContractor());
@@ -215,14 +320,8 @@ describe('runAutoMatch', () => {
     expect(result.flags).toContain('NO_ACTIVE_CONTRACT');
   });
 
-  // -------------------------------------------------------------------------
-  // DISCREPANCY override: deviation > threshold overrides score
-  // -------------------------------------------------------------------------
-
   it('DISCREPANCY overrides even when score would be 100 (50% deviation)', async () => {
     mockPrisma.contractor.findFirst.mockResolvedValue(makeContractor());
-    // Contract rate 10000 minor (100 PLN), invoice 15000 minor (150 PLN)
-    // 50% deviation >> 10% threshold
     mockPrisma.contract.findMany.mockResolvedValue([makeContract({ rateValueMinor: 10000 })]);
 
     const result = await runAutoMatch(
@@ -231,7 +330,6 @@ describe('runAutoMatch', () => {
       makeInvoice({ totalMinor: 15000 }),
     );
 
-    // Score: 50 (NIP) + 30 (contract) = 80 (no +20 since 50% > 10%)
     expect(result.score).toBe(80);
     expect(result.matchStatus).toBe('DISCREPANCY');
     expect(result.amountDeltaMinor).toBe(5000);
@@ -240,13 +338,8 @@ describe('runAutoMatch', () => {
     expect(result.contractId).toBe(CONTRACT_ID);
   });
 
-  // -------------------------------------------------------------------------
-  // Amount deviation math
-  // -------------------------------------------------------------------------
-
   it('computes correct deviation: 100000 rate vs 110000 invoice = 10% exactly at threshold', async () => {
     mockPrisma.contractor.findFirst.mockResolvedValue(makeContractor());
-    // Contract rate: 100000 minor (1000 PLN), invoice: 110000 minor (1100 PLN)
     mockPrisma.contract.findMany.mockResolvedValue([makeContract({ rateValueMinor: 100000 })]);
 
     const result = await runAutoMatch(
@@ -257,7 +350,6 @@ describe('runAutoMatch', () => {
 
     expect(result.amountDeltaMinor).toBe(10000);
     expect(result.amountDeltaPercent).toBe(10);
-    // 10% is exactly at the 10% threshold (<=), so +20 score points
     expect(result.score).toBe(100);
     expect(result.matchStatus).toBe('MATCHED');
   });
@@ -266,7 +358,6 @@ describe('runAutoMatch', () => {
     mockPrisma.contractor.findFirst.mockResolvedValue(makeContractor());
     mockPrisma.contract.findMany.mockResolvedValue([makeContract({ rateValueMinor: 100000 })]);
 
-    // 9% deviation, within default 10% threshold
     const result = await runAutoMatch(
       mockPrisma as never,
       ORG_ID,
@@ -283,7 +374,6 @@ describe('runAutoMatch', () => {
     mockPrisma.contractor.findFirst.mockResolvedValue(makeContractor());
     mockPrisma.contract.findMany.mockResolvedValue([makeContract({ rateValueMinor: 100000 })]);
 
-    // 15% deviation -- over 10% default but within 20% custom
     const result = await runAutoMatch(
       mockPrisma as never,
       ORG_ID,
@@ -295,22 +385,11 @@ describe('runAutoMatch', () => {
     expect(result.score).toBe(100);
   });
 
-  // -------------------------------------------------------------------------
-  // Best contract selection
-  // -------------------------------------------------------------------------
-
   it('picks best contract by closest amount to invoice', async () => {
     mockPrisma.contractor.findFirst.mockResolvedValue(makeContractor());
-    // Contract A: rate 50000 (delta 35000), Contract B: rate 90000 (delta 5000)
     mockPrisma.contract.findMany.mockResolvedValue([
-      makeContract({
-        id: 'contract-far',
-        rateValueMinor: 50000,
-      }),
-      makeContract({
-        id: 'contract-close',
-        rateValueMinor: 90000,
-      }),
+      makeContract({ id: 'contract-far', rateValueMinor: 50000 }),
+      makeContract({ id: 'contract-close', rateValueMinor: 90000 }),
     ]);
 
     const result = await runAutoMatch(
@@ -319,7 +398,6 @@ describe('runAutoMatch', () => {
       makeInvoice({ totalMinor: 85000 }),
     );
 
-    // Best match: contract-close (delta 5000 < delta 35000)
     expect(result.contractId).toBe('contract-close');
     expect(result.expectedAmountMinor).toBe(90000);
   });
@@ -354,10 +432,6 @@ describe('runAutoMatch', () => {
     expect(result.score).toBe(80);
     expect(result.expectedAmountMinor).toBeNull();
   });
-
-  // -------------------------------------------------------------------------
-  // Flag generation
-  // -------------------------------------------------------------------------
 
   it('flags NO_ACTIVE_CONTRACT when contracts array empty', async () => {
     mockPrisma.contractor.findFirst.mockResolvedValue(makeContractor());
@@ -446,10 +520,6 @@ describe('runAutoMatch', () => {
     );
   });
 
-  // -------------------------------------------------------------------------
-  // Time reconciliation
-  // -------------------------------------------------------------------------
-
   it('calls time reconciliation for PER_HOUR contracts', async () => {
     mockPrisma.contractor.findFirst.mockResolvedValue(makeContractor());
     mockPrisma.contract.findMany.mockResolvedValue([makeContract({ rateType: 'PER_HOUR' })]);
@@ -468,7 +538,7 @@ describe('runAutoMatch', () => {
 
     const result = await runAutoMatch(mockPrisma as never, ORG_ID, makeInvoice());
 
-    expect(mockComputeTimeReconciliation).toHaveBeenCalledOnce();
+    expect(mockComputeTimeReconciliation).toHaveBeenCalledTimes(2);
     expect(result.flags).not.toContain('TIME_DEVIATION');
   });
 
@@ -480,10 +550,10 @@ describe('runAutoMatch', () => {
       rateValueMinor: 500000,
       rateType: 'PER_DAY',
       hoursPerDay: 8,
-      expectedAmountMinor: 250000,
+      expectedAmountMinor: 500000,
       invoicedAmountMinor: 500000,
       deviationMinor: 250000,
-      deviationPercent: 100,
+      deviationPercent: 50,
       withinThreshold: false,
       thresholdPercent: 10,
     });
@@ -491,7 +561,6 @@ describe('runAutoMatch', () => {
     const result = await runAutoMatch(mockPrisma as never, ORG_ID, makeInvoice());
 
     expect(result.flags).toContain('TIME_DEVIATION');
-    // Warning only: invoice amount still matches contract rate → MATCHED
     expect(result.matchStatus).toBe('MATCHED');
     expect(result.score).toBe(100);
   });

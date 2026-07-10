@@ -234,13 +234,14 @@ export const portalTimeRouter = router({
         });
       }
 
-      // Get or create timesheet for the start date's week
+      // Get or create timesheet for the start date's week (imports require editable sheet)
       const monday = getISOMonday(input.startDate);
       const timesheet = await getOrCreateTimesheet(
         ctx.db,
         ctx.organizationId,
         ctx.contractorId,
         monday,
+        { requireEditable: true },
       );
 
       // Find the contractor's first active contract for association

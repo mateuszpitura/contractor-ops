@@ -4,10 +4,11 @@ import { createLogger } from '@contractor-ops/logger';
 import { metrics } from '@contractor-ops/logger/metrics';
 import type { BillingCreditDenialReason } from '@contractor-ops/validators';
 import { billingCreditDenialReason } from '@contractor-ops/validators';
-import { TIER_CREDIT_ALLOWANCE, TRIAL_CREDIT_ALLOWANCE } from './billing-constants';
+import { resolveOcrCreditAllowance } from './billing-constants';
 import { CacheKeys, CacheTTL, cached, invalidate } from './cache';
 import { enqueueNotificationOutboxEvent } from './outbox';
 import { stripe } from './stripe-client';
+import type { DbClient } from './types';
 
 const log = createLogger({ service: 'credit-service' });
 
@@ -16,8 +17,10 @@ const log = createLogger({ service: 'credit-service' });
 // ---------------------------------------------------------------------------
 
 export interface CreditBalance {
+  /** Remaining usable credits (allowance + topUp − used, floored at 0). */
   balance: number;
   allowance: number;
+  topUp: number;
   used: number;
   tier: string | null;
 }
@@ -38,11 +41,6 @@ export interface TopUpResult {
 
 /**
  * Returns the current OCR credit balance for an organization.
- *
- * - Fetches the active/trialing subscription
- * - Uses TRIAL_CREDIT_ALLOWANCE (5) for trialing subscriptions
- * - Uses TIER_CREDIT_ALLOWANCE for active subscriptions
- * - Aggregates OcrCreditLedger entries within the current billing period
  */
 export async function getCreditBalance(organizationId: string): Promise<CreditBalance> {
   return cached(CacheKeys.creditBalance(organizationId), CacheTTL.CREDIT_BALANCE, () =>
@@ -56,62 +54,130 @@ async function fetchCreditBalance(organizationId: string): Promise<CreditBalance
   });
 
   if (!subscription || (subscription.status !== 'ACTIVE' && subscription.status !== 'TRIALING')) {
-    return { balance: 0, allowance: 0, used: 0, tier: null };
+    return { balance: 0, allowance: 0, topUp: 0, used: 0, tier: null };
   }
 
-  // Trial subscriptions get reduced allowance
-  const allowance =
-    subscription.status === 'TRIALING'
-      ? TRIAL_CREDIT_ALLOWANCE
-      : TIER_CREDIT_ALLOWANCE[subscription.tier as keyof typeof TIER_CREDIT_ALLOWANCE];
+  const allowance = resolveOcrCreditAllowance(subscription);
+  if (allowance === null) {
+    log.warn(
+      { organizationId, tier: subscription.tier },
+      'unknown subscription tier for OCR credits',
+    );
+    return { balance: 0, allowance: 0, topUp: 0, used: 0, tier: subscription.tier };
+  }
 
-  const aggregation = await prisma.ocrCreditLedger.aggregate({
-    where: {
-      organizationId,
-      periodStart: subscription.currentPeriodStart,
-      periodEnd: subscription.currentPeriodEnd,
-    },
-    _sum: { credits: true },
-  });
+  const periodWhere = {
+    organizationId,
+    periodStart: subscription.currentPeriodStart,
+    periodEnd: subscription.currentPeriodEnd,
+  };
 
-  // Separate negative entries for "used" count
-  const negativeAgg = await prisma.ocrCreditLedger.aggregate({
-    where: {
-      organizationId,
-      periodStart: subscription.currentPeriodStart,
-      periodEnd: subscription.currentPeriodEnd,
-      credits: { lt: 0 },
-    },
-    _sum: { credits: true },
-  });
+  const [negativeAgg, topUpAgg] = await Promise.all([
+    prisma.ocrCreditLedger.aggregate({
+      where: { ...periodWhere, credits: { lt: 0 } },
+      _sum: { credits: true },
+    }),
+    prisma.ocrCreditLedger.aggregate({
+      where: { ...periodWhere, credits: { gt: 0 }, reason: 'TOP_UP' },
+      _sum: { credits: true },
+    }),
+  ]);
 
-  const netSum = aggregation._sum.credits ?? 0;
   const used = Math.abs(negativeAgg._sum.credits ?? 0);
+  const topUp = topUpAgg._sum.credits ?? 0;
+  const balance = computeCreditRemaining(allowance, topUp, used);
 
   return {
-    balance: netSum,
+    balance,
     allowance,
+    topUp,
     used,
     tier: subscription.tier,
   };
+}
+
+/** Gate formula shared by balance reads and deduction checks. */
+export function computeCreditRemaining(
+  allowance: number,
+  topUpCredits: number,
+  used: number,
+): number {
+  return Math.max(0, allowance + topUpCredits - used);
+}
+
+/**
+ * When a billing period rolls, unused purchased top-up credits carry into the
+ * new period as a single TOP_UP ledger row (deduped via stripeEventId).
+ */
+export async function carryForwardUnusedTopUpCredits(
+  tx: DbClient,
+  params: {
+    organizationId: string;
+    priorPeriodStart: Date;
+    priorPeriodEnd: Date;
+    newPeriodStart: Date;
+    newPeriodEnd: Date;
+    allowance: number;
+  },
+): Promise<number> {
+  const rolloverEventId = `topup_rollover:${params.organizationId}:${params.newPeriodStart.toISOString()}`;
+  const existing = await tx.ocrCreditLedger.findFirst({
+    where: { stripeEventId: rolloverEventId },
+    select: { id: true },
+  });
+  if (existing) return 0;
+
+  const priorWhere = {
+    organizationId: params.organizationId,
+    periodStart: params.priorPeriodStart,
+    periodEnd: params.priorPeriodEnd,
+  };
+
+  const [usageAgg, topUpAgg] = await Promise.all([
+    tx.ocrCreditLedger.aggregate({
+      where: { ...priorWhere, credits: { lt: 0 } },
+      _sum: { credits: true },
+    }),
+    tx.ocrCreditLedger.aggregate({
+      where: { ...priorWhere, credits: { gt: 0 }, reason: 'TOP_UP' },
+      _sum: { credits: true },
+    }),
+  ]);
+
+  const used = Math.abs(usageAgg._sum.credits ?? 0);
+  const priorTopUp = topUpAgg._sum.credits ?? 0;
+  const unusedTopUp = Math.max(0, priorTopUp - Math.max(0, used - params.allowance));
+
+  if (unusedTopUp <= 0) return 0;
+
+  await tx.ocrCreditLedger.create({
+    data: {
+      organizationId: params.organizationId,
+      credits: unusedTopUp,
+      reason: 'TOP_UP',
+      periodStart: params.newPeriodStart,
+      periodEnd: params.newPeriodEnd,
+      stripeEventId: rolloverEventId,
+    },
+  });
+
+  log.info(
+    {
+      organizationId: params.organizationId,
+      unusedTopUp,
+      priorPeriodStart: params.priorPeriodStart.toISOString(),
+      newPeriodStart: params.newPeriodStart.toISOString(),
+    },
+    'carried forward unused top-up credits into new billing period',
+  );
+
+  return unusedTopUp;
 }
 
 // ---------------------------------------------------------------------------
 // Atomic Credit Deduction
 // ---------------------------------------------------------------------------
 
-/**
- * Atomically checks and deducts one OCR credit for an organization.
- *
- * Uses Prisma's interactive transaction with Serializable isolation
- * to prevent race conditions (concurrent deductions without serialization
- * can double-count credits).
- *
- * After successful deduction, fires a Stripe Meter event (fire-and-forget)
- * for invoice-level usage tracking.
- *
- * @returns Whether the deduction was allowed, remaining credits, and reason if denied
- */
 export async function checkAndDeductCredit(organizationId: string): Promise<CreditDeductionResult> {
   const result = await prisma.$transaction(
     async (tx: Prisma.TransactionClient) => {
@@ -131,25 +197,40 @@ export async function checkAndDeductCredit(organizationId: string): Promise<Cred
         };
       }
 
-      // Trial subscriptions get reduced allowance
-      const allowance =
-        subscription.status === 'TRIALING'
-          ? TRIAL_CREDIT_ALLOWANCE
-          : TIER_CREDIT_ALLOWANCE[subscription.tier as keyof typeof TIER_CREDIT_ALLOWANCE];
+      const allowance = resolveOcrCreditAllowance(subscription);
+      if (allowance === null) {
+        log.error(
+          { organizationId, tier: subscription.tier },
+          'unknown subscription tier for OCR credit deduction',
+        );
+        return {
+          allowed: false as const,
+          remaining: 0,
+          reason: billingCreditDenialReason.noSubscription,
+          stripeCustomerId: null,
+        };
+      }
 
-      // Aggregate negative credits (usage) for the current billing period
-      const usageAgg = await tx.ocrCreditLedger.aggregate({
-        where: {
-          organizationId,
-          periodStart: subscription.currentPeriodStart,
-          periodEnd: subscription.currentPeriodEnd,
-          credits: { lt: 0 },
-        },
-        _sum: { credits: true },
-      });
+      const periodWhere = {
+        organizationId,
+        periodStart: subscription.currentPeriodStart,
+        periodEnd: subscription.currentPeriodEnd,
+      };
+
+      const [usageAgg, topUpAgg] = await Promise.all([
+        tx.ocrCreditLedger.aggregate({
+          where: { ...periodWhere, credits: { lt: 0 } },
+          _sum: { credits: true },
+        }),
+        tx.ocrCreditLedger.aggregate({
+          where: { ...periodWhere, credits: { gt: 0 }, reason: 'TOP_UP' },
+          _sum: { credits: true },
+        }),
+      ]);
 
       const used = Math.abs(usageAgg._sum.credits ?? 0);
-      const remaining = allowance - used;
+      const topUpCredits = topUpAgg._sum.credits ?? 0;
+      const remaining = computeCreditRemaining(allowance, topUpCredits, used);
 
       if (remaining <= 0) {
         return {
@@ -160,8 +241,6 @@ export async function checkAndDeductCredit(organizationId: string): Promise<Cred
         };
       }
 
-      // Deduct one credit. Capture the ledger ID so the meter event can use
-      // it as the Stripe `identifier` for native dedup.
       const ledgerEntry = await tx.ocrCreditLedger.create({
         data: {
           organizationId,
@@ -173,10 +252,6 @@ export async function checkAndDeductCredit(organizationId: string): Promise<Cred
         select: { id: true },
       });
 
-      // This deduction consumes the period's final credit — enqueue the admin
-      // heads-up durably inside the same tx so it is delivered iff the deduction
-      // commits (drain delivers it exactly-once). The dedupKey scopes it to one
-      // notice per billing period.
       if (remaining - 1 === 0) {
         await enqueueCreditExhaustedNotification(
           tx,
@@ -197,28 +272,19 @@ export async function checkAndDeductCredit(organizationId: string): Promise<Cred
     },
   );
 
-  // Track metrics
   metrics.increment('billing.credit_deduction', 1, {
     outcome: result.allowed ? 'granted' : (result.reason ?? 'unknown'),
   });
 
-  // Invalidate credit cache after deduction
   if (result.allowed) {
     void invalidate(CacheKeys.creditBalance(organizationId));
   }
 
-  // Metric only — the admin heads-up itself was enqueued into the outbox inside
-  // the deduction tx above (durable, exactly-once) rather than dispatched here.
   if (result.allowed && result.remaining === 0) {
     metrics.increment('billing.creditsExhausted', 1);
   }
 
-  // Fire-and-forget Stripe Meter event after successful deduction (outside transaction)
   if (result.allowed && result.stripeCustomerId) {
-    // Stripe meter events have native dedup via `identifier` (Stripe enforces
-    // uniqueness within a rolling 24h period). Without it, a retried OCR job
-    // (QStash, fixer cron) double-bills the customer. Derive from the ledger
-    // entry ID when available so the natural row-key doubles as the dedup key.
     const meterIdentifier = `ocr-${organizationId}-${result.ledgerEntryId ?? Date.now().toString()}`;
     stripe.billing.meterEvents
       .create({
@@ -232,7 +298,6 @@ export async function checkAndDeductCredit(organizationId: string): Promise<Cred
       .catch((err: unknown) => log.error({ err }, 'meter event failed'));
   }
 
-  // Strip internal stripeCustomerId from the return type
   return {
     allowed: result.allowed,
     remaining: result.remaining,
@@ -244,14 +309,6 @@ export async function checkAndDeductCredit(organizationId: string): Promise<Cred
 // Top-Up Credit Allocation
 // ---------------------------------------------------------------------------
 
-/**
- * Allocates top-up OCR credits for an organization.
- *
- * Creates a positive ledger entry with reason "TOP_UP" in the
- * current billing period.
- *
- * @returns The new credit balance after allocation
- */
 export async function allocateTopUpCredits(params: {
   organizationId: string;
   credits: number;
@@ -280,20 +337,29 @@ export async function allocateTopUpCredits(params: {
     },
   });
 
-  // Invalidate credit cache after top-up
   void invalidate(CacheKeys.creditBalance(params.organizationId));
 
-  // Return updated balance
-  const aggregation = await prisma.ocrCreditLedger.aggregate({
-    where: {
-      organizationId: params.organizationId,
-      periodStart: subscription.currentPeriodStart,
-      periodEnd: subscription.currentPeriodEnd,
-    },
-    _sum: { credits: true },
-  });
+  const allowance = resolveOcrCreditAllowance(subscription);
+  const periodWhere = {
+    organizationId: params.organizationId,
+    periodStart: subscription.currentPeriodStart,
+    periodEnd: subscription.currentPeriodEnd,
+  };
+  const [negativeAgg, topUpAgg] = await Promise.all([
+    prisma.ocrCreditLedger.aggregate({
+      where: { ...periodWhere, credits: { lt: 0 } },
+      _sum: { credits: true },
+    }),
+    prisma.ocrCreditLedger.aggregate({
+      where: { ...periodWhere, credits: { gt: 0 }, reason: 'TOP_UP' },
+      _sum: { credits: true },
+    }),
+  ]);
+  const used = Math.abs(negativeAgg._sum.credits ?? 0);
+  const topUp = topUpAgg._sum.credits ?? 0;
+  const balance = computeCreditRemaining(allowance ?? 0, topUp, used);
 
-  return { balance: aggregation._sum.credits ?? 0 };
+  return { balance };
 }
 
 // ---------------------------------------------------------------------------

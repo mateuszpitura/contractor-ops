@@ -344,6 +344,10 @@ export function registerMultiProviderWebhookRoute(app: FastifyInstance): void {
     }
 
     const isSlackViewSubmission = provider === 'slack' && rawBody.includes('view_submission');
+    const isSlackRejectAction =
+      provider === 'slack' &&
+      rawBody.includes('block_actions') &&
+      rawBody.includes('reject_invoice');
 
     const parsedBody = parseWebhookBody(provider, rawBody);
     if (!parsedBody.ok) {
@@ -370,6 +374,37 @@ export function registerMultiProviderWebhookRoute(app: FastifyInstance): void {
     );
     if ('skip' in org) {
       return reply.code(200).send({ received: true, persisted: false });
+    }
+
+    if (isSlackRejectAction) {
+      const payload = payloadJson as {
+        type?: string;
+        trigger_id?: string;
+        user?: { id: string };
+        channel?: { id: string };
+        message?: { ts: string };
+        actions?: Array<{ action_id: string; value?: string }>;
+      };
+      if (
+        payload.type === 'block_actions' &&
+        payload.trigger_id &&
+        payload.user?.id &&
+        payload.channel?.id &&
+        payload.message?.ts &&
+        payload.actions?.length
+      ) {
+        const { openSlackRejectModal } = await import(
+          '@contractor-ops/api/services/slack-interactivity-handler'
+        );
+        await openSlackRejectModal(org.orgId, {
+          trigger_id: payload.trigger_id,
+          user: payload.user,
+          channel: payload.channel,
+          message: payload.message,
+          actions: payload.actions,
+        });
+      }
+      return reply.code(200).send({ ok: true });
     }
 
     let delivery: { id: string };

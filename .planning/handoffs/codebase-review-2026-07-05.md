@@ -530,6 +530,27 @@ Fix order:
 **Quality smell to re-verify:** phase-88 pattern — builders unit-tested green while wired path was unreachable at merge; confirm `payment-us-export.e2e.test.ts` drives real factory selection, not mocks.
 **Exemplary — spend zero effort:** payment export/settlement/skonto/late-interest/ACH, all 5 e-invoice profile validator suites, classification rule-sets, 1042-S/1099-K/WHT/TIN/treaty, all webhook handlers (unit+MSW), public-api auth/rate-limit/scopes, tenant/audit/outbox/advisory-lock infra, provider adapters, personnel-file + leave (Ph91/92).
 
+## VERIFICATION VERDICT — branch `review-fixes` (2bd9229ae..d1a011eec, 44 fixes) — 2026-07-05
+
+Adversarial 3-verifier pass. **SHIP-WITH-FIXES.** 13/16 spot-checked fixes HOLD, 3 PARTIAL; test-integrity CLEAN across all 51 touched test files (no weakened assertions — several strengthened; suites re-run green: security 80P/3todo, cron-worker 81/81); migrations additive+reversible, partial-unique predicates and NitaqatBand enum verified; scope clean (no excluded-area edits, no new breadcrumbs, wiki updated, no new deps, render.yaml hardening verified).
+
+Fix on branch before merge (all small):
+1. **Stripe watermark (M1):** `billing-webhook.ts:575,682` — `handlePaymentFailed`/`handleSubscriptionPaused` neither check nor advance `lastEventCreated` → late age-gate-exempt `subscription.updated` can resurrect ACTIVE for a delinquent org (self-heals ≤24h via reconcile cron, still fix).
+2. **e-sign completion TOCTOU (M3):** no unique on `SigningEvent(signingEnvelopeId, 'SIGNED_PDF_SAVED')` — concurrent double-delivery → duplicate signed Documents. Add partial unique + P2002-as-idempotent.
+3. **T0-4 wiring untested:** `org-creation-seed-templates.test.ts` tests the delegate, not the hook registration — deleting `afterCreateOrganization:` keeps suite green. Add wiring assertion.
+4. **Autenti crash window (M2):** retry after crash between provider-create and `externalEnvelopeId` write-back re-creates the provider process — on the claimed-but-unstamped path throw CONFLICT (manual reconcile) instead of re-creating.
+
+Follow-up (not merge-gating): **drift-check CI gate is inert** — no `MIGRATE_SHADOW_DATABASE_URL` provisioned in CI + WARN-degrade on replay errors → the exact T0-6 class can recur silently; provision shadow PG in CI + fix replay health. LOWs: delete-path watermark unconditioned; race-loser writes settlement provenance out-of-tx (idempotent, wasted work); `settlementRateDate` = payment date not ECB observation date; `Math.random` outbox id; `InvoiceInterestClaim` full (not partial) unique — blocks any future void/re-claim path; discard (don't commit) the spurious `de.d.ts`/`de.js` worktree churn. Coordination: `form-1099-nec.service.ts` persist-seam now requires a `$transaction`-capable client — inform phase-86 owner.
+
+### RE-VERIFICATION 2026-07-06 (d1a011eec..HEAD, 9 follow-up commits) — **SHIP**
+
+All 4 pre-merge fixes verified CLOSED in source with suites green (billing/esign 91P, auth 281P, security 81P/3todo). Migration replay-health rework verified **REPLAY-SAFE by live replay**: full 33-migration history applied to a throwaway Postgres 17 (`migrate deploy` exit 0); deleted `__worker_id_required` content survived byte-identical under `20260705160001_`; no double-CREATEs; down.sql reversals complete; `phase_73` re-date content-identical (R100).
+
+Remaining follow-ups (non-gating):
+1. **MED — drift-check STILL inert, new cause:** DB is multi-schema (`public` + `app`); the tmp config `check-migration-schema-drift.ts:88-91` writes lacks `schemas = ["public","app"]`/multiSchema → `migrate diff` aborts P4002 (exit 1, not 2) → WARN exit 0 even with the now-provisioned CI shadow DB. Commit c25e80843's "prints the precise drift diff" claim is inaccurate; step is honestly `continue-on-error` though. Fix: add schemas/multiSchema to the tmp config.
+2. **MED — Autenti claimed-but-unstamped CONFLICT is a permanent wedge:** no reaper/reconcile job, no runbook — crash between provider-create and id write-back blocks that (org, document, signer-set) until manual DB edit. Fail-closed by design; add a runbook entry + consider an admin unstick procedure.
+3. LOW/INFO: second-granularity Stripe watermark can't discriminate same-second events (inherent); e-sign P2002 catch relies on absence of other uniques on Document/DocumentLink (add constraint-name check when convenient); T0-4 test gates the hooks object, not the `organizationHooks,` plugin-registration line; devs with previously-`migrate deploy`ed local DBs need `migrate resolve`/reset after the phase_73 re-date (db-push devs unaffected).
+
 ## Addendum-3 sequencing
 - **Blockers if CMS/blog in launch scope:** CMS-0-1..4 (else defer whole CMS tier).
 - **Blocker for Gulf/AR release:** AR locale re-translation (I18N-Q-2) + AR statutory review (I18N-Q-6). EN/DE/PL launch unaffected — fix scaffold keys (I18N-Q-1) regardless, they render broken text in all locales.

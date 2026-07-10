@@ -22,6 +22,7 @@ const {
   mockParticipantFindMany,
   mockConnectionFindFirst,
   mockConnectionUpdate,
+  mockOrgFindUnique,
   mockGetCredentials,
   mockPollAndProcess,
 } = vi.hoisted(() => ({
@@ -29,6 +30,7 @@ const {
   mockParticipantFindMany: vi.fn(async () => [] as Array<{ organizationId: string }>),
   mockConnectionFindFirst: vi.fn(),
   mockConnectionUpdate: vi.fn(async () => ({})),
+  mockOrgFindUnique: vi.fn(async () => ({ dataRegion: 'EU' }) as { dataRegion: string } | null),
   mockGetCredentials: vi.fn(async () => ({ accessToken: 'token-1' })),
   mockPollAndProcess: vi.fn(async (_organizationId: string) => 0),
 }));
@@ -54,8 +56,8 @@ vi.mock('@contractor-ops/api/services/peppol-orchestrator', () => ({
   },
 }));
 
-vi.mock('@contractor-ops/db', () => ({
-  prisma: {
+vi.mock('@contractor-ops/db', () => {
+  const prismaMock = {
     peppolParticipant: {
       findMany: (...a: unknown[]) =>
         (mockParticipantFindMany as (...a: unknown[]) => unknown)(...a),
@@ -66,11 +68,40 @@ vi.mock('@contractor-ops/db', () => ({
       findMany: vi.fn(async () => []),
       update: (...a: unknown[]) => (mockConnectionUpdate as (...a: unknown[]) => unknown)(...a),
     },
-  },
-  prismaRaw: {},
-  getRegionalClient: () => ({}),
-  SUPPORTED_REGIONS: ['EU', 'ME', 'US'],
-}));
+    organization: {
+      findUnique: (...a: unknown[]) => (mockOrgFindUnique as (...a: unknown[]) => unknown)(...a),
+    },
+  };
+  // Single-region mirror of packages/db/src/region.ts: every helper resolves
+  // to the one mocked client so route handlers exercise the same seams.
+  const findAcrossRegions = async (
+    finder: (client: typeof prismaMock, region: string) => Promise<unknown>,
+  ) => {
+    const result = await finder(prismaMock, 'EU');
+    return result == null ? null : { result, region: 'EU', client: prismaMock };
+  };
+  const resolveOrganizationRegion = async (organizationId: string) => {
+    const found = await findAcrossRegions(async client => {
+      const org = (await client.organization.findUnique({
+        where: { id: organizationId },
+        select: { dataRegion: true },
+      })) as { dataRegion?: string } | null;
+      if (!org) return null;
+      return org.dataRegion ?? 'EU';
+    });
+    if (!found) return null;
+    return { result: found.result, region: found.region, client: prismaMock };
+  };
+  return {
+    prisma: prismaMock,
+    prismaRaw: {},
+    getRegionalClient: () => prismaMock,
+    tryGetRegionalClient: () => prismaMock,
+    SUPPORTED_REGIONS: ['EU'],
+    findAcrossRegions,
+    resolveOrganizationRegion,
+  };
+});
 
 vi.mock('@contractor-ops/integrations', async importOriginal => {
   const actual = await importOriginal<typeof import('@contractor-ops/integrations')>();
@@ -113,6 +144,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   mockVerify.mockResolvedValue(true);
   mockParticipantFindMany.mockResolvedValue([]);
+  mockOrgFindUnique.mockResolvedValue({ dataRegion: 'EU' });
   mockConnectionFindFirst.mockResolvedValue({
     id: 'conn-1',
     credentialsRef: 'ref',
@@ -172,14 +204,25 @@ describe('POST /peppol/poll', () => {
   });
 
   it('targets a single org when organizationId is provided', async () => {
-    mockParticipantFindMany.mockResolvedValueOnce([{ organizationId: 'org-1' }]);
     const res = await post({ organizationId: 'org-1' });
     expect(res.statusCode).toBe(200);
-    expect(mockParticipantFindMany).toHaveBeenCalledWith({
-      where: { organizationId: 'org-1', status: 'ACTIVE' },
-      select: { organizationId: true },
+    // Single-org poll locates the org's region; the ACTIVE-participant sweep
+    // only runs for the empty-body fan-out (CONNECTED gate lives in pollParticipant).
+    expect(mockOrgFindUnique).toHaveBeenCalledWith({
+      where: { id: 'org-1' },
+      select: { dataRegion: true },
     });
+    expect(mockParticipantFindMany).not.toHaveBeenCalled();
     expect(mockPollAndProcess).toHaveBeenCalledWith('org-1');
+  });
+
+  it('polls nothing when the targeted org is not found in any region', async () => {
+    mockOrgFindUnique.mockResolvedValue(null);
+    const res = await post({ organizationId: 'org-missing' });
+    expect(res.statusCode).toBe(200);
+    const body = JSON.parse(res.body) as { polled?: number };
+    expect(body.polled).toBe(0);
+    expect(mockPollAndProcess).not.toHaveBeenCalled();
   });
 
   it('returns 500 when the participant query throws', async () => {

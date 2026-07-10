@@ -24,7 +24,12 @@ import { isDemoOrg } from '@contractor-ops/api/lib/demo';
 import { recordQueueDepth } from '@contractor-ops/api/services/cron-monitor';
 import { PeppolOrchestrator } from '@contractor-ops/api/services/peppol-orchestrator';
 import { BackpressureRoutes } from '@contractor-ops/api/services/qstash-backpressure';
-import { prisma } from '@contractor-ops/db';
+import type { PrismaClient } from '@contractor-ops/db';
+import {
+  resolveOrganizationRegion,
+  SUPPORTED_REGIONS,
+  tryGetRegionalClient,
+} from '@contractor-ops/db';
 import { StorecoveAdapter } from '@contractor-ops/einvoice';
 import { getCredentials } from '@contractor-ops/integrations';
 import { createCronLogger, createWebhookLogger } from '@contractor-ops/logger';
@@ -45,10 +50,11 @@ const peppolPollBodySchema = z.preprocess(
 );
 
 async function pollParticipant(
+  db: PrismaClient,
   organizationId: string,
 ): Promise<{ organizationId: string; processed: number } | null> {
   try {
-    const connection = await prisma.integrationConnection.findFirst({
+    const connection = await db.integrationConnection.findFirst({
       where: { organizationId, provider: 'PEPPOL', status: 'CONNECTED' },
     });
     if (!connection) return null;
@@ -68,7 +74,7 @@ async function pollParticipant(
     const orchestrator = new PeppolOrchestrator(adapter);
     const processed = await orchestrator.pollAndProcessInbound(organizationId);
 
-    await prisma.integrationConnection.update({
+    await db.integrationConnection.update({
       where: { id: connection.id },
       data: { lastSyncAt: new Date(), lastSuccessAt: new Date() },
     });
@@ -76,17 +82,21 @@ async function pollParticipant(
     return { organizationId, processed };
   } catch (error) {
     log.error({ err: error, organizationId }, 'poll failed for org');
-    await recordPollError(organizationId, error);
+    await recordPollError(db, organizationId, error);
     return null;
   }
 }
 
-async function recordPollError(organizationId: string, error: unknown): Promise<void> {
-  const connection = await prisma.integrationConnection.findFirst({
+async function recordPollError(
+  db: PrismaClient,
+  organizationId: string,
+  error: unknown,
+): Promise<void> {
+  const connection = await db.integrationConnection.findFirst({
     where: { organizationId, provider: 'PEPPOL' },
   });
   if (connection) {
-    await prisma.integrationConnection
+    await db.integrationConnection
       .update({
         where: { id: connection.id },
         data: {
@@ -108,34 +118,40 @@ async function handlePeppolPoll(
   const { organizationId } = body;
 
   try {
-    const orgFilter = organizationId ? { organizationId } : {};
-
-    const activeParticipants = await prisma.peppolParticipant.findMany({
-      where: { ...orgFilter, status: 'ACTIVE' },
-      select: { organizationId: true },
-    });
-
-    // Sweep every org reachable for Peppol inbound: ACTIVE participants PLUS
-    // any CONNECTED Peppol connection that has no ACTIVE participant row.
-    // Iterating ACTIVE participants alone would silently skip a tenant whose
-    // connection is CONNECTED but whose participant row is missing/inactive,
-    // dropping its inbound deliveries. Union the two and warn on the gap so
-    // the data drift stays visible.
-    const connectedConnections = await prisma.integrationConnection.findMany({
-      where: { ...orgFilter, provider: 'PEPPOL', status: 'CONNECTED' },
-      select: { organizationId: true },
-    });
-
     const orgIds = new Set<string>();
-    for (const participant of activeParticipants) orgIds.add(participant.organizationId);
-
     const connectedWithoutActiveParticipant: string[] = [];
-    for (const connection of connectedConnections) {
-      if (!orgIds.has(connection.organizationId)) {
-        orgIds.add(connection.organizationId);
-        connectedWithoutActiveParticipant.push(connection.organizationId);
+
+    if (organizationId) {
+      const located = await resolveOrganizationRegion(organizationId);
+      if (located) orgIds.add(organizationId);
+    } else {
+      for (const region of SUPPORTED_REGIONS) {
+        const client = tryGetRegionalClient(region);
+        if (!client) continue;
+
+        const activeParticipants = await client.peppolParticipant.findMany({
+          where: { status: 'ACTIVE' },
+          select: { organizationId: true },
+        });
+        const connectedConnections = await client.integrationConnection.findMany({
+          where: { provider: 'PEPPOL', status: 'CONNECTED' },
+          select: { organizationId: true },
+        });
+
+        for (const participant of activeParticipants) orgIds.add(participant.organizationId);
+        for (const connection of connectedConnections) {
+          if (!orgIds.has(connection.organizationId)) {
+            orgIds.add(connection.organizationId);
+            connectedWithoutActiveParticipant.push(connection.organizationId);
+          }
+        }
       }
     }
+
+    if (organizationId && orgIds.size === 0) {
+      return reply.code(200).send({ polled: 0, results: [], fallbackSwept: 0 });
+    }
+
     if (connectedWithoutActiveParticipant.length > 0) {
       log.warn(
         {
@@ -153,7 +169,9 @@ async function handlePeppolPoll(
     const results: Array<{ organizationId: string; processed: number }> = [];
 
     for (const orgId of orgIds) {
-      const result = await pollParticipant(orgId);
+      const located = await resolveOrganizationRegion(orgId);
+      if (!located) continue;
+      const result = await pollParticipant(located.client, orgId);
       if (result) results.push(result);
     }
 
@@ -192,8 +210,16 @@ async function handlePeppolInbound(
 ): Promise<FastifyReply> {
   const { deliveryId, organizationId } = body;
 
+  let db: PrismaClient | undefined;
   try {
-    const delivery = await prisma.webhookDelivery.findUnique({
+    const located = await resolveOrganizationRegion(organizationId);
+    if (!located) {
+      inboundLog.error({ deliveryId, organizationId }, 'peppol inbound rejected: org not found');
+      return reply.code(404).send({ error: 'Delivery not found' });
+    }
+    db = located.client;
+
+    const delivery = await db.webhookDelivery.findUnique({
       where: { id: deliveryId },
     });
     // Tenant isolation: the deliveryId comes from the (QStash-signed) body,
@@ -207,7 +233,7 @@ async function handlePeppolInbound(
       return reply.code(404).send({ error: 'Delivery not found' });
     }
 
-    const connection = await prisma.integrationConnection.findFirst({
+    const connection = await db.integrationConnection.findFirst({
       where: { organizationId, provider: 'PEPPOL', status: 'CONNECTED' },
     });
     if (!connection) {
@@ -236,7 +262,7 @@ async function handlePeppolInbound(
       organizationId,
     });
 
-    await prisma.webhookDelivery.update({
+    await db.webhookDelivery.update({
       where: { id: deliveryId },
       data: { deliveryStatus: 'PROCESSED', processedAt: new Date() },
     });
@@ -249,17 +275,19 @@ async function handlePeppolInbound(
   } catch (error) {
     inboundLog.error({ err: error, deliveryId }, 'inbound processing failed');
 
-    await prisma.webhookDelivery
-      .update({
-        where: { id: deliveryId },
-        data: {
-          deliveryStatus: 'FAILED',
-          errorMessage: error instanceof Error ? error.message : 'Inbound processing failed',
-        },
-      })
-      .catch(() => {
-        /* ignored */
-      });
+    if (db) {
+      await db.webhookDelivery
+        .update({
+          where: { id: deliveryId },
+          data: {
+            deliveryStatus: 'FAILED',
+            errorMessage: error instanceof Error ? error.message : 'Inbound processing failed',
+          },
+        })
+        .catch(() => {
+          /* ignored */
+        });
+    }
 
     return reply.code(500).send({ error: 'Inbound processing failed' });
   }
@@ -327,7 +355,14 @@ async function handlePeppolOutbound(
   }
 
   try {
-    const connection = await prisma.integrationConnection.findFirst({
+    const located = await resolveOrganizationRegion(organizationId);
+    if (!located) {
+      outboundLog.error({ organizationId }, 'peppol outbound: org not found in any region');
+      return reply.code(200).send({ error: 'Organization not found' });
+    }
+    const db = located.client;
+
+    const connection = await db.integrationConnection.findFirst({
       where: { organizationId, provider: 'PEPPOL', status: 'CONNECTED' },
     });
 

@@ -131,15 +131,11 @@ vi.mock('../../services/zatca-submission', () => ({
   queueZatcaSubmission: mockQueueZatcaSubmission,
 }));
 
-vi.mock('../../services/cache', () => ({
-  cacheKey: vi.fn((...s: string[]) => s.join(':')),
-  cachedSingleflight: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  cached: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  invalidate: vi.fn(async () => undefined),
-  invalidateByPrefix: vi.fn(async () => undefined),
-  CacheKeys: {},
-  CacheTTL: {},
-}));
+vi.mock('../../services/cache', async importOriginal => {
+  const actual = await importOriginal<typeof import('../../services/cache')>();
+  const { createPassthroughCacheMock } = await import('../../__tests__/__mocks__/cache-service');
+  return createPassthroughCacheMock(actual);
+});
 
 vi.mock('@sentry/node', () => {
   const mockSpan = { setStatus: vi.fn(), setAttribute: vi.fn(), end: vi.fn() };
@@ -279,7 +275,12 @@ describe('zatcaRouter', () => {
       const result = await caller.saveTaxDetails({ taxDetails: validTaxDetails });
 
       expect(result).toEqual({ success: true });
-      expect(mockSaveTaxDetails).toHaveBeenCalledWith(ORG_ID, validTaxDetails);
+      expect(mockSaveTaxDetails).toHaveBeenCalledWith(
+        ORG_ID,
+        validTaxDetails,
+        USER_ID,
+        expect.anything(),
+      );
     });
 
     it('calls service exactly once per invocation', async () => {
@@ -298,7 +299,7 @@ describe('zatcaRouter', () => {
       const result = await caller.generateCsr();
 
       expect(result).toMatchObject({ csrPem: expect.any(String) });
-      expect(mockGenerateAndStoreCsr).toHaveBeenCalledWith(ORG_ID);
+      expect(mockGenerateAndStoreCsr).toHaveBeenCalledWith(ORG_ID, expect.anything());
     });
   });
 
@@ -308,10 +309,18 @@ describe('zatcaRouter', () => {
 
   describe('requestComplianceCsid', () => {
     it('returns compliance CSID from service', async () => {
-      const result = await caller.requestComplianceCsid();
+      const result = await caller.requestComplianceCsid({ otp: '123456' });
 
       expect(result).toMatchObject({ csid: 'compliance-csid-123' });
-      expect(mockRequestComplianceCsid).toHaveBeenCalledWith(ORG_ID);
+      expect(mockRequestComplianceCsid).toHaveBeenCalledWith(
+        ORG_ID,
+        '123456',
+        expect.objectContaining({
+          db: expect.anything(),
+          actorId: USER_ID,
+          actorName: expect.any(String),
+        }),
+      );
     });
   });
 
@@ -325,7 +334,7 @@ describe('zatcaRouter', () => {
 
       expect(result).toMatchObject({ allPassed: true });
       expect(result.results).toHaveLength(2);
-      expect(mockRunComplianceChecks).toHaveBeenCalledWith(ORG_ID);
+      expect(mockRunComplianceChecks).toHaveBeenCalledWith(ORG_ID, expect.anything());
     });
   });
 
@@ -338,7 +347,14 @@ describe('zatcaRouter', () => {
       const result = await caller.exchangeProductionCert();
 
       expect(result).toEqual({ success: true });
-      expect(mockExchangeProductionCertificate).toHaveBeenCalledWith(ORG_ID);
+      expect(mockExchangeProductionCertificate).toHaveBeenCalledWith(
+        ORG_ID,
+        expect.objectContaining({
+          db: expect.anything(),
+          actorId: USER_ID,
+          actorName: expect.any(String),
+        }),
+      );
     });
   });
 
@@ -355,7 +371,7 @@ describe('zatcaRouter', () => {
         taxDetailsComplete: true,
         csrGenerated: false,
       });
-      expect(mockGetOnboardingState).toHaveBeenCalledWith(ORG_ID);
+      expect(mockGetOnboardingState).toHaveBeenCalledWith(ORG_ID, expect.anything());
     });
   });
 

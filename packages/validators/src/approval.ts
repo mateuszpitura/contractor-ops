@@ -51,6 +51,7 @@ export const stepConfigSchema = z.object({
 
 export const approvalChainCreateSchema = z.object({
   name: z.string().min(1).max(100),
+  resourceType: approvalResourceTypeEnum.default('INVOICE'),
   isDefault: z.boolean().default(false),
   conditionsJson: z.array(conditionSchema).nullish(),
   stepsJson: z.array(stepConfigSchema).min(1).max(3),
@@ -62,6 +63,12 @@ export const approvalChainUpdateSchema = approvalChainCreateSchema.extend({
   id: z.string(),
   isActive: z.boolean().optional(),
 });
+
+export const approvalChainListSchema = z.object({
+  resourceType: approvalResourceTypeEnum.optional(),
+});
+
+export type ApprovalChainList = z.infer<typeof approvalChainListSchema>;
 
 export type ApprovalChainUpdate = z.infer<typeof approvalChainUpdateSchema>;
 

@@ -57,6 +57,10 @@ const { mockPrisma, contractorCreate } = vi.hoisted(() => {
     contractorBillingProfile: {
       create: vi.fn(async (a: { data: Rec }) => ({ id: 'bp-1', ...a.data })),
     },
+    contractorComplianceItem: {
+      count: vi.fn(async () => 0),
+      create: vi.fn(async (a: { data: Rec }) => ({ id: 'cci-1', ...a.data })),
+    },
     $queryRaw: vi.fn(async () => []),
     $transaction: vi.fn(async (fn: (tx: Rec) => Promise<unknown>) => fn(mockPrisma)),
   };
@@ -99,10 +103,11 @@ vi.mock('../../services/billing-service', () => ({
   syncSeatCountForOrg: vi.fn(async () => undefined),
 }));
 
-vi.mock('../../services/cache', () => ({
-  invalidateByPrefix: vi.fn(async () => undefined),
-  CacheKeys: { dashboardPrefix: (orgId: string) => `dashboard:${orgId}` },
-}));
+vi.mock('../../services/cache', async importOriginal => {
+  const actual = await importOriginal<typeof import('../../services/cache')>();
+  const { createPassthroughCacheMock } = await import('../../__tests__/__mocks__/cache-service');
+  return createPassthroughCacheMock(actual);
+});
 
 vi.mock('../../services/posthog', () => ({ captureEvent: vi.fn(async () => undefined) }));
 

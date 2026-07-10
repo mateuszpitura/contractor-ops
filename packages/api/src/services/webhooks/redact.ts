@@ -1,5 +1,5 @@
 /**
- * Outbound-payload PII redactor (INTEG-WEBHOOK-07) — RODO-defensible by default.
+ * Outbound-payload PII redactor — RODO-defensible by default.
  *
  * `include_pii:false` (the per-subscription default) strips national identifiers,
  * bank identifiers and contact PII from the event payload BEFORE the fan-out

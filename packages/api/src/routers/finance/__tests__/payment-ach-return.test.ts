@@ -276,7 +276,13 @@ function makeItem(overrides: Partial<RunItem> = {}): RunItem {
 function seedDb(items: RunItem[]) {
   const auditCreate = vi.fn(async () => ({}));
   const findMany = vi.fn(
-    async ({ where }: { where: { paymentRunId: string; organizationId: string } }) =>
+    async ({
+      where,
+      include: _include,
+    }: {
+      where: { paymentRunId: string; organizationId: string };
+      include?: unknown;
+    }) =>
       items.filter(
         i => i.paymentRunId === where.paymentRunId && i.organizationId === where.organizationId,
       ),
@@ -289,8 +295,15 @@ function seedDb(items: RunItem[]) {
     },
   );
   const db = {
+    paymentRun: {
+      findFirst: vi.fn(async () => ({ runNumber: 'RUN-001' })),
+    },
     paymentRunItem: { findMany, update },
     auditLog: { create: auditCreate },
+    member: {
+      findMany: vi.fn(async () => [{ userId: 'user-1', role: 'admin' }]),
+    },
+    $executeRawUnsafe: vi.fn(async () => 1),
     $transaction: async (fn: (tx: unknown) => Promise<unknown>) => fn(db),
   };
   dbState.current = db;

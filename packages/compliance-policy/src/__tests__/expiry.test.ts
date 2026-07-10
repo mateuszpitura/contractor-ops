@@ -46,3 +46,23 @@ describe('isExpired — TZ-aware expiry boundary (D-07 / ROADMAP success criteri
     expect(isExpired(expiresAt, 'Europe/London', now)).toBe(false);
   });
 });
+
+describe('isExpired — US negative-offset @db.Date calendar date', () => {
+  it('America/New_York: expiresAt = today (@db.Date UTC midnight), now = afternoon local → NOT expired', () => {
+    const expiresAt = new Date('2026-07-10T00:00:00.000Z');
+    const now = new Date('2026-07-10T22:00:00.000Z');
+    expect(isExpired(expiresAt, 'America/New_York', now)).toBe(false);
+  });
+
+  it('America/New_York: expiresAt = today, now = next calendar day in TZ → expired', () => {
+    const expiresAt = new Date('2026-07-10T00:00:00.000Z');
+    const now = new Date('2026-07-11T12:00:00.000Z');
+    expect(isExpired(expiresAt, 'America/New_York', now)).toBe(true);
+  });
+
+  it('America/Los_Angeles: expiresAt = today, now = morning local → NOT expired', () => {
+    const expiresAt = new Date('2026-01-15T00:00:00.000Z');
+    const now = new Date('2026-01-15T20:00:00.000Z');
+    expect(isExpired(expiresAt, 'America/Los_Angeles', now)).toBe(false);
+  });
+});

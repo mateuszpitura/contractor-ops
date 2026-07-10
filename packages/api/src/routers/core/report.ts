@@ -154,8 +154,8 @@ export const reportRouter = router({
           c.id AS "contractorId",
           c."legalName" AS "contractorName",
           COUNT(i.id)::int AS "invoiceCount",
-          COALESCE(SUM(i."amountToPayMinor")::int, 0) AS "totalMinor",
-          COALESCE(AVG(i."amountToPayMinor")::int, 0) AS "avgMinor",
+          COALESCE(SUM(i."amountToPayMinor")::bigint, 0)::bigint AS "totalMinor",
+          COALESCE(AVG(i."amountToPayMinor")::bigint, 0)::bigint AS "avgMinor",
           MAX(i."paidAt") AS "lastPaidAt"
         FROM "Invoice" i
         JOIN "Contractor" c ON c.id = i."contractorId"
@@ -182,6 +182,17 @@ export const reportRouter = router({
           ${contractorFilter}
       `;
 
+      const grandTotalResult = await ctx.db.$queryRaw<Array<{ grandTotalMinor: bigint }>>`
+        SELECT COALESCE(SUM(i."amountToPayMinor")::bigint, 0)::bigint AS "grandTotalMinor"
+        FROM "Invoice" i
+        WHERE i."organizationId" = ${ctx.organizationId}
+          AND i."paymentStatus" = 'PAID'
+          AND i."paidAt" >= ${dateFrom}
+          AND i."paidAt" <= ${dateTo}
+          AND i."deletedAt" IS NULL
+          ${contractorFilter}
+      `;
+
       return {
         items: items.map(r => ({
           ...r,
@@ -191,6 +202,7 @@ export const reportRouter = router({
           lastPaidAt: r.lastPaidAt ? new Date(r.lastPaidAt).toISOString() : null,
         })),
         total: countResult[0]?.count ?? 0,
+        grandTotalMinor: Number(grandTotalResult[0]?.grandTotalMinor ?? 0),
       };
     }),
 
@@ -232,7 +244,7 @@ export const reportRouter = router({
           t.name AS "teamName",
           COUNT(DISTINCT c.id)::int AS "contractorCount",
           COUNT(i.id)::int AS "invoiceCount",
-          COALESCE(SUM(i."amountToPayMinor")::int, 0) AS "totalMinor"
+          COALESCE(SUM(i."amountToPayMinor")::bigint, 0)::bigint AS "totalMinor"
         FROM "Invoice" i
         JOIN "Contractor" c ON c.id = i."contractorId"
         LEFT JOIN "Team" t ON t.id = c."primaryTeamId"
@@ -258,6 +270,16 @@ export const reportRouter = router({
           AND i."deletedAt" IS NULL
       `;
 
+      const grandTotalResult = await ctx.db.$queryRaw<Array<{ grandTotalMinor: bigint }>>`
+        SELECT COALESCE(SUM(i."amountToPayMinor")::bigint, 0)::bigint AS "grandTotalMinor"
+        FROM "Invoice" i
+        WHERE i."organizationId" = ${ctx.organizationId}
+          AND i."paymentStatus" = 'PAID'
+          AND i."paidAt" >= ${dateFrom}
+          AND i."paidAt" <= ${dateTo}
+          AND i."deletedAt" IS NULL
+      `;
+
       return {
         items: items.map(r => ({
           teamId: r.teamId,
@@ -267,6 +289,7 @@ export const reportRouter = router({
           totalMinor: Number(r.totalMinor),
         })),
         total: countResult[0]?.count ?? 0,
+        grandTotalMinor: Number(grandTotalResult[0]?.grandTotalMinor ?? 0),
       };
     }),
 
@@ -355,6 +378,7 @@ export const reportRouter = router({
         organizationId: ctx.organizationId,
         dueDate: { lt: now },
         paymentStatus: { notIn: ['PAID'] as 'PAID'[] },
+        status: { not: 'VOID' as const },
         deletedAt: null,
       };
 
@@ -522,7 +546,7 @@ export const reportRouter = router({
         SELECT
           c.id AS "contractorId",
           c."legalName" AS "contractorName",
-          COALESCE(SUM(i."amountToPayMinor")::int, 0) AS "totalMinor"
+          COALESCE(SUM(i."amountToPayMinor")::bigint, 0)::bigint AS "totalMinor"
         FROM "Invoice" i
         JOIN "Contractor" c ON c.id = i."contractorId"
         WHERE i."organizationId" = ${ctx.organizationId}
@@ -560,7 +584,7 @@ export const reportRouter = router({
         SELECT
           t.id AS "teamId",
           t.name AS "teamName",
-          COALESCE(SUM(i."amountToPayMinor")::int, 0) AS "totalMinor"
+          COALESCE(SUM(i."amountToPayMinor")::bigint, 0)::bigint AS "totalMinor"
         FROM "Invoice" i
         JOIN "Contractor" c ON c.id = i."contractorId"
         LEFT JOIN "Team" t ON t.id = c."primaryTeamId"

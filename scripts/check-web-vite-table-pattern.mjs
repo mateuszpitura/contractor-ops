@@ -115,12 +115,18 @@ const FORM_STYLE_ALLOWLIST = new Set([
   // edit/delete actions per row.
   'components/settings/tax/country-rates-section.tsx',
   'components/settings/tax/wht-certificates-section.tsx',
+  // Webhook subscriptions — small settings sub-list where each row hosts its
+  // own actions menu (test-fire / rotate secret / delete) inside the tab card.
+  'components/settings/webhooks/data-table.tsx',
   // IR35 chain — sub-section list (3–5 rows) inside engagement page Card.
   'components/contractors/ir35-chain/ir35-chain-panel.tsx',
   'components/contractors/ir35-chain/chain-participant-row.tsx',
   // DRV clearance — sub-section list inside engagement page Card.
   'components/contractors/classification/drv-clearance/drv-clearance-panel.tsx',
   'components/contractors/classification/drv-clearance/drv-clearance-row.tsx',
+  // 1099 batch summary — bounded above-threshold recipient list with a totals
+  // footer inside the batch panel; no pagination/sort.
+  'components/contractors/tax-filing/batch-summary.tsx',
   // Change-request diff — 3-col diff (field/current/requested) inside Card.
   'components/settings/change-request-diff-card.tsx',
   // Consent history — append-only audit list inside settings section.

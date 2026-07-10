@@ -1,11 +1,11 @@
 // packages/validators/src/leitweg-id.ts
 //
-// Leitweg-ID format + ISO/IEC 7064 MOD 11,10 check-digit validator.
+// Leitweg-ID format + ISO/IEC 7064 MOD 97-10 check-digit validator.
 //
 // References:
 //   KoSIT "Format specification Leitweg-ID" v2.0.2
 //     https://www.xoev.de/downloads-2316#Leitweg-ID
-//   ISO/IEC 7064:2003 Pure System MOD 11,10
+//   ISO/IEC 7064:2003 Pure System MOD 97-10 (same family as IBAN check digits)
 //
 // Structure:
 //   <coarse-address (2-12 digits)>
@@ -14,20 +14,17 @@
 //
 // Total length: 5-46 chars.
 //
-// The 2-digit check is the ISO 7064 MOD-11-10 Pure System checksum over the
-// concatenated coarse + fine payload where each alphanumeric char is encoded
-// to its base-36 digit value (0-9 → 0-9; A-Z → 10-35). That integer value is
-// decomposed into individual base-10 digits before being fed into the
-// iterative MOD-11-10 loop — this matches the reference implementations from
-// KoSIT and node-iso7064.
+// Check-digit generation (simplified MOD 97-10 procedure from the spec):
+//   1. Concatenate coarse + fine payload without hyphens.
+//   2. Expand each character to base-36 digits (0-9 → 0-9; A-Z → 10-35).
+//   3. Append "00" as check-digit placeholders.
+//   4. Compute remainder mod 97 over the expanded decimal string.
+//   5. Check digit = 98 − remainder, rendered as two decimal digits.
 //
-// The single-digit MOD-11-10 result is rendered as a 2-character string with
-// a leading zero so that the total length and hyphen placement described in
-// the Leitweg-ID format spec always hold.
+// Validation: expand coarse + fine + check digit the same way; remainder mod 97
+// must equal 1.
 
 import { z } from 'zod';
-
-import { mod11_10CheckDigit } from './de-validators.js';
 
 // ---------------------------------------------------------------------------
 // Regex: coarse (2-12 digits), optional fine (0-30 [A-Z0-9]), 2-digit check.
@@ -36,28 +33,28 @@ import { mod11_10CheckDigit } from './de-validators.js';
 const STRUCTURE_RE = /^(\d{2,12})(?:-([A-Z0-9]{0,30}))?-(\d{2})$/;
 
 /**
- * Decompose an alphanumeric payload into its individual base-10 digits.
- *
+ * Expand an alphanumeric payload into the decimal string fed to MOD 97-10.
  * Each character contributes its base-36 integer value (0-9 → 0-9;
- * A → 10; Z → 35). That integer is then split into base-10 digits so the
- * MOD-11-10 loop sees the same per-digit stream as a reference KoSIT run.
+ * A → 10; Z → 35) as decimal digits without separators.
  */
-function toDigitStream(payload: string): number[] {
-  const digits: number[] = [];
+function expandPayloadDigits(payload: string): string {
+  let expanded = '';
   for (const ch of payload) {
     const value = Number.parseInt(ch, 36);
     if (Number.isNaN(value)) {
       throw new Error(`Invalid Leitweg-ID character: '${ch}'`);
     }
-    // Base-36 → base-10 digit stream (e.g. A=10 → [1, 0]; Z=35 → [3, 5]).
-    if (value < 10) {
-      digits.push(value);
-    } else {
-      digits.push(Math.floor(value / 10));
-      digits.push(value % 10);
-    }
+    expanded += String(value);
   }
-  return digits;
+  return expanded;
+}
+
+function mod97Remainder(expandedDigits: string): number {
+  let remainder = 0;
+  for (const digit of expandedDigits) {
+    remainder = (remainder * 10 + Number(digit)) % 97;
+  }
+  return remainder;
 }
 
 /**
@@ -65,9 +62,10 @@ function toDigitStream(payload: string): number[] {
  * `coarse + fine` payload (no hyphens).
  */
 export function computeLeitwegCheckDigit(payload: string): string {
-  const digits = toDigitStream(payload);
-  const check = mod11_10CheckDigit(digits);
-  return check.toString().padStart(2, '0');
+  const expanded = `${expandPayloadDigits(payload)}00`;
+  const remainder = mod97Remainder(expanded);
+  const check = 98 - remainder;
+  return String(check).padStart(2, '0');
 }
 
 /**
@@ -89,7 +87,7 @@ export function validateLeitwegCheckDigit(
 }
 
 // ---------------------------------------------------------------------------
-// Zod schema — structure + Modulo-11-10 check digit at the tRPC boundary.
+// Zod schema — structure + Modulo-97-10 check digit at the tRPC boundary.
 // ---------------------------------------------------------------------------
 
 export const leitwegIdSchema = z

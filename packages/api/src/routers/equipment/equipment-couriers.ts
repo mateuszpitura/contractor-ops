@@ -123,11 +123,16 @@ export const equipmentCouriersRouter = router({
       const newEquipmentStatus =
         input.direction === 'OUTBOUND' ? 'IN_TRANSIT' : 'RETURN_IN_TRANSIT';
 
+      const eligibleItems = equipmentItems.filter(item => {
+        const allowed = EQUIPMENT_STATUS_TRANSITIONS[item.status] ?? [];
+        return allowed.includes(newEquipmentStatus);
+      });
+
       // Pre-generate shipment IDs so all writes group into four batched
       // calls (createMany x2 + updateMany x2) inside the tx instead of
       // 4N sequential round-trips holding row locks. The DB accepts any
       // unique string for the shipment id.
-      const shipmentRows = equipmentItems.map(eq => ({
+      const shipmentRows = eligibleItems.map(eq => ({
         id: randomUUID(),
         organizationId: ctx.organizationId,
         equipmentId: eq.id,
@@ -182,7 +187,7 @@ export const equipmentCouriersRouter = router({
               data: eventRows as Parameters<typeof tx.shipmentEvent.createMany>[0]['data'],
             }),
             tx.equipment.updateMany({
-              where: { id: { in: equipmentItems.map(e => e.id) } },
+              where: { id: { in: eligibleItems.map(e => e.id) } },
               data: { status: newEquipmentStatus },
             }),
             input.direction === 'OUTBOUND' && contractor

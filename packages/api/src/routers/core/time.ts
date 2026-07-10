@@ -14,6 +14,8 @@ import { router } from '../../init';
 import { cursorClause, paginateByLastKeptUndefined } from '../../lib/pagination';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
+import { invoiceComparableNetMinor } from '../../services/invoice-matching';
+import type { TimesheetAuditContext } from '../../services/time-entry';
 import {
   approveTimesheet,
   bulkApproveTimesheets,
@@ -28,6 +30,17 @@ import {
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
+
+function timesheetAuditContext(ctx: {
+  user: { id: string; name?: string | null; email?: string | null };
+  headers: Headers;
+}): TimesheetAuditContext {
+  return {
+    actorName: ctx.user.name ?? ctx.user.email ?? null,
+    ipAddress: ctx.headers.get('x-forwarded-for')?.split(',')[0] ?? null,
+    userAgent: ctx.headers.get('user-agent') ?? null,
+  };
+}
 
 // ---------------------------------------------------------------------------
 // Admin time management router
@@ -268,6 +281,7 @@ export const timeRouter = router({
         ctx.organizationId,
         input.timesheetId,
         ctx.user.id,
+        timesheetAuditContext(ctx),
       );
       return result;
     }),
@@ -285,6 +299,7 @@ export const timeRouter = router({
         input.timesheetId,
         ctx.user.id,
         input.reason,
+        timesheetAuditContext(ctx),
       );
       return result;
     }),
@@ -301,6 +316,7 @@ export const timeRouter = router({
         ctx.organizationId,
         input.timesheetIds,
         ctx.user.id,
+        timesheetAuditContext(ctx),
       );
       return { count: result.count };
     }),
@@ -318,6 +334,7 @@ export const timeRouter = router({
         input.timesheetIds,
         ctx.user.id,
         input.reason,
+        timesheetAuditContext(ctx),
       );
       return { count: result.count };
     }),
@@ -363,6 +380,9 @@ export const timeRouter = router({
         select: {
           contractId: true,
           totalMinor: true,
+          subtotalMinor: true,
+          vatRate: true,
+          currency: true,
           servicePeriodStart: true,
           servicePeriodEnd: true,
           issueDate: true,
@@ -386,7 +406,8 @@ export const timeRouter = router({
         invoice.contractId,
         periodStart,
         periodEnd,
-        invoice.totalMinor,
+        invoiceComparableNetMinor(invoice),
+        invoice.currency,
       );
 
       return result;
@@ -437,6 +458,7 @@ export const timeRouter = router({
               title: true,
               rateType: true,
               rateValueMinor: true,
+              currency: true,
             },
           },
         },
@@ -463,9 +485,11 @@ export const timeRouter = router({
             contractId: inv.contractId,
             rateType: inv.contract.rateType,
             rateValueMinor: inv.contract.rateValueMinor,
+            contractCurrency: inv.contract.currency,
+            invoiceCurrency: inv.currency,
             periodStart,
             periodEnd,
-            invoicedAmountMinor: inv.totalMinor,
+            invoicedAmountMinor: invoiceComparableNetMinor(inv),
           },
         ];
       });

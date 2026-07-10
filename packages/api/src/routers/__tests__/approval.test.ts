@@ -72,17 +72,21 @@ const { mockPrisma } = vi.hoisted(() => {
   return { mockPrisma };
 });
 
-vi.mock('@contractor-ops/auth', () => ({
-  auth: {
-    api: {
-      getSession: vi.fn(),
+vi.mock('@contractor-ops/auth', async importOriginal => {
+  const actual = await importOriginal<typeof import('@contractor-ops/auth')>();
+  return {
+    ...actual,
+    auth: {
+      api: {
+        getSession: vi.fn(),
+        hasPermission: vi.fn().mockResolvedValue({ success: true }),
+      },
+    },
+    authApi: {
       hasPermission: vi.fn().mockResolvedValue({ success: true }),
     },
-  },
-  authApi: {
-    hasPermission: vi.fn().mockResolvedValue({ success: true }),
-  },
-}));
+  };
+});
 
 vi.mock('@contractor-ops/db', () => ({
   withRlsTransactions: <T>(c: T) => c,
@@ -100,27 +104,11 @@ vi.mock('@contractor-ops/db', () => ({
   getRegionalClient: vi.fn(() => mockPrisma),
 }));
 
-vi.mock('../../services/cache', () => ({
-  cacheKey: vi.fn((...s: string[]) => s.join(':')),
-  cachedSingleflight: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  cached: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  invalidate: vi.fn(async () => undefined),
-  invalidateByPrefix: vi.fn(async () => undefined),
-  CacheKeys: {
-    approvalChains: (orgId: string) => `approval-chains:${orgId}`,
-    orgSettings: (orgId: string) => `org-settings:${orgId}`,
-    orgSettingsJson: (orgId: string, key: string) => `org-settings-json:${orgId}:${key}`,
-    orgBranding: (orgId: string) => `org-branding:${orgId}`,
-    settingsPrefix: (orgId: string) => `org-settings:${orgId}`,
-    dashboardPrefix: (orgId: string) => `dash:${orgId}`,
-  },
-  CacheTTL: {
-    APPROVAL_CHAINS: 300,
-    ORG_SETTINGS: 300,
-    ORG_SETTINGS_JSON: 300,
-    ORG_BRANDING: 300,
-  },
-}));
+vi.mock('../../services/cache', async importOriginal => {
+  const actual = await importOriginal<typeof import('../../services/cache')>();
+  const { createPassthroughCacheMock } = await import('../../__tests__/__mocks__/cache-service');
+  return createPassthroughCacheMock(actual);
+});
 
 vi.mock('../../services/approval-engine', () => ({
   routeToChain: vi.fn(async () => null),
@@ -279,7 +267,7 @@ describe('approval router — chains', () => {
       { id: CHAIN_ID, name: 'Standard', resourceType: 'INVOICE' },
     ]);
 
-    const rows = await caller.listChains();
+    const rows = await caller.listChains({ resourceType: 'INVOICE' });
 
     expect(mockPrisma.approvalChainConfig.findMany).toHaveBeenCalledWith({
       where: {
@@ -486,7 +474,7 @@ describe('approval router — approve', () => {
       }),
     );
     expect(out).toMatchObject({ id: STEP_ID, status: 'APPROVED' });
-    expect(invalidateByPrefix).toHaveBeenCalledWith(`dash:${ORG_ID}`);
+    expect(invalidateByPrefix).toHaveBeenCalledWith(`co:${ORG_ID}:dash`);
     expect(advanceFlow).toHaveBeenCalledWith(expect.anything(), FLOW_ID);
   });
 
@@ -659,7 +647,11 @@ describe('approval router — reject', () => {
     expect(mockPrisma.invoice.update).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { id: INV_ID },
-        data: { status: 'REJECTED' },
+        data: {
+          status: 'REJECTED',
+          paymentStatus: 'NOT_READY',
+          readyForPaymentAt: null,
+        },
       }),
     );
     expect(out).toMatchObject({ id: STEP_ID, status: 'REJECTED' });
@@ -791,8 +783,11 @@ describe('approval router — delegate', () => {
       approvalFlowId: FLOW_ID,
       approvalFlow: { resourceType: 'INVOICE', resourceId: INV_ID },
     });
-    mockPrisma.member.findFirst.mockResolvedValueOnce({ userId: DELEGATE_USER_ID });
-    mockPrisma.approvalStep.update.mockResolvedValueOnce({
+    mockPrisma.member.findFirst.mockResolvedValueOnce({
+      userId: DELEGATE_USER_ID,
+      role: 'finance_admin',
+    });
+    mockPrisma.approvalStep.findUniqueOrThrow.mockResolvedValueOnce({
       id: STEP_ID,
       approverUserId: DELEGATE_USER_ID,
     });
@@ -808,7 +803,7 @@ describe('approval router — delegate', () => {
       }),
     );
     expect(out).toMatchObject({ approverUserId: DELEGATE_USER_ID });
-    expect(invalidateByPrefix).toHaveBeenCalledWith(`dash:${ORG_ID}`);
+    expect(invalidateByPrefix).toHaveBeenCalledWith(`co:${ORG_ID}:dash`);
   });
 });
 
@@ -860,7 +855,7 @@ describe('approval router — bulkApprove / bulkReject', () => {
     expect(res.succeeded).toBe(1);
     expect(res.failed).toBe(1);
     expect(res.errors.some(e => e.includes(STEP_ID_2))).toBe(true);
-    expect(invalidateByPrefix).toHaveBeenCalledWith(`dash:${ORG_ID}`);
+    expect(invalidateByPrefix).toHaveBeenCalledWith(`co:${ORG_ID}:dash`);
   });
 
   it('bulkReject aggregates success and failure per step', async () => {
@@ -887,7 +882,7 @@ describe('approval router — bulkApprove / bulkReject', () => {
 
     expect(res.succeeded).toBe(1);
     expect(res.failed).toBe(1);
-    expect(invalidateByPrefix).toHaveBeenCalledWith(`dash:${ORG_ID}`);
+    expect(invalidateByPrefix).toHaveBeenCalledWith(`co:${ORG_ID}:dash`);
   });
 });
 
@@ -932,7 +927,7 @@ describe('approval router — submitForApproval', () => {
       organizationId: ORG_ID,
       deletedAt: null,
       matchStatus: 'MATCHED',
-      status: 'DRAFT',
+      status: 'RECEIVED',
       totalMinor: 1000,
     });
     vi.mocked(routeToChain).mockResolvedValueOnce(null);
@@ -948,17 +943,17 @@ describe('approval router — submitForApproval', () => {
       organizationId: ORG_ID,
       deletedAt: null,
       matchStatus: 'MATCHED',
-      status: 'DRAFT',
+      status: 'RECEIVED',
       totalMinor: 1000,
       contractorId: null,
       invoiceNumber: 'INV-88',
       currency: 'PLN',
     });
-    vi.mocked(routeToChain).mockResolvedValueOnce({
+    vi.mocked(routeToChain).mockResolvedValue({
       id: CHAIN_ID,
       stepsJson: [],
     } as never);
-    vi.mocked(createApprovalFlow).mockResolvedValueOnce({
+    vi.mocked(createApprovalFlow).mockResolvedValue({
       id: FLOW_ID,
       steps: [],
     } as never);
@@ -968,7 +963,11 @@ describe('approval router — submitForApproval', () => {
     expect(mockPrisma.invoice.update).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { id: INV_ID },
-        data: { status: 'APPROVAL_PENDING' },
+        data: {
+          status: 'APPROVAL_PENDING',
+          paymentStatus: 'NOT_READY',
+          readyForPaymentAt: null,
+        },
       }),
     );
     expect(out).toMatchObject({ id: FLOW_ID });

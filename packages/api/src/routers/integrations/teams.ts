@@ -6,6 +6,7 @@ import * as E from '../../errors';
 import { router } from '../../init';
 import { loadOrgIntegrationConnection } from '../../lib/integration-connection.js';
 import { integrationSettingsProcedure } from '../../lib/integration-procedure';
+import { writeAuditLog } from '../../services/audit-writer';
 import { getJoinedTeams, getTeamsChannels } from '../../services/teams/teams-graph-client';
 
 // ---------------------------------------------------------------------------
@@ -157,6 +158,17 @@ export const teamsRouter = router({
         },
       });
 
+      await writeAuditLog({
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user?.id ?? null,
+        action: 'INTEGRATION_TEAMS_CHANNEL_MAPPING_SAVE',
+        resourceType: 'ORGANIZATION',
+        resourceId: ctx.organizationId,
+        newValues: { categories: Object.keys(input.mapping) },
+        metadata: { connectionId: connection.id },
+      });
+
       return { success: true };
     }),
 
@@ -180,7 +192,7 @@ export const teamsRouter = router({
       // Tenant isolation — only update teams within the current org
       const existing = await ctx.db.team.findFirst({
         where: { id: input.teamId, organizationId: ctx.organizationId },
-        select: { id: true },
+        select: { id: true, fallbackApproverId: true },
       });
       if (!existing) {
         throw new TRPCError({ code: 'NOT_FOUND', message: E.TEAM_NOT_FOUND });
@@ -189,6 +201,18 @@ export const teamsRouter = router({
         where: { id: input.teamId },
         data: { fallbackApproverId: input.fallbackApproverId },
       });
+
+      await writeAuditLog({
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user?.id ?? null,
+        action: 'TEAM_FALLBACK_APPROVER_SET',
+        resourceType: 'TEAM',
+        resourceId: input.teamId,
+        oldValues: { fallbackApproverId: existing.fallbackApproverId },
+        newValues: { fallbackApproverId: input.fallbackApproverId },
+      });
+
       return { teamId: input.teamId };
     }),
 });

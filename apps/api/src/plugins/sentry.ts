@@ -12,6 +12,7 @@
  */
 
 import type { FastifyError, FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
+import { loadEnv } from '../env.js';
 import { Sentry } from '../lib/sentry.js';
 
 export function registerSentryHooks(app: FastifyInstance): void {
@@ -26,6 +27,14 @@ export function registerSentryHooks(app: FastifyInstance): void {
         extra: { requestId: request.requestId, method: request.method },
       });
     }
-    reply.code(status).send({ error: error.message || 'Internal Server Error' });
+    // Never leak a raw 5xx message (stack fragments, driver strings, secrets in
+    // interpolated errors) to the client in production — the full detail is
+    // already on the Sentry event + server log. 4xx messages are caller-facing
+    // validation/auth text and stay as-is.
+    const clientMessage =
+      status >= 500 && loadEnv().NODE_ENV === 'production'
+        ? 'Internal Server Error'
+        : error.message || 'Internal Server Error';
+    reply.code(status).send({ error: clientMessage });
   });
 }

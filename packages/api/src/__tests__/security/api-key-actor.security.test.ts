@@ -1,5 +1,5 @@
 /**
- * Wave-0 RED contract (D-01) — the API-key → user-identity actor model.
+ * The API-key → user-identity actor model.
  *
  * Each `OrganizationApiKey` binds to a mutable `actingUserId`: an attribution FK
  * (never an authorization source — scopes remain the sole authority). It
@@ -8,10 +8,6 @@
  * creates (paymentRun.create, workflow.create/execute) set their non-null user
  * FK to the key's actingUserId; the audit row records `actorType:'API_KEY'`,
  * `actorId = apiKeyId`, and `metadata.actingUserId`.
- *
- * Turn-green split:
- *   - Binding rows (default + membership guard on create/update): 99-02.
- *   - FK-on-create rows (paymentRun/workflow set the FK to actingUserId): 99-04.
  */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -41,6 +37,7 @@ const { mockPrisma, mockGenerateApiKey, mockResolveApiKey, mockTouchLastUsed, ev
       },
       organizationApiKey: table(),
       contractor: table(),
+      contractorComplianceItem: table(),
       invoice: table(),
       payment: table(),
       paymentRun: table(),
@@ -57,6 +54,8 @@ const { mockPrisma, mockGenerateApiKey, mockResolveApiKey, mockTouchLastUsed, ev
           status: 'ACTIVE',
         })),
       },
+      $queryRawUnsafe: vi.fn(async () => []),
+      $executeRawUnsafe: vi.fn(async () => 0),
       $transaction: vi.fn(async (fn: (tx: Rec) => Promise<unknown>) => fn(mockPrisma)),
     };
     return {
@@ -84,21 +83,26 @@ vi.mock('@contractor-ops/auth', () => ({
   },
 }));
 
-vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T>(c: T) => c,
-  withRlsReads: <T>(c: T) => c,
-  prisma: mockPrisma,
-  prismaRaw: mockPrisma,
-  tenantStore: {
-    run: (_c: unknown, fn: () => unknown) => fn(),
-    getStore: vi.fn(() => ({ region: 'EU' })),
-  },
-  withTenantScope: vi.fn((c: unknown) => c),
-  withSoftDelete: vi.fn((c: unknown) => c),
-  createTenantClient: vi.fn(() => mockPrisma),
-  createTenantClientFrom: vi.fn(() => mockPrisma),
-  getRegionalClient: vi.fn(() => mockPrisma),
-}));
+vi.mock('@contractor-ops/db', async importOriginal => {
+  const actual = await importOriginal<typeof import('@contractor-ops/db')>();
+  return {
+    ...actual,
+    withRlsTransactions: <T>(c: T) => c,
+    withRlsReads: <T>(c: T) => c,
+    prisma: mockPrisma,
+    prismaRaw: mockPrisma,
+    tenantStore: {
+      run: (_c: unknown, fn: () => unknown) => fn(),
+      getStore: vi.fn(() => ({ region: 'EU' })),
+    },
+    withTenantScope: vi.fn((c: unknown) => c),
+    withSoftDelete: vi.fn((c: unknown) => c),
+    createTenantClient: vi.fn(() => mockPrisma),
+    createTenantClientFrom: vi.fn(() => mockPrisma),
+    getRegionalClient: vi.fn(() => mockPrisma),
+    tryGetRegionalClient: vi.fn(() => mockPrisma),
+  };
+});
 
 vi.mock('../../services/api-key-service', () => ({
   generateApiKey: mockGenerateApiKey,
@@ -108,6 +112,14 @@ vi.mock('../../services/api-key-service', () => ({
 
 vi.mock('../../services/billing-service', () => ({
   getSubscription: vi.fn(async () => ({ id: 'sub_1', status: 'ACTIVE', tier: 'ENTERPRISE' })),
+}));
+
+vi.mock('../../services/compliance-payment-gate', () => ({
+  assertContractorPaymentEligibility: vi.fn(async () => ({
+    blocked: false,
+    wouldBlock: false,
+    contractorReasons: [],
+  })),
 }));
 
 // The create invariant helpers are exercised by their own suites; here we only
@@ -141,15 +153,11 @@ vi.mock('../../services/org-cache', () => ({
   invalidateOrgMeta: vi.fn(async () => undefined),
 }));
 
-vi.mock('../../services/cache', () => ({
-  cacheKey: vi.fn((...s: string[]) => s.join(':')),
-  cachedSingleflight: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  cached: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  invalidate: vi.fn(async () => undefined),
-  invalidateByPrefix: vi.fn(async () => undefined),
-  CacheKeys: { subscription: (o: string) => `sub:${o}` },
-  CacheTTL: { SUBSCRIPTION: 300 },
-}));
+vi.mock('../../services/cache', async importOriginal => {
+  const actual = await importOriginal<typeof import('../../services/cache')>();
+  const { createPassthroughCacheMock } = await import('../../__tests__/__mocks__/cache-service');
+  return createPassthroughCacheMock(actual);
+});
 
 vi.mock('@contractor-ops/logger', () => {
   const stub = { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() };
@@ -244,9 +252,10 @@ function makeApiKeyCaller(scopes: string[]) {
 beforeEach(() => {
   vi.clearAllMocks();
   mockPrisma.member.findFirst.mockResolvedValue({ id: 'm-1', role: 'admin', disabledAt: null });
+  mockPrisma.invoice.findMany.mockResolvedValue([{ contractorId: 'c-1' }]);
 });
 
-// --- Binding rows — green in 99-02 -----------------------------------------
+// --- Binding rows -----------------------------------------------------------
 
 describe('actingUserId binding (apiKeyRouter, session)', () => {
   it('create defaults actingUserId to the creating user', async () => {
@@ -295,7 +304,7 @@ describe('actingUserId binding (apiKeyRouter, session)', () => {
   });
 });
 
-// --- FK-on-create rows — green in 99-04 ------------------------------------
+// --- FK-on-create rows ------------------------------------------------------
 
 describe('actingUserId FK on public creates (apiKey)', () => {
   it('workflow.create sets WorkflowRun.startedByUserId to the key actingUserId', async () => {

@@ -11,6 +11,11 @@ import {
   submitTimesheet,
 } from '../time-entry';
 
+vi.mock('../audit-writer', () => ({
+  writeAuditLog: vi.fn().mockResolvedValue(undefined),
+  writeAuditLogMany: vi.fn().mockResolvedValue(undefined),
+}));
+
 // ---------------------------------------------------------------------------
 // Mock Prisma factory
 // ---------------------------------------------------------------------------
@@ -24,7 +29,15 @@ function createMockPrisma() {
       aggregate: vi.fn(),
     },
     timesheet: {
+      findFirst: vi.fn(),
+      findMany: vi.fn(),
       update: vi.fn(),
+      updateMany: vi.fn(),
+      findUniqueOrThrow: vi.fn(),
+    },
+    auditLog: {
+      create: vi.fn().mockResolvedValue({}),
+      createMany: vi.fn().mockResolvedValue({ count: 0 }),
     },
   };
 
@@ -483,44 +496,53 @@ describe('time-entry', () => {
 
   describe('approveTimesheet', () => {
     it('transitions SUBMITTED timesheet to APPROVED', async () => {
-      (prisma.timesheet.updateMany as ReturnType<typeof vi.fn>).mockResolvedValue({ count: 1 });
+      mockTx.timesheet.findFirst.mockResolvedValue({
+        id: TIMESHEET_ID,
+        status: 'SUBMITTED',
+      });
+      mockTx.timesheet.update.mockResolvedValue({});
       const approved = {
         id: TIMESHEET_ID,
         status: 'APPROVED',
         entries: [],
         contractor: {},
       };
-      (prisma.timesheet.findUniqueOrThrow as ReturnType<typeof vi.fn>).mockResolvedValue(approved);
+      mockTx.timesheet.findUniqueOrThrow.mockResolvedValue(approved);
 
       const result = await approveTimesheet(prisma, ORG_ID, TIMESHEET_ID, REVIEWER_ID);
 
       expect(result).toEqual(approved);
-      expect(prisma.timesheet.updateMany).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: {
-            id: TIMESHEET_ID,
-            organizationId: ORG_ID,
-            status: 'SUBMITTED',
-          },
-          data: expect.objectContaining({
-            status: 'APPROVED',
-            reviewedByUserId: REVIEWER_ID,
-          }),
+      expect(mockTx.timesheet.findFirst).toHaveBeenCalledWith({
+        where: {
+          id: TIMESHEET_ID,
+          organizationId: ORG_ID,
+          status: 'SUBMITTED',
+        },
+      });
+      expect(mockTx.timesheet.update).toHaveBeenCalledWith({
+        where: { id: TIMESHEET_ID },
+        data: expect.objectContaining({
+          status: 'APPROVED',
+          reviewedByUserId: REVIEWER_ID,
         }),
-      );
+      });
     });
 
-    it('rejects when updateMany matches 0 rows — WHERE restricts to SUBMITTED only', async () => {
-      (prisma.timesheet.updateMany as ReturnType<typeof vi.fn>).mockResolvedValue({ count: 0 });
+    it('rejects when timesheet is not SUBMITTED', async () => {
+      mockTx.timesheet.findFirst.mockResolvedValue(null);
 
       await expect(
         approveTimesheet(prisma, ORG_ID, TIMESHEET_ID, REVIEWER_ID),
       ).rejects.toMatchObject({ code: 'PRECONDITION_FAILED' });
 
-      // Verify the WHERE clause only allows SUBMITTED timesheets
-      const whereClause = (prisma.timesheet.updateMany as ReturnType<typeof vi.fn>).mock
-        .calls[0]?.[0].where;
-      expect(whereClause.status).toBe('SUBMITTED');
+      expect(mockTx.timesheet.findFirst).toHaveBeenCalledWith({
+        where: {
+          id: TIMESHEET_ID,
+          organizationId: ORG_ID,
+          status: 'SUBMITTED',
+        },
+      });
+      expect(mockTx.timesheet.update).not.toHaveBeenCalled();
     });
   });
 
@@ -530,41 +552,48 @@ describe('time-entry', () => {
 
   describe('rejectTimesheet', () => {
     it('transitions SUBMITTED timesheet to REJECTED with reason', async () => {
-      (prisma.timesheet.updateMany as ReturnType<typeof vi.fn>).mockResolvedValue({ count: 1 });
+      mockTx.timesheet.findFirst.mockResolvedValue({
+        id: TIMESHEET_ID,
+        status: 'SUBMITTED',
+      });
+      mockTx.timesheet.update.mockResolvedValue({});
       const rejected = {
         id: TIMESHEET_ID,
         status: 'REJECTED',
         entries: [],
         contractor: {},
       };
-      (prisma.timesheet.findUniqueOrThrow as ReturnType<typeof vi.fn>).mockResolvedValue(rejected);
+      mockTx.timesheet.findUniqueOrThrow.mockResolvedValue(rejected);
 
       const reason = 'Missing descriptions';
       const result = await rejectTimesheet(prisma, ORG_ID, TIMESHEET_ID, REVIEWER_ID, reason);
 
       expect(result).toEqual(rejected);
-      expect(prisma.timesheet.updateMany).toHaveBeenCalledWith(
-        expect.objectContaining({
-          data: expect.objectContaining({
-            status: 'REJECTED',
-            rejectionReason: reason,
-            reviewedByUserId: REVIEWER_ID,
-          }),
+      expect(mockTx.timesheet.update).toHaveBeenCalledWith({
+        where: { id: TIMESHEET_ID },
+        data: expect.objectContaining({
+          status: 'REJECTED',
+          rejectionReason: reason,
+          reviewedByUserId: REVIEWER_ID,
         }),
-      );
+      });
     });
 
-    it('rejects when updateMany matches 0 rows — WHERE restricts to SUBMITTED only', async () => {
-      (prisma.timesheet.updateMany as ReturnType<typeof vi.fn>).mockResolvedValue({ count: 0 });
+    it('rejects when timesheet is not SUBMITTED', async () => {
+      mockTx.timesheet.findFirst.mockResolvedValue(null);
 
       await expect(
         rejectTimesheet(prisma, ORG_ID, TIMESHEET_ID, REVIEWER_ID, 'reason'),
       ).rejects.toMatchObject({ code: 'PRECONDITION_FAILED' });
 
-      // Verify the WHERE clause only allows SUBMITTED timesheets
-      const whereClause = (prisma.timesheet.updateMany as ReturnType<typeof vi.fn>).mock
-        .calls[0]?.[0].where;
-      expect(whereClause.status).toBe('SUBMITTED');
+      expect(mockTx.timesheet.findFirst).toHaveBeenCalledWith({
+        where: {
+          id: TIMESHEET_ID,
+          organizationId: ORG_ID,
+          status: 'SUBMITTED',
+        },
+      });
+      expect(mockTx.timesheet.update).not.toHaveBeenCalled();
     });
   });
 
@@ -575,12 +604,22 @@ describe('time-entry', () => {
   describe('bulkApproveTimesheets', () => {
     it('where clause includes status SUBMITTED and id in ids', async () => {
       const ids = ['ts-1', 'ts-2', 'ts-3'];
-      (prisma.timesheet.updateMany as ReturnType<typeof vi.fn>).mockResolvedValue({ count: 3 });
+      const timesheets = ids.map(id => ({ id, status: 'SUBMITTED' as const }));
+      mockTx.timesheet.findMany.mockResolvedValue(timesheets);
+      mockTx.timesheet.updateMany.mockResolvedValue({ count: 3 });
 
       const result = await bulkApproveTimesheets(prisma, ORG_ID, ids, REVIEWER_ID);
 
       expect(result).toEqual({ count: 3 });
-      expect(prisma.timesheet.updateMany).toHaveBeenCalledWith({
+      expect(mockTx.timesheet.findMany).toHaveBeenCalledWith({
+        where: {
+          id: { in: ids },
+          organizationId: ORG_ID,
+          status: 'SUBMITTED',
+        },
+        select: { id: true, status: true },
+      });
+      expect(mockTx.timesheet.updateMany).toHaveBeenCalledWith({
         where: {
           id: { in: ids },
           organizationId: ORG_ID,
@@ -595,14 +634,12 @@ describe('time-entry', () => {
 
     it('returns the database count directly — caller uses it to detect partial updates', async () => {
       const ids = ['ts-1', 'ts-2'];
-      (prisma.timesheet.updateMany as ReturnType<typeof vi.fn>).mockResolvedValue({ count: 1 });
+      const timesheets = [{ id: 'ts-1', status: 'SUBMITTED' as const }];
+      mockTx.timesheet.findMany.mockResolvedValue(timesheets);
+      mockTx.timesheet.updateMany.mockResolvedValue({ count: 1 });
 
       const result = await bulkApproveTimesheets(prisma, ORG_ID, ids, REVIEWER_ID);
 
-      // bulkApproveTimesheets returns the Prisma BatchPayload directly.
-      // The WHERE clause (verified in the test above) ensures only SUBMITTED
-      // timesheets are updated, so count < ids.length signals partial update.
-      // Verify the function returns the raw Prisma result without transformation.
       expect(result).toEqual({ count: 1 });
       expect(result.count).toBeLessThan(ids.length);
     });
@@ -616,12 +653,22 @@ describe('time-entry', () => {
     it('where clause includes status SUBMITTED and id in ids', async () => {
       const ids = ['ts-1', 'ts-2'];
       const reason = 'Incomplete entries';
-      (prisma.timesheet.updateMany as ReturnType<typeof vi.fn>).mockResolvedValue({ count: 2 });
+      const timesheets = ids.map(id => ({ id, status: 'SUBMITTED' as const }));
+      mockTx.timesheet.findMany.mockResolvedValue(timesheets);
+      mockTx.timesheet.updateMany.mockResolvedValue({ count: 2 });
 
       const result = await bulkRejectTimesheets(prisma, ORG_ID, ids, REVIEWER_ID, reason);
 
       expect(result).toEqual({ count: 2 });
-      expect(prisma.timesheet.updateMany).toHaveBeenCalledWith({
+      expect(mockTx.timesheet.findMany).toHaveBeenCalledWith({
+        where: {
+          id: { in: ids },
+          organizationId: ORG_ID,
+          status: 'SUBMITTED',
+        },
+        select: { id: true, status: true },
+      });
+      expect(mockTx.timesheet.updateMany).toHaveBeenCalledWith({
         where: {
           id: { in: ids },
           organizationId: ORG_ID,

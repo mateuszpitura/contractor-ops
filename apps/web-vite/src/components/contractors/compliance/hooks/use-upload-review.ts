@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
+import { useTranslatedError } from '../../../../i18n/use-translated-error.js';
 import { useTranslations } from '../../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../../providers/trpc-provider.js';
 
@@ -27,6 +28,7 @@ export function useUploadReview(onSettled?: () => void) {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
   const t = useTranslations('Compliance.uploadReview');
+  const translateError = useTranslatedError();
 
   const invalidate = () => queryClient.invalidateQueries(trpc.complianceAdmin.pathFilter());
 
@@ -37,7 +39,7 @@ export function useUploadReview(onSettled?: () => void) {
         void invalidate();
         onSettled?.();
       },
-      onError: () => toast.error(t('toast.error')),
+      onError: (err: unknown) => toast.error(translateError(err)),
     }),
   );
 
@@ -48,7 +50,7 @@ export function useUploadReview(onSettled?: () => void) {
         void invalidate();
         onSettled?.();
       },
-      onError: () => toast.error(t('toast.error')),
+      onError: (err: unknown) => toast.error(translateError(err)),
     }),
   );
 

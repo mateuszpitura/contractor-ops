@@ -1,8 +1,7 @@
 /**
- * RED contract — INTEG-SEC-05 (API-key leak alarm: >3 source IPs / 24h).
- * Turned GREEN by 100-07 (`jobs/handlers/api-key-leak-alarm.ts`).
+ * API-key leak alarm contract (`jobs/handlers/api-key-leak-alarm.ts`).
  *
- * The cron job reads the Phase-99 `ApiKeyIpEvent` source-IP log, groups DISTINCT
+ * The cron job reads the `ApiKeyIpEvent` source-IP log, groups DISTINCT
  * `ipAddress` per `apiKeyId` over a rolling 24h window, and raises an org-admin
  * alarm for any key seen from more than 3 distinct source IPs. A key with <= 3
  * distinct IPs does not alarm. The alarm carries the key PREFIX (never the
@@ -19,12 +18,17 @@ const { mockIpEventFindMany, mockApiKeyFindMany, mockCaptureMessage } = vi.hoist
   mockCaptureMessage: vi.fn(),
 }));
 
-vi.mock('@contractor-ops/db', () => ({
-  prisma: {
+vi.mock('@contractor-ops/db', () => {
+  const regionalClient = {
     apiKeyIpEvent: { findMany: mockIpEventFindMany },
     organizationApiKey: { findMany: mockApiKeyFindMany },
-  },
-}));
+  };
+  return {
+    prisma: regionalClient,
+    SUPPORTED_REGIONS: ['EU'],
+    tryGetRegionalClient: () => regionalClient,
+  };
+});
 
 vi.mock('../lib/sentry.js', () => ({
   Sentry: { captureMessage: mockCaptureMessage, captureException: vi.fn() },

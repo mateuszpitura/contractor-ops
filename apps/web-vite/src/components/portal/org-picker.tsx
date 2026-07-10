@@ -6,27 +6,30 @@ import { useCallback, useState } from 'react';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { cn } from '../../lib/utils.js';
 
-interface OrgInfo {
-  contractorId: string;
+export interface PortalSubjectOrgInfo {
+  subjectType: 'CONTRACTOR' | 'EMPLOYEE';
+  subjectId: string;
+  contractorId?: string;
+  workerId?: string;
   organizationId: string;
   orgName: string;
   orgLogo?: string | null;
 }
 
 interface OrgPickerProps {
-  orgs: OrgInfo[];
+  orgs: PortalSubjectOrgInfo[];
   email: string;
-  onSelect: (contractorId: string, organizationId: string) => void;
+  onSelect: (org: PortalSubjectOrgInfo) => void;
   loading?: boolean;
 }
 
 interface OrgPickerRowProps {
-  org: OrgInfo;
+  org: PortalSubjectOrgInfo;
   isSelected: boolean;
   isDisabled: boolean;
   loading: boolean | undefined;
   ariaLabel: string;
-  onSelect: (org: OrgInfo) => void;
+  onSelect: (org: PortalSubjectOrgInfo) => void;
 }
 
 function OrgPickerRow({
@@ -67,7 +70,12 @@ function OrgPickerRow({
               {org.orgName.charAt(0).toUpperCase()}
             </div>
           )}
-          <span className="text-sm font-semibold">{org.orgName}</span>
+          <div className="min-w-0 flex-1">
+            <span className="block text-sm font-semibold">{org.orgName}</span>
+            <span className="block text-xs text-muted-foreground">
+              {org.subjectType === 'EMPLOYEE' ? 'Employee portal' : 'Contractor portal'}
+            </span>
+          </div>
           {!!isSelected && !!loading && (
             <Loader2
               className="ms-auto h-4 w-4 animate-spin text-muted-foreground"
@@ -83,13 +91,13 @@ function OrgPickerRow({
 export function OrgPicker({ orgs, email, onSelect, loading }: OrgPickerProps) {
   const tAria = useTranslations('Common.aria');
   const t = useTranslations('Portal.orgPicker');
-  const [selectedOrgId, setSelectedOrgId] = useState<string | null>(null);
+  const [selectedKey, setSelectedKey] = useState<string | null>(null);
 
   const handleSelect = useCallback(
-    (org: OrgInfo) => {
+    (org: PortalSubjectOrgInfo) => {
       if (loading) return;
-      setSelectedOrgId(org.organizationId);
-      onSelect(org.contractorId, org.organizationId);
+      setSelectedKey(`${org.organizationId}:${org.subjectType}:${org.subjectId}`);
+      onSelect(org);
     },
     [loading, onSelect],
   );
@@ -103,11 +111,12 @@ export function OrgPicker({ orgs, email, onSelect, loading }: OrgPickerProps) {
 
       <div className="space-y-3">
         {orgs.map(org => {
-          const isSelected = selectedOrgId === org.organizationId;
+          const key = `${org.organizationId}:${org.subjectType}:${org.subjectId}`;
+          const isSelected = selectedKey === key;
           const isDisabled = !!loading && !isSelected;
           return (
             <OrgPickerRow
-              key={org.organizationId}
+              key={key}
               org={org}
               isSelected={isSelected}
               isDisabled={isDisabled}

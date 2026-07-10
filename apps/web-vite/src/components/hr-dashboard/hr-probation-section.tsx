@@ -35,7 +35,7 @@ export interface HrProbationViewProps {
   formatDate: (value: Date | string | null | undefined) => string;
 }
 
-/** Presentational probation watchlist (HR-DASH-04). Props-in → JSX-out. */
+/** Presentational probation watchlist. Props-in → JSX-out. */
 export function HrProbationView({
   dueToday,
   dueWithin7,

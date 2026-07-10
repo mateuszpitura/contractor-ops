@@ -62,6 +62,7 @@ describe('applyWithholding (generalized deduction)', () => {
   const foreignTreatyItem = {
     grossAmountMinor: 100_000,
     contractor: { countryCode: 'DE', backupWithholdingFlagged: false },
+    w8: { contractorResidency: 'DE', w8ChainComplete: true },
   };
 
   it('deducts 24% backup withholding (IRC §3406) for a flagged US contractor', async () => {
@@ -109,7 +110,32 @@ describe('applyWithholding (generalized deduction)', () => {
 
     const result = await applyWithholding({
       org: { countryCode: 'US' },
-      item: { grossAmountMinor: 100_000, contractor: { countryCode: 'BR' } },
+      item: {
+        grossAmountMinor: 100_000,
+        contractor: { countryCode: 'BR' },
+        w8: { contractorResidency: 'BR', w8ChainComplete: true },
+      },
+    });
+    expect(result?.whtRate).toBe(30);
+    expect(result?.whtAmountMinor).toBe(expectedWhtMinor(100_000, 30));
+    expect(result?.whtTreatyApplied).toBe(false);
+  });
+
+  it('withholds 30% statutory when no complete W-8 is on file (§875(d) gate)', async () => {
+    mockWht.findFirst.mockResolvedValueOnce({
+      contractorResidency: 'PL',
+      standardRate: 30,
+      treatyRate: 0,
+      treatyArticle: 'Article 7',
+    } as never);
+
+    const result = await applyWithholding({
+      org: { countryCode: 'US' },
+      item: {
+        grossAmountMinor: 100_000,
+        contractor: { countryCode: 'PL' },
+        w8: { contractorResidency: null, w8ChainComplete: false },
+      },
     });
     expect(result?.whtRate).toBe(30);
     expect(result?.whtAmountMinor).toBe(expectedWhtMinor(100_000, 30));
@@ -136,5 +162,38 @@ describe('Saudi WHT path (regression guard — stays GREEN through generalizatio
 
   it('treats a Saudi domestic payment (SA → SA) as no withholding', async () => {
     expect(await calculateWht('SA', 'SA', 'technical_services', 100_000)).toBeNull();
+  });
+});
+
+describe('applyWithholding — form-on-file routing', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('skips chapter-3 for a foreign countryCode when W-9 is on file', async () => {
+    const result = await applyWithholding({
+      org: { countryCode: 'US' },
+      item: {
+        grossAmountMinor: 100_000,
+        contractor: { countryCode: 'PL', backupWithholdingFlagged: false },
+        taxFormOnFile: 'W9',
+      },
+    });
+    expect(result).toBeNull();
+  });
+
+  it('applies chapter-3 statutory for US countryCode when W-8 is on file', async () => {
+    mockWht.findFirst.mockResolvedValue(null as never);
+    const result = await applyWithholding({
+      org: { countryCode: 'US' },
+      item: {
+        grossAmountMinor: 100_000,
+        contractor: { countryCode: 'US', backupWithholdingFlagged: false },
+        taxFormOnFile: 'W8BEN',
+        w8: { contractorResidency: null, w8ChainComplete: false },
+      },
+    });
+    expect(result?.whtRate).toBe(30);
+    expect(result?.whtAmountMinor).toBe(expectedWhtMinor(100_000, 30));
   });
 });

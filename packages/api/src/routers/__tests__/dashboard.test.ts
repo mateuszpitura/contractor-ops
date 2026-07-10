@@ -100,25 +100,11 @@ vi.mock('@contractor-ops/db', () => ({
   getReplicaClient: vi.fn(() => mockPrisma),
 }));
 
-vi.mock('../../services/cache', () => ({
-  cacheKey: vi.fn((...s: string[]) => s.join(':')),
-  cachedSingleflight: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  cached: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  invalidate: vi.fn(async () => undefined),
-  invalidateByPrefix: vi.fn(async () => undefined),
-  CacheKeys: {
-    dashboardKpis: (orgId: string) => `dashboard:kpis:${orgId}`,
-    dashboardSpend: (orgId: string, months: string) => `dashboard:spend:${orgId}:${months}`,
-    dashboardDeadlines: (orgId: string) => `dashboard:deadlines:${orgId}`,
-    dashboardActivity: (orgId: string) => `dashboard:activity:${orgId}`,
-  },
-  CacheTTL: {
-    DASHBOARD_KPIS: 300,
-    DASHBOARD_SPEND: 600,
-    DASHBOARD_DEADLINES: 180,
-    DASHBOARD_ACTIVITY: 120,
-  },
-}));
+vi.mock('../../services/cache', async importOriginal => {
+  const actual = await importOriginal<typeof import('../../services/cache')>();
+  const { createPassthroughCacheMock } = await import('../../__tests__/__mocks__/cache-service');
+  return createPassthroughCacheMock(actual);
+});
 
 vi.mock('@sentry/node', () => {
   const mockSpan = { setStatus: vi.fn(), setAttribute: vi.fn(), end: vi.fn() };

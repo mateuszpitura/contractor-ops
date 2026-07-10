@@ -155,6 +155,12 @@ vi.mock('@contractor-ops/logger', () => ({
     child: vi.fn(),
   })),
   createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
+  createIntegrationLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+  })),
   createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
 }));
 
@@ -423,17 +429,26 @@ describe('compliance-reminder-scan filtering + resilience', () => {
     const where = mockPrismaRaw.contractorComplianceItem.findMany.mock.calls[0]?.[0]?.where as {
       status: { in: string[] };
     };
-    expect(where.status.in).toEqual(['PENDING', 'EXPIRED']);
+    expect(where.status.in).toEqual(['PENDING', 'EXPIRED', 'SATISFIED']);
     expect(where.status.in).not.toContain('WAIVED');
-    expect(where.status.in).not.toContain('SATISFIED');
   });
 
-  it('does not process items with a null expiryJurisdictionTz (filtered by query)', async () => {
-    await runComplianceReminderScan(new Date('2026-05-03T09:00:00Z'));
-    const where = mockPrismaRaw.contractorComplianceItem.findMany.mock.calls[0]?.[0]?.where as {
-      expiryJurisdictionTz: unknown;
-    };
-    expect(where.expiryJurisdictionTz).toEqual({ not: null });
+  it('query keeps expiresAt not-null only; null expiryJurisdictionTz resolved at runtime', async () => {
+    itemsFixture.push(
+      makeItem({
+        id: 'item-null-tz',
+        expiryJurisdictionTz: null,
+        contractor: { displayName: 'Acme GmbH', countryCode: 'DE' },
+        expiresAt: new Date('2026-08-01T00:00:00Z'),
+      }),
+    );
+    const now = new Date('2026-05-03T09:00:00Z');
+    const result = await runComplianceReminderScan(now);
+    const where = mockPrismaRaw.contractorComplianceItem.findMany.mock.calls[0]?.[0]
+      ?.where as Record<string, unknown>;
+    expect(where.expiresAt).toEqual({ not: null });
+    expect(where.expiryJurisdictionTz).toBeUndefined();
+    expect(result.fires).toBe(1);
   });
 
   it('logs error and continues on per-item failure (does not abort whole scan)', async () => {

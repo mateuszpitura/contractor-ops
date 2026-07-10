@@ -202,7 +202,7 @@ export function usePeppolWizard(options: {
     onError: msg => setRegistrationError(msg),
   });
 
-  const participantId = trn.length === 15 ? `0192:${trn}` : '';
+  const participantId = trn.length === 15 ? `0235:${trn}` : '';
   const canGoNext =
     (step === 1 && trn.length === 15 && /^\d{15}$/.test(trn)) ||
     step === 2 ||

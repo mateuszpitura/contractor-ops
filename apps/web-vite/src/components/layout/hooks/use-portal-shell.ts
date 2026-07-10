@@ -24,6 +24,20 @@ export function usePortalShell() {
   const session = sessionQuery.data;
   const shouldRedirectToLogin = !sessionQuery.isPending && (sessionQuery.isError || !session);
 
+  const displayName =
+    session?.subjectType === 'EMPLOYEE'
+      ? (session.worker.displayName ?? 'Employee')
+      : session?.subjectType === 'CONTRACTOR'
+        ? (session.contractor.displayName ?? 'Contractor')
+        : 'User';
+
+  const displayEmail =
+    session?.subjectType === 'EMPLOYEE'
+      ? session.worker.email
+      : session?.subjectType === 'CONTRACTOR'
+        ? session.contractor.email
+        : '';
+
   return {
     isLoading: sessionQuery.isPending || shouldRedirectToLogin,
     session,
@@ -33,8 +47,8 @@ export function usePortalShell() {
       ? {
           orgName: session.organization.name || 'Organization',
           orgLogo: session.organization.logo,
-          contractorName: session.contractor.displayName || 'Contractor',
-          contractorEmail: session.contractor.email,
+          contractorName: displayName,
+          contractorEmail: displayEmail,
         }
       : null,
   } as const;

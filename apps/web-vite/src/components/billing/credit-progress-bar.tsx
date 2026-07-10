@@ -16,6 +16,7 @@ import { cn } from '../../lib/utils';
 interface CreditCardProps {
   used: number;
   total: number;
+  remaining: number;
   isLowCredits: boolean;
   onBuyMore: () => void;
 }
@@ -37,14 +38,14 @@ function getBarColor(used: number, total: number): string {
 // Component
 // ---------------------------------------------------------------------------
 
-export function CreditCard({ used, total, isLowCredits, onBuyMore }: CreditCardProps) {
+export function CreditCard({ used, total, remaining, isLowCredits, onBuyMore }: CreditCardProps) {
   const t = useTranslations('Billing.usage');
   const tCredits = useTranslations('Billing.credits');
 
-  const remaining = Math.max(0, total - used);
+  const displayRemaining = Math.max(0, remaining);
   const percentUsed = total > 0 ? (used / total) * 100 : 100;
-  const isExhausted = total > 0 && remaining <= 0;
-  const isNearLimit = !isExhausted && total > 0 && remaining / total < 0.2;
+  const isExhausted = total > 0 && displayRemaining <= 0;
+  const isNearLimit = !isExhausted && total > 0 && displayRemaining / total < 0.2;
   const barColor = getBarColor(used, total);
 
   return (
@@ -84,11 +85,11 @@ export function CreditCard({ used, total, isLowCredits, onBuyMore }: CreditCardP
           </span>
           <Progress
             value={percentUsed}
-            aria-valuenow={remaining}
+            aria-valuenow={displayRemaining}
             aria-valuemin={0}
             aria-valuemax={total}
             aria-label={tCredits('remaining', {
-              remaining: String(remaining),
+              remaining: String(displayRemaining),
               total: String(total),
             })}>
             <ProgressTrack>

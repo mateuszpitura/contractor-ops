@@ -176,19 +176,11 @@ vi.mock('@contractor-ops/db', async () => {
 
 // The KPI procedure wraps its read in a Redis-backed singleflight; collapse it
 // to a direct call so the raw query is issued synchronously in the test.
-vi.mock('../services/cache', () => ({
-  cacheKey: vi.fn((...s: string[]) => s.join(':')),
-  cachedSingleflight: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  cached: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  invalidate: vi.fn(async () => undefined),
-  invalidateByPrefix: vi.fn(async () => undefined),
-  CacheKeys: {
-    dashboardKpis: (orgId: string) => `dashboard-kpis:${orgId}`,
-    dashboardSpend: (orgId: string, range: string) => `dashboard-spend:${orgId}:${range}`,
-    dashboardDeadlines: (orgId: string) => `dashboard-deadlines:${orgId}`,
-  },
-  CacheTTL: { DASHBOARD_KPIS_BURST: 5, DASHBOARD_SPEND: 600, DASHBOARD_DEADLINES: 180 },
-}));
+vi.mock('../services/cache', async importOriginal => {
+  const actual = await importOriginal<typeof import('../services/cache')>();
+  const { createPassthroughCacheMock } = await import('../__tests__/__mocks__/cache-service');
+  return createPassthroughCacheMock(actual);
+});
 
 import { createCallerFactory } from '../init';
 import { appRouter } from '../root';

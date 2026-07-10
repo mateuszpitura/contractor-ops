@@ -29,6 +29,8 @@ vi.mock('@contractor-ops/db', () => {
       create: vi.fn(),
       update: vi.fn(),
     },
+    auditLog: { create: vi.fn().mockResolvedValue({}) },
+    $transaction: vi.fn(async (fn: (tx: typeof MockDbPrisma) => unknown) => fn(MockDbPrisma)),
   };
   return {
     withRlsTransactions: <T>(c: T) => c,
@@ -38,13 +40,15 @@ vi.mock('@contractor-ops/db', () => {
   };
 });
 
-vi.mock('@contractor-ops/einvoice', () => {
+vi.mock('@contractor-ops/einvoice', async importOriginal => {
+  const actual = await importOriginal<typeof import('@contractor-ops/einvoice')>();
   class MockZatcaApiClient {
     requestComplianceCsid = mockZatcaApiClient.requestComplianceCsid;
     requestProductionCsid = mockZatcaApiClient.requestProductionCsid;
     submitComplianceInvoice = mockZatcaApiClient.submitComplianceInvoice;
   }
   return {
+    ...actual,
     generateZatcaCsr: vi.fn().mockReturnValue({
       csr: '-----BEGIN CERTIFICATE REQUEST-----\nMOCK_CSR\n-----END CERTIFICATE REQUEST-----',
       privateKey: 'MOCK_PRIVATE_KEY',
@@ -128,6 +132,8 @@ const db = prisma as unknown as {
 const ORG_ID = 'org-zatca-1';
 const USER_ID = 'user-1';
 
+const auditCtx = { db, actorId: USER_ID, actorName: 'Test User' };
+
 function makeTaxDetails() {
   return {
     vatNumber: '300000000000003',
@@ -171,7 +177,7 @@ describe('saveTaxDetails', () => {
     db.integrationConnection.findUniqueOrThrow.mockResolvedValue(conn);
     db.integrationConnection.update.mockResolvedValue(conn);
 
-    await saveTaxDetails(ORG_ID, taxDetails as never, USER_ID);
+    await saveTaxDetails(ORG_ID, taxDetails as never, USER_ID, db);
 
     expect(zatcaTaxDetailsSchema.parse).toHaveBeenCalledWith(taxDetails);
     expect(db.integrationConnection.update).toHaveBeenCalledWith(
@@ -195,7 +201,7 @@ describe('saveTaxDetails', () => {
     db.integrationConnection.findUniqueOrThrow.mockResolvedValue(newConn);
     db.integrationConnection.update.mockResolvedValue(newConn);
 
-    await saveTaxDetails(ORG_ID, taxDetails as never, USER_ID);
+    await saveTaxDetails(ORG_ID, taxDetails as never, USER_ID, db);
 
     expect(db.integrationConnection.create).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -216,7 +222,7 @@ describe('generateAndStoreCsr', () => {
     db.integrationConnection.findUniqueOrThrow.mockResolvedValue(conn);
     db.integrationConnection.update.mockResolvedValue(conn);
 
-    const result = await generateAndStoreCsr(ORG_ID);
+    const result = await generateAndStoreCsr(ORG_ID, db);
 
     expect(result.csrPem).toContain('MOCK_CSR');
     expect(mockSecretStore.set).toHaveBeenCalledWith('PRIVATE_KEY', 'MOCK_PRIVATE_KEY');
@@ -226,7 +232,7 @@ describe('generateAndStoreCsr', () => {
     const conn = makeConnection({ taxDetails: undefined });
     db.integrationConnection.findFirst.mockResolvedValue(conn);
 
-    await expect(generateAndStoreCsr(ORG_ID)).rejects.toThrow('zatcaTaxDetailsRequired');
+    await expect(generateAndStoreCsr(ORG_ID, db)).rejects.toThrow('zatcaTaxDetailsRequired');
   });
 
   it('updates connection step to compliance_csid', async () => {
@@ -235,7 +241,7 @@ describe('generateAndStoreCsr', () => {
     db.integrationConnection.findUniqueOrThrow.mockResolvedValue(conn);
     db.integrationConnection.update.mockResolvedValue(conn);
 
-    await generateAndStoreCsr(ORG_ID);
+    await generateAndStoreCsr(ORG_ID, db);
 
     expect(db.integrationConnection.update).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -263,7 +269,7 @@ describe('requestComplianceCsid', () => {
       requestID: 'req-123',
     });
 
-    const result = await requestComplianceCsid(ORG_ID);
+    const result = await requestComplianceCsid(ORG_ID, '123456', auditCtx);
 
     expect(result.requestId).toBe('req-123');
     expect(mockSecretStore.set).toHaveBeenCalledWith('X509_CERTIFICATE', 'mock-bst');
@@ -275,7 +281,9 @@ describe('requestComplianceCsid', () => {
     const conn = makeConnection({ csrPem: undefined });
     db.integrationConnection.findFirst.mockResolvedValue(conn);
 
-    await expect(requestComplianceCsid(ORG_ID)).rejects.toThrow('zatcaCsrRequired');
+    await expect(requestComplianceCsid(ORG_ID, '123456', auditCtx)).rejects.toThrow(
+      'zatcaCsrRequired',
+    );
   });
 
   it('updates connection step to compliance_checks', async () => {
@@ -289,7 +297,7 @@ describe('requestComplianceCsid', () => {
       requestID: 'r',
     });
 
-    await requestComplianceCsid(ORG_ID);
+    await requestComplianceCsid(ORG_ID, '123456', auditCtx);
 
     expect(db.integrationConnection.update).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -315,7 +323,7 @@ describe('runComplianceChecks', () => {
       validationResults: { status: 'CLEARED' },
     });
 
-    const results = await runComplianceChecks(ORG_ID);
+    const results = await runComplianceChecks(ORG_ID, db);
 
     expect(results).toHaveLength(6);
     expect(results.every(r => r.status === 'CLEARED')).toBe(true);
@@ -332,7 +340,7 @@ describe('runComplianceChecks', () => {
       validationResults: { status: 'CLEARED' },
     });
 
-    await runComplianceChecks(ORG_ID);
+    await runComplianceChecks(ORG_ID, db);
 
     expect(db.integrationConnection.update).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -356,7 +364,7 @@ describe('runComplianceChecks', () => {
       .mockRejectedValueOnce(new Error('ZATCA timeout'))
       .mockResolvedValue({ validationResults: { status: 'CLEARED' } });
 
-    const results = await runComplianceChecks(ORG_ID);
+    const results = await runComplianceChecks(ORG_ID, db);
 
     expect(results).toHaveLength(6);
     const errorResult = results.find(r => r.status === 'ERROR');
@@ -368,7 +376,7 @@ describe('runComplianceChecks', () => {
     const conn = makeConnection({ taxDetails: undefined });
     db.integrationConnection.findFirst.mockResolvedValue(conn);
 
-    await expect(runComplianceChecks(ORG_ID)).rejects.toThrow(
+    await expect(runComplianceChecks(ORG_ID, db)).rejects.toThrow(
       'zatcaTaxDetailsRequiredForCompliance',
     );
   });
@@ -378,7 +386,7 @@ describe('runComplianceChecks', () => {
     db.integrationConnection.findFirst.mockResolvedValue(conn);
     mockSecretStore.get.mockResolvedValue(null);
 
-    await expect(runComplianceChecks(ORG_ID)).rejects.toThrow('zatcaComplianceCsidRequired');
+    await expect(runComplianceChecks(ORG_ID, db)).rejects.toThrow('zatcaComplianceCsidRequired');
   });
 });
 
@@ -394,7 +402,7 @@ describe('exchangeProductionCertificate', () => {
       secret: 'prod-secret',
     });
 
-    await exchangeProductionCertificate(ORG_ID);
+    await exchangeProductionCertificate(ORG_ID, auditCtx);
 
     expect(mockSecretStore.set).toHaveBeenCalledWith('X509_CERTIFICATE', 'prod-bst');
     expect(mockSecretStore.set).toHaveBeenCalledWith('API_SECRET', 'prod-secret');
@@ -419,7 +427,7 @@ describe('exchangeProductionCertificate', () => {
     db.integrationConnection.findUniqueOrThrow.mockResolvedValue(conn);
     mockSecretStore.get.mockResolvedValue(null);
 
-    await expect(exchangeProductionCertificate(ORG_ID)).rejects.toThrow(
+    await expect(exchangeProductionCertificate(ORG_ID, auditCtx)).rejects.toThrow(
       'zatcaComplianceChecksMustPass',
     );
   });
@@ -429,7 +437,7 @@ describe('getOnboardingState', () => {
   it('returns initial state when no connection exists', async () => {
     db.integrationConnection.findFirst.mockResolvedValue(null);
 
-    const state = await getOnboardingState(ORG_ID);
+    const state = await getOnboardingState(ORG_ID, db);
 
     expect(state).toEqual({
       currentStep: 'tax_details',
@@ -451,7 +459,7 @@ describe('getOnboardingState', () => {
       },
     });
 
-    const state = await getOnboardingState(ORG_ID);
+    const state = await getOnboardingState(ORG_ID, db);
 
     expect(state).toEqual({
       currentStep: 'compliance_checks',
@@ -473,7 +481,7 @@ describe('getOnboardingState', () => {
       },
     });
 
-    const state = await getOnboardingState(ORG_ID);
+    const state = await getOnboardingState(ORG_ID, db);
 
     expect(state).toEqual({
       currentStep: 'production_certificate',

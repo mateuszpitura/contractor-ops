@@ -75,8 +75,11 @@ export function useSpendContractorReport(dateFrom: string, dateTo: string) {
   }, [drillDownContractorId, chartData]);
 
   const grandTotal = useMemo(() => {
-    return tableData.reduce((sum, row) => sum + row.totalMinor, 0);
-  }, [tableData]);
+    const result = tableQuery.data as
+      | { items: SpendContractorRow[]; total: number; grandTotalMinor?: number }
+      | undefined;
+    return result?.grandTotalMinor ?? 0;
+  }, [tableQuery.data]);
 
   const handleSortChange = useCallback((newSortBy: string, newSortOrder: string) => {
     setSortBy(newSortBy);

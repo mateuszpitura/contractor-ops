@@ -44,6 +44,7 @@ const {
       findMany: vi.fn(),
     },
     integrationConnection: {
+      findFirst: vi.fn(),
       findMany: vi.fn(),
     },
     $transaction: vi.fn(async (fn: (tx: Rec) => Promise<unknown>) => fn(mockPrisma)),
@@ -279,6 +280,13 @@ describe('esign.sendForSignature', () => {
       contractId: 'contract-1',
     };
     mockSendForSignature.mockResolvedValue(mockEnvelope);
+    // The org-scoped connection guard must resolve before the orchestrator runs.
+    mockPrisma.integrationConnection.findFirst.mockResolvedValue({
+      id: 'conn-1',
+      organizationId: ORG_ID,
+      provider: 'DOCUSIGN',
+      status: 'CONNECTED',
+    });
 
     const result = await tenantCaller.esign.sendForSignature({
       documentId: 'doc-1',
@@ -288,6 +296,13 @@ describe('esign.sendForSignature', () => {
     });
 
     expect(result.id).toBe('env-1');
+    // The guard scopes the connection lookup to this tenant + provider.
+    const guardCall = mockPrisma.integrationConnection.findFirst.mock.calls[0][0];
+    expect(guardCall.where).toMatchObject({
+      id: 'conn-1',
+      organizationId: ORG_ID,
+      provider: 'DOCUSIGN',
+    });
     expect(mockSendForSignature).toHaveBeenCalledWith(
       expect.objectContaining({
         organizationId: ORG_ID,
@@ -297,6 +312,23 @@ describe('esign.sendForSignature', () => {
         provider: 'DOCUSIGN',
       }),
     );
+  });
+
+  it('rejects a connectionId that does not belong to the caller org (IDOR guard)', async () => {
+    // Foreign / unknown connection id — the org-scoped lookup returns nothing.
+    mockPrisma.integrationConnection.findFirst.mockResolvedValue(null);
+
+    await expect(
+      tenantCaller.esign.sendForSignature({
+        documentId: 'doc-1',
+        connectionId: 'conn-other-org',
+        provider: 'DOCUSIGN',
+        signers: [{ name: 'Signer A', email: 'a@test.com', role: 'signer', routingOrder: 1 }],
+      }),
+    ).rejects.toMatchObject({ code: 'NOT_FOUND' });
+
+    // The provider orchestrator must never run for a foreign connection.
+    expect(mockSendForSignature).not.toHaveBeenCalled();
   });
 });
 
@@ -436,6 +468,11 @@ describe('esign.resendToRecipient', () => {
 
 describe('esign.getSigningUrl', () => {
   it('delegates to getSigningUrl orchestrator with org scope', async () => {
+    mockPrisma.signingEnvelope.findFirst.mockResolvedValue({
+      id: 'env-sign-1',
+      organizationId: ORG_ID,
+      recipients: [{ email: 'signer@test.com' }],
+    });
     mockGetSigningUrl.mockResolvedValue({ url: 'https://docusign.test/embed' });
 
     const result = await tenantCaller.esign.getSigningUrl({
@@ -567,6 +604,12 @@ describe('esign.sendForSignature — optional fields', () => {
       id: 'env-opt-1',
       status: 'SENT',
       contractId: 'contract-1',
+    });
+    mockPrisma.integrationConnection.findFirst.mockResolvedValue({
+      id: 'conn-1',
+      organizationId: ORG_ID,
+      provider: 'AUTENTI',
+      status: 'CONNECTED',
     });
 
     await tenantCaller.esign.sendForSignature({

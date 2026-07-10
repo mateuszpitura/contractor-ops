@@ -29,7 +29,7 @@ function text(node: unknown): string {
 }
 
 /**
- * Check if a party has a TRN identifier with schemeID 0192.
+ * Check if a party has a TRN identifier with the UAE Peppol scheme ID.
  */
 function hasTrnIdentifier(partyNode: Record<string, unknown>): boolean {
   const idNode = dig(partyNode, 'cac:Party', 'cac:PartyIdentification', 'cbc:ID');

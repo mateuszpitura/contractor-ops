@@ -18,6 +18,10 @@ vi.mock('../inpost-client', () => ({
   },
 }));
 
+vi.mock('../../audit-writer', () => ({
+  writeAuditLog: vi.fn(async () => undefined),
+}));
+
 import { pollInPostShipmentStatuses } from '../inpost-polling-service';
 import { handleInPostWebhook } from '../inpost-webhook-handler';
 
@@ -45,7 +49,7 @@ function createIntegrationMockDb(opts: {
 }) {
   let taskStatus = 'IN_PROGRESS';
 
-  return {
+  const db = {
     shipment: {
       findFirst: vi.fn(async () => opts.shipment),
       findMany: vi.fn(async (args: Record<string, unknown>) => {
@@ -87,11 +91,18 @@ function createIntegrationMockDb(opts: {
         },
       })),
     },
+    returnRequest: {
+      updateMany: vi.fn(async () => ({ count: 0 })),
+    },
     workflowTaskRun: {
       updateMany: vi.fn(async () => {
         taskStatus = 'DONE';
         return { count: 1 };
       }),
+      findFirst: vi.fn(async () => ({
+        id: opts.shipment.workflowTaskRunId,
+        workflowRun: { id: 'wf-run-1', status: 'IN_PROGRESS' },
+      })),
       findUnique: vi.fn(async () => ({ workflowRunId: 'wf-run-1' })),
       findMany: vi.fn(async () => [{ status: taskStatus, required: true }]),
     },
@@ -101,7 +112,12 @@ function createIntegrationMockDb(opts: {
     organization: {
       findMany: vi.fn(async () => [{ id: 'org-1' }]),
     },
+    $transaction: vi.fn(),
   };
+  db.$transaction.mockImplementation(async (callback: (tx: typeof db) => Promise<unknown>) =>
+    callback(db),
+  );
+  return db;
 }
 
 describe('Shipment Task Completion Integration', () => {

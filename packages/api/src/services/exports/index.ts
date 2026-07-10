@@ -430,8 +430,8 @@ async function handleSpendByContractor(input: DispatchInput): Promise<DispatchRe
     SELECT
       c."legalName" AS "contractorName",
       COUNT(i.id)::int AS "invoiceCount",
-      COALESCE(SUM(i."amountToPayMinor")::int, 0) AS "totalMinor",
-      COALESCE(AVG(i."amountToPayMinor")::int, 0) AS "avgMinor",
+      COALESCE(SUM(i."amountToPayMinor")::bigint, 0)::bigint AS "totalMinor",
+      COALESCE(AVG(i."amountToPayMinor")::bigint, 0)::bigint AS "avgMinor",
       MAX(i."paidAt") AS "lastPaidAt"
     FROM "Invoice" i
     JOIN "Contractor" c ON c.id = i."contractorId"
@@ -487,7 +487,7 @@ async function handleSpendByTeam(input: DispatchInput): Promise<DispatchResult> 
       t.name AS "teamName",
       COUNT(DISTINCT c.id)::int AS "contractorCount",
       COUNT(i.id)::int AS "invoiceCount",
-      COALESCE(SUM(i."amountToPayMinor")::int, 0) AS "totalMinor"
+      COALESCE(SUM(i."amountToPayMinor")::bigint, 0)::bigint AS "totalMinor"
     FROM "Invoice" i
     JOIN "Contractor" c ON c.id = i."contractorId"
     LEFT JOIN "Team" t ON t.id = c."primaryTeamId"

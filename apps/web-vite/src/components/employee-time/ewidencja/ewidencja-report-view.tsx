@@ -7,7 +7,7 @@ import { FileText } from 'lucide-react';
 import { useId, useState } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
-import { EwidencjaSnapshotTable } from './ewidencja-snapshot-table.js';
+import { EwidencjaSnapshotTable } from './data-table.js';
 import type { EwidencjaPeriodRow } from './hooks/use-ewidencja.js';
 
 interface EwidencjaReportViewProps {

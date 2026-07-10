@@ -2,7 +2,8 @@
 title: Payroll export adapters (per-market payroll integration)
 type: domain
 tags: [payroll, export, csv, xml, datev, rti, symfonia, gusto, quickbooks, feature-flags, pii, audit, i18n]
-source_commit: 13abc6a56
+source_commit: e0d533fa
+updated: 2026-07-10
 verify_with:
   - packages/payroll/src/types/profile.ts
   - packages/payroll/src/types/feed.ts
@@ -40,8 +41,9 @@ which is a separate lifecycle.
    `module.workforce-employees`). `payrollExport.listTargets` returns the registered
    targets, each annotated with the org's per-adapter `payroll.*` flag state.
 2. HR enters worker IDs and picks a target. `payrollExport.export` (`.strict()` input)
-   runs `assertWorkforceEnabled` + the per-target `evaluate(payroll.*)` FORBIDDEN gate,
-   builds the PII-masked `PayrollFeed` via `buildPayrollFeed` (org-scoped), then
+   runs `assertWorkforceEnabled`, **`employeePii:read`**, **`sensitiveActionMiddleware`** (fresh session / reauth),
+   + the per-target `evaluate(payroll.*)` FORBIDDEN gate,
+   builds the PII-masked `PayrollFeed` via `buildPayrollFeed` (org-scoped; **rejects mixed-country batches**), then
    `engine.generate(targetId, feed)`.
 3. `writeAuditLog('payroll.export', resourceType:'EMPLOYEE')` records target + employee
    count; the file returns as `fileBase64` and the hook streams a browser download.
@@ -82,6 +84,11 @@ resolves to the CSV export — the shipping path.
 base64→blob download) → presentational panel. `PayrollExport` i18n namespace across
 en/de/pl/ar/en-US. Route: `dashboard-routes.tsx` `payroll-export`.
 
+`PAYROLL_FEED_*` errors (`packages/api/src/routers/workforce/payroll-export-router.ts`)
+are registry error constants carrying ids via `cause.params`, with keys in all 4
+locales — the UI renders them via `useTranslatedError` instead of a generic
+unknownError toast.
+
 ## Agent mistakes
 
 - `hireDate` / `terminatedAt` live on **`PersonnelFile`**, not `EmployeeProfile`
@@ -94,6 +101,9 @@ en/de/pl/ar/en-US. Route: `dashboard-routes.tsx` `payroll-export`.
 - Gusto/QuickBooks native push is **flag-deferred**; the CSV export is the shipping path.
   ADP native is deferred to v7.1; the RTI XSD validate seam is non-throwing when the offline
   HMRC bundle is absent.
+- Throwing prefix-parameterized message strings that are not in the errors registry —
+  those cannot be translated client-side; use the `PAYROLL_FEED_*` registry constants
+  with ids in `cause.params`.
 
 ## Related
 

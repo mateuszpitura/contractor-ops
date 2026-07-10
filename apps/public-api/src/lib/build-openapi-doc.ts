@@ -5,12 +5,11 @@ import type { OpenAPIHono } from '@hono/zod-openapi';
  * runtime `/openapi.json` endpoint AND the build-time spec-snapshot script
  * (98-11) so the published SDK is generated from exactly what the server serves.
  *
- * Write routes are marked `hide: true` on their `createRoute` definitions, so
- * they are absent from this document by construction — the spec/SDK darkness
- * layer that composes with the per-org `module.public-api` runtime gate.
+ * Write routes are present in the derived spec (un-hidden post-OWASP gate);
+ * each still 404s per-org until `module.public-api` is granted — the runtime
+ * gate is the darkness layer, not spec omission.
  */
-// biome-ignore lint/suspicious/noExplicitAny: OpenAPIHono is generic over its
-// route env/schema; the doc builder is agnostic to those type parameters.
+// biome-ignore lint/suspicious/noExplicitAny: OpenAPIHono is generic over its route env/schema; the doc builder is agnostic to those type params.
 export function buildOpenApiDocument(app: OpenAPIHono<any, any, any>) {
   // The app is mounted at `basePath('/v1')`, so the derived paths already carry
   // the `/v1` version segment (e.g. `/v1/contractors`). `servers` must therefore

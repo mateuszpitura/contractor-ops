@@ -2,7 +2,7 @@
 title: Public API surface
 type: domain
 tags: [public-api, rest, api-key, scopes, rate-limit, rotation]
-source_commit: efb2b0794
+source_commit: e0d533fa
 verify_with:
   - apps/public-api/src/app.ts
   - apps/public-api/src/routes/
@@ -12,7 +12,7 @@ verify_with:
   - packages/api/src/services/api-key-service.ts
   - packages/api/src/middleware/api-tier-quota.ts
   - packages/api/src/lib/api-tier-limits.ts
-updated: 2026-07-05
+updated: 2026-07-10
 ---
 
 # Public API surface
@@ -75,6 +75,7 @@ DEFERRED (no procedure): `compliance_document.create` (append-only system artifa
 - Tenant + acting user come from the key context, never client input; `.strict()` DTOs block mass-assignment.
 - Writes stay double-dark in Phase 99 — do NOT flip `module.public-api` or un-hide any route here.
 - `credentials: false` on CORS — Bearer header only; production CORS env required or boot fails.
+- The error handler (`apps/public-api/src/lib/error-handler.ts`) returns a generic message for any error mapped to ≥500 — only coded 4xx errors pass their message through to external consumers; internal `TRPCError` messages (including INTERNAL_SERVER_ERROR details) never leave the service.
 
 ## Related
 

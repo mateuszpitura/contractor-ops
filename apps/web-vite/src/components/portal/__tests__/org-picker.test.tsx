@@ -7,8 +7,22 @@ import { render, screen, setup } from '@/test/test-utils';
 import { OrgPicker } from '../org-picker';
 
 const orgs = [
-  { contractorId: 'c-1', organizationId: 'org-1', orgName: 'Acme Corp', orgLogo: null },
-  { contractorId: 'c-2', organizationId: 'org-2', orgName: 'Beta LLC', orgLogo: null },
+  {
+    subjectType: 'CONTRACTOR' as const,
+    subjectId: 'c-1',
+    contractorId: 'c-1',
+    organizationId: 'org-1',
+    orgName: 'Acme Corp',
+    orgLogo: null,
+  },
+  {
+    subjectType: 'CONTRACTOR' as const,
+    subjectId: 'c-2',
+    contractorId: 'c-2',
+    organizationId: 'org-2',
+    orgName: 'Beta LLC',
+    orgLogo: null,
+  },
 ];
 
 describe('OrgPicker', () => {
@@ -27,7 +41,7 @@ describe('OrgPicker', () => {
     const onSelect = vi.fn();
     const { user } = setup(<OrgPicker orgs={orgs} email="user@example.com" onSelect={onSelect} />);
     await user.click(screen.getByText('Acme Corp'));
-    expect(onSelect).toHaveBeenCalledWith('c-1', 'org-1');
+    expect(onSelect).toHaveBeenCalledWith(orgs[0]);
   });
 
   it('disables non-selected cards while loading', async () => {

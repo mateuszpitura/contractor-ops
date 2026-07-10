@@ -92,13 +92,24 @@ export const reassessmentTriggerRouter = router({
         });
       }
       return ctx.db.$transaction(async tx => {
-        const updated = await tx.reassessmentTrigger.update({
-          where: { id: input.id },
+        const updated = await tx.reassessmentTrigger.updateMany({
+          where: { id: input.id, status: 'OPEN' },
           data: {
             status: 'ACKNOWLEDGED',
             acknowledgedByUserId: ctx.user?.id,
             acknowledgedAt: new Date(),
           },
+        });
+
+        if (updated.count !== 1) {
+          throw new TRPCError({
+            code: 'CONFLICT',
+            message: TRIGGER_NOT_ACKNOWLEDGEABLE,
+          });
+        }
+
+        const acknowledged = await tx.reassessmentTrigger.findFirstOrThrow({
+          where: { id: input.id },
         });
 
         await writeAuditLog({
@@ -118,7 +129,7 @@ export const reassessmentTriggerRouter = router({
           },
         });
 
-        return updated;
+        return acknowledged;
       });
     }),
 
@@ -138,14 +149,28 @@ export const reassessmentTriggerRouter = router({
       });
     }
     return ctx.db.$transaction(async tx => {
-      const updated = await tx.reassessmentTrigger.update({
-        where: { id: input.id },
+      const updated = await tx.reassessmentTrigger.updateMany({
+        where: {
+          id: input.id,
+          status: { in: ['OPEN', 'ACKNOWLEDGED'] },
+        },
         data: {
           status: 'DISMISSED',
           dismissedByUserId: ctx.user?.id,
           dismissedAt: new Date(),
           dismissedReason: input.reason,
         },
+      });
+
+      if (updated.count !== 1) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: TRIGGER_NOT_DISMISSIBLE,
+        });
+      }
+
+      const dismissed = await tx.reassessmentTrigger.findFirstOrThrow({
+        where: { id: input.id },
       });
 
       await writeAuditLog({
@@ -166,7 +191,7 @@ export const reassessmentTriggerRouter = router({
         },
       });
 
-      return updated;
+      return dismissed;
     });
   }),
 });

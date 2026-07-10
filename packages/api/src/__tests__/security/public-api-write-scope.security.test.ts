@@ -1,5 +1,5 @@
 /**
- * Wave-0 RED contract (INTEG-AUTH-02 / INTEG-API-01 / D-02) — BFLA tripwire.
+ * BFLA tripwire.
  *
  * The public write surface must be scope-enforced by construction: EVERY write
  * procedure carries a mandatory `requirePermission(...)` whose computed scope
@@ -12,10 +12,9 @@
  *   1. Scope-registry membership — every `requiredScope` in the matrix is a
  *      member of `PUBLIC_API_SCOPES` (GREEN — the write scopes shipped earlier).
  *   2. Live 403 matrix — each DELIVERED write procedure 403s a key lacking its
- *      scope and does NOT 403 a key with it. RED until the write procedures are
- *      built (turns green in 99-04); GREEN thereafter.
+ *      scope and does NOT 403 a key with it.
  *
- * DELIVERED = the 6 write entities Phase 99 builds (contractors, invoices,
+ * DELIVERED = the 6 built write entities (contractors, invoices,
  * payments, payment_runs, workflows, workflow_tasks). DEFERRED rows stay
  * explicitly skipped (never silently dropped) — compliance documents are
  * read-only externally; standalone payment.create does not exist.
@@ -48,7 +47,7 @@ const DELIVERED_WRITE_SCOPE_MATRIX = [
 ] as const;
 
 /**
- * DEFERRED — NOT built in Phase 99, kept for the scope-registry half and as an
+ * DEFERRED — not built, kept for the scope-registry half and as an
  * explicit record so a future phase re-enables them deliberately:
  *   - payment.create — payments are seeded BY payment-run creation, never
  *     standalone, so there is no standalone create procedure.
@@ -75,7 +74,7 @@ describe('public write BFLA — scope registry membership', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Live 403 matrix harness (RED until 99-04 builds the write procedures)
+// Live 403 matrix harness
 // ---------------------------------------------------------------------------
 
 const { mockDb, mockResolveApiKey, mockTouchLastUsed, mockGetSubscription, evaluateMock } =
@@ -192,15 +191,11 @@ vi.mock('../../services/api-key-service', () => ({
 
 vi.mock('../../services/billing-service', () => ({ getSubscription: mockGetSubscription }));
 
-vi.mock('../../services/cache', () => ({
-  cacheKey: vi.fn((...s: string[]) => s.join(':')),
-  cachedSingleflight: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  cached: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  invalidate: vi.fn(async () => undefined),
-  invalidateByPrefix: vi.fn(async () => undefined),
-  CacheKeys: {},
-  CacheTTL: {},
-}));
+vi.mock('../../services/cache', async importOriginal => {
+  const actual = await importOriginal<typeof import('../../services/cache')>();
+  const { createPassthroughCacheMock } = await import('../../__tests__/__mocks__/cache-service');
+  return createPassthroughCacheMock(actual);
+});
 
 import { createCallerFactory } from '../../init';
 import { publicApiRouter } from '../../routers/public-api';
@@ -283,7 +278,7 @@ describe('public write BFLA — live 403 matrix (DELIVERED)', () => {
 
 describe('public write BFLA — DEFERRED (not built in Phase 99)', () => {
   for (const { procedurePath } of DEFERRED_WRITE_SCOPE_MATRIX) {
-    // Intentionally NOT implemented in Phase 99 — compliance docs are read-only
+    // Intentionally NOT implemented — compliance docs are read-only
     // externally; payment.create is seeded by payment-run creation.
     it.skip(`${procedurePath} is deferred (no procedure built)`, () => {
       expect(true).toBe(true);

@@ -30,7 +30,7 @@ function createFa3Xml(overrides?: {
       <P_9A>150.00</P_9A>
       <P_11>24000.00</P_11>
       <P_12>23</P_12>
-      <P_11A>5520.00</P_11A>
+      <P_11A>29520.00</P_11A>
     </FaWiersz>`;
   const totals =
     overrides?.totals ??
@@ -198,14 +198,14 @@ describe('KSeF FA(3) Parser', () => {
         <P_7>Item A</P_7>
         <P_11>100.00</P_11>
         <P_12>23</P_12>
-        <P_11A>23.00</P_11A>
+        <P_11A>123.00</P_11A>
       </FaWiersz>
       <FaWiersz>
         <NrWierszaFa>2</NrWierszaFa>
         <P_7>Item B</P_7>
         <P_11>200.00</P_11>
         <P_12>23</P_12>
-        <P_11A>46.00</P_11A>
+        <P_11A>246.00</P_11A>
       </FaWiersz>`,
     });
     const result = parseFa3Xml(xml, 'REF-1');

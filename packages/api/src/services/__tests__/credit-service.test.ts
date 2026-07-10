@@ -44,10 +44,14 @@ vi.mock('../cache', () => ({
   CacheTTL: { CREDIT_BALANCE: 300 },
 }));
 
-vi.mock('../billing-constants', () => ({
-  TIER_CREDIT_ALLOWANCE: { STARTER: 20, PRO: 100, ENTERPRISE: 500 },
-  TRIAL_CREDIT_ALLOWANCE: 5,
-}));
+vi.mock('../billing-constants', async importOriginal => {
+  const actual = await importOriginal<typeof import('../billing-constants')>();
+  return {
+    ...actual,
+    TIER_CREDIT_ALLOWANCE: { STARTER: 20, PRO: 100, ENTERPRISE: 500 },
+    TRIAL_CREDIT_ALLOWANCE: 5,
+  };
+});
 
 // ---------------------------------------------------------------------------
 // Imports (after mocks)
@@ -103,12 +107,25 @@ function agg(sum: number | null) {
   return { _sum: { credits: sum } };
 }
 
+function mockDeductionAggregates(used: number, topUp = 0) {
+  mockPrisma.ocrCreditLedger.aggregate
+    .mockResolvedValueOnce(agg(-used))
+    .mockResolvedValueOnce(agg(topUp));
+}
+
 // ---------------------------------------------------------------------------
 // Setup
 // ---------------------------------------------------------------------------
 
 beforeEach(() => {
-  vi.clearAllMocks();
+  mockPrisma.subscription.findUnique.mockReset();
+  mockPrisma.ocrCreditLedger.aggregate.mockReset();
+  mockPrisma.ocrCreditLedger.create.mockReset();
+  mockPrisma.member.findMany.mockReset();
+  mockPrisma.$transaction.mockReset();
+  mockPrisma.$executeRawUnsafe.mockReset();
+  mockStripe.billing.meterEvents.create.mockReset();
+  mockInvalidate.mockReset();
 
   // $transaction passes the callback through with mockPrisma as the tx client
   mockPrisma.$transaction.mockImplementation(
@@ -132,7 +149,7 @@ describe('getCreditBalance', () => {
 
     const result = await getCreditBalance(ORG_ID);
 
-    expect(result).toEqual({ balance: 0, allowance: 0, used: 0, tier: null });
+    expect(result).toEqual({ balance: 0, allowance: 0, used: 0, topUp: 0, tier: null });
   });
 
   it('returns zeros when subscription status is CANCELED (not ACTIVE/TRIALING)', async () => {
@@ -140,65 +157,60 @@ describe('getCreditBalance', () => {
 
     const result = await getCreditBalance(ORG_ID);
 
-    expect(result).toEqual({ balance: 0, allowance: 0, used: 0, tier: null });
+    expect(result).toEqual({ balance: 0, allowance: 0, used: 0, topUp: 0, tier: null });
   });
 
   it('computes balance and used from aggregate sums for STARTER (allowance=20)', async () => {
     mockPrisma.subscription.findUnique.mockResolvedValue(makeSubscription({ tier: 'STARTER' }));
-    // Net sum: top-ups offset deductions → net = -5
-    mockPrisma.ocrCreditLedger.aggregate
-      .mockResolvedValueOnce(agg(-5)) // all entries net
-      .mockResolvedValueOnce(agg(-5)); // negative entries only
+    mockDeductionAggregates(5, 0);
 
     const result = await getCreditBalance(ORG_ID);
 
     expect(result).toEqual({
-      balance: -5,
+      balance: 15,
       allowance: 20,
       used: 5,
+      topUp: 0,
       tier: 'STARTER',
     });
   });
 
   it('maps PRO tier to allowance=100', async () => {
     mockPrisma.subscription.findUnique.mockResolvedValue(makeSubscription({ tier: 'PRO' }));
-    mockPrisma.ocrCreditLedger.aggregate
-      .mockResolvedValueOnce(agg(0))
-      .mockResolvedValueOnce(agg(0));
+    mockDeductionAggregates(0, 0);
 
     const result = await getCreditBalance(ORG_ID);
 
     expect(result.allowance).toBe(100);
     expect(result.used).toBe(0);
+    expect(result.balance).toBe(100);
+    expect(result.topUp).toBe(0);
     expect(result.tier).toBe('PRO');
   });
 
   it('maps ENTERPRISE tier to allowance=500', async () => {
     mockPrisma.subscription.findUnique.mockResolvedValue(makeSubscription({ tier: 'ENTERPRISE' }));
-    mockPrisma.ocrCreditLedger.aggregate
-      .mockResolvedValueOnce(agg(-50))
-      .mockResolvedValueOnce(agg(-50));
+    mockDeductionAggregates(50, 0);
 
     const result = await getCreditBalance(ORG_ID);
 
     expect(result.allowance).toBe(500);
     expect(result.used).toBe(50);
+    expect(result.balance).toBe(450);
   });
 
   it('uses TRIAL_CREDIT_ALLOWANCE=5 for TRIALING status regardless of tier', async () => {
     mockPrisma.subscription.findUnique.mockResolvedValue(
       makeSubscription({ status: 'TRIALING', tier: 'PRO' }),
     );
-    mockPrisma.ocrCreditLedger.aggregate
-      .mockResolvedValueOnce(agg(-3))
-      .mockResolvedValueOnce(agg(-3));
+    mockDeductionAggregates(3, 0);
 
     const result = await getCreditBalance(ORG_ID);
 
     // Allowance comes from TRIAL_CREDIT_ALLOWANCE, NOT from PRO tier
     expect(result.allowance).toBe(5);
     expect(result.used).toBe(3);
-    expect(result.balance).toBe(-3);
+    expect(result.balance).toBe(2);
   });
 
   it('defaults null aggregate sums to 0', async () => {
@@ -210,23 +222,21 @@ describe('getCreditBalance', () => {
 
     const result = await getCreditBalance(ORG_ID);
 
-    expect(result.balance).toBe(0);
+    expect(result.balance).toBe(20);
     expect(result.used).toBe(0);
+    expect(result.topUp).toBe(0);
     expect(result.allowance).toBe(20);
   });
 
-  it('balance reflects top-ups: net sum includes positive entries', async () => {
+  it('balance reflects top-ups separately from allowance usage', async () => {
     mockPrisma.subscription.findUnique.mockResolvedValue(makeSubscription({ tier: 'STARTER' }));
-    // 10 top-up credits added, 3 deducted → net = 7
-    // Negative entries only: -3
-    mockPrisma.ocrCreditLedger.aggregate
-      .mockResolvedValueOnce(agg(7))
-      .mockResolvedValueOnce(agg(-3));
+    mockDeductionAggregates(3, 10);
 
     const result = await getCreditBalance(ORG_ID);
 
-    expect(result.balance).toBe(7);
+    expect(result.balance).toBe(27);
     expect(result.used).toBe(3);
+    expect(result.topUp).toBe(10);
   });
 });
 
@@ -286,7 +296,7 @@ describe('checkAndDeductCredit', () => {
   describe('when credits are exhausted', () => {
     it('STARTER: denies at exactly 20 used (boundary: used === allowance)', async () => {
       mockPrisma.subscription.findUnique.mockResolvedValue(makeSubscription({ tier: 'STARTER' }));
-      mockPrisma.ocrCreditLedger.aggregate.mockResolvedValue(agg(-20));
+      mockDeductionAggregates(20);
 
       const result = await checkAndDeductCredit(ORG_ID);
 
@@ -299,7 +309,7 @@ describe('checkAndDeductCredit', () => {
 
     it('STARTER: denies when over-consumed (used > allowance, e.g., from race)', async () => {
       mockPrisma.subscription.findUnique.mockResolvedValue(makeSubscription({ tier: 'STARTER' }));
-      mockPrisma.ocrCreditLedger.aggregate.mockResolvedValue(agg(-22));
+      mockDeductionAggregates(22);
 
       const result = await checkAndDeductCredit(ORG_ID);
 
@@ -314,7 +324,7 @@ describe('checkAndDeductCredit', () => {
       mockPrisma.subscription.findUnique.mockResolvedValue(
         makeSubscription({ status: 'TRIALING', tier: 'STARTER' }),
       );
-      mockPrisma.ocrCreditLedger.aggregate.mockResolvedValue(agg(-5));
+      mockDeductionAggregates(5);
 
       const result = await checkAndDeductCredit(ORG_ID);
 
@@ -327,7 +337,7 @@ describe('checkAndDeductCredit', () => {
 
     it('skips deduction, meter, and cache — remaining <= 0 exits before side effects', async () => {
       mockPrisma.subscription.findUnique.mockResolvedValue(makeSubscription({ tier: 'STARTER' }));
-      mockPrisma.ocrCreditLedger.aggregate.mockResolvedValue(agg(-20));
+      mockDeductionAggregates(20);
 
       await checkAndDeductCredit(ORG_ID);
 
@@ -346,7 +356,7 @@ describe('checkAndDeductCredit', () => {
   describe('when credits are available', () => {
     it('STARTER: allows at used=19 (boundary: last credit), remaining=0', async () => {
       mockPrisma.subscription.findUnique.mockResolvedValue(makeSubscription({ tier: 'STARTER' }));
-      mockPrisma.ocrCreditLedger.aggregate.mockResolvedValue(agg(-19));
+      mockDeductionAggregates(19);
       mockPrisma.ocrCreditLedger.create.mockResolvedValue({});
 
       const result = await checkAndDeductCredit(ORG_ID);
@@ -356,9 +366,20 @@ describe('checkAndDeductCredit', () => {
       expect(result.remaining).toBe(0);
     });
 
+    it('allows deduction when allowance is exhausted but top-up credits remain', async () => {
+      mockPrisma.subscription.findUnique.mockResolvedValue(makeSubscription({ tier: 'STARTER' }));
+      mockDeductionAggregates(20, 5);
+      mockPrisma.ocrCreditLedger.create.mockResolvedValue({});
+
+      const result = await checkAndDeductCredit(ORG_ID);
+
+      expect(result.allowed).toBe(true);
+      expect(result.remaining).toBe(4);
+    });
+
     it('STARTER: allows at used=0 (fresh period), remaining=19', async () => {
       mockPrisma.subscription.findUnique.mockResolvedValue(makeSubscription({ tier: 'STARTER' }));
-      mockPrisma.ocrCreditLedger.aggregate.mockResolvedValue(agg(0));
+      mockDeductionAggregates(0);
       mockPrisma.ocrCreditLedger.create.mockResolvedValue({});
 
       const result = await checkAndDeductCredit(ORG_ID);
@@ -370,7 +391,7 @@ describe('checkAndDeductCredit', () => {
 
     it('PRO: remaining = 100 - used - 1', async () => {
       mockPrisma.subscription.findUnique.mockResolvedValue(makeSubscription({ tier: 'PRO' }));
-      mockPrisma.ocrCreditLedger.aggregate.mockResolvedValue(agg(-50));
+      mockDeductionAggregates(50);
       mockPrisma.ocrCreditLedger.create.mockResolvedValue({});
 
       const result = await checkAndDeductCredit(ORG_ID);
@@ -383,7 +404,7 @@ describe('checkAndDeductCredit', () => {
       mockPrisma.subscription.findUnique.mockResolvedValue(
         makeSubscription({ tier: 'ENTERPRISE' }),
       );
-      mockPrisma.ocrCreditLedger.aggregate.mockResolvedValue(agg(-200));
+      mockDeductionAggregates(200);
       mockPrisma.ocrCreditLedger.create.mockResolvedValue({});
 
       const result = await checkAndDeductCredit(ORG_ID);
@@ -396,7 +417,7 @@ describe('checkAndDeductCredit', () => {
       mockPrisma.subscription.findUnique.mockResolvedValue(
         makeSubscription({ status: 'TRIALING', tier: 'STARTER' }),
       );
-      mockPrisma.ocrCreditLedger.aggregate.mockResolvedValue(agg(-4));
+      mockDeductionAggregates(4);
       mockPrisma.ocrCreditLedger.create.mockResolvedValue({});
 
       const result = await checkAndDeductCredit(ORG_ID);
@@ -408,7 +429,7 @@ describe('checkAndDeductCredit', () => {
 
     it('handles null aggregate sum as 0 used (no ledger rows yet)', async () => {
       mockPrisma.subscription.findUnique.mockResolvedValue(makeSubscription({ tier: 'STARTER' }));
-      mockPrisma.ocrCreditLedger.aggregate.mockResolvedValue(agg(null));
+      mockDeductionAggregates(0);
       mockPrisma.ocrCreditLedger.create.mockResolvedValue({});
 
       const result = await checkAndDeductCredit(ORG_ID);
@@ -427,7 +448,7 @@ describe('checkAndDeductCredit', () => {
       mockPrisma.subscription.findUnique.mockResolvedValue(
         makeSubscription({ tier: 'STARTER', stripeCustomerId: 'cus_abc' }),
       );
-      mockPrisma.ocrCreditLedger.aggregate.mockResolvedValue(agg(-5));
+      mockDeductionAggregates(5);
       mockPrisma.ocrCreditLedger.create.mockResolvedValue({});
     });
 
@@ -472,7 +493,7 @@ describe('checkAndDeductCredit', () => {
   describe('side effects when deduction uses last credit (remaining=0)', () => {
     it('does not strip reason field from result (no reason on success)', async () => {
       mockPrisma.subscription.findUnique.mockResolvedValue(makeSubscription({ tier: 'STARTER' }));
-      mockPrisma.ocrCreditLedger.aggregate.mockResolvedValue(agg(-19));
+      mockDeductionAggregates(19);
       mockPrisma.ocrCreditLedger.create.mockResolvedValue({});
       // Prevent notification lookup from failing
       mockPrisma.member.findMany.mockResolvedValue([]);
@@ -487,7 +508,7 @@ describe('checkAndDeductCredit', () => {
     it('enqueues a CREDIT_EXHAUSTED outbox notification to owner/admin members in-tx', async () => {
       mockPrisma.subscription.findUnique.mockResolvedValue(makeSubscription({ tier: 'STARTER' }));
       // used=19 → remaining before deduct=1 → after deduct=0 (exhausted)
-      mockPrisma.ocrCreditLedger.aggregate.mockResolvedValue(agg(-19));
+      mockDeductionAggregates(19);
       mockPrisma.ocrCreditLedger.create.mockResolvedValue({ id: 'ledger-1' });
       mockPrisma.member.findMany.mockResolvedValue([{ userId: 'admin-1' }, { userId: 'admin-2' }]);
 
@@ -519,7 +540,7 @@ describe('checkAndDeductCredit', () => {
     it('does NOT enqueue when the deduction leaves credits remaining', async () => {
       mockPrisma.subscription.findUnique.mockResolvedValue(makeSubscription({ tier: 'STARTER' }));
       // used=5 → remaining after deduct=14 (not exhausted)
-      mockPrisma.ocrCreditLedger.aggregate.mockResolvedValue(agg(-5));
+      mockDeductionAggregates(5);
       mockPrisma.ocrCreditLedger.create.mockResolvedValue({ id: 'ledger-1' });
       mockPrisma.member.findMany.mockResolvedValue([{ userId: 'admin-1' }]);
 
@@ -538,7 +559,7 @@ describe('checkAndDeductCredit', () => {
       mockPrisma.subscription.findUnique.mockResolvedValue(
         makeSubscription({ tier: 'STARTER', stripeCustomerId: null }),
       );
-      mockPrisma.ocrCreditLedger.aggregate.mockResolvedValue(agg(-5));
+      mockDeductionAggregates(5);
       mockPrisma.ocrCreditLedger.create.mockResolvedValue({});
 
       await checkAndDeductCredit(ORG_ID);
@@ -615,23 +636,34 @@ describe('allocateTopUpCredits', () => {
     const sub = makeSubscription({ tier: 'STARTER' });
     mockPrisma.subscription.findUnique.mockResolvedValue(sub);
     mockPrisma.ocrCreditLedger.create.mockResolvedValue({});
-    mockPrisma.ocrCreditLedger.aggregate.mockResolvedValue(agg(35));
+    mockDeductionAggregates(0, 10);
 
     const result = await allocateTopUpCredits({
       organizationId: ORG_ID,
       credits: 10,
     });
 
-    // Verify aggregate uses the subscription's billing period as filter
-    expect(mockPrisma.ocrCreditLedger.aggregate).toHaveBeenCalledWith({
+    expect(mockPrisma.ocrCreditLedger.aggregate).toHaveBeenCalledTimes(2);
+    expect(mockPrisma.ocrCreditLedger.aggregate).toHaveBeenNthCalledWith(1, {
       where: {
         organizationId: ORG_ID,
         periodStart: sub.currentPeriodStart,
         periodEnd: sub.currentPeriodEnd,
+        credits: { lt: 0 },
       },
       _sum: { credits: true },
     });
-    expect(result.balance).toBe(35);
+    expect(mockPrisma.ocrCreditLedger.aggregate).toHaveBeenNthCalledWith(2, {
+      where: {
+        organizationId: ORG_ID,
+        periodStart: sub.currentPeriodStart,
+        periodEnd: sub.currentPeriodEnd,
+        credits: { gt: 0 },
+        reason: 'TOP_UP',
+      },
+      _sum: { credits: true },
+    });
+    expect(result.balance).toBe(30);
   });
 
   it('returns 0 balance when aggregate sum is null', async () => {
@@ -644,7 +676,7 @@ describe('allocateTopUpCredits', () => {
       credits: 10,
     });
 
-    expect(result.balance).toBe(0);
+    expect(result.balance).toBe(20);
   });
 
   it('invalidates credit balance cache after top-up', async () => {

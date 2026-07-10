@@ -11,7 +11,9 @@ import { apiKeyLeakAlarmHandler } from './handlers/api-key-leak-alarm.js';
 import { boeRatePollHandler } from './handlers/boe-rate-poll.js';
 import { classificationEconomicDependencyHandler } from './handlers/classification-economic-dependency.js';
 import { classificationReassessmentTriggersHandler } from './handlers/classification-reassessment-triggers.js';
+import { contractExpiryScanHandler } from './handlers/contract-expiry-scan.js';
 import { dataPurgeHandler } from './handlers/data-purge.js';
+import { documentVirusScanReconcileHandler } from './handlers/document-virus-scan-reconcile.js';
 import { exchangeRatesHandler } from './handlers/exchange-rates.js';
 import { form1099kTrackerHandler } from './handlers/form-1099k-tracker.js';
 import { hrisSyncHandler } from './handlers/hris-sync.js';
@@ -19,6 +21,7 @@ import { inpostStatusPollHandler } from './handlers/inpost-status-poll.js';
 import { jobHealthHandler } from './handlers/job-health.js';
 import { lateInterestPdfReaperHandler } from './handlers/late-interest-pdf-reaper.js';
 import { orgDefinitionSyncHandler } from './handlers/org-definition-sync.js';
+import { peppolReconcileHandler } from './handlers/peppol-reconcile.js';
 import { remindersHandler } from './handlers/reminders/index.js';
 import { stripeReconcileHandler } from './handlers/stripe-reconcile.js';
 import { tokenRefreshHandler } from './handlers/token-refresh.js';
@@ -42,16 +45,19 @@ export function getJobDefinitions(env: {
   CRON_HRIS_SYNC_SCHEDULE: string;
   CRON_CLASSIFICATION_REASSESSMENT_TRIGGERS_SCHEDULE: string;
   CRON_CLASSIFICATION_ECONOMIC_DEPENDENCY_SCHEDULE: string;
+  CRON_CONTRACT_EXPIRY_SCAN_SCHEDULE: string;
   CRON_FORM_1099K_TRACKER_SCHEDULE: string;
   CRON_INPOST_STATUS_POLL_SCHEDULE: string;
   CRON_JOB_HEALTH_SCHEDULE: string;
   CRON_API_KEY_LEAK_ALARM_SCHEDULE: string;
   CRON_LATE_INTEREST_PDF_REAPER_SCHEDULE: string;
+  CRON_DOCUMENT_VIRUS_SCAN_RECONCILE_SCHEDULE: string;
   CRON_TRIAL_NOTIFICATIONS_SCHEDULE: string;
   CRON_REMINDERS_SCHEDULE: string;
   CRON_YEAR_END_1099_REMINDER_SCHEDULE: string;
   CRON_STRIPE_RECONCILE_SCHEDULE: string;
   CRON_ZATCA_RECONCILE_SCHEDULE: string;
+  CRON_PEPPOL_RECONCILE_SCHEDULE: string;
   CRON_JOB_DEFAULT_MAX_MS: number;
 }): JobDefinition[] {
   const defaultMaxMs = env.CRON_JOB_DEFAULT_MAX_MS;
@@ -97,6 +103,10 @@ export function getJobDefinitions(env: {
       handler: classificationEconomicDependencyHandler,
     },
     {
+      meta: meta('contract-expiry-scan', env.CRON_CONTRACT_EXPIRY_SCAN_SCHEDULE),
+      handler: contractExpiryScanHandler,
+    },
+    {
       meta: meta('form-1099k-tracker', env.CRON_FORM_1099K_TRACKER_SCHEDULE),
       handler: form1099kTrackerHandler,
     },
@@ -117,6 +127,10 @@ export function getJobDefinitions(env: {
       handler: lateInterestPdfReaperHandler,
     },
     {
+      meta: meta('document-virus-scan-reconcile', env.CRON_DOCUMENT_VIRUS_SCAN_RECONCILE_SCHEDULE),
+      handler: documentVirusScanReconcileHandler,
+    },
+    {
       meta: meta('trial-notifications', env.CRON_TRIAL_NOTIFICATIONS_SCHEDULE),
       handler: trialNotificationsHandler,
     },
@@ -135,6 +149,10 @@ export function getJobDefinitions(env: {
     {
       meta: meta('zatca-reconcile', env.CRON_ZATCA_RECONCILE_SCHEDULE),
       handler: zatcaReconcileHandler,
+    },
+    {
+      meta: meta('peppol-reconcile', env.CRON_PEPPOL_RECONCILE_SCHEDULE),
+      handler: peppolReconcileHandler,
     },
   ];
 }

@@ -75,6 +75,19 @@ vi.mock('../../approval-engine', () => ({
   advanceFlow: vi.fn(() => ({ completed: false })),
 }));
 
+const mockExecuteIntegrationApprovalApprove = vi.hoisted(() => vi.fn());
+
+vi.mock('../../approval-integration-action', () => ({
+  executeIntegrationApprovalApprove: mockExecuteIntegrationApprovalApprove,
+  IntegrationApprovalError: class IntegrationApprovalError extends Error {
+    code: string;
+    constructor(code: string, message: string) {
+      super(message);
+      this.code = code;
+    }
+  },
+}));
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -107,7 +120,7 @@ describe('TeamsBotHandler', () => {
   let handler: TeamsBotHandler;
 
   beforeEach(() => {
-    vi.clearAllMocks();
+    mockExecuteIntegrationApprovalApprove.mockReset();
     handler = new TeamsBotHandler();
   });
 
@@ -130,7 +143,7 @@ describe('TeamsBotHandler', () => {
       expect(result.statusCode).toBe(400);
     });
 
-    it('returns 400 for invalid UUID in approve_invoice payload', async () => {
+    it('returns 400 for empty ids in approve_invoice payload', async () => {
       const context = createMockContext();
       const result = await handler.onAdaptiveCardInvoke(
         context as never,
@@ -138,8 +151,8 @@ describe('TeamsBotHandler', () => {
           action: {
             data: {
               action: 'approve_invoice',
-              invoiceId: 'not-a-uuid',
-              flowId: 'also-not-uuid',
+              invoiceId: '',
+              flowId: '',
             },
           },
         } as never,
@@ -208,11 +221,9 @@ describe('TeamsBotHandler', () => {
       expect(result.type).toBe('application/vnd.microsoft.card.adaptive');
     });
 
-    it('calls advanceFlow for approve_invoice with valid data and linked user', async () => {
+    it('calls executeIntegrationApprovalApprove for approve_invoice with valid data and linked user', async () => {
       const { prisma } = await import('@contractor-ops/db');
-      const { advanceFlow } = await import('../../approval-engine');
 
-      // Mock user resolution
       vi.mocked(prisma.externalLink.findFirst).mockResolvedValue({
         id: 'link-1',
         entityId: 'user-internal-1',
@@ -231,50 +242,18 @@ describe('TeamsBotHandler', () => {
         name: 'Test User',
       } as never);
 
-      // Mock transaction to execute and return result
-      const mockStep = {
-        id: 'step-1',
+      vi.mocked(prisma.approvalFlow.findUnique).mockResolvedValue({
         organizationId: 'org-1',
-        approvalFlowId: 'flow-1',
-        approverUserId: 'user-internal-1',
-        status: 'PENDING',
-        approvalFlow: {
-          id: 'flow-1',
-          resourceId: 'invoice-1',
-          invoice: {
-            id: 'invoice-1',
-            invoiceNumber: 'INV-001',
-            totalMinor: 10000,
-            currency: 'PLN',
-          },
-        },
-      };
-
-      vi.mocked(prisma.$transaction).mockImplementation(
-        async (fn: (tx: unknown) => Promise<unknown>) => {
-          const tx = {
-            approvalStep: {
-              findFirst: vi.fn().mockResolvedValue(mockStep),
-              update: vi.fn().mockResolvedValue(mockStep),
-            },
-            approvalDecision: {
-              create: vi.fn(),
-            },
-            approvalFlow: {
-              findUnique: vi.fn(),
-              update: vi.fn(),
-            },
-            invoice: {
-              update: vi.fn(),
-            },
-          };
-          return fn(tx);
-        },
-      );
-
-      vi.mocked(advanceFlow).mockResolvedValue({
-        completed: false,
       } as never);
+
+      mockExecuteIntegrationApprovalApprove.mockResolvedValue({
+        invoice: {
+          id: 'clinvaaaaaaaaaaaaaaaaaaaaa',
+          invoiceNumber: 'INV-001',
+          totalMinor: 10000,
+          currency: 'PLN',
+        },
+      });
 
       const context = createMockContext();
       const result = await handler.onAdaptiveCardInvoke(
@@ -283,8 +262,8 @@ describe('TeamsBotHandler', () => {
           action: {
             data: {
               action: 'approve_invoice',
-              invoiceId: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
-              flowId: 'f1e2d3c4-b5a6-7890-acba-0987654321fe',
+              invoiceId: 'clinvaaaaaaaaaaaaaaaaaaaaa',
+              flowId: 'clflowaaaaaaaaaaaaaaaaaaaa',
             },
           },
         } as never,
@@ -292,6 +271,14 @@ describe('TeamsBotHandler', () => {
 
       expect(result.statusCode).toBe(200);
       expect(result.type).toBe('application/vnd.microsoft.card.adaptive');
+      expect(mockExecuteIntegrationApprovalApprove).toHaveBeenCalledWith(
+        prisma,
+        expect.objectContaining({
+          organizationId: 'org-1',
+          flowId: 'clflowaaaaaaaaaaaaaaaaaaaa',
+          actorUserId: 'user-internal-1',
+        }),
+      );
     });
   });
 

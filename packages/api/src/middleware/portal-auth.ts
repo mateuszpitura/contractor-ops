@@ -219,6 +219,85 @@ export const portalEmployeeProcedure = publicProcedure
   .use(demoReadOnly);
 
 /**
+ * Accepts either CONTRACTOR or EMPLOYEE portal sessions — used by layout
+ * session reads that must work for both subject types (login round-trip).
+ */
+const portalAnySubjectAuthMiddleware = t.middleware(async ({ ctx, next }) => {
+  const cookieHeader = ctx.headers.get('cookie');
+  if (!cookieHeader) {
+    throw new TRPCError({ code: 'UNAUTHORIZED' });
+  }
+
+  const rawToken = parsePortalCookie(cookieHeader);
+  if (!rawToken) {
+    throw new TRPCError({ code: 'UNAUTHORIZED' });
+  }
+
+  const session = await validatePortalSession(rawToken);
+  if (!session) {
+    throw new TRPCError({ code: 'UNAUTHORIZED' });
+  }
+
+  const portalSubdomain = ctx.headers.get('x-portal-org-subdomain') ?? null;
+  const org = await prisma.organization.findUnique({
+    where: { id: session.organizationId },
+    select: { dataRegion: true },
+  });
+  const region: DataRegion = org?.dataRegion ?? 'EU';
+  const scopedClient = createTenantClientFrom(getRegionalClient(region));
+
+  if (session.subjectType === 'EMPLOYEE') {
+    const { workerId } = session;
+    if (workerId === null) {
+      throw new TRPCError({ code: 'UNAUTHORIZED' });
+    }
+    assertEmployeePortalEnabled(session.organizationId, region);
+    const { worker, employeeProfile } = session;
+    return tenantStore.run({ organizationId: session.organizationId, region }, () =>
+      next({
+        ctx: {
+          ...ctx,
+          portalSession: session,
+          subjectType: 'EMPLOYEE' as const,
+          workerId,
+          worker,
+          employeeProfile,
+          organizationId: session.organizationId,
+          portalSubdomain,
+          region,
+          db: scopedClient,
+        },
+      }),
+    );
+  }
+
+  const { contractorId, contractor } = session;
+  if (contractorId === null || contractor === null) {
+    throw new TRPCError({ code: 'UNAUTHORIZED' });
+  }
+
+  return tenantStore.run({ organizationId: session.organizationId, region }, () =>
+    next({
+      ctx: {
+        ...ctx,
+        portalSession: session,
+        subjectType: 'CONTRACTOR' as const,
+        contractorId,
+        organizationId: session.organizationId,
+        contractor,
+        portalSubdomain,
+        region,
+        db: scopedClient,
+      },
+    }),
+  );
+});
+
+export const portalAnySubjectProcedure = publicProcedure
+  .use(portalAnySubjectAuthMiddleware)
+  .use(demoReadOnly);
+
+/**
  * Procedure for authenticated employee MANAGER portal endpoints — extends
  * `portalEmployeeProcedure` and asserts the caller has at least one direct
  * report (an EmployeeProfile whose `managerWorkerId` is the caller). A

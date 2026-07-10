@@ -13,12 +13,14 @@ import { z } from 'zod';
 
 import * as E from '../../errors';
 import { router } from '../../init';
-import { requirePermission } from '../../middleware/rbac';
-import { assertWorkforceEnabled } from '../../middleware/require-workforce-flag';
-import { tenantProcedure } from '../../middleware/tenant';
+import {
+  workforceReadProcedure,
+  workforceWriteProcedure,
+} from '../../middleware/workforce-procedures';
 import type { TxClient } from '../../services/approval-engine';
 import { writeAuditLog } from '../../services/audit-writer';
 import {
+  assertMonthAlignedPeriod,
   buildEwidencjaSnapshot,
   supersedeAndInsertEwidencja,
 } from '../../services/ewidencja-builder';
@@ -26,9 +28,6 @@ import {
 function plain<T>(data: T): T {
   return JSON.parse(JSON.stringify(data)) as T;
 }
-
-const workforceReadProcedure = tenantProcedure.use(requirePermission({ employee: ['read'] }));
-const workforceWriteProcedure = tenantProcedure.use(requirePermission({ employee: ['update'] }));
 
 const generateInput = z
   .object({
@@ -58,10 +57,9 @@ const getInput = z
 
 export const ewidencjaRouter = router({
   generate: workforceWriteProcedure.input(generateInput).mutation(async ({ ctx, input }) => {
-    assertWorkforceEnabled(ctx.organizationId, ctx.region);
-
     const periodStart = new Date(input.periodStart);
     const periodEnd = new Date(input.periodEnd);
+    assertMonthAlignedPeriod(periodStart, periodEnd);
 
     return await ctx.db.$transaction(async tx => {
       const profile = await tx.employeeProfile.findFirst({
@@ -110,7 +108,6 @@ export const ewidencjaRouter = router({
   }),
 
   list: workforceReadProcedure.input(listInput).query(async ({ ctx, input }) => {
-    assertWorkforceEnabled(ctx.organizationId, ctx.region);
     const rows = await ctx.db.ewidencjaSnapshot.findMany({
       where: {
         organizationId: ctx.organizationId,
@@ -134,7 +131,6 @@ export const ewidencjaRouter = router({
   }),
 
   get: workforceReadProcedure.input(getInput).query(async ({ ctx, input }) => {
-    assertWorkforceEnabled(ctx.organizationId, ctx.region);
     // The current register is the highest-version row for the period.
     const row = await ctx.db.ewidencjaSnapshot.findFirst({
       where: {

@@ -1,15 +1,11 @@
 /**
- * Wave-0 RED contract (INTEG-API-02) — derived OpenAPI 3.1 shape.
+ * Derived OpenAPI 3.1 shape.
  *
- * The spec must be DERIVED (not the hand-written literal): `openapi` starts
- * `3.1`, all read paths are present, and — after the Phase-100 OWASP gate
- * passed and the writes were un-hidden — the write paths now appear in the
- * spec/SDK. The per-org `module.public-api` flag gate is unchanged (an org
- * without the module still 404s). 98-06 introduces the OpenAPIHono host +
- * `buildOpenApiDocument`; 98-07/98-08 add the read paths.
- *
- * RED until 98-06 adds `../lib/build-openapi-doc`. Terminal Cannot-find-module
- * on the missing builder is the accepted Wave-0 state.
+ * The spec must be DERIVED (not a hand-written literal): `openapi` starts
+ * `3.1`, all read paths are present, and — after the OWASP gate passed and
+ * the writes were un-hidden — the write paths now appear in the spec/SDK.
+ * The per-org `module.public-api` flag gate is unchanged (an org without
+ * the module still 404s).
  */
 
 import { describe, expect, it, vi } from 'vitest';
@@ -31,7 +27,6 @@ vi.mock('@contractor-ops/logger', () => {
   };
 });
 
-// RED: the app is not yet an OpenAPIHono and this builder does not exist (98-06).
 import app from '../app.js';
 import { buildOpenApiDocument } from '../lib/build-openapi-doc.js';
 

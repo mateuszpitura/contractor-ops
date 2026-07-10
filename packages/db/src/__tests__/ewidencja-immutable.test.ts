@@ -1,4 +1,4 @@
-// TIME-EMP-03 immutability contract for the KP §149 ewidencja archive.
+// Immutability contract for the KP §149 ewidencja archive.
 //
 // EwidencjaSnapshot is the evidentiary record-of-record: immutability is
 // DB-enforced, never by app convention. Mirrors the AuditLog append-only

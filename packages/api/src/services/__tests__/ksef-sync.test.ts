@@ -53,7 +53,7 @@ vi.mock('@contractor-ops/einvoice', () => {
   return {
     prismaRaw: prisma,
     KsefApiClient: MockKsefApiClient,
-    parseFa3Xml: vi.fn().mockReturnValue({ parsed: true }),
+    parseFa3Xml: vi.fn().mockReturnValue({ invoiceType: 'VAT' }),
     mapKsefToInvoiceFields: vi.fn().mockReturnValue({
       invoice: {
         invoiceNumber: 'FV/2026/001',
@@ -178,6 +178,7 @@ function setupSuccessfulSync(
   db.organization.findUniqueOrThrow.mockResolvedValue(makeOrg());
   mockKsefClient.queryInvoices.mockResolvedValue({
     invoiceMetadataList: refs.map(invoiceMetadata),
+    hasMore: false,
   });
   mockKsefClient.downloadInvoiceXml.mockResolvedValue('<xml/>');
   db.invoice.findFirst.mockResolvedValue(overrides.alreadyExists ? { id: 'existing-inv' } : null);

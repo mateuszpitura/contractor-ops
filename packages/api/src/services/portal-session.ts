@@ -136,6 +136,29 @@ export async function deletePortalSession(rawToken: string): Promise<void> {
 }
 
 /**
+ * Revoke every portal session bound to a contractor email (all orgs).
+ * Call when staff reassigns a contractor's email so the previous holder
+ * cannot switchOrg into the new identity via a frozen session cookie.
+ */
+export async function revokePortalSessionsForEmail(email: string): Promise<number> {
+  const normalized = email.toLowerCase().trim();
+  const result = await prisma.portalSession.deleteMany({
+    where: { email: normalized },
+  });
+  return result.count;
+}
+
+/**
+ * Revoke portal sessions for a specific contractor record.
+ */
+export async function revokePortalSessionsForContractor(contractorId: string): Promise<number> {
+  const result = await prisma.portalSession.deleteMany({
+    where: { contractorId },
+  });
+  return result.count;
+}
+
+/**
  * Remove all expired portal sessions.
  * Intended for periodic cleanup (cron job or scheduled task).
  * Returns the number of sessions removed.

@@ -2,11 +2,11 @@
 title: DocuSign and e-sign
 type: integration
 tags: [esign, docusign, autenti]
-source_commit: 671b24f0d7790ac32119330a0a589dffdcfece36
+source_commit: e0d533fa
 verify_with:
   - packages/api/src/routers/core/esign.ts
   - packages/api/src/services/esign-orchestrator.ts
-updated: 2026-07-06
+updated: 2026-07-10
 ---
 
 # DocuSign / Autenti e-sign
@@ -44,6 +44,8 @@ sequenceDiagram
 - Webhook payloads: Zod safeParse
 - OAuth token responses (Autenti `exchangeCodeForTokens` / `refreshToken`): routed through `parseJsonResponse` with a token Zod schema (fail-closed) so a malformed token body never persists as a credential — same convention as the other OAuth adapters
 - Contract status transitions audited
+- **Read RBAC:** `listConnections`, `getEnvelopeDetail`, and `listEnvelopes` require `contract:read` (mutations remain `contract:update` / portal-scoped as before).
+- **Connection ids are org-scoped at load:** the send path resolves a client-supplied `connectionId` via `loadIntegrationConnection(db, id, organizationId, { provider })` (`routers/core/esign.ts`) — a foreign org's connection id cannot be used to send (cross-org IDOR closed); covered by an IDOR-guard test.
 - **Completion idempotency (`handleSigningCompletion`) — atomic:** the signed `Document` + `SIGNED_COPY` `DocumentLink` + terminal `SIGNED_PDF_SAVED` `SigningEvent` are written in one `$transaction`, and `SigningEvent` carries a **partial unique** `signing_event_signed_pdf_saved_key` (`@@unique([signingEnvelopeId]) WHERE eventType = 'SIGNED_PDF_SAVED'`). This closes a read-then-write TOCTOU: two concurrent "completed" deliveries both pass the fast-path `SIGNED_PDF_SAVED`-exists check, but only one event can commit — the loser's insert raises **P2002**, rolling back its whole transaction (its duplicate `Document` + link included). The loser catches that P2002 as an **idempotent no-op** and returns the winner's already-persisted signed `Document` (resolved via the `SIGNED_COPY` `DocumentLink`; `null` for envelopes with no contract link) — never a duplicate. The earlier `SIGNED_PDF_SAVED`-exists check remains, but only as a fast path; the partial unique is the real guard. A redelivered "completed" webhook also short-circuits here — `handleSigningWebhook` receives the **internal** envelope id and dedups by `providerEventId`, so a same-payload redelivery reports `completed=false`.
 - **Retriable vs permanent completion failures:** `handleSigningCompletion` throws `EsignCompletionError { retriable }`. R2 upload / network failures are `retriable=true`; an envelope missing its provider external id is `retriable=false`. The webhook drain (`apps/api/.../webhooks/process.ts`) **rethrows retriable errors** (delivery → `FAILED` + 500 → QStash / reaper retry) and **swallows permanent ones** (delivery → `PROCESSED`, Sentry-captured for manual replay). Because a retry's webhook dedups to `completed=false`, the drain re-drives completion via `isSignedCopyPending(envelopeId)` (envelope terminal `COMPLETED` with no `SIGNED_PDF_SAVED` yet) — so a signed PDF lost to a transient R2 blip is actually re-saved, not silently dropped.
 - **Envelope-created-before-tx (send path):** `sendForSignature` calls the provider adapter before the DB `$transaction`. DocuSign is safe on retry — `createEnvelope` sends a **deterministic** `X-DocuSign-Idempotency-Key` via `deriveIdempotencyKey({ orgId: organizationId ?? connectionId, operation: 'docusign.envelope.create', businessKey: sha256(documentName|base64.length|sorted signer emails) })`, so the same logical envelope collapses inside DocuSign's 24h window. **Autenti has no idempotency key** (multi-step `document-processes` POSTs), so a rolled-back tx would otherwise orphan the process and let a retry duplicate it.

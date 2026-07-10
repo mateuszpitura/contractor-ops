@@ -87,6 +87,15 @@
             "timeout": 5
           }
         ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"/Users/mateusz.pitura/.nvm/versions/node/v24.14.1/bin/node\" \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/shield-workflow-prompt.js",
+            "timeout": 5
+          }
+        ]
       }
     ],
     "PostToolUse": [
@@ -95,7 +104,27 @@
         "hooks": [
           {
             "type": "command",
+            "command": "\"/Users/mateusz.pitura/.nvm/versions/node/v24.14.1/bin/node\" \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/shield-workflow-track.js",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "Read|Bash|Skill|Skills|Semble|CallMcpTool",
+        "hooks": [
+          {
+            "type": "command",
             "command": "\"/Users/mateusz.pitura/.nvm/versions/node/v24.14.1/bin/node\" \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/ui-workflow-track.js",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"/Users/mateusz.pitura/.nvm/versions/node/v24.14.1/bin/node\" \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/shield-workflow-track.js",
             "timeout": 5
           }
         ]
@@ -132,6 +161,16 @@
       }
     ],
     "PreToolUse": [
+      {
+        "matcher": "Grep|Glob|Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"/Users/mateusz.pitura/.nvm/versions/node/v24.14.1/bin/node\" \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/shield-workflow-guard.js",
+            "timeout": 5
+          }
+        ]
+      },
       {
         "matcher": "Grep|Glob|Write|Edit",
         "hooks": [

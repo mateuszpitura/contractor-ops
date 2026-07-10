@@ -1,6 +1,5 @@
 /**
- * RED security net — INTEG-SEC-01 / INTEG-SEC-02 (SSRF + DNS-rebind + HTTPS-only).
- * Turned GREEN by 100-02 (`services/webhooks/ssrf-guard.ts`).
+ * SSRF + DNS-rebind + HTTPS-only security net (`services/webhooks/ssrf-guard.ts`).
  *
  * Customer-supplied webhook URLs are hostile input. This suite is the executable
  * contract for the load-bearing control: both the subscribe-time classifier

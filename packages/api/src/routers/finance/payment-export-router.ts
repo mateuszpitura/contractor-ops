@@ -17,6 +17,7 @@ import {
   _buildExportItems,
   _generateExportFileForFormat,
   _resolveOrgBankInfo,
+  assertExportItemsMatchRequestedFormat,
   log,
   persistExportSettlements,
   VALID_TRANSITIONS,
@@ -60,7 +61,7 @@ async function writeExportAndComplianceRows(
         paymentExportId: exportRow.id,
         contractorId,
         snapshotJson: snap.snapshotJson as unknown as Prisma.InputJsonValue,
-        eligibilityVerdict: 'PASS',
+        eligibilityVerdict: snap.eligibilityVerdict,
         policyRuleSetVersion: snap.policyRuleSetVersion,
       },
     });
@@ -224,6 +225,7 @@ export const paymentExportRouter = router({
                 billingProfile: {
                   select: {
                     bankAccountMasked: true,
+                    bankAccountEncrypted: true,
                     swiftBic: true,
                     bankName: true,
                     usRoutingNumberEncrypted: true,
@@ -243,8 +245,15 @@ export const paymentExportRouter = router({
         }
 
         if (run.status === 'LOCKED' || run.status === 'EXPORTED') {
+          // `run` above is include-loaded with billing-profile ciphertext
+          // (bankAccountEncrypted/us*Encrypted) + contractor.taxId for the file
+          // builder. Re-select the bare run (the same shape the race-loser /
+          // winner paths return) so the idempotent replay leaks no ciphertext.
+          const safeRun = await tx.paymentRun.findFirstOrThrow({
+            where: { id: run.id, organizationId: ctx.organizationId },
+          });
           return {
-            run,
+            run: safeRun,
             idempotent: true as const,
           };
         }
@@ -317,6 +326,7 @@ export const paymentExportRouter = router({
         prepared.transferTitleTemplate,
         { paymentDate: new Date() },
       );
+      assertExportItemsMatchRequestedFormat(input.exportFormat, exportItems);
       const { fileBuffer, ext } = await _generateExportFileForFormat(
         input.exportFormat,
         exportItems,

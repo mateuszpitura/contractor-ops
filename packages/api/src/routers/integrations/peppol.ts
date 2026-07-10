@@ -1,4 +1,5 @@
 import type { IntegrationConnection } from '@contractor-ops/db/generated/prisma/client';
+import { UAE_SCHEME_ID } from '@contractor-ops/einvoice';
 import { storeCredentials } from '@contractor-ops/integrations';
 import { getQStashClient } from '@contractor-ops/integrations/services/qstash-client';
 import { createLogger } from '@contractor-ops/logger';
@@ -23,6 +24,7 @@ import {
   integrationSettingsProcedure,
 } from '../../lib/integration-procedure';
 import { cursorClause, paginateByLastKeptUndefined } from '../../lib/pagination';
+import { writeAuditLog } from '../../services/audit-writer';
 import { buildStorecoveAdapterForOrg } from '../../services/peppol-adapter-factory';
 import { getCapabilitiesWithCache, supportsXRechnungCii } from '../../services/peppol-capability';
 
@@ -43,7 +45,7 @@ export const peppolRouter = router({
   connect: integrationSettingsProcedure('update')
     .input(connectPeppolSchema)
     .mutation(async ({ ctx, input }) => {
-      const participantId = `0192:${input.trn}`;
+      const participantId = `${UAE_SCHEME_ID}:${input.trn}`;
 
       // Check if already connected
       const existing = await ctx.db.peppolParticipant.findFirst({
@@ -117,7 +119,7 @@ export const peppolRouter = router({
         data: {
           organizationId: ctx.organizationId,
           participantId,
-          schemeId: '0192',
+          schemeId: UAE_SCHEME_ID,
           identifierValue: input.trn,
           aspProvider: input.aspProvider,
           status: 'PENDING',
@@ -167,6 +169,16 @@ export const peppolRouter = router({
         });
       }
 
+      await writeAuditLog({
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user.id,
+        action: 'peppol.connected',
+        resourceType: 'ORGANIZATION',
+        resourceId: ctx.organizationId,
+        newValues: { participantId, trn: input.trn, aspProvider: input.aspProvider },
+      });
+
       return { participant, connection };
     }),
 
@@ -189,10 +201,23 @@ export const peppolRouter = router({
       });
     }
 
-    // Deregister participant
-    await ctx.db.peppolParticipant.update({
-      where: { id: participant.id },
-      data: { status: 'DEREGISTERED' },
+    await ctx.db.$transaction(async tx => {
+      await tx.peppolParticipant.update({
+        where: { id: participant.id },
+        data: { status: 'DEREGISTERED' },
+      });
+
+      await writeAuditLog({
+        tx,
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user.id,
+        action: 'peppol.disconnected',
+        resourceType: 'ORGANIZATION',
+        resourceId: ctx.organizationId,
+        oldValues: { status: participant.status },
+        newValues: { status: 'DEREGISTERED' },
+      });
     });
 
     // Update IntegrationConnection

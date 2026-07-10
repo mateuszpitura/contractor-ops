@@ -78,7 +78,11 @@ vi.mock('@contractor-ops/db', () => ({
         const where = args?.where ?? {};
         return store.items.filter(r => {
           if (where.severity && r.severity !== where.severity) return false;
-          if (where.status && r.status !== where.status) return false;
+          const statusFilter = where.status as string | { in?: string[] } | undefined;
+          if (typeof statusFilter === 'string' && r.status !== statusFilter) return false;
+          if (statusFilter && typeof statusFilter === 'object' && 'in' in statusFilter) {
+            if (!statusFilter.in?.includes(r.status as string)) return false;
+          }
           return true;
         });
       }),
@@ -105,6 +109,12 @@ vi.mock('@contractor-ops/logger', () => ({
     child: vi.fn(),
   })),
   createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
+  createIntegrationLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+  })),
   createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
 }));
 vi.mock('@contractor-ops/logger/metrics', () => ({

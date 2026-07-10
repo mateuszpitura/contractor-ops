@@ -3,7 +3,12 @@ import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import * as E from '../../errors';
 import { router } from '../../init';
-import { portalProcedure, portalPublicProcedure } from '../../middleware/portal-auth';
+import { enforceMagicLinkRateLimit } from '../../middleware/magic-link-rate-limit';
+import {
+  portalAnySubjectProcedure,
+  portalProcedure,
+  portalPublicProcedure,
+} from '../../middleware/portal-auth';
 import {
   createMagicLinkToken,
   findContractorsByEmail,
@@ -33,6 +38,10 @@ export const portalAuthRouter = router({
     .input(z.object({ email: z.email() }))
     .mutation(async ({ input }) => {
       const email = input.email.toLowerCase().trim();
+      // Per-email throttle (hashed key) — caps inbox bombing before any DB
+      // lookup or email send. Applied to every request regardless of whether
+      // the address matches, so it leaks nothing about account existence.
+      await enforceMagicLinkRateLimit(email);
       const [contractors, employees] = await Promise.all([
         findContractorsByEmail(email),
         findEmployeesByEmail(email),
@@ -143,11 +152,14 @@ export const portalAuthRouter = router({
 
       return {
         session: null,
-        orgs: contractors.map(c => ({
-          contractorId: c.id,
-          organizationId: c.organizationId,
-          orgName: c.organization.name,
-          orgLogo: c.organization.logo,
+        orgs: subjects.map(s => ({
+          subjectType: s.subjectType,
+          subjectId: s.subjectId,
+          contractorId: s.subjectType === 'CONTRACTOR' ? s.subjectId : undefined,
+          workerId: s.subjectType === 'EMPLOYEE' ? s.subjectId : undefined,
+          organizationId: s.organizationId,
+          orgName: s.orgName,
+          orgLogo: s.orgLogo,
         })),
         needsOrgPicker: true as const,
         email: result.email,
@@ -374,8 +386,7 @@ export const portalAuthRouter = router({
   /**
    * Get current session info for portal layout (contractor + org info).
    */
-  getSession: portalProcedure.query(async ({ ctx }) => {
-    // Routing table (`Organization`) lives on primary — not regional `ctx.db`
+  getSession: portalAnySubjectProcedure.query(async ({ ctx }) => {
     const org = await prisma.organization.findUnique({
       where: { id: ctx.organizationId },
       select: { id: true, name: true, logo: true, metadata: true },
@@ -383,20 +394,48 @@ export const portalAuthRouter = router({
 
     const metadata = org?.metadata ? (JSON.parse(org.metadata) as Record<string, unknown>) : {};
 
+    const organization = {
+      id: ctx.organizationId,
+      name: org?.name ?? '',
+      logo: org?.logo ?? null,
+      dateFormat: (metadata.dateFormat as string) ?? null,
+      timeFormat: (metadata.timeFormat as string) ?? null,
+      timezone: (metadata.timezone as string) ?? null,
+    };
+
+    if (ctx.subjectType === 'EMPLOYEE') {
+      return {
+        subjectType: 'EMPLOYEE' as const,
+        worker: {
+          id: ctx.workerId,
+          displayName: ctx.worker.displayName,
+          email: ctx.portalSession.email,
+        },
+        organization,
+      };
+    }
+
+    const contractorId = ctx.portalSession.contractorId;
+    if (!contractorId) {
+      throw new TRPCError({ code: 'UNAUTHORIZED' });
+    }
+
+    const contractor = await prisma.contractor.findFirst({
+      where: { id: contractorId, organizationId: ctx.organizationId },
+      select: { id: true, displayName: true },
+    });
+    if (!contractor) {
+      throw new TRPCError({ code: 'UNAUTHORIZED' });
+    }
+
     return {
+      subjectType: 'CONTRACTOR' as const,
       contractor: {
-        id: ctx.contractor.id,
-        displayName: ctx.contractor.displayName,
+        id: contractor.id,
+        displayName: contractor.displayName,
         email: ctx.portalSession.email,
       },
-      organization: {
-        id: ctx.organizationId,
-        name: org?.name ?? '',
-        logo: org?.logo ?? null,
-        dateFormat: (metadata.dateFormat as string) ?? null,
-        timeFormat: (metadata.timeFormat as string) ?? null,
-        timezone: (metadata.timezone as string) ?? null,
-      },
+      organization,
     };
   }),
 });

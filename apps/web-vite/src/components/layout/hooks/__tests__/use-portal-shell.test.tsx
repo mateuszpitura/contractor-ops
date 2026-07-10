@@ -52,6 +52,7 @@ describe('usePortalShell', () => {
   it('populates topBarProps and shellStyle from the session on success', async () => {
     setTRPCMock({
       'portal.getSession': () => ({
+        subjectType: 'CONTRACTOR',
         organization: {
           id: 'org-1',
           name: 'Acme',
@@ -82,6 +83,7 @@ describe('usePortalShell', () => {
   it('returns shellStyle=undefined when the org has no brand color', async () => {
     setTRPCMock({
       'portal.getSession': () => ({
+        subjectType: 'CONTRACTOR',
         organization: { id: 'org-1', name: 'Acme', logo: null, brandColor: null },
         contractor: { id: 'c-1', displayName: 'Ada', email: 'ada@example.com' },
       }),

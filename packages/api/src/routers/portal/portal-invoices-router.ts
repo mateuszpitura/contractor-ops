@@ -4,8 +4,15 @@ import { z } from 'zod';
 import * as E from '../../errors';
 import { router } from '../../init';
 import { portalProcedure } from '../../middleware/portal-auth';
+import { computeDuplicateCheckHashForInvoice } from '../../services/invoice-matching';
+import type { OutboxTransactionalClient } from '../../services/outbox';
 import { consumePendingUpload, createPendingUpload } from '../../services/pending-upload';
 import { createRegionalPresignedDownloadUrl } from '../../services/regional-storage';
+import {
+  enqueueInvoiceReceivedNotification,
+  getFinanceTeamUserIds,
+  linkDocumentsToInvoice,
+} from '../finance/invoice-shared';
 import type { ActivityEntry } from './portal-shared';
 
 export const portalInvoicesRouter = router({
@@ -262,13 +269,21 @@ export const portalInvoicesRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      // Verify contract belongs to this contractor and is ACTIVE
+      if (input.grossAmountMinor < input.netAmountMinor) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: E.INVOICE_AMOUNT_MISMATCH,
+        });
+      }
+
       const contract = await ctx.db.contract.findFirst({
         where: {
           id: input.contractId,
           contractorId: ctx.contractorId,
+          organizationId: ctx.organizationId,
           status: 'ACTIVE',
         },
+        select: { id: true, currency: true },
       });
 
       if (!contract) {
@@ -278,11 +293,30 @@ export const portalInvoicesRouter = router({
         });
       }
 
-      // Atomically consume the PendingUpload row to recover the
-      // server-stored `storageKey` for this `documentId`. Throws if the row
-      // is missing, expired, already consumed, belongs to another tenant,
-      // or was minted for a different purpose. This is the primary defence
-      // against cross-tenant document exfiltration via portal.submitInvoice.
+      const contractor = await ctx.db.contractor.findFirst({
+        where: { id: ctx.contractorId, organizationId: ctx.organizationId },
+        select: { taxId: true, legalName: true, displayName: true },
+      });
+
+      const duplicateCheckHash = contractor?.taxId
+        ? computeDuplicateCheckHashForInvoice({
+            invoiceNumber: input.invoiceNumber,
+            sellerTaxId: contractor.taxId,
+            sellerName: contractor.legalName ?? contractor.displayName,
+            totalMinor: input.grossAmountMinor,
+          })
+        : null;
+
+      if (duplicateCheckHash) {
+        const existing = await ctx.db.invoice.findFirst({
+          where: { organizationId: ctx.organizationId, duplicateCheckHash },
+          select: { id: true },
+        });
+        if (existing) {
+          throw new TRPCError({ code: 'CONFLICT', message: E.INVOICE_DUPLICATE });
+        }
+      }
+
       const pending = await consumePendingUpload({
         db: ctx.db,
         organizationId: ctx.organizationId,
@@ -290,53 +324,60 @@ export const portalInvoicesRouter = router({
         expectedPurpose: 'PORTAL_INVOICE_SUBMIT',
       });
 
-      // Create document record for the uploaded PDF using the server-trusted
-      // storage key recovered from `PendingUpload`. The input schema does not
-      // expose `storageKey` — there is no client-supplied path to fall back to.
-      await ctx.db.document.create({
-        data: {
-          id: input.documentId,
-          organizationId: ctx.organizationId,
-          storageKey: pending.storageKey,
-          originalFileName: input.originalFileName,
-          mimeType: pending.mimeType,
-          fileSizeBytes: input.fileSizeBytes,
-          documentType: 'INVOICE',
-          source: 'USER_UPLOAD',
-          checksumSha256: input.checksumSha256 ?? '',
-        },
-      });
+      const financeUserIds = await getFinanceTeamUserIds(ctx.db, ctx.organizationId);
 
-      // Create invoice with PORTAL source
-      const invoice = await ctx.db.invoice.create({
-        data: {
-          organizationId: ctx.organizationId,
-          contractorId: ctx.contractorId,
-          contractId: input.contractId,
-          invoiceNumber: input.invoiceNumber,
-          source: 'PORTAL',
-          issueDate: input.issueDate,
-          dueDate: input.dueDate,
-          subtotalMinor: input.netAmountMinor,
-          totalMinor: input.grossAmountMinor,
-          amountToPayMinor: input.grossAmountMinor,
-          currency: contract.currency,
-          status: 'RECEIVED',
-          matchStatus: 'UNMATCHED',
-          approvalStatus: 'NOT_STARTED',
-          paymentStatus: 'NOT_READY',
-          submittedByEmail: ctx.portalSession.email,
-        },
-      });
+      const invoice = await ctx.db.$transaction(async tx => {
+        await tx.document.create({
+          data: {
+            id: input.documentId,
+            organizationId: ctx.organizationId,
+            storageKey: pending.storageKey,
+            originalFileName: input.originalFileName,
+            mimeType: pending.mimeType,
+            fileSizeBytes: input.fileSizeBytes,
+            documentType: 'INVOICE',
+            source: 'USER_UPLOAD',
+            checksumSha256: input.checksumSha256 ?? '',
+          },
+        });
 
-      // Link document to invoice
-      await ctx.db.invoiceFile.create({
-        data: {
+        const inv = await tx.invoice.create({
+          data: {
+            organizationId: ctx.organizationId,
+            contractorId: ctx.contractorId,
+            contractId: input.contractId,
+            invoiceNumber: input.invoiceNumber,
+            source: 'PORTAL',
+            issueDate: input.issueDate,
+            dueDate: input.dueDate,
+            subtotalMinor: input.netAmountMinor,
+            totalMinor: input.grossAmountMinor,
+            amountToPayMinor: input.grossAmountMinor,
+            currency: contract.currency,
+            sellerTaxId: contractor?.taxId ?? null,
+            sellerName: contractor?.legalName ?? contractor?.displayName ?? null,
+            duplicateCheckHash,
+            status: 'RECEIVED',
+            matchStatus: 'UNMATCHED',
+            approvalStatus: 'NOT_STARTED',
+            paymentStatus: 'NOT_READY',
+            submittedByEmail: ctx.portalSession.email,
+          },
+        });
+
+        await linkDocumentsToInvoice(tx, ctx.organizationId, inv.id, [input.documentId]);
+
+        await enqueueInvoiceReceivedNotification(tx as unknown as OutboxTransactionalClient, {
           organizationId: ctx.organizationId,
-          invoiceId: invoice.id,
-          documentId: input.documentId,
-          role: 'SOURCE_ORIGINAL',
-        },
+          recipientUserIds: financeUserIds,
+          invoiceId: inv.id,
+          invoiceNumber: inv.invoiceNumber,
+          sellerName: contractor?.legalName ?? contractor?.displayName ?? null,
+          totalMinor: inv.totalMinor,
+          currency: inv.currency,
+        });
+
+        return inv;
       });
 
       return {

@@ -1,6 +1,8 @@
+import { evaluate } from '@contractor-ops/feature-flags';
 import { entityIdSchema, webhookEventTypeSchema } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
+import * as E from '../../errors';
 import { router } from '../../init';
 import { TIER_WEBHOOK_SUBSCRIPTION_CAP } from '../../lib/api-tier-limits';
 import { findOrThrow } from '../../lib/find-or-throw';
@@ -60,6 +62,23 @@ function auditContext(headers: Headers): { ipAddress: string | null; userAgent: 
   };
 }
 
+function assertOutboundWebhooksModule(
+  organizationId: string,
+  region: 'EU' | 'ME' | string | undefined,
+): void {
+  const evalRegion = region === 'ME' ? ('ME' as const) : ('EU' as const);
+  const flag = evaluate('module.outbound-webhooks', {
+    organizationId,
+    region: evalRegion,
+  });
+  if (!flag.enabled) {
+    throw new TRPCError({
+      code: 'FORBIDDEN',
+      message: E.OUTBOUND_WEBHOOKS_NOT_ENABLED,
+    });
+  }
+}
+
 const webhookAdminProcedure = tenantProcedure.use(requirePermission({ organization: ['update'] }));
 
 // ---------------------------------------------------------------------------
@@ -72,6 +91,8 @@ export const webhookSubscriptionRouter = router({
    * generates + encrypts a `whsec_` secret, and returns the plaintext ONCE.
    */
   create: webhookAdminProcedure.input(createInput).mutation(async ({ ctx, input }) => {
+    assertOutboundWebhooksModule(ctx.organizationId, ctx.region);
+
     await assertUrlSafeOrReject(input.url, input.httpAllowed);
 
     const subscription = await getSubscription(ctx.organizationId);
@@ -90,40 +111,45 @@ export const webhookSubscriptionRouter = router({
     }
 
     const secret = generateWebhookSecret();
-    const created = await ctx.db.webhookSubscription.create({
-      data: {
-        organizationId: ctx.organizationId,
-        url: input.url,
-        eventFilter: input.eventFilter,
-        secretEncrypted: encryptWebhookSecret(secret),
-        includePii: input.includePii,
-        httpAllowed: input.httpAllowed,
-      },
-      select: {
-        id: true,
-        url: true,
-        eventFilter: true,
-        includePii: true,
-        httpAllowed: true,
-        enabled: true,
-        createdAt: true,
-      },
-    });
+    const created = await ctx.db.$transaction(async tx => {
+      const row = await tx.webhookSubscription.create({
+        data: {
+          organizationId: ctx.organizationId,
+          url: input.url,
+          eventFilter: input.eventFilter,
+          secretEncrypted: encryptWebhookSecret(secret),
+          includePii: input.includePii,
+          httpAllowed: input.httpAllowed,
+        },
+        select: {
+          id: true,
+          url: true,
+          eventFilter: true,
+          includePii: true,
+          httpAllowed: true,
+          enabled: true,
+          createdAt: true,
+        },
+      });
 
-    await writeAuditLog({
-      organizationId: ctx.organizationId,
-      actorType: 'USER',
-      actorId: ctx.user?.id ?? null,
-      action: 'WEBHOOK_SUBSCRIPTION_CREATE',
-      resourceType: 'WEBHOOK_SUBSCRIPTION',
-      resourceId: created.id,
-      newValues: {
-        url: created.url,
-        eventFilter: created.eventFilter,
-        includePii: created.includePii,
-      },
-      metadata: { subscriptionId: created.id },
-      ...auditContext(ctx.headers),
+      await writeAuditLog({
+        tx,
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user?.id ?? null,
+        action: 'WEBHOOK_SUBSCRIPTION_CREATE',
+        resourceType: 'WEBHOOK_SUBSCRIPTION',
+        resourceId: row.id,
+        newValues: {
+          url: row.url,
+          eventFilter: row.eventFilter,
+          includePii: row.includePii,
+        },
+        metadata: { subscriptionId: row.id },
+        ...auditContext(ctx.headers),
+      });
+
+      return row;
     });
 
     // Secret revealed exactly once.
@@ -151,6 +177,8 @@ export const webhookSubscriptionRouter = router({
 
   /** Update a subscription. Re-SSRF-checks on a URL change. */
   update: webhookAdminProcedure.input(updateInput).mutation(async ({ ctx, input }) => {
+    assertOutboundWebhooksModule(ctx.organizationId, ctx.region);
+
     const existing = await findOrThrow(
       () =>
         ctx.db.webhookSubscription.findFirst({
@@ -163,40 +191,45 @@ export const webhookSubscriptionRouter = router({
       await assertUrlSafeOrReject(input.url, input.httpAllowed ?? existing.httpAllowed);
     }
 
-    const updated = await ctx.db.webhookSubscription.update({
-      where: { id: input.id },
-      data: {
-        ...(input.url !== undefined && { url: input.url }),
-        ...(input.eventFilter !== undefined && { eventFilter: input.eventFilter }),
-        ...(input.includePii !== undefined && { includePii: input.includePii }),
-        ...(input.httpAllowed !== undefined && { httpAllowed: input.httpAllowed }),
-        ...(input.enabled !== undefined && { enabled: input.enabled }),
-      },
-      select: {
-        id: true,
-        url: true,
-        eventFilter: true,
-        includePii: true,
-        httpAllowed: true,
-        enabled: true,
-      },
-    });
+    const updated = await ctx.db.$transaction(async tx => {
+      const row = await tx.webhookSubscription.update({
+        where: { id: input.id },
+        data: {
+          ...(input.url !== undefined && { url: input.url }),
+          ...(input.eventFilter !== undefined && { eventFilter: input.eventFilter }),
+          ...(input.includePii !== undefined && { includePii: input.includePii }),
+          ...(input.httpAllowed !== undefined && { httpAllowed: input.httpAllowed }),
+          ...(input.enabled !== undefined && { enabled: input.enabled }),
+        },
+        select: {
+          id: true,
+          url: true,
+          eventFilter: true,
+          includePii: true,
+          httpAllowed: true,
+          enabled: true,
+        },
+      });
 
-    await writeAuditLog({
-      organizationId: ctx.organizationId,
-      actorType: 'USER',
-      actorId: ctx.user?.id ?? null,
-      action: 'WEBHOOK_SUBSCRIPTION_UPDATE',
-      resourceType: 'WEBHOOK_SUBSCRIPTION',
-      resourceId: updated.id,
-      oldValues: {
-        url: existing.url,
-        eventFilter: existing.eventFilter,
-        enabled: existing.enabled,
-      },
-      newValues: { url: updated.url, eventFilter: updated.eventFilter, enabled: updated.enabled },
-      metadata: { subscriptionId: updated.id },
-      ...auditContext(ctx.headers),
+      await writeAuditLog({
+        tx,
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user?.id ?? null,
+        action: 'WEBHOOK_SUBSCRIPTION_UPDATE',
+        resourceType: 'WEBHOOK_SUBSCRIPTION',
+        resourceId: row.id,
+        oldValues: {
+          url: existing.url,
+          eventFilter: existing.eventFilter,
+          enabled: existing.enabled,
+        },
+        newValues: { url: row.url, eventFilter: row.eventFilter, enabled: row.enabled },
+        metadata: { subscriptionId: row.id },
+        ...auditContext(ctx.headers),
+      });
+
+      return row;
     });
 
     return updated;
@@ -213,20 +246,23 @@ export const webhookSubscriptionRouter = router({
     );
 
     const secret = generateWebhookSecret();
-    await ctx.db.webhookSubscription.update({
-      where: { id: existing.id },
-      data: { secretEncrypted: encryptWebhookSecret(secret) },
-    });
+    await ctx.db.$transaction(async tx => {
+      await tx.webhookSubscription.update({
+        where: { id: existing.id },
+        data: { secretEncrypted: encryptWebhookSecret(secret) },
+      });
 
-    await writeAuditLog({
-      organizationId: ctx.organizationId,
-      actorType: 'USER',
-      actorId: ctx.user?.id ?? null,
-      action: 'WEBHOOK_SUBSCRIPTION_ROTATE_SECRET',
-      resourceType: 'WEBHOOK_SUBSCRIPTION',
-      resourceId: existing.id,
-      metadata: { subscriptionId: existing.id },
-      ...auditContext(ctx.headers),
+      await writeAuditLog({
+        tx,
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user?.id ?? null,
+        action: 'WEBHOOK_SUBSCRIPTION_ROTATE_SECRET',
+        resourceType: 'WEBHOOK_SUBSCRIPTION',
+        resourceId: existing.id,
+        metadata: { subscriptionId: existing.id },
+        ...auditContext(ctx.headers),
+      });
     });
 
     return { id: existing.id, secret };
@@ -242,18 +278,21 @@ export const webhookSubscriptionRouter = router({
       'WEBHOOK_SUBSCRIPTION_NOT_FOUND',
     );
 
-    await ctx.db.webhookSubscription.delete({ where: { id: existing.id } });
+    await ctx.db.$transaction(async tx => {
+      await tx.webhookSubscription.delete({ where: { id: existing.id } });
 
-    await writeAuditLog({
-      organizationId: ctx.organizationId,
-      actorType: 'USER',
-      actorId: ctx.user?.id ?? null,
-      action: 'WEBHOOK_SUBSCRIPTION_DELETE',
-      resourceType: 'WEBHOOK_SUBSCRIPTION',
-      resourceId: existing.id,
-      oldValues: { url: existing.url, eventFilter: existing.eventFilter },
-      metadata: { subscriptionId: existing.id },
-      ...auditContext(ctx.headers),
+      await writeAuditLog({
+        tx,
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user?.id ?? null,
+        action: 'WEBHOOK_SUBSCRIPTION_DELETE',
+        resourceType: 'WEBHOOK_SUBSCRIPTION',
+        resourceId: existing.id,
+        oldValues: { url: existing.url, eventFilter: existing.eventFilter },
+        metadata: { subscriptionId: existing.id },
+        ...auditContext(ctx.headers),
+      });
     });
 
     return { success: true };

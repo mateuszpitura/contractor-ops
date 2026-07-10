@@ -19,7 +19,7 @@
  */
 
 import { handleZatcaSubmissionJob } from '@contractor-ops/api/services/zatca-submission';
-import { prisma } from '@contractor-ops/db';
+import { findAcrossRegions } from '@contractor-ops/db';
 import { ZatcaApiError } from '@contractor-ops/einvoice';
 import { createWebhookLogger } from '@contractor-ops/logger';
 import type { FastifyInstance } from 'fastify';
@@ -48,15 +48,20 @@ export function registerZatcaSubmitRoute(app: FastifyInstance): void {
         // PENDING row with no `submittedAt` is a transient failure — that is
         // safe to resubmit; `submitToZatca` reuses the row instead of
         // recreating it, so the @unique(invoiceId) P2002 no longer applies.)
-        const existing = await prisma.zatcaInvoiceChain.findUnique({
-          where: { invoiceId },
-          select: { submittedAt: true, zatcaStatus: true },
+        const located = await findAcrossRegions(async client => {
+          const row = await client.zatcaInvoiceChain.findUnique({
+            where: { invoiceId },
+            select: { zatcaStatus: true },
+          });
+          return row ?? null;
         });
+        const existing = located?.result;
 
-        if (existing?.submittedAt) {
+        const terminalSuccess = new Set(['CLEARED', 'REPORTED', 'WARNING']);
+        if (existing && terminalSuccess.has(existing.zatcaStatus)) {
           log.info(
             { invoiceId, organizationId, status: existing.zatcaStatus },
-            'zatca submission already recorded, skipping',
+            'zatca submission already settled, skipping',
           );
           return reply.code(200).send({ skipped: true, status: existing.zatcaStatus });
         }

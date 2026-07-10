@@ -1,3 +1,4 @@
+import { memberRoleToUserRole } from '@contractor-ops/auth/role-normalization';
 import type { Prisma, PrismaClient } from '@contractor-ops/db';
 import { TRPCError } from '@trpc/server';
 import { APPROVAL_NO_USER_WITH_ROLE } from '../errors';
@@ -226,16 +227,7 @@ export async function createApprovalFlow(
           stepOrder: index + 1,
           name: step.name,
           approverUserId: step.approverUserId ?? null,
-          approverRole: step.approverRole as
-            | 'ORG_ADMIN'
-            | 'FINANCE_ADMIN'
-            | 'OPS_MANAGER'
-            | 'TEAM_MANAGER'
-            | 'LEGAL_VIEWER'
-            | 'IT_ADMIN'
-            | 'ACCOUNTANT'
-            | 'READ_ONLY'
-            | null,
+          approverRole: memberRoleToUserRole(step.approverRole),
           status: index === 0 ? 'PENDING' : 'NOT_STARTED',
           required: step.required,
           slaDeadline: index === 0 ? addHours(now, step.slaHours) : null,

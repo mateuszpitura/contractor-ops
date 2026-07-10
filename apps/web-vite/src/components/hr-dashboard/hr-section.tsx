@@ -9,7 +9,7 @@ import {
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import type { LucideIcon } from 'lucide-react';
 import { AlertTriangle } from 'lucide-react';
-import type { ReactNode } from 'react';
+import type { ReactElement, ReactNode } from 'react';
 
 /**
  * Shared presentational scaffolding for the HR dashboard sections — a titled
@@ -20,7 +20,9 @@ import type { ReactNode } from 'react';
 interface HrSectionCardProps {
   title: string;
   description?: string;
-  headerActions?: ReactNode;
+  // ReactElement, not ReactNode: React 19's ReactNode admits Promise, which a
+  // client component never renders and which breaks truthiness checks.
+  headerActions?: ReactElement | null;
   children: ReactNode;
 }
 
@@ -60,7 +62,7 @@ interface HrSectionEmptyProps {
   body: string;
 }
 
-/** Empty / degraded state — a real card, never a crash (D-04). */
+/** Empty / degraded state — a real card, never a crash. */
 export function HrSectionEmpty({ title, icon: Icon, heading, body }: HrSectionEmptyProps) {
   return (
     <HrSectionCard title={title}>

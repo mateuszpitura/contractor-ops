@@ -19,7 +19,7 @@ import { auditedMutation, auditMutationCtx } from '../../lib/audited-mutation';
 import { findOrThrow } from '../../lib/find-or-throw';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
-import { writeAuditLogMany } from '../../services/audit-writer';
+import { writeAuditLog, writeAuditLogMany } from '../../services/audit-writer';
 import { syncContractExpiryDeadline } from '../../services/calendar-deadline-sync';
 import { deleteCalendarEvent } from '../../services/calendar-event-service';
 import type { PermittedActivityClient } from '../../services/permitted-activity-check';
@@ -564,9 +564,19 @@ export const contractRouter = router({
             updateData.terminatedAt = new Date();
           }
 
-          return tx.contract.update({
-            where: { id: input.id },
+          const cas = await tx.contract.updateMany({
+            where: { id: input.id, status: contract.status },
             data: updateData,
+          });
+          if (cas.count === 0) {
+            throw new TRPCError({
+              code: 'CONFLICT',
+              message: E.CONTRACT_INVALID_TRANSITION,
+            });
+          }
+
+          return tx.contract.findUniqueOrThrow({
+            where: { id: input.id },
           });
         },
       );
@@ -593,24 +603,44 @@ export const contractRouter = router({
         E.CONTRACT_NOT_FOUND,
       );
 
-      // Auto-generate amendment number
-      const existingCount = await ctx.db.contractAmendment.count({
-        where: {
-          contractId: input.contractId,
-          organizationId: ctx.organizationId,
-        },
-      });
+      const amendment = await ctx.db.$transaction(async tx => {
+        const existingCount = await tx.contractAmendment.count({
+          where: {
+            contractId: input.contractId,
+            organizationId: ctx.organizationId,
+          },
+        });
 
-      const amendment = await ctx.db.contractAmendment.create({
-        data: {
+        const created = await tx.contractAmendment.create({
+          data: {
+            organizationId: ctx.organizationId,
+            contractId: input.contractId,
+            amendmentNumber: `AME-${existingCount + 1}`,
+            title: input.title,
+            effectiveDate: new Date(input.effectiveDate),
+            description: input.description ?? null,
+            changesSummaryJson: input.changesSummaryJson as Prisma.InputJsonValue,
+          },
+        });
+
+        await writeAuditLog({
+          tx,
           organizationId: ctx.organizationId,
-          contractId: input.contractId,
-          amendmentNumber: `AME-${existingCount + 1}`,
-          title: input.title,
-          effectiveDate: new Date(input.effectiveDate),
-          description: input.description ?? null,
-          changesSummaryJson: input.changesSummaryJson as Prisma.InputJsonValue,
-        },
+          actorType: 'USER',
+          actorId: ctx.user?.id,
+          actorName: ctx.user?.name,
+          action: 'contract.amendment.create',
+          resourceType: 'CONTRACT',
+          resourceId: input.contractId,
+          resourceName: created.amendmentNumber,
+          metadata: {
+            amendmentId: created.id,
+            title: input.title,
+            effectiveDate: input.effectiveDate,
+          },
+        });
+
+        return created;
       });
 
       return amendment;

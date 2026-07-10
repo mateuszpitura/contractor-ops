@@ -20,7 +20,7 @@ const mockSubscription: UsageDashboardData['subscription'] = {
 
 const mockUsage: UsageDashboardData = {
   subscription: mockSubscription,
-  credits: { balance: 70, allowance: 100, used: 30, tier: 'PRO' },
+  credits: { balance: 70, allowance: 100, used: 30, topUp: 0, tier: 'PRO' },
   activeContractors: 5,
   includedSeats: 10,
   planConfig: { tiers: [{ id: 'PRO', seatPriceMinor: 1_500 }] },

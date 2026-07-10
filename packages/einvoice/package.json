@@ -29,6 +29,11 @@
       "import": "./dist/profiles/zatca/schemas.js",
       "default": "./dist/profiles/zatca/schemas.js"
     },
+    "./zatca/hash": {
+      "types": "./dist/profiles/zatca/hash.d.ts",
+      "import": "./dist/profiles/zatca/hash.js",
+      "default": "./dist/profiles/zatca/hash.js"
+    },
     "./zatca/types": {
       "types": "./dist/profiles/zatca/types.d.ts",
       "import": "./dist/profiles/zatca/types.js",

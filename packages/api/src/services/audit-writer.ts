@@ -39,6 +39,7 @@ export type AuditEntityType =
   | 'INVOICE'
   | 'WORKFLOW_RUN'
   | 'WORKFLOW_TASK_RUN'
+  | 'WORKFLOW_TASK_TEMPLATE'
   | 'PAYMENT_RUN'
   | 'PROJECT'
   | 'TEAM'

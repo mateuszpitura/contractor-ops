@@ -5,6 +5,7 @@
  * harnesses that pull live EN translations.
  */
 
+import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { render, screen, setup } from '@/test/test-utils';
 import { useTranslations } from '../../../i18n/useTranslations';
@@ -18,12 +19,16 @@ function IdleHarness(props: {
   onBack?: () => void;
 }) {
   const t = useTranslations('Zatca.complianceCsid');
+  const [otp, setOtp] = useState('123456');
   return (
     <ComplianceCsidIdle
       onSuccess={props.onSuccess ?? vi.fn()}
       onBack={props.onBack ?? vi.fn()}
       requestComplianceCsid={props.requestComplianceCsid ?? vi.fn()}
       isPending={props.isPending ?? false}
+      otp={otp}
+      onOtpChange={setOtp}
+      canRequest
       t={t}
     />
   );

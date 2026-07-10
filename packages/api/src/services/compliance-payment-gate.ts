@@ -11,6 +11,8 @@ import type {
 import {
   evaluatePaymentEligibility,
   getDocumentTypeLabelKey,
+  isExpired,
+  resolveExpiryJurisdictionTz,
 } from '@contractor-ops/compliance-policy';
 import type { Prisma } from '@contractor-ops/db';
 import { prisma } from '@contractor-ops/db';
@@ -23,6 +25,9 @@ import { writeAuditLog } from './audit-writer';
 export interface PaymentGateClient {
   contractorComplianceItem: {
     findMany: (args: Prisma.ContractorComplianceItemFindManyArgs) => Promise<unknown>;
+  };
+  contractor?: {
+    findMany: (args: Prisma.ContractorFindManyArgs) => Promise<unknown>;
   };
 }
 
@@ -57,20 +62,75 @@ export async function assertContractorPaymentEligibility(
   if (contractorIds.length === 0)
     return { blocked: false, wouldBlock: false, contractorReasons: [] };
 
+  if (db.contractor) {
+    const inactive = (await db.contractor.findMany({
+      where: {
+        id: { in: contractorIds },
+        organizationId,
+        OR: [{ status: { in: ['ARCHIVED', 'INACTIVE'] } }, { deletedAt: { not: null } }],
+      },
+      select: { id: true, displayName: true },
+    })) as Array<{ id: string; displayName: string }>;
+    if (inactive.length > 0 && throwOnFail) {
+      throw new TRPCError({
+        code: 'PRECONDITION_FAILED',
+        message: E.COMPLIANCE_PAYMENT_BLOCKED,
+        cause: {
+          contractorReasons: inactive.map(c => ({
+            contractorId: c.id,
+            contractorName: c.displayName,
+            reasons: [],
+            lifecycleBlocked: true,
+          })),
+        },
+      });
+    }
+  }
+
   const items = (await db.contractorComplianceItem.findMany({
     where: {
       contractorId: { in: contractorIds },
       severity: 'BLOCKING',
-      status: 'EXPIRED',
-      contractor: { is: { organizationId } },
+      status: { in: ['EXPIRED', 'MISSING'] },
+      contractor: { is: { organizationId, status: 'ACTIVE', deletedAt: null } },
     },
     include: {
       contractor: { select: { id: true, displayName: true, organizationId: true } },
     },
   })) as PaymentEligibilityBlockedItem[];
 
+  // Date-driven guard: SATISFIED rows past their jurisdiction expiry boundary
+  // block payment even before the reminder cron flips status to EXPIRED.
+  const satisfiedCandidates = (await db.contractorComplianceItem.findMany({
+    where: {
+      contractorId: { in: contractorIds },
+      severity: 'BLOCKING',
+      status: 'SATISFIED',
+      expiresAt: { not: null },
+      contractor: { is: { organizationId, status: 'ACTIVE', deletedAt: null } },
+    },
+    include: {
+      contractor: {
+        select: { id: true, displayName: true, organizationId: true, countryCode: true },
+      },
+    },
+  })) as Array<
+    PaymentEligibilityBlockedItem & {
+      contractor: PaymentEligibilityBlockedItem['contractor'] & { countryCode: string };
+    }
+  >;
+
+  const now = new Date();
+  const dateExpiredSatisfied = satisfiedCandidates.filter(item => {
+    if (!item.expiresAt) return false;
+    const tz = resolveExpiryJurisdictionTz(item.expiryJurisdictionTz, item.contractor.countryCode);
+    return isExpired(item.expiresAt, tz, now);
+  });
+
+  const blockingItems = [...items, ...dateExpiredSatisfied];
+
   const enforce = flagEnabled ?? isPaymentBlockEnforced();
-  const result = evaluatePaymentEligibility({ items, enforce });
+  const result = evaluatePaymentEligibility({ items: blockingItems, enforce });
 
   if (result.wouldBlock) {
     await recordWouldBlock(contractorIds, result.contractorReasons, organizationId);

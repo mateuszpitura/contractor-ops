@@ -54,7 +54,7 @@ function BreakdownList({ heading, rows }: { heading: string; rows: BreakdownRow[
   );
 }
 
-/** Presentational headcount breakdown (HR-DASH-01). Props-in → JSX-out. */
+/** Presentational headcount breakdown. Props-in → JSX-out. */
 export function HrHeadcountView({
   total,
   byDepartment,

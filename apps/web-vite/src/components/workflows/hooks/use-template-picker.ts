@@ -92,12 +92,20 @@ export function useTemplatePicker({
           templateId,
           contractorId: effectiveContractorId,
           contractId,
+          roleTemplateId: suggestionQuery.data?.roleTemplateId ?? undefined,
         })) as { calendarTaskCount?: number };
         return result.calendarTaskCount ?? 0;
       }
       return 0;
     },
-    [isBulk, contractorIds, effectiveContractorId, contractId, startRunMutation],
+    [
+      isBulk,
+      contractorIds,
+      effectiveContractorId,
+      contractId,
+      startRunMutation,
+      suggestionQuery.data?.roleTemplateId,
+    ],
   );
 
   const handleStart = useCallback(async () => {

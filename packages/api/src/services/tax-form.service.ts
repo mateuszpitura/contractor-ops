@@ -151,6 +151,15 @@ export interface TaxFormTxClient {
       where: Prisma.TaxFormSubmissionWhereInput;
       data: Prisma.TaxFormSubmissionUpdateManyMutationInput;
     }) => Promise<{ count: number }>;
+    findFirst: (args: {
+      where: Prisma.TaxFormSubmissionWhereInput;
+      orderBy?: Prisma.TaxFormSubmissionOrderByWithRelationInput;
+      select: { id: true };
+    }) => Promise<{ id: string } | null>;
+    update: (args: {
+      where: Prisma.TaxFormSubmissionWhereUniqueInput;
+      data: Prisma.TaxFormSubmissionUncheckedUpdateInput;
+    }) => Promise<unknown>;
     create: (args: {
       data: Prisma.TaxFormSubmissionUncheckedCreateInput;
     }) => Promise<{ id: string; status: string }>;
@@ -205,7 +214,7 @@ export async function supersedeAndInsert(
     data: { status: 'SUPERSEDED' },
   });
 
-  return tx.taxFormSubmission.create({
+  const created = await tx.taxFormSubmission.create({
     data: {
       organizationId,
       contractorId,
@@ -220,4 +229,25 @@ export async function supersedeAndInsert(
       expiresAt,
     },
   });
+
+  const prior = await tx.taxFormSubmission.findFirst({
+    where: {
+      organizationId,
+      contractorId,
+      formType,
+      status: 'SUPERSEDED',
+      supersededById: null,
+      id: { not: created.id },
+    },
+    orderBy: { createdAt: 'desc' },
+    select: { id: true },
+  });
+  if (prior) {
+    await tx.taxFormSubmission.update({
+      where: { id: prior.id },
+      data: { supersededById: created.id },
+    });
+  }
+
+  return created;
 }

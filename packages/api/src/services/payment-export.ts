@@ -109,6 +109,23 @@ function minorToDecimal(minor: number, currency: string = 'PLN'): string {
   return minorToDecimalStr(minor, currency);
 }
 
+/** IBAN-based exports must carry a decrypted account — never a UI mask. */
+function requireDecryptableIban(item: ExportItem): string {
+  if (!item.iban || item.iban.includes('****')) {
+    throw new Error(`Export item for ${item.contractorName} has no decryptable IBAN`);
+  }
+  return item.iban;
+}
+
+/** Fedwire accepts a decrypted IBAN or US account number from the export item. */
+function requireDecryptableFedwireAccount(item: ExportItem): string {
+  const accountId = item.iban || item.usAccountNumber;
+  if (!accountId || accountId.includes('****')) {
+    throw new Error(`Export item for ${item.contractorName} has no decryptable creditor account`);
+  }
+  return accountId;
+}
+
 /**
  * Escape XML special characters.
  */
@@ -174,7 +191,7 @@ export async function generateCsv(items: ExportItem[]): Promise<Buffer> {
   for (const item of items) {
     worksheet.addRow({
       contractorName: item.contractorName,
-      iban: item.iban,
+      iban: requireDecryptableIban(item),
       amount: minorToDecimal(item.amountMinor, item.currency),
       currency: item.currency,
       invoiceNumber: item.invoiceNumber,
@@ -208,7 +225,7 @@ export function generateElixir(items: ExportItem[], sender: OrgBankInfo): Buffer
     const amountMinor = String(item.amountMinor);
     // Strip "PL" prefix from IBANs — sender and recipient
     const senderAccount = stripCountryPrefix(sender.iban);
-    const recipientAccount = stripCountryPrefix(item.iban);
+    const recipientAccount = stripCountryPrefix(requireDecryptableIban(item));
     const senderSort = senderAccount.substring(0, 8);
     const recipientSort = recipientAccount.substring(0, 8);
 
@@ -253,6 +270,7 @@ export function generateElixir(items: ExportItem[], sender: OrgBankInfo): Buffer
 export function generateSepaXml(items: ExportItem[], org: OrgBankInfo, runNumber: string): Buffer {
   const msgId = runNumber.replace(/[^a-zA-Z0-9-]/g, '').substring(0, 35);
   const now = new Date().toISOString();
+  const sepaCurrency = items[0]?.currency ?? 'EUR';
   const totalAmount = items.reduce((sum, i) => sum + i.amountMinor, 0);
   const requestedDate =
     items[0]?.dueDate.toISOString().slice(0, 10) ?? new Date().toISOString().slice(0, 10);
@@ -267,7 +285,7 @@ export function generateSepaXml(items: ExportItem[], org: OrgBankInfo, runNumber
         <Amt><InstdAmt Ccy="${escapeXml(item.currency)}">${minorToDecimal(item.amountMinor, item.currency)}</InstdAmt></Amt>
         <CdtrAgt><FinInstnId><BIC>${escapeXml(bic)}</BIC></FinInstnId></CdtrAgt>
         <Cdtr><Nm>${escapeXml(item.contractorName)}</Nm></Cdtr>
-        <CdtrAcct><Id><IBAN>${escapeXml(item.iban)}</IBAN></Id></CdtrAcct>
+        <CdtrAcct><Id><IBAN>${escapeXml(requireDecryptableIban(item))}</IBAN></Id></CdtrAcct>
         <RmtInf><Ustrd>${escapeXml(item.transferTitle)}</Ustrd></RmtInf>
       </CdtTrfTxInf>`;
     })
@@ -281,14 +299,14 @@ export function generateSepaXml(items: ExportItem[], org: OrgBankInfo, runNumber
       <MsgId>${msgId}</MsgId>
       <CreDtTm>${now}</CreDtTm>
       <NbOfTxs>${items.length}</NbOfTxs>
-      <CtrlSum>${minorToDecimal(totalAmount, 'EUR')}</CtrlSum>
+      <CtrlSum>${minorToDecimal(totalAmount, sepaCurrency)}</CtrlSum>
       <InitgPty><Nm>${escapeXml(org.name)}</Nm></InitgPty>
     </GrpHdr>
     <PmtInf>
       <PmtInfId>${msgId.slice(0, 31)}-001</PmtInfId>
       <PmtMtd>TRF</PmtMtd>
       <NbOfTxs>${items.length}</NbOfTxs>
-      <CtrlSum>${minorToDecimal(totalAmount, 'EUR')}</CtrlSum>
+      <CtrlSum>${minorToDecimal(totalAmount, sepaCurrency)}</CtrlSum>
       <PmtTpInf><SvcLvl><Cd>SEPA</Cd></SvcLvl></PmtTpInf>
       <ReqdExctnDt>${requestedDate}</ReqdExctnDt>
       <Dbtr><Nm>${escapeXml(org.name)}</Nm></Dbtr>
@@ -339,7 +357,7 @@ export function generateSwiftXml(items: ExportItem[], org: OrgBankInfo, runNumbe
               : ''
           }
         </Cdtr>
-        <CdtrAcct><Id><IBAN>${escapeXml(item.iban)}</IBAN></Id></CdtrAcct>
+        <CdtrAcct><Id><IBAN>${escapeXml(requireDecryptableIban(item))}</IBAN></Id></CdtrAcct>
         <Purp><Cd>${purposeCode}</Cd></Purp>
         <RmtInf><Ustrd>${escapeXml(item.transferTitle)}</Ustrd></RmtInf>
       </CdtTrfTxInf>`;
@@ -414,7 +432,7 @@ export function generateFedwirePacs008(
         <DbtrAgt><FinInstnId><BICFI>${escapeXml(org.bic)}</BICFI></FinInstnId></DbtrAgt>
         <CdtrAgt><FinInstnId><BICFI>${escapeXml(bic)}</BICFI></FinInstnId></CdtrAgt>
         <Cdtr><Nm>${escapeXml(item.contractorName)}</Nm></Cdtr>
-        <CdtrAcct><Id><Othr><Id>${escapeXml(item.iban)}</Id></Othr></Id></CdtrAcct>
+        <CdtrAcct><Id><Othr><Id>${escapeXml(requireDecryptableFedwireAccount(item))}</Id></Othr></Id></CdtrAcct>
         <RmtInf><Ustrd>${escapeXml(item.transferTitle)}</Ustrd></RmtInf>
       </CdtTrfTxInf>`;
     })
@@ -544,6 +562,33 @@ function toJulianDate(date: Date): string {
  */
 function padField(value: string, len: number): string {
   return value.padEnd(len, ' ').slice(0, len);
+}
+
+/** Require an exact digit count — rejects short stored values instead of space-padding. */
+function assertExactDigitField(value: string, len: number, label: string): string {
+  const digits = value.replace(/\D/g, '');
+  if (digits.length !== len) {
+    throw new Error(`BACS Std 18: ${label} must be exactly ${len} digits (got ${digits.length})`);
+  }
+  return digits;
+}
+
+/** ABA mod-10 routing checksum — 9 digits with weights 3,7,1,3,7,1,3,7 on the first eight. */
+export function validateAbaRoutingNumber(routingNumber: string): void {
+  const digits = routingNumber.replace(/\D/g, '');
+  if (digits.length !== 9) {
+    throw new Error(`NACHA: routing number must be exactly 9 digits (got ${digits.length})`);
+  }
+  const weights = [3, 7, 1, 3, 7, 1, 3, 7] as const;
+  let sum = 0;
+  for (let i = 0; i < weights.length; i++) {
+    sum += Number(digits.charAt(i)) * weights[i]!;
+  }
+  const expectedCheck = (10 - (sum % 10)) % 10;
+  const actualCheck = Number(digits.charAt(8));
+  if (actualCheck !== expectedCheck) {
+    throw new Error('NACHA: routing number failed ABA mod-10 checksum');
+  }
 }
 
 /** Pad to exactly `len` characters with leading zeros. Throws if numeric value too large. */
@@ -761,12 +806,12 @@ function buildDetailRecord(input: {
   processingDateJulian: string;
 }): string {
   return [
-    padField(input.destSortCode, 6),
-    padField(input.destAccount, 8),
+    assertExactDigitField(input.destSortCode, 6, 'destination sort code'),
+    assertExactDigitField(input.destAccount, 8, 'destination account number'),
     ' ', // type of account
     '99', // transaction code: Direct Credit
-    padField(input.origSortCode, 6),
-    padField(input.origAccount, 8),
+    assertExactDigitField(input.origSortCode, 6, 'originator sort code'),
+    assertExactDigitField(input.origAccount, 8, 'originator account number'),
     '    ', // free
     padZero(String(input.amountPence), 11),
     input.originatorRef, // 18 chars
@@ -973,8 +1018,9 @@ export function generateNachaFile(
     }
 
     const routingDigits = item.routingNumber.replace(/\D/g, '');
+    validateAbaRoutingNumber(routingDigits);
     const rdfi8 = routingDigits.slice(0, 8);
-    const checkDigit = routingDigits.slice(8, 9) || '0';
+    const checkDigit = routingDigits.slice(8, 9);
     entryHash += Number(rdfi8);
     totalCredit += item.amountMinor;
 

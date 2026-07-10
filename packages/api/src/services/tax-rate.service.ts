@@ -113,20 +113,24 @@ export async function calculateWht(
   // Domestic payments: no WHT
   if (contractorResidency === 'SA') return null;
 
-  // Look for specific treaty rate first, then fallback to XX (default)
-  const rate = await prisma.withholdingTaxRate.findFirst({
-    where: {
-      sourceCountry: orgCountry,
-      contractorResidency: { in: [contractorResidency, 'XX'] },
-      serviceType,
-      effectiveFrom: { lte: paymentDate },
-      OR: [{ effectiveTo: null }, { effectiveTo: { gte: paymentDate } }],
-    },
-    orderBy: {
-      // Prefer specific country over XX fallback
-      contractorResidency: 'asc',
-    },
+  // Specificity via two queries — not lexicographic orderBy on residency:
+  // 'asc' would rank 'XX' ahead of 'ZA'/'ZW' and silently drop real treaties.
+  const baseWhere = {
+    sourceCountry: orgCountry,
+    serviceType,
+    effectiveFrom: { lte: paymentDate },
+    OR: [{ effectiveTo: null }, { effectiveTo: { gte: paymentDate } }],
+  };
+
+  const specificRow = await prisma.withholdingTaxRate.findFirst({
+    where: { ...baseWhere, contractorResidency },
   });
+
+  const rate =
+    specificRow ??
+    (await prisma.withholdingTaxRate.findFirst({
+      where: { ...baseWhere, contractorResidency: 'XX' },
+    }));
 
   if (!rate) return null;
 

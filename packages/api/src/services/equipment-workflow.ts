@@ -1,4 +1,6 @@
 import { createLogger } from '@contractor-ops/logger';
+import { unblockDependentsAndRecomputeRun } from '../routers/workflow/workflow-shared';
+import { writeAuditLog } from './audit-writer';
 import type { InPostClientConfig } from './courier/inpost-client';
 import { InPostClient } from './courier/inpost-client';
 import type { DbClient } from './types';
@@ -19,6 +21,7 @@ type EquipmentWorkflowDb = Pick<
   | 'shipmentEvent'
   | 'equipment'
   | 'returnRequest'
+  | 'credentialReference'
 >;
 
 // ---------------------------------------------------------------------------
@@ -71,6 +74,15 @@ export async function handleEquipmentTaskStart(
 
     const contractorId = workflowRun.contractorId;
 
+    let inPostAfterCommit: {
+      organizationId: string;
+      contractorId: string;
+      equipmentIds: string[];
+      taskRunId: string;
+      workflowRunId: string;
+      assignments: Array<{ equipment: { id: string; name: string } }>;
+    } | null = null;
+
     await db.$transaction(async tx => {
       // Find all equipment currently assigned to this contractor
       const assignments = await tx.equipmentAssignment.findMany({
@@ -113,7 +125,7 @@ export async function handleEquipmentTaskStart(
         );
 
         // Recompute workflow run progress after auto-completion
-        await recomputeWorkflowProgress(tx as unknown as PrismaClient, workflowRun.id);
+        await gatedRecomputeAfterTaskClose(tx, taskRun.id, organizationId);
         return;
       }
 
@@ -142,15 +154,14 @@ export async function handleEquipmentTaskStart(
           'set equipment items to RETURN_REQUESTED for offboarding task',
         );
 
-        // Auto-create InPost return shipment if org has courier config
-        await autoCreateInPostReturnShipment(tx as unknown as PrismaClient, {
+        inPostAfterCommit = {
           organizationId,
           contractorId,
           equipmentIds,
           taskRunId: taskRun.id,
           workflowRunId: workflowRun.id,
           assignments,
-        });
+        };
       }
 
       log.info(
@@ -158,6 +169,10 @@ export async function handleEquipmentTaskStart(
         'task started',
       );
     });
+
+    if (inPostAfterCommit) {
+      await autoCreateInPostReturnShipment(db, inPostAfterCommit);
+    }
   } catch (error) {
     log.error({ err: error, taskRunId: taskRun.id }, 'handleEquipmentTaskStart failed for task');
   }
@@ -199,6 +214,17 @@ export async function checkShipmentTaskCompletion(
 
     // Quick check: if this shipment hasn't reached target, no point checking others
     if (shipment.currentStatus !== targetStatus) return;
+
+    if (shipment.direction === 'RETURN' && shipment.currentStatus === 'RETURNED') {
+      await db.returnRequest.updateMany({
+        where: {
+          organizationId,
+          shipmentId: shipment.id,
+          status: 'SHIPMENT_CREATED',
+        },
+        data: { status: 'RECEIVED' },
+      });
+    }
 
     const workflowTaskRunId = shipment.workflowTaskRunId;
 
@@ -249,6 +275,20 @@ export async function checkShipmentTaskCompletion(
       return;
     }
 
+    await writeAuditLog({
+      organizationId,
+      actorType: 'SYSTEM',
+      actorId: null,
+      action: 'workflow.equipment_task.auto_completed',
+      resourceType: 'WORKFLOW_TASK_RUN',
+      resourceId: workflowTaskRunId,
+      newValues: { status: 'DONE' },
+      metadata: {
+        shipmentCount: allLinkedShipments.length,
+        trigger: 'all_shipments_reached_target',
+      },
+    });
+
     log.info(
       { workflowTaskRunId, shipmentCount: allLinkedShipments.length },
       'auto-completed task: all shipments reached target status',
@@ -261,7 +301,7 @@ export async function checkShipmentTaskCompletion(
     });
 
     if (taskRun?.workflowRunId) {
-      await recomputeWorkflowProgress(db, taskRun.workflowRunId);
+      await gatedRecomputeAfterTaskClose(db, workflowTaskRunId, organizationId);
     }
   } catch (error) {
     log.error(
@@ -287,7 +327,7 @@ export async function checkShipmentTaskCompletion(
  * Equipment stays in RETURN_REQUESTED if this fails — admin can create manually.
  */
 async function autoCreateInPostReturnShipment(
-  tx: EquipmentWorkflowDb,
+  db: PrismaClient,
   params: {
     organizationId: string;
     contractorId: string;
@@ -301,7 +341,7 @@ async function autoCreateInPostReturnShipment(
     const { organizationId, contractorId, equipmentIds, taskRunId, workflowRunId } = params;
 
     // Check if org has InPost courier config
-    const courierConfig = await tx.courierConfig.findUnique({
+    const courierConfig = await db.courierConfig.findUnique({
       where: {
         organizationId_carrier: {
           organizationId,
@@ -316,7 +356,7 @@ async function autoCreateInPostReturnShipment(
     }
 
     // Load contractor details including preferred Paczkomat
-    const contractor = await tx.contractor.findUnique({
+    const contractor = await db.contractor.findUnique({
       where: { id: contractorId },
       select: {
         displayName: true,
@@ -341,12 +381,12 @@ async function autoCreateInPostReturnShipment(
     const client = new InPostClient(configJson);
 
     // Load org for sender details
-    const org = await tx.organization.findUnique({
+    const org = await db.organization.findUnique({
       where: { id: organizationId },
       select: { name: true },
     });
 
-    // Create shipment via ShipX API
+    // HTTP outside transaction — ShipX latency must not hold DB row locks.
     const shipmentResult = await client.createShipment({
       organizationId,
       direction: 'RETURN',
@@ -365,67 +405,84 @@ async function autoCreateInPostReturnShipment(
       reference: `offboarding-${workflowRunId}`,
     });
 
-    // Create Shipment records for each equipment item
-    let firstShipmentId: string | null = null;
+    await db.$transaction(async tx => {
+      let firstShipmentId: string | null = null;
 
-    for (const equipmentId of equipmentIds) {
-      const shipment = await tx.shipment.create({
-        data: {
-          organizationId,
-          equipmentId,
-          workflowTaskRunId: taskRunId,
-          direction: 'RETURN',
-          carrier: 'InPost',
-          trackingNumber: shipmentResult.trackingNumber,
-          externalId: shipmentResult.externalId,
-          labelUrl: shipmentResult.labelUrl ?? null,
-          currentStatus: 'CREATED',
-          createdByUserId: 'system',
-        },
-      });
+      for (const equipmentId of equipmentIds) {
+        const shipment = await tx.shipment.create({
+          data: {
+            organizationId,
+            equipmentId,
+            workflowTaskRunId: taskRunId,
+            direction: 'RETURN',
+            carrier: 'InPost',
+            trackingNumber: shipmentResult.trackingNumber,
+            externalId: shipmentResult.externalId,
+            labelUrl: shipmentResult.labelUrl ?? null,
+            currentStatus: 'CREATED',
+            createdByUserId: 'system',
+          },
+        });
 
-      if (!firstShipmentId) {
-        firstShipmentId = shipment.id;
+        if (!firstShipmentId) {
+          firstShipmentId = shipment.id;
+        }
+
+        await tx.shipmentEvent.create({
+          data: {
+            organizationId,
+            shipmentId: shipment.id,
+            status: 'CREATED',
+            notes: `Auto-created for offboarding workflow ${workflowRunId}`,
+          },
+        });
+
+        await tx.shipmentEvent.create({
+          data: {
+            organizationId,
+            shipmentId: shipment.id,
+            status: 'LABEL_GENERATED',
+            notes: 'Label auto-generated by ShipX on shipment creation',
+          },
+        });
+
+        await tx.equipment.update({
+          where: { id: equipmentId },
+          data: { status: 'RETURN_IN_TRANSIT' },
+        });
       }
 
-      // Create initial ShipmentEvent records
-      await tx.shipmentEvent.create({
+      await tx.returnRequest.create({
         data: {
           organizationId,
-          shipmentId: shipment.id,
-          status: 'CREATED',
-          notes: `Auto-created for offboarding workflow ${workflowRunId}`,
+          contractorId,
+          status: 'SHIPMENT_CREATED',
+          targetPointId: contractor.preferredPaczkomatId,
+          targetPointName: contractor.preferredPaczkomatName,
+          targetPointAddress: contractor.preferredPaczkomatAddress,
+          shipmentId: firstShipmentId,
+          approvedAt: new Date(),
         },
       });
 
-      await tx.shipmentEvent.create({
-        data: {
+      if (firstShipmentId) {
+        await writeAuditLog({
+          tx,
           organizationId,
-          shipmentId: shipment.id,
-          status: 'LABEL_GENERATED',
-          notes: 'Label auto-generated by ShipX on shipment creation',
-        },
-      });
-
-      // Update equipment status from RETURN_REQUESTED to RETURN_IN_TRANSIT
-      await tx.equipment.update({
-        where: { id: equipmentId },
-        data: { status: 'RETURN_IN_TRANSIT' },
-      });
-    }
-
-    // Create ReturnRequest with SHIPMENT_CREATED status (skipping PENDING_APPROVAL for auto-shipments)
-    await tx.returnRequest.create({
-      data: {
-        organizationId,
-        contractorId,
-        status: 'SHIPMENT_CREATED',
-        targetPointId: contractor.preferredPaczkomatId,
-        targetPointName: contractor.preferredPaczkomatName,
-        targetPointAddress: contractor.preferredPaczkomatAddress,
-        shipmentId: firstShipmentId,
-        approvedAt: new Date(), // Auto-approved by workflow
-      },
+          actorType: 'SYSTEM',
+          actorId: null,
+          action: 'shipment.createInPostAuto',
+          resourceType: 'SHIPMENT',
+          resourceId: firstShipmentId,
+          newValues: {
+            equipmentIds,
+            trackingNumber: shipmentResult.trackingNumber,
+            direction: 'RETURN',
+            workflowRunId,
+          },
+          metadata: { taskRunId, auto: true, carrier: 'InPost' },
+        });
+      }
     });
 
     log.info(
@@ -450,52 +507,24 @@ async function autoCreateInPostReturnShipment(
 // ---------------------------------------------------------------------------
 
 /**
- * Recompute workflow run progress and auto-complete if all required tasks done.
+ * Recompute workflow run progress through the shared gated path so
+ * offboarding completion checks (IP_VERIFICATION, credentials) apply.
  */
-async function recomputeWorkflowProgress(
-  tx: EquipmentWorkflowDb,
-  workflowRunId: string,
+async function gatedRecomputeAfterTaskClose(
+  db: EquipmentWorkflowDb,
+  taskRunId: string,
+  organizationId: string,
 ): Promise<void> {
-  const allTasks = await tx.workflowTaskRun.findMany({
-    where: { workflowRunId },
-    select: { status: true, required: true },
+  const task = await db.workflowTaskRun.findFirst({
+    where: { id: taskRunId, organizationId },
+    include: { workflowRun: { select: { id: true, status: true } } },
   });
+  if (!task) return;
 
-  const total = allTasks.length;
-  if (total === 0) return;
-
-  const doneTasks = allTasks.filter(
-    (t: { status: string }) =>
-      t.status === 'DONE' || t.status === 'SKIPPED' || t.status === 'CANCELLED',
+  await unblockDependentsAndRecomputeRun(
+    db as Parameters<typeof unblockDependentsAndRecomputeRun>[0],
+    task,
+    new Date(),
+    { organizationId },
   );
-
-  const progressPercent = Math.round((doneTasks.length / total) * 100);
-
-  // Check if all required tasks are DONE
-  const requiredTasks = allTasks.filter((t: { required: boolean }) => t.required);
-  const allRequiredDone = requiredTasks.every(
-    (t: { status: string }) =>
-      t.status === 'DONE' || t.status === 'SKIPPED' || t.status === 'CANCELLED',
-  );
-
-  if (allRequiredDone && requiredTasks.length > 0) {
-    await tx.workflowRun.update({
-      where: { id: workflowRunId },
-      data: {
-        progressPercent,
-        status: 'COMPLETED',
-        completedAt: new Date(),
-      },
-    });
-
-    log.info(
-      { workflowRunId, progressPercent },
-      'workflow run auto-completed: all required tasks done',
-    );
-  } else {
-    await tx.workflowRun.update({
-      where: { id: workflowRunId },
-      data: { progressPercent },
-    });
-  }
 }

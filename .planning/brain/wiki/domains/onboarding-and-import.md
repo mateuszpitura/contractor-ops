@@ -2,14 +2,16 @@
 title: Onboarding and import
 type: domain
 tags: [onboarding, import, migration, organization]
-source_commit: 336516f5da666c16acff84e412a3d338db8bbbb8
+source_commit: e0d533fa
 verify_with:
   - packages/api/src/routers/core/onboarding-import.ts
+  - packages/api/src/routers/core/import.ts
+  - packages/api/src/services/import-processor.ts
   - packages/api/src/services/onboarding-import-service.ts
   - packages/integrations/src/services/user-source-registry.ts
   - apps/web-vite/src/components/onboarding/
   - apps/web-vite/src/components/layout/dashboard-shell.tsx
-updated: 2026-06-17
+updated: 2026-07-10
 ---
 
 # Onboarding and import
@@ -74,6 +76,18 @@ sequenceDiagram
 Successful sources merge into `people` / `projects`; failed sources appear in `sourceErrors` only — not silent empty merge.
 
 **Jira projects:** connected but missing `configJson.cloudId` → `fetch_failed` (not silent `[]`).
+
+## API — CSV `import` router
+
+`parse` → `validate` → `commit` (`packages/api/src/routers/core/import.ts`). **`commit` re-runs**
+`validateContractorRow` / `validateContractRow` on every client row (does not trust validate-step output);
+invalid rows increment `failed` instead of coercing junk. Per-row `taxId` assertion failures count as `failed`,
+not a whole-batch rollback. Dedup/FK resolution uses tenant-scoped `ctx.db` via `import-processor.ts`.
+`commit` writes `import.commit` audit inside the same `$transaction` as the bulk create/update.
+The row loop runs in `$transaction({ timeout: 120_000, maxWait: 10_000 })` — up to 5000 rows with several
+round-trips each exceed Prisma's 5s interactive-tx default. Row-failure logging is classified: it logs
+`err.name` + a classified message only, never the raw error object — `PrismaClientValidationError.message`
+embeds full query args, i.e. the raw import PII row, which must not reach log sinks.
 
 ## Registry — user sources
 
@@ -183,3 +197,4 @@ pnpm vitest run packages/api/src/services/__tests__/onboarding-import-service.te
 - Silent swallow of per-source failures — always populate `sourceErrors`
 - Using `mergedPeople.length === 0` for `allSourcesFailed` — compare error count to selected source count
 - Enabling Continue on step 2/3 when `allSourcesFailed` — gate via hook `canContinueStep`
+- Logging the raw error object on an import row failure — `PrismaClientValidationError.message` carries the full PII row; log `err.name` + a classified message only

@@ -31,6 +31,7 @@ export function useHrSummary() {
       underUtilizedCount: data?.underUtilizedCount ?? 0,
       probationDueCount: data?.probationDueCount ?? 0,
       expiringDocCount: data?.expiringDocCount ?? 0,
+      degradedEntitlementCount: data?.degradedEntitlementCount ?? 0,
     },
   } as const;
 }

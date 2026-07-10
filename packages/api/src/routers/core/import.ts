@@ -4,6 +4,7 @@
  * row validation, duplicate detection, and batch database operations.
  */
 
+import { createLogger } from '@contractor-ops/logger';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import * as E from '../../errors';
@@ -11,9 +12,12 @@ import type { DbClient } from '../../services/types';
 
 type TxClient = Parameters<Parameters<DbClient['$transaction']>[0]>[0];
 
+import { mapCountryCodeToJurisdiction } from '@contractor-ops/compliance-policy';
 import { router } from '../../init';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
+import { writeAuditLog } from '../../services/audit-writer';
+import { materialiseFromPolicy } from '../../services/compliance-supersession';
 import {
   assertValidContractorTaxId,
   normalizeContractorTaxId,
@@ -22,7 +26,11 @@ import {
   autoMapColumns,
   parseImportFile,
   processImportFile,
+  validateContractorRow,
+  validateContractRow,
 } from '../../services/import-processor';
+
+const log = createLogger({ service: 'import-router' });
 
 // ---------------------------------------------------------------------------
 // Commit helpers
@@ -64,57 +72,75 @@ async function createContractorFromRow(
   taxId: string,
   countryCode: string,
 ): Promise<'created' | 'failed'> {
-  try {
-    const displayName = String(row.displayName ?? row.legalName ?? '');
-    const email = String(row.email ?? '');
-    const worker = await tx.worker.create({
-      data: {
-        organizationId,
-        workerType: 'CONTRACTOR',
-        displayName,
-        email: email || null,
-      },
+  const displayName = String(row.displayName ?? row.legalName ?? '');
+  const email = String(row.email ?? '');
+  const worker = await tx.worker.create({
+    data: {
+      organizationId,
+      workerType: 'CONTRACTOR',
+      displayName,
+      email: email || null,
+    },
+  });
+  const created = await tx.contractor.create({
+    data: {
+      organizationId,
+      workerId: worker.id,
+      legalName: String(row.legalName ?? ''),
+      displayName,
+      type: String(row.type ?? 'COMPANY') as
+        | 'SOLE_TRADER'
+        | 'COMPANY'
+        | 'INDIVIDUAL_FREELANCER'
+        | 'OTHER',
+      taxId,
+      vatId: row.vatId ? String(row.vatId) : null,
+      email,
+      phone: row.phone ? String(row.phone) : null,
+      countryCode,
+      currency: String(row.currency ?? 'PLN'),
+      status: 'ACTIVE',
+      lifecycleStage: 'ACTIVE',
+      ownerUserId: userId,
+    },
+  });
+  await tx.contractorBillingProfile.create({
+    data: {
+      organizationId,
+      contractorId: created.id,
+      legalEntityName: created.legalName,
+      billingEmail: created.email,
+      countryCode: created.countryCode,
+      preferredCurrency: created.currency,
+      taxId: created.taxId,
+      vatId: created.vatId,
+      validFrom: new Date(),
+      isDefault: true,
+    },
+  });
+
+  const jurisdiction = mapCountryCodeToJurisdiction(countryCode);
+  if (jurisdiction) {
+    const existingItems = await tx.contractorComplianceItem.count({
+      where: { organizationId, contractorId: created.id, status: { not: 'WAIVED' } },
     });
-    const created = await tx.contractor.create({
-      data: {
-        organizationId,
-        workerId: worker.id,
-        legalName: String(row.legalName ?? ''),
-        displayName,
-        type: String(row.type ?? 'COMPANY') as
-          | 'SOLE_TRADER'
-          | 'COMPANY'
-          | 'INDIVIDUAL_FREELANCER'
-          | 'OTHER',
-        taxId,
-        vatId: row.vatId ? String(row.vatId) : null,
-        email,
-        phone: row.phone ? String(row.phone) : null,
-        countryCode,
-        currency: String(row.currency ?? 'PLN'),
-        status: 'ACTIVE',
-        lifecycleStage: 'ACTIVE',
-        ownerUserId: userId,
-      },
-    });
-    await tx.contractorBillingProfile.create({
-      data: {
+    if (existingItems === 0) {
+      await materialiseFromPolicy(tx, {
         organizationId,
         contractorId: created.id,
-        legalEntityName: created.legalName,
-        billingEmail: created.email,
-        countryCode: created.countryCode,
-        preferredCurrency: created.currency,
-        taxId: created.taxId,
-        vatId: created.vatId,
-        validFrom: new Date(),
-        isDefault: true,
-      },
-    });
-    return 'created';
-  } catch {
-    return 'failed';
+        contractId: null,
+        engagement: {
+          jurisdiction,
+          outcome: '__unclassified__',
+          sector: null,
+          contractorNationality: countryCode,
+          requiresRegulatedEquipment: false,
+        },
+      });
+    }
   }
+
+  return 'created';
 }
 
 /**
@@ -130,7 +156,11 @@ async function commitContractorRow(
   const countryCode = String(row.countryCode ?? 'PL');
   const taxId =
     normalizeContractorTaxId(countryCode, String(row.taxId ?? row.contractorTaxId ?? '')) ?? '';
-  assertValidContractorTaxId(countryCode, taxId);
+  try {
+    assertValidContractorTaxId(countryCode, taxId);
+  } catch {
+    return 'failed';
+  }
 
   if (duplicateAction === 'skip') return 'skipped';
 
@@ -167,32 +197,28 @@ async function commitContractRow(
     contractorId = contractor.id;
   }
 
-  try {
-    await tx.contract.create({
-      data: {
-        organizationId,
-        contractorId,
-        title: String(row.title ?? ''),
-        type: String(row.type ?? 'OTHER') as
-          | 'B2B_MASTER_SERVICE'
-          | 'STATEMENT_OF_WORK'
-          | 'NDA'
-          | 'IP_ASSIGNMENT'
-          | 'DPA'
-          | 'OTHER',
-        startDate: new Date(String(row.startDate)),
-        endDate: row.endDate ? new Date(String(row.endDate)) : null,
-        currency: String(row.currency ?? 'PLN'),
-        billingModel: 'MONTHLY_RETAINER',
-        rateType: 'MONTHLY_FIXED',
-        status: 'DRAFT',
-        internalOwnerUserId: userId,
-      },
-    });
-    return 'created';
-  } catch {
-    return 'failed';
-  }
+  await tx.contract.create({
+    data: {
+      organizationId,
+      contractorId,
+      title: String(row.title ?? ''),
+      type: String(row.type ?? 'OTHER') as
+        | 'B2B_MASTER_SERVICE'
+        | 'STATEMENT_OF_WORK'
+        | 'NDA'
+        | 'IP_ASSIGNMENT'
+        | 'DPA'
+        | 'OTHER',
+      startDate: new Date(String(row.startDate)),
+      endDate: row.endDate ? new Date(String(row.endDate)) : null,
+      currency: String(row.currency ?? 'PLN'),
+      billingModel: 'MONTHLY_RETAINER',
+      rateType: 'MONTHLY_FIXED',
+      status: 'DRAFT',
+      internalOwnerUserId: userId,
+    },
+  });
+  return 'created';
 }
 
 // ---------------------------------------------------------------------------
@@ -284,6 +310,7 @@ export const importRouter = router({
           input.entityType,
           ctx.organizationId,
           input.columnMapping,
+          ctx.db,
         );
         return result;
       } catch (err) {
@@ -320,27 +347,75 @@ export const importRouter = router({
       const counts = { created: 0, updated: 0, skipped: 0, failed: 0 };
 
       try {
-        await ctx.db.$transaction(async tx => {
-          for (const row of rows) {
-            const countryCode = String(row.countryCode ?? 'PL');
-            const taxId =
-              normalizeContractorTaxId(
-                countryCode,
-                String(row.taxId ?? row.contractorTaxId ?? ''),
-              ) ?? '';
-            const result =
-              entityType === 'contractor'
-                ? await commitContractorRow(
-                    tx,
-                    ctx.organizationId,
-                    actorUserId,
-                    row,
-                    duplicateActions[taxId],
-                  )
-                : await commitContractRow(tx, ctx.organizationId, actorUserId, row);
-            counts[result]++;
-          }
-        });
+        // Explicit timeout sized to the MAX_COMMIT_ROWS cap: committing up to
+        // 5000 rows via per-row savepoints far exceeds Prisma's default 5s
+        // interactive-transaction timeout and would otherwise abort real
+        // imports with P2028.
+        await ctx.db.$transaction(
+          async tx => {
+            for (let i = 0; i < rows.length; i++) {
+              const row = rows[i]!;
+              const savepoint = `import_row_${i}`;
+              await tx.$executeRawUnsafe(`SAVEPOINT ${savepoint}`);
+
+              try {
+                const normalizedRow = { ...row };
+                const validation =
+                  entityType === 'contractor'
+                    ? validateContractorRow(normalizedRow)
+                    : validateContractRow(normalizedRow);
+                if (!validation.valid) {
+                  await tx.$executeRawUnsafe(`ROLLBACK TO SAVEPOINT ${savepoint}`);
+                  await tx.$executeRawUnsafe(`RELEASE SAVEPOINT ${savepoint}`);
+                  counts.failed++;
+                  continue;
+                }
+
+                const countryCode = String(normalizedRow.countryCode ?? 'PL');
+                const taxId =
+                  normalizeContractorTaxId(
+                    countryCode,
+                    String(normalizedRow.taxId ?? normalizedRow.contractorTaxId ?? ''),
+                  ) ?? '';
+                const result =
+                  entityType === 'contractor'
+                    ? await commitContractorRow(
+                        tx,
+                        ctx.organizationId,
+                        actorUserId,
+                        normalizedRow,
+                        duplicateActions[taxId],
+                      )
+                    : await commitContractRow(tx, ctx.organizationId, actorUserId, normalizedRow);
+                counts[result]++;
+                await tx.$executeRawUnsafe(`RELEASE SAVEPOINT ${savepoint}`);
+              } catch (err) {
+                await tx.$executeRawUnsafe(`ROLLBACK TO SAVEPOINT ${savepoint}`);
+                await tx.$executeRawUnsafe(`RELEASE SAVEPOINT ${savepoint}`);
+                counts.failed++;
+                // Log only the classified error name — the raw Prisma error
+                // message embeds the offending row's field values (PII), so it
+                // must never reach the logs.
+                log.warn(
+                  { errName: err instanceof Error ? err.name : 'unknown', rowIndex: i, entityType },
+                  'import commit row failed',
+                );
+              }
+            }
+
+            await writeAuditLog({
+              tx,
+              organizationId: ctx.organizationId,
+              actorType: 'USER',
+              actorId: actorUserId,
+              action: 'import.commit',
+              resourceType: 'ORGANIZATION',
+              resourceId: ctx.organizationId,
+              newValues: { entityType, ...counts },
+            });
+          },
+          { timeout: 120_000, maxWait: 10_000 },
+        );
       } catch (err) {
         if (err instanceof TRPCError) throw err;
         throw new TRPCError({

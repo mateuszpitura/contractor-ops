@@ -9,7 +9,8 @@
 // Ships dark: the calling cron handler short-circuits when `module.us-expansion`
 // is off, so nothing fires until US year-end filing is enabled.
 
-import { prisma } from '@contractor-ops/db';
+import type { PrismaClient } from '@contractor-ops/db';
+import { getRegionalClient, SUPPORTED_REGIONS } from '@contractor-ops/db';
 import { createCronLogger } from '@contractor-ops/logger';
 
 import { dispatch } from './notification-service';
@@ -41,10 +42,37 @@ function reminderTaxYear(now: Date): number {
 export async function runYearEnd1099ReminderScan(
   now: Date = new Date(),
 ): Promise<YearEnd1099ReminderResult> {
+  const total: YearEnd1099ReminderResult = {
+    taxYear: reminderTaxYear(now),
+    organizationsNotified: 0,
+    recipientsNotified: 0,
+  };
+
+  for (const region of SUPPORTED_REGIONS) {
+    let client: PrismaClient;
+    try {
+      client = getRegionalClient(region);
+    } catch (err) {
+      log.warn({ err, region }, 'year-end-1099-reminder: region client unavailable; skipping');
+      continue;
+    }
+
+    const result = await runYearEnd1099ReminderScanForClient(client, now);
+    total.organizationsNotified += result.organizationsNotified;
+    total.recipientsNotified += result.recipientsNotified;
+  }
+
+  return total;
+}
+
+async function runYearEnd1099ReminderScanForClient(
+  client: PrismaClient,
+  now: Date = new Date(),
+): Promise<YearEnd1099ReminderResult> {
   const taxYear = reminderTaxYear(now);
 
-  const orgRows = await prisma.taxFormSubmission.findMany({
-    where: { formType: 'W9', supersededById: null },
+  const orgRows = await client.taxFormSubmission.findMany({
+    where: { formType: 'W9', status: 'ACTIVE' },
     select: { organizationId: true },
     distinct: ['organizationId'],
   });

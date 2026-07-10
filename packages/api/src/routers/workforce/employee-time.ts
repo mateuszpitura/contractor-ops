@@ -16,9 +16,10 @@ import { z } from 'zod';
 
 import * as E from '../../errors';
 import { router } from '../../init';
-import { requirePermission } from '../../middleware/rbac';
-import { assertWorkforceEnabled } from '../../middleware/require-workforce-flag';
-import { tenantProcedure } from '../../middleware/tenant';
+import {
+  workforceReadProcedure,
+  workforceWriteProcedure,
+} from '../../middleware/workforce-procedures';
 import { writeAuditLog } from '../../services/audit-writer';
 import { checkWtLimits } from '../../services/wt-limit-check';
 
@@ -36,9 +37,6 @@ function isoWeekStart(date: Date): Date {
   d.setUTCDate(d.getUTCDate() + mondayOffset);
   return d;
 }
-
-const workforceReadProcedure = tenantProcedure.use(requirePermission({ employee: ['read'] }));
-const workforceWriteProcedure = tenantProcedure.use(requirePermission({ employee: ['update'] }));
 
 const listRecordsInput = z
   .object({
@@ -60,8 +58,6 @@ export const employeeTimeRouter = router({
   upsertRecord: workforceWriteProcedure
     .input(upsertEmployeeTimeRecordInput)
     .mutation(async ({ ctx, input }) => {
-      assertWorkforceEnabled(ctx.organizationId, ctx.region);
-
       const workDate = new Date(input.workDate);
 
       const { record, recentWeekMinutes, countryCode } = await ctx.db.$transaction(async tx => {
@@ -149,7 +145,6 @@ export const employeeTimeRouter = router({
     }),
 
   listRecords: workforceReadProcedure.input(listRecordsInput).query(async ({ ctx, input }) => {
-    assertWorkforceEnabled(ctx.organizationId, ctx.region);
     const rows = await ctx.db.employeeTimeRecord.findMany({
       where: {
         organizationId: ctx.organizationId,
@@ -162,7 +157,6 @@ export const employeeTimeRouter = router({
   }),
 
   weekSummary: workforceReadProcedure.input(weekSummaryInput).query(async ({ ctx, input }) => {
-    assertWorkforceEnabled(ctx.organizationId, ctx.region);
     const weekStart = isoWeekStart(new Date(input.weekStart));
     const weekEnd = new Date(weekStart.getTime() + 6 * MS_PER_DAY);
     const rows = await ctx.db.employeeTimeRecord.findMany({

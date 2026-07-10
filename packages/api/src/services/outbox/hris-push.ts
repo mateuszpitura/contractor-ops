@@ -14,7 +14,7 @@ import type { HrisProvider, HrisPushInput } from '@contractor-ops/integrations';
 import { getAdapter, loadHeavyAdapters } from '@contractor-ops/integrations';
 import { writeAuditLog } from '../audit-writer';
 import { assertNotHrisOwnedField } from '../hris-sync/field-partition';
-import type { OutboxHandler, OutboxHandlerContext } from './handlers';
+import type { OutboxHandler, OutboxHandlerContext } from './handler-types';
 import { resolveHrisPushTarget } from './hris-push-target';
 
 interface HrisPushAdapter {
@@ -42,6 +42,12 @@ async function dispatchHrisPush(
 ): Promise<void> {
   const target = await resolveHrisPushTarget(ctx.organizationId, payload.workerId);
   if (!target) return;
+
+  if (!target.externalId) {
+    throw new Error(
+      `[hris] push aborted: worker ${payload.workerId} is not linked to an HRIS external id`,
+    );
+  }
 
   const region = target.region === 'ME' ? ('ME' as const) : ('EU' as const);
   if (

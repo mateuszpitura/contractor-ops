@@ -532,6 +532,16 @@ export interface GeneratedForm1042S {
 export interface Form1042SCreateClient {
   form1042S: {
     create: (args: { data: Prisma.Form1042SUncheckedCreateInput }) => Promise<{ id: string }>;
+    updateMany: (args: {
+      where: Prisma.Form1042SWhereInput;
+      data: Prisma.Form1042SUpdateManyMutationInput;
+    }) => Promise<{ count: number }>;
+  };
+  auditLog: {
+    create: (args: { data: Prisma.AuditLogUncheckedCreateInput }) => Promise<unknown>;
+    createMany: (args: {
+      data: Prisma.AuditLogUncheckedCreateInput[];
+    }) => Promise<{ count: number }>;
   };
 }
 
@@ -726,8 +736,33 @@ export async function generateBatch1042S(
       try {
         await persist.$transaction(async tx => {
           for (const data of rowsToPersist) {
+            await tx.form1042S.updateMany({
+              where: {
+                organizationId: data.organizationId,
+                payerOrgId: data.payerOrgId,
+                recipientId: data.recipientId,
+                taxYear: data.taxYear,
+                status: 'ACTIVE',
+              },
+              data: { status: 'SUPERSEDED' },
+            });
             await tx.form1042S.create({ data });
           }
+          await writeAuditLog({
+            tx,
+            organizationId,
+            actorType,
+            actorId,
+            action: 'form1042s.generate',
+            resourceType: 'ORGANIZATION',
+            resourceId: payerOrgId,
+            metadata: {
+              taxYear,
+              generatedCount: generated.length,
+              skippedCount: skippedRecipientIds.length,
+              escalatedCount: escalatedRecipientIds.length,
+            },
+          });
         });
       } catch (err) {
         if (isActive1042SKeyViolation(err)) {
@@ -743,21 +778,6 @@ export async function generateBatch1042S(
         throw err;
       }
     }
-
-    await writeAuditLog({
-      organizationId,
-      actorType,
-      actorId,
-      action: 'form1042s.generate',
-      resourceType: 'ORGANIZATION',
-      resourceId: payerOrgId,
-      metadata: {
-        taxYear,
-        generatedCount: generated.length,
-        skippedCount: skippedRecipientIds.length,
-        escalatedCount: escalatedRecipientIds.length,
-      },
-    });
 
     const result: GenerateBatch1042SResult = {
       idempotent: false,

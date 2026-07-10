@@ -9,15 +9,19 @@
 import type { Prisma } from '@contractor-ops/db';
 import { Prisma as PrismaRuntime } from '@contractor-ops/db/generated/prisma/client';
 import { createLogger } from '@contractor-ops/logger';
+import { minorToMajor, minorUnitDigits } from '@contractor-ops/shared';
+import type { ComplianceHold, TxClient } from './approval-engine';
 import type { AuditEntityType, AuditWriterClient } from './audit-writer';
 import { writeAuditLog } from './audit-writer';
 import type { PaymentGateClient } from './compliance-payment-gate';
 import { assertContractorPaymentEligibility } from './compliance-payment-gate';
+import type { OutboxTransactionalClient } from './outbox';
+import { enqueueNotificationOutboxEvent } from './outbox';
 
-// Renewal-reset listener lives in the reminder-scan service; re-export for a single
-// import surface from the classification listeners.
+// Renewal-reset listener lives in its own module (import-cycle break); re-export
+// for a single import surface from the classification listeners.
 // biome-ignore lint/performance/noBarrelFile: not a barrel — recovery service module; single re-export for a unified import surface
-export { onComplianceItemExpiresAtChanged } from './compliance-reminder-scan';
+export { onComplianceItemExpiresAtChanged } from './compliance-reminder-reset';
 
 const log = createLogger({ service: 'compliance-recovery' });
 
@@ -38,6 +42,150 @@ interface SatisfiedArgs {
   itemId: string;
   contractorId: string;
   organizationId: string;
+}
+
+interface StepConfig {
+  slaHours: number;
+}
+
+function addHours(date: Date, hours: number): Date {
+  const result = new Date(date);
+  result.setTime(result.getTime() + hours * 60 * 60 * 1000);
+  return result;
+}
+
+export interface ComplianceResumeResult {
+  reopenedStepId: string | null;
+  slaDeadline: Date | null;
+  resourceType: string;
+  resourceId: string;
+}
+
+/**
+ * Releases a PENDING_COMPLIANCE flow back to PENDING by re-opening the final
+ * approver step (fresh SLA) and enqueueing an APPROVAL_REQUEST notification.
+ */
+export async function resumeApprovalFlowFromCompliance(
+  tx: TxClient,
+  args: { flowId: string; organizationId: string },
+): Promise<ComplianceResumeResult> {
+  const flow = await tx.approvalFlow.findUniqueOrThrow({
+    where: { id: args.flowId },
+    include: {
+      steps: { orderBy: { stepOrder: 'asc' } },
+    },
+  });
+
+  const stepOrder = flow.currentStepOrder ?? flow.steps.length;
+  const stepToReopen =
+    flow.steps.find(s => s.stepOrder === stepOrder && s.status === 'APPROVED') ??
+    [...flow.steps].reverse().find(s => s.status === 'APPROVED') ??
+    null;
+
+  let slaHours = 24;
+  if (flow.chainConfigId && stepToReopen) {
+    const chainConfig = await tx.approvalChainConfig.findUnique({
+      where: { id: flow.chainConfigId },
+      select: { stepsJson: true },
+    });
+    if (chainConfig) {
+      const chainSteps = chainConfig.stepsJson as unknown as StepConfig[];
+      slaHours = chainSteps[stepToReopen.stepOrder - 1]?.slaHours ?? 24;
+    }
+  }
+
+  const now = new Date();
+  const slaDeadline = stepToReopen ? addHours(now, slaHours) : null;
+
+  if (!stepToReopen) {
+    log.warn(
+      { flowId: args.flowId },
+      'compliance-recovery: cannot resume — no approver step to reopen; flow stays PENDING_COMPLIANCE',
+    );
+    return {
+      reopenedStepId: null,
+      slaDeadline: null,
+      resourceType: flow.resourceType,
+      resourceId: flow.resourceId,
+    };
+  }
+
+  const holdCycleKey =
+    (flow.complianceHoldsJson as ComplianceHold | null)?.heldAt ?? now.toISOString();
+
+  await tx.approvalFlow.update({
+    where: { id: args.flowId },
+    data: { status: 'PENDING', complianceHoldsJson: PrismaRuntime.DbNull },
+  });
+
+  if (slaDeadline) {
+    await tx.approvalStep.update({
+      where: { id: stepToReopen.id },
+      data: {
+        status: 'PENDING',
+        actedAt: null,
+        decision: null,
+        comment: null,
+        slaDeadline,
+      },
+    });
+
+    if (flow.resourceType === 'INVOICE' && stepToReopen.approverUserId) {
+      const invoice = await tx.invoice.findUnique({
+        where: { id: flow.resourceId },
+        select: {
+          id: true,
+          invoiceNumber: true,
+          contractorId: true,
+          totalMinor: true,
+          currency: true,
+        },
+      });
+      if (invoice) {
+        const contractor = invoice.contractorId
+          ? await tx.contractor.findUnique({
+              where: { id: invoice.contractorId },
+              select: { legalName: true },
+            })
+          : null;
+        const slaIso = slaDeadline.toISOString();
+        const amount = minorToMajor(invoice.totalMinor, invoice.currency).toFixed(
+          minorUnitDigits(invoice.currency),
+        );
+
+        await enqueueNotificationOutboxEvent({
+          tx: tx as unknown as OutboxTransactionalClient,
+          event: {
+            organizationId: args.organizationId,
+            type: 'APPROVAL_REQUEST',
+            recipientUserIds: [stepToReopen.approverUserId],
+            title: `Approval requested for ${invoice.invoiceNumber}`,
+            body: `${contractor?.legalName ?? 'Unknown'} - ${amount} ${invoice.currency}. Compliance hold cleared. SLA: ${slaIso}`,
+            entityType: 'INVOICE',
+            entityId: invoice.id,
+            metadata: {
+              invoiceNumber: invoice.invoiceNumber,
+              contractorName: contractor?.legalName ?? 'Unknown',
+              amount,
+              currency: invoice.currency,
+              slaDeadline: slaIso,
+              invoiceId: invoice.id,
+              flowId: args.flowId,
+              complianceResume: true,
+            },
+          },
+          dedupKey: `approval-request:compliance-resume:${args.flowId}:${holdCycleKey}`,
+        });
+      }
+    }
+  }
+
+  return {
+    reopenedStepId: stepToReopen.id,
+    slaDeadline,
+    resourceType: flow.resourceType,
+    resourceId: flow.resourceId,
+  };
 }
 
 export async function onComplianceItemSatisfied(
@@ -74,10 +222,11 @@ export async function onComplianceItemSatisfied(
       );
       continue;
     }
-    await tx.approvalFlow.update({
-      where: { id: flow.id },
-      data: { status: 'PENDING', complianceHoldsJson: PrismaRuntime.DbNull },
+    const resumeResult = await resumeApprovalFlowFromCompliance(tx as unknown as TxClient, {
+      flowId: flow.id,
+      organizationId: args.organizationId,
     });
+    if (!resumeResult.reopenedStepId) continue;
     await writeAuditLog({
       organizationId: args.organizationId,
       actorType: 'SYSTEM',

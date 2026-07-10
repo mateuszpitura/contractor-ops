@@ -67,19 +67,28 @@ const { mockPrisma } = vi.hoisted(() => {
       })),
     },
     contractorComplianceItem: {
+      count: vi.fn(async () => 0),
+      create: vi.fn(async (opts: { data: Rec }) => ({ id: 'cci-1', ...opts.data })),
+      createMany: vi.fn(async () => ({ count: 0 })),
       groupBy: vi.fn(async () => []),
     },
     invoice: {
       count: vi.fn(async () => 0),
+      findMany: vi.fn(async () => []),
+      updateMany: vi.fn(async () => ({ count: 0 })),
       groupBy: vi.fn(async () => []),
     },
     workflowRun: {
       count: vi.fn(async () => 0),
+      updateMany: vi.fn(async () => ({ count: 0 })),
     },
     contract: {
       count: vi.fn(async () => 0),
       updateMany: vi.fn(async () => ({ count: 0 })),
       groupBy: vi.fn(async () => []),
+    },
+    approvalFlow: {
+      updateMany: vi.fn(async () => ({ count: 0 })),
     },
     contractorChangeRequest: {
       updateMany: vi.fn(async () => ({ count: 0 })),
@@ -155,18 +164,11 @@ vi.mock('../../services/notification-service', () => ({
   dispatch: vi.fn(async () => undefined),
 }));
 
-vi.mock('../../services/cache', () => ({
-  cacheKey: vi.fn((...s: string[]) => s.join(':')),
-  cachedSingleflight: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  cached: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  invalidate: vi.fn(async () => undefined),
-  invalidateByPrefix: vi.fn(async () => undefined),
-  CacheKeys: {
-    approvalChains: (orgId: string) => `approval-chains:${orgId}`,
-    dashboardPrefix: (orgId: string) => `dash:${orgId}`,
-  },
-  CacheTTL: { APPROVAL_CHAINS: 300 },
-}));
+vi.mock('../../services/cache', async importOriginal => {
+  const actual = await importOriginal<typeof import('../../services/cache')>();
+  const { createPassthroughCacheMock } = await import('../../__tests__/__mocks__/cache-service');
+  return createPassthroughCacheMock(actual);
+});
 
 vi.mock('../../services/calendar-event-service', () => ({
   deleteCalendarEvent: vi.fn(async () => undefined),
@@ -462,6 +464,8 @@ describe('contractor router', () => {
         organizationId: ORG_ID,
         deletedAt: null,
       });
+      // The list must omit the encrypted SSN column (siblings getById/update do).
+      expect(call.omit).toMatchObject({ ssnEncrypted: true });
     });
 
     it('calculates skip/take from page and pageSize', async () => {
@@ -788,21 +792,24 @@ describe('contractor router', () => {
   // bulkArchive / bulkAssignOwner
   // -------------------------------------------------------------------------
   describe('bulkArchive', () => {
-    it('calls updateMany with correct ids and organizationId', async () => {
-      mockPrisma.invoice.groupBy.mockResolvedValueOnce([]); // no unpaid invoices
-      mockPrisma.contractor.updateMany.mockResolvedValueOnce({ count: 2 });
+    it('archives each contractor individually with tenant-scoped updates', async () => {
+      mockPrisma.invoice.groupBy.mockResolvedValueOnce([]); // no IN_RUN invoices
+      mockPrisma.contract.groupBy.mockResolvedValueOnce([]); // no active contracts
+      mockPrisma.contractor.findFirst
+        .mockResolvedValueOnce(makeContractor({ id: CONTRACTOR_ID }))
+        .mockResolvedValueOnce(makeContractor({ id: CONTRACTOR_ID_2 }));
+      mockPrisma.invoice.findMany.mockResolvedValue([]);
+      mockPrisma.contractor.update.mockResolvedValue(makeContractor({ status: 'ARCHIVED' }));
 
-      await caller.contractor.bulkArchive({
+      const result = await caller.contractor.bulkArchive({
         ids: [CONTRACTOR_ID, CONTRACTOR_ID_2],
       });
 
-      const call = mockPrisma.contractor.updateMany.mock.calls[0]?.[0];
-      expect(call.where).toMatchObject({
-        id: { in: [CONTRACTOR_ID, CONTRACTOR_ID_2] },
-        organizationId: ORG_ID,
-        deletedAt: null,
-      });
-      expect(call.data).toMatchObject({
+      expect(result).toEqual({ count: 2 });
+      expect(mockPrisma.contractor.update).toHaveBeenCalledTimes(2);
+      const firstUpdate = mockPrisma.contractor.update.mock.calls[0]?.[0];
+      expect(firstUpdate?.where).toEqual({ id: CONTRACTOR_ID });
+      expect(firstUpdate?.data).toMatchObject({
         status: 'ARCHIVED',
         lifecycleStage: 'ENDED',
       });

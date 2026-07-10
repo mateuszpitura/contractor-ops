@@ -61,7 +61,7 @@ export const workflowRolesRouter = router({
    * List all role templates (seed + ops-added) for the current organization.
    * Ordered: seed rows first, then ops-added by displayNameEn ascending.
    */
-  list: tenantProcedure.query(async ({ ctx }) => {
+  list: tenantProcedure.use(requirePermission({ workflow: ['read'] })).query(async ({ ctx }) => {
     return ctx.db.workflowRoleTemplate.findMany({
       where: { organizationId: ctx.organizationId },
       include: { taskTemplates: { orderBy: { sortOrder: 'asc' } } },
@@ -201,19 +201,34 @@ export const workflowRolesRouter = router({
    * Generic Consultant seed as the deterministic fallback when NULL.
    */
   selectForContractor: tenantProcedure
+    .use(requirePermission({ workflow: ['read'] }))
     .input(selectForContractorInputSchema)
     .query(async ({ ctx, input }) => {
       const contractor = await ctx.db.contractor.findFirstOrThrow({
         where: { id: input.contractorId, organizationId: ctx.organizationId },
         select: { workflowRoleId: true },
       });
+
+      const offboardingTemplate = await ctx.db.workflowTemplate.findFirst({
+        where: {
+          organizationId: ctx.organizationId,
+          type: 'OFFBOARDING',
+          status: 'ACTIVE',
+          appliesToEntityType: 'CONTRACTOR',
+        },
+        orderBy: { createdAt: 'asc' },
+        select: { id: true },
+      });
+
       if (contractor.workflowRoleId) {
         return {
-          templateId: contractor.workflowRoleId,
+          templateId: offboardingTemplate?.id ?? null,
+          roleTemplateId: contractor.workflowRoleId,
           source: 'contractor_role_id' as const,
         };
       }
-      const generic = await ctx.db.workflowRoleTemplate.findFirstOrThrow({
+
+      const genericRole = await ctx.db.workflowRoleTemplate.findFirst({
         where: {
           organizationId: ctx.organizationId,
           role: 'generic_consultant',
@@ -221,8 +236,10 @@ export const workflowRolesRouter = router({
         },
         select: { id: true },
       });
+
       return {
-        templateId: generic.id,
+        templateId: offboardingTemplate?.id ?? null,
+        roleTemplateId: genericRole?.id ?? null,
         source: 'fallback_generic_consultant' as const,
       };
     }),

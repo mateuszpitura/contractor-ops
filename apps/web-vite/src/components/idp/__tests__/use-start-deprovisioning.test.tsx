@@ -102,6 +102,7 @@ describe('useStartDeprovisioning', () => {
 
     await waitFor(() => expect(result.current.startedRunId).toBe('run-99'));
     expect(start).toHaveBeenCalledWith({
+      subjectType: 'CONTRACTOR',
       assignmentId: 'asg-start',
       idempotencyKey: 'deprov:asg-start',
     });

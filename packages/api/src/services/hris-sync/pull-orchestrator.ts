@@ -54,7 +54,12 @@ interface HrisAdapter {
     creds: ReturnType<typeof decryptCredentials>,
     opts: { updatedSince?: string },
   ) => Promise<
-    Array<{ externalId: string; provider: HrisProvider; attributes: Record<string, unknown> }>
+    Array<{
+      externalId: string;
+      provider: HrisProvider;
+      attributes: Record<string, unknown>;
+      updatedAt?: string;
+    }>
   >;
   refreshToken?: (
     creds: ReturnType<typeof decryptCredentials>,
@@ -137,6 +142,7 @@ export async function runHrisPull(params: {
     let applied = 0;
     let skipped = 0;
     let errors = 0;
+    let latestCursorAt = priorState.lastSuccessfulSyncAt;
 
     for (const record of remote) {
       const patch = projectToWritablePatch(record, mapping);
@@ -148,15 +154,28 @@ export async function runHrisPull(params: {
       try {
         const result = await applyPatchToWorker(db, organizationId, record.externalId, patch, {
           origin: 'HRIS_PULL',
+          integrationConnectionId: connectionId,
         });
         if (result && result.applied === false) {
           skipped += 1;
         } else {
           applied += 1;
+          // Record the hash only when the patch actually applied so an unlinked
+          // record is re-attempted after linking instead of being skipped forever.
+          nextHashes[record.externalId] = hash;
+          if (record.updatedAt) {
+            if (!latestCursorAt || record.updatedAt > latestCursorAt) {
+              latestCursorAt = record.updatedAt;
+            }
+          } else {
+            const attrUpdated = record.attributes?.updated_at;
+            if (typeof attrUpdated === 'string') {
+              if (!latestCursorAt || attrUpdated > latestCursorAt) {
+                latestCursorAt = attrUpdated;
+              }
+            }
+          }
         }
-        // Record the hash only for records we processed without error so a
-        // transient failure re-attempts the write on the next run.
-        nextHashes[record.externalId] = hash;
       } catch (err) {
         errors += 1;
         log.warn(
@@ -166,29 +185,40 @@ export async function runHrisPull(params: {
       }
     }
 
+    const syncSucceeded = errors === 0;
+    const now = new Date();
     const nextConfig = writeSyncState(connection.configJson, {
-      lastSuccessfulSyncAt: new Date().toISOString(),
+      ...(syncSucceeded && latestCursorAt
+        ? { lastSuccessfulSyncAt: latestCursorAt }
+        : syncSucceeded
+          ? { lastSuccessfulSyncAt: now.toISOString() }
+          : {}),
       hashes: nextHashes,
     });
-    const now = new Date();
     await db.integrationConnection.update({
       where: { id: connectionId },
       data: {
         configJson: nextConfig as Prisma.InputJsonValue,
         lastSyncAt: now,
-        lastSuccessAt: now,
+        ...(syncSucceeded ? { lastSuccessAt: now } : {}),
       },
     });
     await db.integrationSyncLog.update({
       where: { id: syncLog.id },
       data: {
-        status: 'SUCCESS',
+        status: syncSucceeded ? 'SUCCESS' : 'FAILED',
         completedAt: now,
+        errorMessage: syncSucceeded ? null : `${errors} record(s) failed during pull`,
         responsePayloadJson: { applied, skipped, errors },
       },
     });
 
-    return { status: 'SUCCESS', applied, skipped, errors };
+    return {
+      status: syncSucceeded ? 'SUCCESS' : 'FAILED',
+      applied,
+      skipped,
+      errors,
+    } as const;
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     await db.integrationSyncLog
@@ -196,15 +226,18 @@ export async function runHrisPull(params: {
         where: { id: syncLog.id },
         data: { status: 'FAILED', completedAt: new Date(), errorMessage: message.slice(0, 1000) },
       })
+      // safe-swallow: best-effort failure bookkeeping — the original sync error rethrows below
       .catch(() => undefined);
     await db.integrationConnection
       .update({
         where: { id: connectionId },
         data: { lastErrorAt: new Date(), lastErrorMessage: message.slice(0, 1000) },
       })
+      // safe-swallow: best-effort failure bookkeeping — the original sync error rethrows below
       .catch(() => undefined);
     throw err;
   } finally {
+    // safe-swallow: advisory lock dies with the session anyway; a release failure must not mask the sync result
     await releaseAdvisoryLock(prisma, 'sync', lockKey).catch(() => undefined);
   }
 }

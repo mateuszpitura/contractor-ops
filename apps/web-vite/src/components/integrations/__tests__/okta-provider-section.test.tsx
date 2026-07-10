@@ -55,6 +55,6 @@ describe('OktaProviderSectionView', () => {
     expect(sw).toHaveAttribute('aria-label', 'Enable Okta deprovisioning');
     expect(sw.getAttribute('aria-disabled')).not.toBe('true');
     await user.click(sw);
-    expect(onToggle).toHaveBeenCalledWith(true);
+    expect(onToggle).toHaveBeenCalledWith(true, expect.anything());
   });
 });

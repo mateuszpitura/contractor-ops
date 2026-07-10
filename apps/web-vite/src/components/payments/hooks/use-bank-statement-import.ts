@@ -25,12 +25,16 @@ export function useBankStatementImport(options: { runId: string; onClose: () => 
   const [parseError, setParseError] = useState('');
   const [matches, setMatches] = useState<BankStatementMatchResult[]>([]);
   const [selectedMatches, setSelectedMatches] = useState<Set<number>>(new Set());
+  const [statementFile, setStatementFile] = useState<{ content: string; name: string } | null>(
+    null,
+  );
 
   const resetState = useCallback(() => {
     setStep('upload');
     setParseError('');
     setMatches([]);
     setSelectedMatches(new Set());
+    setStatementFile(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
   }, []);
 
@@ -95,6 +99,7 @@ export function useBankStatementImport(options: { runId: string; onClose: () => 
       setStep('parsing');
       try {
         const text = await file.text();
+        setStatementFile({ content: text, name: file.name });
         importMutation.mutate({
           runId: options.runId,
           fileContent: text,
@@ -118,6 +123,8 @@ export function useBankStatementImport(options: { runId: string; onClose: () => 
   }, []);
 
   const handleConfirm = useCallback(() => {
+    if (!statementFile) return;
+
     const matchesToConfirm = matches
       .filter(
         (m): m is BankStatementMatchResult & { itemId: string } =>
@@ -128,8 +135,13 @@ export function useBankStatementImport(options: { runId: string; onClose: () => 
         transactionIndex: m.transactionIndex,
       }));
 
-    confirmMutation.mutate({ runId: options.runId, matches: matchesToConfirm });
-  }, [confirmMutation, matches, selectedMatches, options.runId]);
+    confirmMutation.mutate({
+      runId: options.runId,
+      fileContent: statementFile.content,
+      fileName: statementFile.name,
+      matches: matchesToConfirm,
+    });
+  }, [confirmMutation, matches, selectedMatches, options.runId, statementFile]);
 
   const handleRetry = useCallback(() => {
     setStep('upload');

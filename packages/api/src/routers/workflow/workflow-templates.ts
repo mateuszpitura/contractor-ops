@@ -1,6 +1,8 @@
 /**
  * Workflow template procedures: CRUD, duplication, and starter template seeding.
  */
+
+import { memberRoleToUserRole } from '@contractor-ops/auth/role-normalization';
 import type { Prisma } from '@contractor-ops/db';
 import type { TemplateCreateInput } from '@contractor-ops/validators';
 import {
@@ -17,39 +19,150 @@ import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
 import { WORKFLOW_TEMPLATE_KEYS } from './workflow-shared';
 
+type TaskTemplateInput = TemplateCreateInput['tasks'][number] & { id?: string };
+
+function taskDependencyKey(task: TaskTemplateInput, index: number): string {
+  return task.id ?? `task-${index}`;
+}
+
+/** Idempotent patch: add IP_VERIFICATION to existing OFFBOARDING templates that lack it. */
+async function ensureOffboardingIpVerificationTasks(
+  tx: TenantDbTx,
+  organizationId: string,
+): Promise<number> {
+  const templates = await tx.workflowTemplate.findMany({
+    where: { organizationId, type: 'OFFBOARDING' },
+    include: {
+      tasks: { where: { taskType: 'IP_VERIFICATION' }, select: { id: true } },
+    },
+  });
+
+  let patched = 0;
+  for (const template of templates) {
+    if (template.tasks.length > 0) continue;
+    await tx.workflowTaskTemplate.create({
+      data: {
+        organizationId,
+        workflowTemplateId: template.id,
+        title: WORKFLOW_TEMPLATE_KEYS.offboarding.ipVerification,
+        taskType: 'IP_VERIFICATION',
+        assigneeMode: 'ROLE_BASED',
+        assigneeRole: 'ADMIN',
+        dueOffsetDays: 7,
+        sortOrder: 4,
+        required: true,
+        description: null,
+        assigneeUserId: null,
+        dueOffsetHours: null,
+        dependsOnTaskTemplateId: null,
+        externalUrl: null,
+      },
+    });
+    patched += 1;
+  }
+  return patched;
+}
+
+function assertNoDependencyCycles(
+  tasks: TaskTemplateInput[],
+  keyToIndex: Map<string, number>,
+): void {
+  const visiting = new Set<number>();
+  const visited = new Set<number>();
+
+  const visit = (index: number): void => {
+    if (visited.has(index)) return;
+    if (visiting.has(index)) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: E.WORKFLOW_TEMPLATE_DEPENDENCY_CYCLE,
+      });
+    }
+    visiting.add(index);
+    const depKey = tasks[index]?.dependsOnTaskTemplateId;
+    if (depKey) {
+      const depIndex = keyToIndex.get(depKey);
+      if (depIndex !== undefined) {
+        visit(depIndex);
+      }
+    }
+    visiting.delete(index);
+    visited.add(index);
+  };
+
+  for (let i = 0; i < tasks.length; i++) {
+    visit(i);
+  }
+}
+
+/**
+ * Creates task templates in two passes so intra-template dependency ids are
+ * remapped to freshly created row ids (not stale placeholders from the UI).
+ */
+async function createTasksWithDependencyRemap(
+  tx: TenantDbTx,
+  organizationId: string,
+  workflowTemplateId: string,
+  tasks: TaskTemplateInput[],
+): Promise<void> {
+  if (tasks.length === 0) return;
+
+  const keyToIndex = new Map(tasks.map((task, index) => [taskDependencyKey(task, index), index]));
+
+  for (const task of tasks) {
+    const depKey = task.dependsOnTaskTemplateId;
+    if (depKey && !keyToIndex.has(depKey)) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: E.WORKFLOW_TEMPLATE_UNKNOWN_DEPENDENCY,
+      });
+    }
+  }
+
+  assertNoDependencyCycles(tasks, keyToIndex);
+
+  const oldKeyToNewId = new Map<string, string>();
+
+  for (const [index, task] of tasks.entries()) {
+    const created = await tx.workflowTaskTemplate.create({
+      data: {
+        organizationId,
+        workflowTemplateId,
+        title: task.title,
+        description: task.description ?? null,
+        taskType: task.taskType,
+        sortOrder: task.sortOrder,
+        required: task.required,
+        assigneeMode: task.assigneeMode,
+        assigneeRole: memberRoleToUserRole(task.assigneeRole),
+        assigneeUserId: task.assigneeUserId ?? null,
+        dueOffsetDays: task.dueOffsetDays ?? null,
+        dueOffsetHours: task.dueOffsetHours ?? null,
+        dependsOnTaskTemplateId: null,
+        externalUrl: task.externalUrl || null,
+        configJson: task.conditions ?? undefined,
+      },
+    });
+    oldKeyToNewId.set(taskDependencyKey(task, index), created.id);
+  }
+
+  for (const [index, task] of tasks.entries()) {
+    const depKey = task.dependsOnTaskTemplateId;
+    if (!depKey) continue;
+    const newId = oldKeyToNewId.get(taskDependencyKey(task, index));
+    const newDepId = oldKeyToNewId.get(depKey);
+    if (newId && newDepId) {
+      await tx.workflowTaskTemplate.update({
+        where: { id: newId },
+        data: { dependsOnTaskTemplateId: newDepId },
+      });
+    }
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-/**
- * Maps user-supplied task input shapes into Prisma createMany rows for a
- * given parent workflow template. Shared between createTemplate (initial
- * insert) and updateTemplate (delete-all + recreate replacement strategy)
- * which previously inlined the same 17-field reshape.
- */
-function buildTaskTemplateCreateManyInput(
-  organizationId: string,
-  workflowTemplateId: string,
-  tasks: TemplateCreateInput['tasks'],
-): Prisma.WorkflowTaskTemplateCreateManyInput[] {
-  return tasks.map(task => ({
-    organizationId,
-    workflowTemplateId,
-    title: task.title,
-    description: task.description ?? null,
-    taskType: task.taskType,
-    sortOrder: task.sortOrder,
-    required: task.required,
-    assigneeMode: task.assigneeMode,
-    assigneeRole: task.assigneeRole ?? null,
-    assigneeUserId: task.assigneeUserId ?? null,
-    dueOffsetDays: task.dueOffsetDays ?? null,
-    dueOffsetHours: task.dueOffsetHours ?? null,
-    dependsOnTaskTemplateId: task.dependsOnTaskTemplateId ?? null,
-    externalUrl: task.externalUrl || null,
-    configJson: task.conditions ?? undefined,
-  })) as Prisma.WorkflowTaskTemplateCreateManyInput[];
-}
 
 type SourceTaskTemplate = Prisma.WorkflowTaskTemplateGetPayload<true>;
 
@@ -134,9 +247,7 @@ export const workflowTemplatesRouter = router({
         });
 
         if (input.tasks.length > 0) {
-          await tx.workflowTaskTemplate.createMany({
-            data: buildTaskTemplateCreateManyInput(ctx.organizationId, created.id, input.tasks),
-          });
+          await createTasksWithDependencyRemap(tx, ctx.organizationId, created.id, input.tasks);
         }
 
         return tx.workflowTemplate.findUniqueOrThrow({
@@ -189,9 +300,7 @@ export const workflowTemplatesRouter = router({
           });
 
           if (input.tasks.length > 0) {
-            await tx.workflowTaskTemplate.createMany({
-              data: buildTaskTemplateCreateManyInput(ctx.organizationId, input.id, input.tasks),
-            });
+            await createTasksWithDependencyRemap(tx, ctx.organizationId, input.id, input.tasks);
           }
         }
 
@@ -373,7 +482,10 @@ export const workflowTemplatesRouter = router({
       });
 
       if (existingCount > 0) {
-        return { seeded: false };
+        const patchedOffboardingIpTasks = await ctx.db.$transaction(tx =>
+          ensureOffboardingIpVerificationTasks(tx, ctx.organizationId),
+        );
+        return { seeded: false, patchedOffboardingIpTasks };
       }
 
       await ctx.db.$transaction(async tx => {
@@ -508,11 +620,18 @@ export const workflowTemplatesRouter = router({
             sortOrder: 3,
           },
           {
+            title: WORKFLOW_TEMPLATE_KEYS.offboarding.ipVerification,
+            taskType: 'IP_VERIFICATION' as const,
+            assigneeRole: 'ADMIN' as const,
+            dueOffsetDays: 7,
+            sortOrder: 4,
+          },
+          {
             title: WORKFLOW_TEMPLATE_KEYS.offboarding.finalDocumentation,
             taskType: 'DOCUMENT_COLLECTION' as const,
             assigneeRole: 'OPS_MANAGER' as const,
             dueOffsetDays: 5,
-            sortOrder: 4,
+            sortOrder: 5,
           },
         ];
 

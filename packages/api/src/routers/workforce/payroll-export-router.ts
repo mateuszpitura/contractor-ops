@@ -17,10 +17,16 @@ import { PayrollExportEngine } from '@contractor-ops/payroll';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 
+import {
+  PAYROLL_FEED_CROSS_MARKET,
+  PAYROLL_FEED_EMPTY,
+  PAYROLL_FEED_MISSING_EMPLOYEES,
+  PAYROLL_FEED_WRONG_MARKET,
+} from '../../errors';
 import { router } from '../../init';
 import { requirePermission } from '../../middleware/rbac';
-import { assertWorkforceEnabled } from '../../middleware/require-workforce-flag';
-import { tenantProcedure } from '../../middleware/tenant';
+import { sensitiveActionMiddleware } from '../../middleware/sensitive';
+import { workforceReadProcedure } from '../../middleware/workforce-procedures';
 import { writeAuditLog } from '../../services/audit-writer';
 import { buildPayrollFeed } from '../../services/payroll-feed';
 import { registerAllPayrollProfiles } from '../../services/register-payroll-profiles';
@@ -58,13 +64,15 @@ function isFlagEnabled(flagKey: string, organizationId: string, region: 'EU' | '
   return evaluate(flagKey as FlagKey, { organizationId, region }).enabled;
 }
 
-const payrollReadProcedure = tenantProcedure.use(requirePermission({ employee: ['read'] }));
+const payrollReadProcedure = workforceReadProcedure;
+const payrollExportProcedure = payrollReadProcedure
+  .use(requirePermission({ employeePii: ['read'] }))
+  .use(sensitiveActionMiddleware);
 
 const connectNativeInput = z.object({ provider: z.enum(['gusto', 'quickbooks']) }).strict();
 
 export const payrollExportRouter = router({
   listTargets: payrollReadProcedure.query(({ ctx }) => {
-    assertWorkforceEnabled(ctx.organizationId, ctx.region);
     const region = flagRegion(ctx.region);
     return engine.listTargets().map(t => ({
       ...t,
@@ -72,8 +80,7 @@ export const payrollExportRouter = router({
     }));
   }),
 
-  export: payrollReadProcedure.input(payrollExportInput).mutation(async ({ ctx, input }) => {
-    assertWorkforceEnabled(ctx.organizationId, ctx.region);
+  export: payrollExportProcedure.input(payrollExportInput).mutation(async ({ ctx, input }) => {
     const region = flagRegion(ctx.region);
 
     const target = engine.listTargets().find(t => t.profileId === input.targetId);
@@ -87,7 +94,53 @@ export const payrollExportRouter = router({
       enabled: isFlagEnabled(target.flagKey, ctx.organizationId, region),
     });
 
-    const feed = await buildPayrollFeed(ctx.db, ctx.organizationId, input.employeeIds);
+    const { feed, missingEmployeeIds, excludedCrossMarketIds } = await buildPayrollFeed(
+      ctx.db,
+      ctx.organizationId,
+      input.employeeIds,
+    );
+
+    if (missingEmployeeIds.length > 0) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: PAYROLL_FEED_MISSING_EMPLOYEES,
+        cause: {
+          params: { count: missingEmployeeIds.length },
+          missingEmployeeIds,
+        },
+      });
+    }
+
+    if (excludedCrossMarketIds.length > 0) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: PAYROLL_FEED_CROSS_MARKET,
+        cause: {
+          params: { count: excludedCrossMarketIds.length },
+          excludedCrossMarketIds,
+          targetCountry: feed.targetCountry,
+        },
+      });
+    }
+
+    if (feed.targetCountry && feed.targetCountry !== target.country) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: PAYROLL_FEED_WRONG_MARKET,
+        cause: {
+          params: { feedCountry: feed.targetCountry, targetCountry: target.country },
+          feedTargetCountry: feed.targetCountry,
+          exportTargetCountry: target.country,
+        },
+      });
+    }
+
+    if (feed.employees.length === 0) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: PAYROLL_FEED_EMPTY,
+      });
+    }
 
     const bridgeCtx = {
       evaluateFlag: (flagKey: string) => isFlagEnabled(flagKey, ctx.organizationId, region),
@@ -122,7 +175,6 @@ export const payrollExportRouter = router({
   }),
 
   connectNative: payrollReadProcedure.input(connectNativeInput).query(({ ctx, input }) => {
-    assertWorkforceEnabled(ctx.organizationId, ctx.region);
     const adapter = input.provider === 'gusto' ? new GustoAdapter() : new QuickBooksAdapter();
     const config = adapter.getOAuthConfig();
     return {

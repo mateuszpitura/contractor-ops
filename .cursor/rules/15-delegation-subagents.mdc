@@ -11,8 +11,9 @@ Cursor **Task** tool = subagent spawn. Prefer subagents over ad-hoc bulk shell s
 
 ## Routing (default)
 
-| Task | Subagent |
-|------|----------|
+| Task | Subagent / skill |
+|------|------------------|
+| Domain feature / fix / multi-layer logic | **`business-logic-shield`** first ([`.claude/skills/business-logic-shield/SKILL.md`](../../.claude/skills/business-logic-shield/SKILL.md)); rule [35-business-logic-shield.mdc](35-business-logic-shield.mdc) |
 | Locate symbol / callers | `cavecrew-investigator` (default); `explore` for prose |
 | Fix ≤2 files | `cavecrew-builder` or main `Edit` after `Read` |
 | Review diff/PR | `cavecrew-reviewer`; `bugbot` / `security-review` on request |

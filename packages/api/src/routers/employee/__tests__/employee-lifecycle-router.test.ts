@@ -67,6 +67,9 @@ const { mockPrisma, auditWrites, flagState, permState, state } = vi.hoisted(() =
       findFirst: vi.fn(async () => ({ id: 'clrunaaaaaaaaaaaaaaaaaaaaaa' })),
     },
     workflowTaskRun: { findMany: vi.fn(async () => []) },
+    personnelFile: {
+      upsert: vi.fn(async () => ({ id: 'clpfaaaaaaaaaaaaaaaaaaaaaaa' })),
+    },
     statutoryCertificate: {
       create: vi.fn(async () => ({ id: 'clcertaaaaaaaaaaaaaaaaaaaaa' })),
     },

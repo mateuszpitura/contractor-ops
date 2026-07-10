@@ -13,7 +13,13 @@ import { z } from 'zod';
 
 import * as E from '../../errors';
 import { router } from '../../init';
+import { requirePermission } from '../../middleware/rbac';
 import { classificationProcedure } from '../../middleware/require-classification-flag';
+import { writeAuditLog } from '../../services/audit-writer';
+
+const contractorUpdateProcedure = classificationProcedure.use(
+  requirePermission({ contractor: ['update'] }),
+);
 
 const chainRoleSchema = z.enum(['CLIENT', 'AGENCY', 'PSC', 'WORKER']);
 
@@ -137,58 +143,72 @@ export const ir35ChainRouter = router({
    * - linkedContractorId must belong to the same tenant
    * - CLIENT rows always have linkedOrganizationId = tenant + no linkedContractorId
    */
-  upsertParticipant: classificationProcedure.input(upsertInput).mutation(async ({ input, ctx }) => {
-    if (input.linkedContractorId) {
-      await ctx.db.contractor
-        .findUniqueOrThrow({ where: { id: input.linkedContractorId } })
-        .catch(() => {
+  upsertParticipant: contractorUpdateProcedure
+    .input(upsertInput)
+    .mutation(async ({ input, ctx }) => {
+      if (input.linkedContractorId) {
+        await ctx.db.contractor
+          .findUniqueOrThrow({ where: { id: input.linkedContractorId } })
+          .catch(() => {
+            throw new TRPCError({
+              code: 'NOT_FOUND',
+              message: E.IR35_LINKED_CONTRACTOR_NOT_FOUND,
+            });
+          });
+      }
+
+      if (input.role === 'CLIENT' && input.linkedContractorId) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: E.IR35_CLIENT_CANNOT_HAVE_LINKED_CONTRACTOR,
+        });
+      }
+
+      const baseData = {
+        role: input.role,
+        orderIndex: input.orderIndex,
+        displayName: input.displayName,
+        contactEmail: input.contactEmail ?? null,
+        linkedContractorId: input.role === 'CLIENT' ? null : (input.linkedContractorId ?? null),
+        linkedOrganizationId: input.role === 'CLIENT' ? ctx.organizationId : null,
+      };
+
+      if (input.id) {
+        const updated = await ctx.db.ir35ChainParticipant.updateMany({
+          where: {
+            id: input.id,
+            contractorAssignmentId: input.contractorAssignmentId,
+          },
+          data: baseData,
+        });
+        if (updated.count !== 1) {
           throw new TRPCError({
             code: 'NOT_FOUND',
-            message: E.IR35_LINKED_CONTRACTOR_NOT_FOUND,
+            message: E.IR35_PARTICIPANT_NOT_FOUND,
           });
+        }
+        return ctx.db.ir35ChainParticipant.findFirstOrThrow({
+          where: { id: input.id },
+          select: participantDtoSelect,
         });
-    }
+      }
 
-    if (input.role === 'CLIENT' && input.linkedContractorId) {
-      throw new TRPCError({
-        code: 'BAD_REQUEST',
-        message: E.IR35_CLIENT_CANNOT_HAVE_LINKED_CONTRACTOR,
-      });
-    }
-
-    const baseData = {
-      role: input.role,
-      orderIndex: input.orderIndex,
-      displayName: input.displayName,
-      contactEmail: input.contactEmail ?? null,
-      linkedContractorId: input.role === 'CLIENT' ? null : (input.linkedContractorId ?? null),
-      linkedOrganizationId: input.role === 'CLIENT' ? ctx.organizationId : null,
-    };
-
-    if (input.id) {
-      return ctx.db.ir35ChainParticipant.update({
-        where: { id: input.id },
-        data: baseData,
+      return ctx.db.ir35ChainParticipant.create({
+        data: {
+          organizationId: ctx.organizationId,
+          contractorAssignmentId: input.contractorAssignmentId,
+          ...baseData,
+        },
         select: participantDtoSelect,
       });
-    }
-
-    return ctx.db.ir35ChainParticipant.create({
-      data: {
-        organizationId: ctx.organizationId,
-        contractorAssignmentId: input.contractorAssignmentId,
-        ...baseData,
-      },
-      select: participantDtoSelect,
-    });
-  }),
+    }),
 
   /**
    * Reassign orderIndex values for an engagement's chain participants.
    * The server assigns orderIndex = position in orderedIds (server-of-record
    * prevents a client race from producing duplicate indices).
    */
-  reorderParticipants: classificationProcedure
+  reorderParticipants: contractorUpdateProcedure
     .input(reorderInput)
     .mutation(async ({ input, ctx }) => {
       const current = await ctx.db.ir35ChainParticipant.findMany({
@@ -222,15 +242,16 @@ export const ir35ChainRouter = router({
         }
       }
 
-      // Parallel updates — every row is scoped to the engagement via where.
-      await Promise.all(
-        input.orderedIds.map((id, index) =>
-          ctx.db.ir35ChainParticipant.update({
-            where: { id },
-            data: { orderIndex: index },
-          }),
-        ),
-      );
+      await ctx.db.$transaction(async tx => {
+        await Promise.all(
+          input.orderedIds.map((id, index) =>
+            tx.ir35ChainParticipant.update({
+              where: { id, contractorAssignmentId: input.contractorAssignmentId },
+              data: { orderIndex: index },
+            }),
+          ),
+        );
+      });
 
       return ctx.db.ir35ChainParticipant.findMany({
         where: { contractorAssignmentId: input.contractorAssignmentId },
@@ -239,50 +260,90 @@ export const ir35ChainRouter = router({
       });
     }),
 
-  markDelivered: classificationProcedure
+  markDelivered: contractorUpdateProcedure
     .input(markDeliveredInput)
     .mutation(async ({ input, ctx }) => {
-      return ctx.db.ir35ChainParticipant.update({
-        where: { id: input.id },
-        data: {
-          sdsDeliveredAt: new Date(),
-          sdsDeliveredNote: input.note ?? null,
-        },
-        select: participantDtoSelect,
+      return ctx.db.$transaction(async tx => {
+        const updated = await tx.ir35ChainParticipant.update({
+          where: { id: input.id },
+          data: {
+            sdsDeliveredAt: new Date(),
+            sdsDeliveredNote: input.note ?? null,
+          },
+          select: participantDtoSelect,
+        });
+
+        await writeAuditLog({
+          tx,
+          organizationId: ctx.organizationId,
+          actorType: 'USER',
+          actorId: ctx.user?.id,
+          action: 'ir35.sds.delivered',
+          resourceType: 'CONTRACTOR',
+          resourceId: updated.contractorAssignmentId,
+          newValues: {
+            participantId: updated.id,
+            role: updated.role,
+            sdsDeliveredAt: updated.sdsDeliveredAt,
+          },
+        });
+
+        return updated;
       });
     }),
 
-  markAcknowledged: classificationProcedure
+  markAcknowledged: contractorUpdateProcedure
     .input(markAcknowledgedInput)
     .mutation(async ({ input, ctx }) => {
-      return ctx.db.ir35ChainParticipant.update({
-        where: { id: input.id },
-        data: {
-          sdsAcknowledgedAt: new Date(),
-          sdsAcknowledgedNote: input.note ?? null,
-        },
-        select: participantDtoSelect,
+      return ctx.db.$transaction(async tx => {
+        const updated = await tx.ir35ChainParticipant.update({
+          where: { id: input.id },
+          data: {
+            sdsAcknowledgedAt: new Date(),
+            sdsAcknowledgedNote: input.note ?? null,
+          },
+          select: participantDtoSelect,
+        });
+
+        await writeAuditLog({
+          tx,
+          organizationId: ctx.organizationId,
+          actorType: 'USER',
+          actorId: ctx.user?.id,
+          action: 'ir35.sds.acknowledged',
+          resourceType: 'CONTRACTOR',
+          resourceId: updated.contractorAssignmentId,
+          newValues: {
+            participantId: updated.id,
+            role: updated.role,
+            sdsAcknowledgedAt: updated.sdsAcknowledgedAt,
+          },
+        });
+
+        return updated;
       });
     }),
 
-  removeParticipant: classificationProcedure.input(removeInput).mutation(async ({ input, ctx }) => {
-    const row = await ctx.db.ir35ChainParticipant
-      .findUniqueOrThrow({ where: { id: input.id }, select: { role: true } })
-      .catch(() => {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: E.IR35_PARTICIPANT_NOT_FOUND,
+  removeParticipant: contractorUpdateProcedure
+    .input(removeInput)
+    .mutation(async ({ input, ctx }) => {
+      const row = await ctx.db.ir35ChainParticipant
+        .findUniqueOrThrow({ where: { id: input.id }, select: { role: true } })
+        .catch(() => {
+          throw new TRPCError({
+            code: 'NOT_FOUND',
+            message: E.IR35_PARTICIPANT_NOT_FOUND,
+          });
         });
-      });
 
-    if (row.role === 'CLIENT' || row.role === 'WORKER') {
-      throw new TRPCError({
-        code: 'BAD_REQUEST',
-        message: E.IR35_CLIENT_WORKER_CANNOT_BE_REMOVED,
-      });
-    }
+      if (row.role === 'CLIENT' || row.role === 'WORKER') {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: E.IR35_CLIENT_WORKER_CANNOT_BE_REMOVED,
+        });
+      }
 
-    await ctx.db.ir35ChainParticipant.delete({ where: { id: input.id } });
-    return { deletedId: input.id };
-  }),
+      await ctx.db.ir35ChainParticipant.delete({ where: { id: input.id } });
+      return { deletedId: input.id };
+    }),
 });

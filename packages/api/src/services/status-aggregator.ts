@@ -50,6 +50,7 @@ async function withTimeout<T>(work: () => Promise<T>, fallback: T): Promise<T> {
 /** api = liveness of the primary datastore behind the request path. */
 function probeApi(): Promise<ComponentStatus> {
   return withTimeout(async () => {
+    // safe-raw-sql: connectivity probe — touches no table, returns no tenant data
     await prisma.$queryRaw`SELECT 1`;
     return 'operational' as ComponentStatus;
   }, 'degraded');

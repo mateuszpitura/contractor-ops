@@ -57,6 +57,7 @@ const {
         tier: 'PRO',
       })),
     },
+    $transaction: vi.fn(async (fn: (tx: typeof mockPrisma) => unknown) => fn(mockPrisma)),
   };
 
   return {
@@ -159,19 +160,11 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
   metrics: { increment: vi.fn(), distribution: vi.fn(), histogram: vi.fn() },
 }));
 
-vi.mock('../../services/cache', () => ({
-  cacheKey: vi.fn((...s: string[]) => s.join(':')),
-  cachedSingleflight: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  cached: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  invalidate: vi.fn(async () => undefined),
-  invalidateByPrefix: vi.fn(async () => undefined),
-  CacheKeys: {
-    subscription: (orgId: string) => `co:${orgId}:billing:sub`,
-  },
-  CacheTTL: {
-    SUBSCRIPTION: 15 * 60,
-  },
-}));
+vi.mock('../../services/cache', async importOriginal => {
+  const actual = await importOriginal<typeof import('../../services/cache')>();
+  const { createPassthroughCacheMock } = await import('../../__tests__/__mocks__/cache-service');
+  return createPassthroughCacheMock(actual);
+});
 
 vi.mock('@contractor-ops/integrations/services/credential-service', () => ({
   decryptCredentials: vi.fn(() => ({
@@ -642,6 +635,8 @@ describe('jiraRouter', () => {
 
     expect(result).toEqual({ success: true });
     expect(mockDeregisterJiraWebhooks).toHaveBeenCalledWith(mockPrisma, 'conn-1');
+    expect(mockPrisma.$transaction).toHaveBeenCalled();
+    expect(mockPrisma.auditLog.create).toHaveBeenCalled();
     expect(mockPrisma.integrationConnection.update).toHaveBeenCalledWith({
       where: { id: 'conn-1' },
       data: { status: 'DISCONNECTED' },

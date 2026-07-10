@@ -14,7 +14,7 @@ import { handleInPostWebhook, verifyInPostSignature } from '../inpost-webhook-ha
 // ---------------------------------------------------------------------------
 
 function createMockDb() {
-  return {
+  const db = {
     shipment: {
       findFirst: vi.fn(),
       update: vi.fn(),
@@ -27,7 +27,13 @@ function createMockDb() {
       update: vi.fn(),
       findUnique: vi.fn(),
     },
+    auditLog: { create: vi.fn().mockResolvedValue({}) },
+    $transaction: vi.fn(),
   };
+  db.$transaction.mockImplementation(async (callback: (tx: typeof db) => Promise<unknown>) =>
+    callback(db),
+  );
+  return db;
 }
 
 describe('verifyInPostSignature', () => {

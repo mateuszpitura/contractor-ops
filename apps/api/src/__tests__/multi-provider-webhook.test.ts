@@ -340,9 +340,7 @@ describe('POST /webhooks/:provider', () => {
         }),
       }),
     );
-    const updateCalls = mockUpdate.mock.calls as unknown as Array<
-      [{ data: Record<string, unknown> }]
-    >;
+    const updateCalls = mockUpdate.mock.calls as unknown as [{ data: Record<string, unknown> }][];
     expect(updateCalls[0]?.[0]?.data.deliveryStatus).toBeUndefined();
   });
 });

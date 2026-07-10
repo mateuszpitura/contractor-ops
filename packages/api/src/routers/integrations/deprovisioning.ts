@@ -2,7 +2,7 @@ import { authApi } from '@contractor-ops/auth';
 import type { Prisma } from '@contractor-ops/db';
 import { getFlagSignoff } from '@contractor-ops/feature-flags';
 import { canStartDeprovisioning, MAX_ATTEMPTS, recomputeRunStatus } from '@contractor-ops/idp-saga';
-import { getIdpAuditLogger } from '@contractor-ops/logger';
+import { createLogger, getIdpAuditLogger } from '@contractor-ops/logger';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import {
@@ -10,6 +10,7 @@ import {
   DEPROVISIONING_COOLDOWN_ACTIVE,
   DEPROVISIONING_INTEGRATION_NOT_CONFIGURED,
   DEPROVISIONING_NO_EXTERNAL_USER,
+  DEPROVISIONING_OTHER_ACTIVE_ASSIGNMENT,
   DEPROVISIONING_PROVIDER_SIGNOFF_PENDING,
   DEPROVISIONING_STEP_NOT_FOUND,
   DEPROVISIONING_STEP_NOT_OVERRIDABLE,
@@ -28,6 +29,7 @@ import { getImpactPreview } from '../../services/idp-impact-preview';
 import { RESOLVER_BACKED_PROVIDERS } from '../../services/idp-token-resolver';
 
 const auditLog = getIdpAuditLogger();
+const log = createLogger({ service: 'deprovisioning' });
 
 // Single source-of-truth for the five deprovisionable providers. Derive the
 // TS type from the schema so the tuple, the Zod enum, and the type alias can
@@ -272,6 +274,20 @@ export const deprovisioningRouter = router({
           jurisdictionTz: COUNTRY_TZ[assignment.contractor.countryCode] ?? DEFAULT_JURISDICTION_TZ,
           status: assignment.status,
         });
+        const otherActiveAssignments = await ctx.db.contractorAssignment.count({
+          where: {
+            organizationId: ctx.organizationId,
+            contractorId: assignment.contractorId,
+            id: { not: assignment.id },
+            status: 'ACTIVE',
+          },
+        });
+        if (otherActiveAssignments > 0) {
+          throw new TRPCError({
+            code: 'PRECONDITION_FAILED',
+            message: DEPROVISIONING_OTHER_ACTIVE_ASSIGNMENT,
+          });
+        }
         externalUserId = assignment.contractor.email;
         runSubject = {
           contractorId: assignment.contractorId,
@@ -352,20 +368,35 @@ export const deprovisioningRouter = router({
         ]);
         const stepUrl = `${getServerEnv().API_URL}/idp-deprovisioning/_step-runner`;
         for (const step of run.steps) {
-          await getQStashClient().publishJSON({
-            url: stepUrl,
-            body: {
-              runId: run.id,
-              stepId: step.id,
-              organizationId: ctx.organizationId,
-              provider: step.provider,
-              stepKind: step.stepKind,
-              externalUserId: step.externalUserId,
-            },
-            retries: 3,
-            timeout: '60s',
-            deduplicationId: `${run.id}:${step.id}:0`,
-          });
+          try {
+            await getQStashClient().publishJSON({
+              url: stepUrl,
+              body: {
+                runId: run.id,
+                stepId: step.id,
+                organizationId: ctx.organizationId,
+                provider: step.provider,
+                stepKind: step.stepKind,
+                externalUserId: step.externalUserId,
+              },
+              retries: 3,
+              timeout: '60s',
+              deduplicationId: `${run.id}:${step.id}:0`,
+            });
+          } catch (enqueueErr) {
+            await ctx.db.deprovisioningStep.update({
+              where: { id: step.id },
+              data: {
+                status: 'FAILED',
+                lastErrorMessage: 'enqueue_failed',
+                attempts: 1,
+              },
+            });
+            log.error(
+              { err: enqueueErr, stepId: step.id, runId: run.id },
+              'deprovisioning step enqueue failed — marked FAILED for manual retry',
+            );
+          }
         }
 
         auditLog.info(
@@ -445,20 +476,36 @@ export const deprovisioningRouter = router({
         import('@contractor-ops/integrations/services/qstash-client'),
         import('@contractor-ops/validators'),
       ]);
-      await getQStashClient().publishJSON({
-        url: `${getServerEnv().API_URL}/idp-deprovisioning/_step-runner`,
-        body: {
-          runId: step.runId,
-          stepId: step.id,
-          organizationId: ctx.organizationId,
-          provider: step.provider,
-          stepKind: step.stepKind,
-          externalUserId: step.externalUserId,
-        },
-        retries: 3,
-        timeout: '60s',
-        deduplicationId: `${step.runId}:${step.id}:${nextAttempt}`,
-      });
+      try {
+        await getQStashClient().publishJSON({
+          url: `${getServerEnv().API_URL}/idp-deprovisioning/_step-runner`,
+          body: {
+            runId: step.runId,
+            stepId: step.id,
+            organizationId: ctx.organizationId,
+            provider: step.provider,
+            stepKind: step.stepKind,
+            externalUserId: step.externalUserId,
+          },
+          retries: 3,
+          timeout: '60s',
+          deduplicationId: `${step.runId}:${step.id}:${nextAttempt}`,
+        });
+      } catch (enqueueErr) {
+        await ctx.db.deprovisioningStep.update({
+          where: { id: step.id },
+          data: {
+            status: 'FAILED',
+            lastErrorMessage: 'enqueue_failed',
+            attempts: nextAttempt,
+          },
+        });
+        auditLog.error(
+          { err: enqueueErr, stepId: step.id, runId: step.runId },
+          'deprovisioning step retry enqueue failed — marked FAILED for manual retry',
+        );
+        return { ok: false, reason: 'enqueue_failed' };
+      }
 
       auditLog.info(
         {
@@ -792,20 +839,21 @@ export const deprovisioningRouter = router({
           where: { id: ctx.organizationId },
           data: { settingsJson: next as Prisma.InputJsonValue },
         });
+
+        await writeAuditLog({
+          tx,
+          organizationId: ctx.organizationId,
+          actorType: 'USER',
+          actorId: ctx.user.id,
+          action: input.enabled
+            ? `idp.${input.provider.toLowerCase()}.deprovisioning_enabled`
+            : `idp.${input.provider.toLowerCase()}.deprovisioning_disabled`,
+          resourceType: 'ORGANIZATION',
+          resourceId: ctx.organizationId,
+          metadata: { provider: input.provider, enabled: input.enabled },
+        });
       });
       void invalidateByPrefix(CacheKeys.settingsPrefix(ctx.organizationId));
-
-      await writeAuditLog({
-        organizationId: ctx.organizationId,
-        actorType: 'USER',
-        actorId: ctx.user.id,
-        action: input.enabled
-          ? `idp.${input.provider.toLowerCase()}.deprovisioning_enabled`
-          : `idp.${input.provider.toLowerCase()}.deprovisioning_disabled`,
-        resourceType: 'ORGANIZATION',
-        resourceId: ctx.organizationId,
-        metadata: { provider: input.provider, enabled: input.enabled },
-      });
 
       return { ok: true, provider: input.provider, enabled: input.enabled };
     }),

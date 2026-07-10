@@ -4,7 +4,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 // Mocks
 // ---------------------------------------------------------------------------
 
-vi.mock('@contractor-ops/db', () => {
+vi.mock('@contractor-ops/db', async importOriginal => {
+  const actual = await importOriginal<typeof import('@contractor-ops/db')>();
   const MockDbPrisma = {
     organizationApiKey: {
       findMany: vi.fn(),
@@ -12,10 +13,12 @@ vi.mock('@contractor-ops/db', () => {
     },
   };
   return {
+    ...actual,
     withRlsTransactions: <T>(c: T) => c,
     withRlsReads: <T>(c: T) => c,
     prisma: MockDbPrisma,
     prismaRaw: MockDbPrisma,
+    tryGetRegionalClient: vi.fn(() => MockDbPrisma),
   };
 });
 

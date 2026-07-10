@@ -47,6 +47,10 @@ const { mockPrisma } = vi.hoisted(() => {
         id: opts.where.id,
         ...opts.data,
       })),
+      findUniqueOrThrow: vi.fn(async (opts: { where: Rec }) => ({
+        id: opts.where.id,
+        status: 'ACTIVE',
+      })),
       updateMany: vi.fn(async () => ({ count: 0 })),
       count: vi.fn(async () => 0),
     },
@@ -137,18 +141,11 @@ vi.mock('../../services/notification-service', () => ({
   dispatch: vi.fn(async () => undefined),
 }));
 
-vi.mock('../../services/cache', () => ({
-  cacheKey: vi.fn((...s: string[]) => s.join(':')),
-  cachedSingleflight: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  cached: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  invalidate: vi.fn(async () => undefined),
-  invalidateByPrefix: vi.fn(async () => undefined),
-  CacheKeys: {
-    approvalChains: (orgId: string) => `approval-chains:${orgId}`,
-    dashboardPrefix: (orgId: string) => `dash:${orgId}`,
-  },
-  CacheTTL: { APPROVAL_CHAINS: 300 },
-}));
+vi.mock('../../services/cache', async importOriginal => {
+  const actual = await importOriginal<typeof import('../../services/cache')>();
+  const { createPassthroughCacheMock } = await import('../../__tests__/__mocks__/cache-service');
+  return createPassthroughCacheMock(actual);
+});
 
 vi.mock('../../services/calendar-event-service', () => ({
   deleteCalendarEvent: vi.fn(async () => undefined),
@@ -381,6 +378,18 @@ function makeContract(overrides: Record<string, unknown> = {}) {
   };
 }
 
+function setupTransitionMocks(
+  contract: ReturnType<typeof makeContract>,
+  targetStatus: string,
+  extraData: Record<string, unknown> = {},
+) {
+  mockPrisma.contract.findFirst.mockResolvedValueOnce(contract);
+  mockPrisma.contract.updateMany.mockResolvedValueOnce({ count: 1 });
+  mockPrisma.contract.findUniqueOrThrow.mockResolvedValueOnce(
+    makeContract({ status: targetStatus, ...extraData }),
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Reset mocks
 // ---------------------------------------------------------------------------
@@ -559,16 +568,16 @@ describe('contract router', () => {
   describe('transitionStatus', () => {
     it('allows valid transitions (DRAFT -> ACTIVE)', async () => {
       const contract = makeContract({ status: 'DRAFT' });
-      mockPrisma.contract.findFirst.mockResolvedValueOnce(contract);
-      mockPrisma.contract.update.mockResolvedValueOnce(makeContract({ status: 'ACTIVE' }));
+      setupTransitionMocks(contract, 'ACTIVE');
 
       const result = await caller.contract.transitionStatus({
         id: CONTRACT_ID,
         targetStatus: 'ACTIVE',
       });
 
-      const updateCall = mockPrisma.contract.update.mock.calls[0]?.[0];
+      const updateCall = mockPrisma.contract.updateMany.mock.calls[0]?.[0];
       expect(updateCall.data).toMatchObject({ status: 'ACTIVE' });
+      expect(updateCall.where).toMatchObject({ id: CONTRACT_ID, status: 'DRAFT' });
       expect(result).toMatchObject({ status: 'ACTIVE' });
     });
 
@@ -586,15 +595,14 @@ describe('contract router', () => {
 
     it('sets terminatedAt when transitioning to TERMINATED', async () => {
       const contract = makeContract({ status: 'ACTIVE' });
-      mockPrisma.contract.findFirst.mockResolvedValueOnce(contract);
-      mockPrisma.contract.update.mockResolvedValueOnce(makeContract({ status: 'TERMINATED' }));
+      setupTransitionMocks(contract, 'TERMINATED', { terminatedAt: new Date() });
 
       await caller.contract.transitionStatus({
         id: CONTRACT_ID,
         targetStatus: 'TERMINATED',
       });
 
-      const updateCall = mockPrisma.contract.update.mock.calls[0]?.[0];
+      const updateCall = mockPrisma.contract.updateMany.mock.calls[0]?.[0];
       expect(updateCall.data).toMatchObject({ status: 'TERMINATED' });
       expect(updateCall.data).toHaveProperty('terminatedAt');
       expect(updateCall.data.terminatedAt).toBeInstanceOf(Date);
@@ -779,8 +787,7 @@ describe('contract router', () => {
   describe('transitionStatus — additional transitions', () => {
     it('allows PENDING_SIGNATURE -> ACTIVE', async () => {
       const contract = makeContract({ status: 'PENDING_SIGNATURE' });
-      mockPrisma.contract.findFirst.mockResolvedValueOnce(contract);
-      mockPrisma.contract.update.mockResolvedValueOnce(makeContract({ status: 'ACTIVE' }));
+      setupTransitionMocks(contract, 'ACTIVE');
 
       const result = await caller.contract.transitionStatus({
         id: CONTRACT_ID,
@@ -792,8 +799,7 @@ describe('contract router', () => {
 
     it('allows ACTIVE -> EXPIRING', async () => {
       const contract = makeContract({ status: 'ACTIVE' });
-      mockPrisma.contract.findFirst.mockResolvedValueOnce(contract);
-      mockPrisma.contract.update.mockResolvedValueOnce(makeContract({ status: 'EXPIRING' }));
+      setupTransitionMocks(contract, 'EXPIRING');
 
       const result = await caller.contract.transitionStatus({
         id: CONTRACT_ID,
@@ -805,8 +811,7 @@ describe('contract router', () => {
 
     it('allows EXPIRING -> EXPIRED', async () => {
       const contract = makeContract({ status: 'EXPIRING' });
-      mockPrisma.contract.findFirst.mockResolvedValueOnce(contract);
-      mockPrisma.contract.update.mockResolvedValueOnce(makeContract({ status: 'EXPIRED' }));
+      setupTransitionMocks(contract, 'EXPIRED');
 
       const result = await caller.contract.transitionStatus({
         id: CONTRACT_ID,

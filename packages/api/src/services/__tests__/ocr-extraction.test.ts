@@ -5,6 +5,7 @@ const {
   mockUpdate,
   mockUpdateMany,
   mockFindFirst,
+  mockDocumentFindFirst,
   mockOrgFindUnique,
   mockCheckCredit,
   mockPublishJSON,
@@ -16,6 +17,7 @@ const {
   mockUpdate: vi.fn(),
   mockUpdateMany: vi.fn(),
   mockFindFirst: vi.fn(),
+  mockDocumentFindFirst: vi.fn(),
   mockOrgFindUnique: vi.fn(),
   mockCheckCredit: vi.fn(),
   mockPublishJSON: vi.fn(),
@@ -23,6 +25,11 @@ const {
   mockExtractInvoice: vi.fn(),
   mockEvaluate: vi.fn(),
 }));
+
+const mockDb = {
+  document: { findFirst: mockDocumentFindFirst },
+  ocrExtraction: { create: mockCreate },
+};
 
 const mockGetQStashClient = vi.hoisted(() => vi.fn(() => ({ publishJSON: mockPublishJSON })));
 
@@ -111,8 +118,8 @@ vi.mock('../credit-service', () => ({
   checkAndDeductCredit: mockCheckCredit,
 }));
 
-vi.mock('../r2', () => ({
-  createPresignedDownloadUrl: mockPresignedUrl,
+vi.mock('../regional-storage', () => ({
+  createRegionalPresignedDownloadUrl: mockPresignedUrl,
 }));
 
 vi.mock('@contractor-ops/integrations/services/ocr-service', () => ({
@@ -151,6 +158,7 @@ describe('ocr-extraction', () => {
     mockUpdateMany.mockResolvedValue({ count: 1 });
     mockOrgFindUnique.mockResolvedValue({ dataRegion: 'EU' });
     mockEvaluate.mockReturnValue({ enabled: true, reason: 'unleash' });
+    mockDocumentFindFirst.mockResolvedValue({ storageKey: 'k/pdf' });
   });
 
   afterEach(() => {
@@ -168,9 +176,9 @@ describe('ocr-extraction', () => {
       });
 
       const out = await triggerOcrExtraction({
+        db: mockDb,
         organizationId: 'org-1',
         documentId: 'doc-1',
-        storageKey: 'k/pdf',
       });
 
       expect(out).toEqual({ error: 'noSubscription', remaining: 0 });
@@ -180,9 +188,9 @@ describe('ocr-extraction', () => {
 
     it('creates extraction, publishes QStash job, returns extractionId', async () => {
       const out = await triggerOcrExtraction({
+        db: mockDb,
         organizationId: 'org-1',
         documentId: 'doc-1',
-        storageKey: 'k/pdf',
         invoiceId: 'inv-1',
       });
 
@@ -211,6 +219,22 @@ describe('ocr-extraction', () => {
           timeout: '60s',
         }),
       );
+    });
+
+    it('throws NOT_FOUND when document is missing or has no storageKey', async () => {
+      mockDocumentFindFirst.mockResolvedValueOnce(null);
+
+      await expect(
+        triggerOcrExtraction({
+          db: mockDb,
+          organizationId: 'org-1',
+          documentId: 'doc-missing',
+        }),
+      ).rejects.toMatchObject({ code: 'NOT_FOUND' });
+
+      expect(mockCheckCredit).not.toHaveBeenCalled();
+      expect(mockCreate).not.toHaveBeenCalled();
+      expect(mockPublishJSON).not.toHaveBeenCalled();
     });
   });
 
@@ -274,7 +298,7 @@ describe('ocr-extraction', () => {
         storageKey: 'path/doc.pdf',
       });
 
-      expect(mockPresignedUrl).toHaveBeenCalledWith('path/doc.pdf');
+      expect(mockPresignedUrl).toHaveBeenCalledWith('path/doc.pdf', 900, 'EU');
       expect(mockExtractInvoice).toHaveBeenCalledWith(
         expect.objectContaining({
           provider: 'CLAUDE',

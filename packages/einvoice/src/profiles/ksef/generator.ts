@@ -50,7 +50,8 @@ export function generateFa3Xml(invoice: EInvoice): string {
     ...(line.unitPriceMinor == null ? {} : { P_9A: fromMinorUnits(line.unitPriceMinor) }),
     ...(line.netAmountMinor == null ? {} : { P_11: fromMinorUnits(line.netAmountMinor) }),
     ...(line.vatRate == null ? {} : { P_12: line.vatRate }),
-    ...(line.vatAmountMinor == null ? {} : { P_11A: fromMinorUnits(line.vatAmountMinor) }),
+    ...(line.grossAmountMinor == null ? {} : { P_11A: fromMinorUnits(line.grossAmountMinor) }),
+    ...(line.vatAmountMinor == null ? {} : { P_11Vat: fromMinorUnits(line.vatAmountMinor) }),
   }));
 
   const faktura = {

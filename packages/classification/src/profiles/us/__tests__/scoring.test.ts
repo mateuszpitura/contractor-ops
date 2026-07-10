@@ -71,10 +71,9 @@ describe('scoreUsClassification — federal common-law base (NOT DOL 2024)', () 
 
 describe('scoreUsClassification — CA-ABC (AB5) overlay is dispositive in California', () => {
   it('defaults to employee in CA unless all three AB5 prongs pass, even on an outside-leaning federal profile', () => {
-    const res = scoreUsClassification(
-      ans({ 'Q-USFED-FIN-01': 'yes', 'Q-USFED-BEH-01': 'no' }),
-      { workState: 'CA' },
-    );
+    const res = scoreUsClassification(ans({ 'Q-USFED-FIN-01': 'yes', 'Q-USFED-BEH-01': 'no' }), {
+      workState: 'CA',
+    });
     expect(res.outcome.verdict).toBe('employee');
     expect(res.outcome.ab5Flag).toBe(true);
     expect(res.reasoning).toMatch(/AB5|ABC|2775/i);

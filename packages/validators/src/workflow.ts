@@ -27,6 +27,8 @@ export const workflowTaskTypeEnum = z.enum([
   'MEETING',
   'MANUAL',
   'NOTIFICATION',
+  'IP_VERIFICATION',
+  'CONTRACT_HEALTH_CHECK',
 ]);
 
 export const assigneeModeEnum = z.enum([
@@ -140,6 +142,7 @@ export const startRunSchema = z.discriminatedUnion('subjectType', [
     templateId: z.string().min(1),
     contractorId: z.string().min(1),
     contractId: optionalFk,
+    roleTemplateId: z.string().min(1).optional(),
   }),
   z
     .object({

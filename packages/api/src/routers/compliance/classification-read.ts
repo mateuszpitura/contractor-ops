@@ -10,9 +10,9 @@ import type { RecreateComplianceAssessmentResultEntry } from './classification-s
 import {
   adminProcedure,
   approveSdsInput,
+  buildEngagementOutcome,
   CLASSIFICATION_SDS_APPROVAL_IR35_ONLY,
   classificationProcedure,
-  extractOutcomeKind,
   findOrThrow,
   getByIdInput,
   getLatestInput,
@@ -109,7 +109,7 @@ export const classificationReadRouter = router({
             // 3. Build engagement context (mirrors submit's pattern).
             const engagement: EngagementContext = {
               jurisdiction,
-              outcome: extractOutcomeKind(latest.outcome),
+              outcome: buildEngagementOutcome(latest.outcome),
               sector: null, // sector column absent from ContractorAssignment today
               contractorNationality: latest.contractorAssignment.contractor?.countryCode ?? null,
               requiresRegulatedEquipment: false,
@@ -148,11 +148,11 @@ export const classificationReadRouter = router({
           });
           results.push(result);
         } catch (err) {
-          // Per-contractor failure does NOT abort the bulk — record + continue.
+          logger.error({ err, contractorId }, 'recreateComplianceAssessment failed for contractor');
           results.push({
             contractorId,
             noop: false,
-            error: err instanceof Error ? err.message : 'unknown error',
+            error: 'complianceRecomputeFailed',
           });
         }
       }

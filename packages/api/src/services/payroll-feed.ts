@@ -42,8 +42,15 @@ export interface PayrollFeedDb {
     findMany: (args: {
       where: { workerType: 'EMPLOYEE'; organizationId: string; id: { in: string[] } };
       include: { employeeProfile: true; personnelFile: true };
+      orderBy?: { id: 'asc' };
     }) => Promise<WorkerRow[]>;
   };
+}
+
+export interface PayrollFeedBuildResult {
+  feed: PayrollFeed;
+  missingEmployeeIds: string[];
+  excludedCrossMarketIds: string[];
 }
 
 function nationalIdLast4(countryCode: string, profile: EmployeeProfileRow): string | null {
@@ -75,16 +82,47 @@ export async function buildPayrollFeed(
   db: PayrollFeedDb,
   organizationId: string,
   employeeIds: string[],
-): Promise<PayrollFeed> {
+): Promise<PayrollFeedBuildResult> {
   const workers = await db.worker.findMany({
     where: { workerType: 'EMPLOYEE', organizationId, id: { in: employeeIds } },
     include: { employeeProfile: true, personnelFile: true },
+    orderBy: { id: 'asc' },
   });
 
-  const employees = workers
-    .filter(
-      (w): w is WorkerRow & { employeeProfile: EmployeeProfileRow } => w.employeeProfile != null,
-    )
+  const foundIds = new Set(workers.map(w => w.id));
+  const missingEmployeeIds = employeeIds.filter(id => !foundIds.has(id));
+
+  const profiled = workers.filter(
+    (w): w is WorkerRow & { employeeProfile: EmployeeProfileRow } => w.employeeProfile != null,
+  );
+
+  const missingEmployeeIdsWithProfile = workers
+    .filter(w => w.employeeProfile == null)
+    .map(w => w.id);
+  const allMissing = [...missingEmployeeIds, ...missingEmployeeIdsWithProfile];
+
+  const distinctCountries = new Set(profiled.map(w => w.employeeProfile.countryCode));
+  if (distinctCountries.size > 1) {
+    const feed = payrollFeedSchema.parse({
+      organizationId,
+      generatedAt: new Date().toISOString(),
+      targetCountry: '',
+      employees: [],
+    });
+    return {
+      feed,
+      missingEmployeeIds: allMissing,
+      excludedCrossMarketIds: profiled.map(w => w.id),
+    };
+  }
+
+  const targetCountry = profiled[0]?.employeeProfile.countryCode ?? '';
+  const excludedCrossMarketIds = profiled
+    .filter(w => w.employeeProfile.countryCode !== targetCountry)
+    .map(w => w.id);
+
+  const employees = profiled
+    .filter(w => w.employeeProfile.countryCode === targetCountry)
     .map(w => {
       const profile = w.employeeProfile;
       const etat = profile.etat;
@@ -106,10 +144,12 @@ export async function buildPayrollFeed(
       };
     });
 
-  return payrollFeedSchema.parse({
+  const feed = payrollFeedSchema.parse({
     organizationId,
     generatedAt: new Date().toISOString(),
-    targetCountry: employees[0]?.countryCode ?? '',
+    targetCountry,
     employees,
   });
+
+  return { feed, missingEmployeeIds: allMissing, excludedCrossMarketIds };
 }

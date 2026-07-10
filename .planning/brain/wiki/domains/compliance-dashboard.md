@@ -2,11 +2,12 @@
 title: Compliance dashboard
 type: domain
 tags: [compliance, renewals, payments]
-source_commit: cbcf8a2bb
+source_commit: e0d533fa
 verify_with:
   - packages/api/src/routers/compliance/compliance-admin.ts
   - packages/api/src/services/compliance-payment-gate.ts
-updated: 2026-07-05
+  - packages/api/src/services/payment-export-compliance-snapshot.ts
+updated: 2026-07-10
 ---
 
 # Compliance dashboard
@@ -27,8 +28,10 @@ Admin compliance KPIs, at-risk contractors, upcoming renewals, blocked payments,
 ## Invariants
 
 - Gate uses `@contractor-ops/compliance-policy` — not ad-hoc checks in payment router
+- **Date-driven blocking:** `assertContractorPaymentEligibility` treats `BLOCKING`+`SATISFIED` items past `isExpired(expiresAt, expiryJurisdictionTz)` as blocking even before the reminder cron flips status to `EXPIRED`; export snapshots mirror the same rule in `payment-export-compliance-snapshot.ts`
 - Always mounted (not flag-gated unlike classification)
 - `approveUploadReplacement` / `rejectUploadReplacement` enqueue the contractor-outcome notice (`compliance.upload.approved` / `.rejected`) into the transactional outbox **inside** the approve/reject `$transaction` ([[patterns/transactional-outbox]]) — atomic with the item/document flip, delivered exactly-once by the drain (dedupKey = reviewed documentId). A provider outage can't roll back the approval because the send is deferred to the drain.
+- The country-compliance section container (`apps/web-vite/src/components/contractors/country-compliance-section.tsx`) renders an error card on query error — returning `null` on error is indistinguishable from "no fields configured".
 
 ## Related
 

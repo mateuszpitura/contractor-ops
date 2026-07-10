@@ -183,7 +183,7 @@ export function isBlockedHostLiteral(host: string): boolean {
 // ---------------------------------------------------------------------------
 
 export interface WebhookUrlOptions {
-  /** Per-org HTTP override (INTEG-SEC-02). Default false → HTTPS required. */
+  /** Per-org HTTP override. Default false → HTTPS required. */
   httpAllowed: boolean;
 }
 

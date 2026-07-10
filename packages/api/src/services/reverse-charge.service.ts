@@ -61,6 +61,18 @@ export const DE_13B_SERVICE_TYPES: ReadonlySet<DE13bServiceType> = new Set<DE13b
   'MOBILE_PHONES',
 ]);
 
+/** Buyer (org) VAT registration — settingsJson.taxId or EU/GB fallback per 47-02. */
+export function resolveBuyerHasVatId(
+  buyerCountry: string | null | undefined,
+  buyerTaxId: string | null | undefined,
+): boolean {
+  if (buyerTaxId?.trim()) return true;
+  if (buyerCountry && (EU_MEMBER_STATES.has(buyerCountry) || buyerCountry === 'GB')) {
+    return true;
+  }
+  return false;
+}
+
 export interface ReverseChargeResult {
   shouldApply: boolean;
   reason: string;
@@ -242,7 +254,7 @@ export async function applyReverseCharge(params: {
   const [org, contractor] = await Promise.all([
     prisma.organization.findUniqueOrThrow({
       where: { id: organizationId },
-      select: { countryCode: true },
+      select: { countryCode: true, settingsJson: true },
     }),
     prisma.contractor.findUniqueOrThrow({
       where: { id: contractorId },
@@ -254,10 +266,13 @@ export async function applyReverseCharge(params: {
     return { isReverseCharge: false, reason: 'Organization has no country set' };
   }
 
+  const settingsJson = (org.settingsJson as Record<string, unknown> | null) ?? {};
+  const buyerTaxId = settingsJson.taxId as string | undefined;
+
   const result = detectReverseCharge({
     sellerCountry: contractor.countryCode,
     buyerCountry: org.countryCode,
-    buyerHasVatId: !!contractor.vatId,
+    buyerHasVatId: resolveBuyerHasVatId(org.countryCode, buyerTaxId),
     isB2B: contractor.type === 'COMPANY' || contractor.type === 'SOLE_TRADER',
     serviceType,
   });

@@ -12,6 +12,7 @@ import { useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 
 import { usePortalLoginVerify } from '../../components/portal/hooks/use-portal-login-verify.js';
+import type { PortalSubjectOrgInfo } from '../../components/portal/org-picker.js';
 import { OrgPicker } from '../../components/portal/org-picker.js';
 import { PageLoadingSpinner } from '../../components/shared/page-loading-spinner.js';
 import { getClientEnv } from '../../env.js';
@@ -53,6 +54,13 @@ async function setSessionCookie(
   }
 }
 
+function portalHomeForSubject(
+  subjects: VerifyMagicLinkResult['subjects'] | undefined,
+): '/portal' | '/portal/employee' {
+  const subject = subjects?.[0];
+  return subject?.subjectType === 'EMPLOYEE' ? '/portal/employee' : '/portal';
+}
+
 function PortalLoginVerifyPageContent() {
   const { verifyMagicLink, selectOrg, t } = usePortalLoginVerify();
   const [searchParams] = useSearchParams();
@@ -84,7 +92,7 @@ function PortalLoginVerifyPageContent() {
               result.session.expiresAt.toISOString(),
               result.session.signature,
             );
-            await router.push('/portal');
+            await router.push(portalHomeForSubject(result.subjects));
           } catch {
             setState({
               status: 'error',
@@ -116,7 +124,7 @@ function PortalLoginVerifyPageContent() {
   }, [token, verifyMagicLink.mutateAsync, t, router.push]);
 
   const handleOrgSelect = useCallback(
-    async (contractorId: string, organizationId: string) => {
+    async (org: PortalSubjectOrgInfo) => {
       if (state.status !== 'org-picker' || !state.verificationNonce) {
         setState({ status: 'error', message: t('verify.errors.unexpectedResponse') });
         return;
@@ -124,15 +132,18 @@ function PortalLoginVerifyPageContent() {
 
       const input: SelectOrgInput = {
         verificationNonce: state.verificationNonce,
-        contractorId,
-        organizationId,
+        subjectType: org.subjectType,
+        organizationId: org.organizationId,
+        ...(org.subjectType === 'EMPLOYEE'
+          ? { workerId: org.workerId ?? org.subjectId }
+          : { contractorId: org.contractorId ?? org.subjectId }),
       };
 
       try {
         const result = await selectOrg.mutateAsync(input);
 
         await setSessionCookie(result.rawToken, result.expiresAt.toISOString(), result.signature);
-        await router.push('/portal');
+        await router.push(org.subjectType === 'EMPLOYEE' ? '/portal/employee' : '/portal');
       } catch {
         toast.error(t('verify.errors.orgSelectFailed'));
       }
@@ -174,7 +185,7 @@ function PortalLoginVerifyPageContent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-muted/30 p-4">
       <OrgPicker
-        orgs={state.orgs}
+        orgs={state.orgs as PortalSubjectOrgInfo[]}
         email={state.email}
         onSelect={handleOrgSelect}
         loading={selectOrg.isPending}

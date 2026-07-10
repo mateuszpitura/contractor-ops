@@ -75,6 +75,10 @@ const {
 
   const contractor = {
     findMany: vi.fn(async () => []),
+    findUnique: vi.fn(async () => ({
+      id: 'clcontractoraaaaaaaaaaaaaaa',
+      legalName: 'Test Contractor',
+    })),
     findFirst: vi.fn(async () => ({
       id: 'clcontractoraaaaaaaaaaaaaaa',
       displayName: 'Old Name',
@@ -153,15 +157,30 @@ const {
       status: 'PENDING_COMPLIANCE',
       resourceType: 'INVOICE',
       resourceId: 'clinvoiceaaaaaaaaaaaaaaaaaa',
+      currentStepOrder: 1,
+      chainConfigId: null,
+      steps: [{ id: 'step-1', stepOrder: 1, status: 'APPROVED', approverUserId: USER_ID }],
     })),
     update: vi.fn(async () => ({})),
   };
 
   const invoice = {
+    findUnique: vi.fn(async () => ({
+      id: 'clinvoiceaaaaaaaaaaaaaaaaaa',
+      invoiceNumber: 'INV-1',
+      contractorId: 'clcontractoraaaaaaaaaaaaaaa',
+    })),
     findUniqueOrThrow: vi.fn(async () => ({ contractorId: 'clcontractoraaaaaaaaaaaaaaa' })),
   };
 
   const reassessmentTrigger = {
+    findFirstOrThrow: vi.fn(async () => ({
+      id: 'cltrigaaaaaaaaaaaaaaaaaaaaa',
+      organizationId: 'clorgaaaaaaaaaaaaaaaaaaaaaa',
+      status: 'OPEN',
+      contractorAssignmentId: 'classignmentaaaaaaaaaaaaaa',
+      contractorAssignment: { contractorId: 'clcontractoraaaaaaaaaaaaaaa' },
+    })),
     findFirst: vi.fn(async () => ({
       id: 'cltrigaaaaaaaaaaaaaaaaaaaaa',
       organizationId: 'clorgaaaaaaaaaaaaaaaaaaaaaa',
@@ -173,6 +192,7 @@ const {
       id: 'cltrigaaaaaaaaaaaaaaaaaaaaa',
       status: (args.data.status as string) ?? 'ACKNOWLEDGED',
     })),
+    updateMany: vi.fn(async () => ({ count: 1 })),
   };
 
   const contractorComplianceItem = {
@@ -356,15 +376,11 @@ vi.mock('../services/api-key-service', () => ({
   })),
 }));
 
-vi.mock('../services/cache', () => ({
-  cacheKey: vi.fn((...s: string[]) => s.join(':')),
-  cached: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  cachedSingleflight: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  invalidate: vi.fn(async () => undefined),
-  invalidateByPrefix: vi.fn(async () => undefined),
-  CacheKeys: { settingsPrefix: (id: string) => `settings:${id}` },
-  CacheTTL: { ORG_SETTINGS: 300 },
-}));
+vi.mock('../services/cache', async importOriginal => {
+  const actual = await importOriginal<typeof import('../services/cache')>();
+  const { createPassthroughCacheMock } = await import('../__tests__/__mocks__/cache-service');
+  return createPassthroughCacheMock(actual);
+});
 
 vi.mock('../services/compliance-payment-gate', () => ({
   assertContractorPaymentEligibility: vi.fn(async () => ({

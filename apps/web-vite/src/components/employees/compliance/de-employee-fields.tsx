@@ -1,7 +1,11 @@
 import { Input } from '@contractor-ops/ui/components/shadcn/input';
-import { Label } from '@contractor-ops/ui/components/shadcn/label';
-import type { Lohnsteuerklasse } from '@contractor-ops/validators';
-import { isValidSteuerIdNr, isValidSvNummer, LOHNSTEUERKLASSE } from '@contractor-ops/validators';
+import type { KirchensteuerCode, Lohnsteuerklasse } from '@contractor-ops/validators';
+import {
+  isValidSteuerIdNr,
+  isValidSvNummer,
+  KIRCHENSTEUER_CODES,
+  LOHNSTEUERKLASSE,
+} from '@contractor-ops/validators';
 import { useCallback, useId } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
@@ -28,7 +32,7 @@ export function DeEmployeeFields({ values, onChange }: DeEmployeeFieldsProps) {
     [onChange],
   );
   const handleKirchensteuer = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => onChange('kirchensteuer', e.target.checked),
+    (v: KirchensteuerCode) => onChange('kirchensteuer', v),
     [onChange],
   );
   const handleKinderfreibetrag = useCallback(
@@ -37,6 +41,7 @@ export function DeEmployeeFields({ values, onChange }: DeEmployeeFieldsProps) {
     [onChange],
   );
   const renderKlasse = useCallback((v: Lohnsteuerklasse) => v, []);
+  const renderKirchensteuerCode = useCallback((v: KirchensteuerCode) => v, []);
 
   const steuerIdNr = (values.steuerIdNr as string | undefined) ?? '';
   const svNummer = (values.svNummer as string | undefined) ?? '';
@@ -118,18 +123,13 @@ export function DeEmployeeFields({ values, onChange }: DeEmployeeFieldsProps) {
         </div>
       </div>
 
-      <div className="flex items-center gap-2">
-        <input
-          id={`${id}-kirchensteuer`}
-          type="checkbox"
-          className="size-4 rounded border-input text-primary focus-visible:ring-2 focus-visible:ring-ring/30"
-          checked={Boolean(values.kirchensteuer)}
-          onChange={handleKirchensteuer}
-        />
-        <Label htmlFor={`${id}-kirchensteuer`} className="text-sm font-medium">
-          {t('kirchensteuerLabel')}
-        </Label>
-      </div>
+      <EntityTypeSelect<KirchensteuerCode>
+        values={KIRCHENSTEUER_CODES}
+        value={values.kirchensteuer as KirchensteuerCode | undefined}
+        onChange={handleKirchensteuer}
+        label={t('kirchensteuerLabel')}
+        renderOption={renderKirchensteuerCode}
+      />
 
       <AdviserVerifyNote>{t('elstamNote')}</AdviserVerifyNote>
     </div>

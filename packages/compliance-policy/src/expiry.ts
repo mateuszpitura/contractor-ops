@@ -12,6 +12,22 @@ import { addDays, addMonths, addYears, differenceInDays, isAfter, startOfDay } f
 import type { PolicyRule } from './types.js';
 
 /**
+ * `@db.Date` values are calendar dates without timezone — Postgres/Prisma
+ * deliver them as UTC midnight. Build the jurisdiction boundary from the UTC
+ * year/month/day so negative-offset TZs do not shift the stored calendar date.
+ */
+function expiryCalendarBoundary(expiresAt: Date, expiryJurisdictionTz: string): TZDate {
+  return startOfDay(
+    new TZDate(
+      expiresAt.getUTCFullYear(),
+      expiresAt.getUTCMonth(),
+      expiresAt.getUTCDate(),
+      expiryJurisdictionTz,
+    ),
+  );
+}
+
+/**
  * Returns true iff `expiresAt` (a calendar date stored as `@db.Date`) has
  * already passed in `expiryJurisdictionTz` as of `now`.
  *
@@ -30,8 +46,35 @@ export function isExpired(
   now: Date = new Date(),
 ): boolean {
   const startOfToday = startOfDay(new TZDate(now, expiryJurisdictionTz));
-  const expiryBoundary = startOfDay(new TZDate(expiresAt, expiryJurisdictionTz));
+  const expiryBoundary = expiryCalendarBoundary(expiresAt, expiryJurisdictionTz);
   return isAfter(startOfToday, expiryBoundary);
+}
+
+/** IANA TZ fallback when `expiryJurisdictionTz` was not backfilled on legacy rows. */
+export const JURISDICTION_TZ_BY_COUNTRY: Record<string, string> = {
+  DE: 'Europe/Berlin',
+  GB: 'Europe/London',
+  PL: 'Europe/Warsaw',
+  SA: 'Asia/Riyadh',
+  AE: 'Asia/Dubai',
+  US: 'America/New_York',
+};
+
+export const DEFAULT_EXPIRY_JURISDICTION_TZ = 'UTC';
+
+/**
+ * Resolve the TZ used for expiry boundaries. Prefers the row's stored TZ; falls
+ * back to contractor country, then UTC so legacy NULL rows still gate correctly.
+ */
+export function resolveExpiryJurisdictionTz(
+  expiryJurisdictionTz: string | null | undefined,
+  contractorCountryCode?: string | null,
+): string {
+  if (expiryJurisdictionTz) return expiryJurisdictionTz;
+  if (contractorCountryCode && JURISDICTION_TZ_BY_COUNTRY[contractorCountryCode]) {
+    return JURISDICTION_TZ_BY_COUNTRY[contractorCountryCode];
+  }
+  return DEFAULT_EXPIRY_JURISDICTION_TZ;
 }
 
 /**
@@ -45,7 +88,7 @@ export function daysUntilExpiryInTz(
   now: Date = new Date(),
 ): number {
   const nowInTz = startOfDay(new TZDate(now, expiryJurisdictionTz));
-  const expiryInTz = startOfDay(new TZDate(expiresAt, expiryJurisdictionTz));
+  const expiryInTz = expiryCalendarBoundary(expiresAt, expiryJurisdictionTz);
   return differenceInDays(expiryInTz, nowInTz);
 }
 

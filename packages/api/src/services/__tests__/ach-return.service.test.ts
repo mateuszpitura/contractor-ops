@@ -109,7 +109,13 @@ type FakeItem = {
   failureReason: string | null;
   paymentReference: string | null;
   amountMinor: number;
-  invoice: { invoiceNumber: string | null } | null;
+  invoiceId: string | null;
+  invoice: {
+    id: string;
+    invoiceNumber: string | null;
+    currency: string;
+    paymentStatus: string;
+  } | null;
 };
 
 function makeItem(overrides: Partial<FakeItem> = {}): FakeItem {
@@ -121,7 +127,13 @@ function makeItem(overrides: Partial<FakeItem> = {}): FakeItem {
     failureReason: null,
     paymentReference: null,
     amountMinor: 50_000_00,
-    invoice: { invoiceNumber: 'INV-US-001' },
+    invoiceId: 'inv-1',
+    invoice: {
+      id: 'inv-1',
+      invoiceNumber: 'INV-US-001',
+      currency: 'USD',
+      paymentStatus: 'IN_RUN',
+    },
     ...overrides,
   };
 }
@@ -150,15 +162,29 @@ function makeDb(items: FakeItem[]) {
         i => i.paymentRunId === where.paymentRunId && i.organizationId === where.organizationId,
       ),
   );
-  const update = vi.fn(async ({ where, data }: { where: { id: string }; data: Partial<FakeItem> }) => {
-    const item = items.find(i => i.id === where.id);
-    if (item) Object.assign(item, data);
-    return item ?? {};
-  });
+  const update = vi.fn(
+    async ({ where, data }: { where: { id: string }; data: Partial<FakeItem> }) => {
+      const item = items.find(i => i.id === where.id);
+      if (item) Object.assign(item, data);
+      return item ?? {};
+    },
+  );
   const auditCreate = vi.fn(async () => ({}));
   const client = {
+    paymentRun: { findFirst: vi.fn(async () => ({ runNumber: 'RUN-001' })) },
     paymentRunItem: { findMany, update },
+    member: { findMany: vi.fn(async () => []) },
+    invoice: {
+      updateMany: vi.fn(async () => ({ count: 1 })),
+      findUnique: vi.fn(async () => ({ amountToPayMinor: 50_000_00 })),
+      update: vi.fn(async () => ({})),
+    },
+    invoicePayment: {
+      deleteMany: vi.fn(async () => ({ count: 0 })),
+      aggregate: vi.fn(async () => ({ _sum: { amountMinor: 0 } })),
+    },
     auditLog: { create: auditCreate },
+    outboxEvent: { create: vi.fn(async () => ({})) },
   };
   const db = {
     ...client,
@@ -188,7 +214,9 @@ describe('applyAchReturns — failure transition', () => {
     expect(upd.data.failureReason.toLowerCase()).toContain('insufficient');
 
     expect(auditCreate).toHaveBeenCalledTimes(1);
-    const row = auditCreate.mock.calls[0]?.[0] as { data: { action: string; metadataJson: unknown } };
+    const row = auditCreate.mock.calls[0]?.[0] as {
+      data: { action: string; metadataJson: unknown };
+    };
     expect(row.data.action).toBe('payment_run.ach_return_applied');
     const serialized = JSON.stringify(row.data.metadataJson);
     expect(serialized).toContain('R01');
@@ -199,7 +227,17 @@ describe('applyAchReturns — failure transition', () => {
 
 describe('applyAchReturns — advisory (NOC/COR never fails a payout)', () => {
   it('records a COR/NOC entry as advisory without changing status', async () => {
-    const items = [makeItem({ status: 'PAID', invoice: { invoiceNumber: 'INV-US-002' } })];
+    const items = [
+      makeItem({
+        status: 'PAID',
+        invoice: {
+          id: 'inv-2',
+          invoiceNumber: 'INV-US-002',
+          currency: 'USD',
+          paymentStatus: 'PAID',
+        },
+      }),
+    ];
     const { db, update, auditCreate } = makeDb(items);
 
     const result = await applyAchReturns(db, {

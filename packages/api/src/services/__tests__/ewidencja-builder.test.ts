@@ -1,9 +1,9 @@
-// TIME-EMP-03 builder contract: buildEwidencjaSnapshot freezes the KP §149
+// Builder contract: buildEwidencjaSnapshot freezes the KP §149
 // field set (hours + start/end, night, overtime, days-off-with-type, dyżur
 // place, zwolnienia, absences) from Σ EmployeeTimeRecord + leave; supersession
 // is INSERT-only (a new version row + previousSnapshotId back-pointer) so the
-// append-only trigger never conflicts with a supersede. Wave-0: RED until the
-// builder lands. Uses a mock tx — no live DB.
+// append-only trigger never conflicts with a supersede. Uses a mock tx — no
+// live DB.
 
 import { describe, expect, it, vi } from 'vitest';
 

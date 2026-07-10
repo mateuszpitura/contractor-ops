@@ -63,6 +63,7 @@ export function useOrgSwitcher(): UseOrgSwitcherResult {
 
       const sessionMatchesTarget =
         refetched.organization.id === target.organizationId &&
+        refetched.subjectType === 'CONTRACTOR' &&
         refetched.contractor.id === target.contractorId;
 
       if (sessionMatchesTarget) {

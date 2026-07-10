@@ -44,7 +44,7 @@ const { mockPrisma, mockHasPermission, fixtures, mockR2PutObjectAndSignDownload 
       id: string;
       organizationId: string;
       contractorAssignmentId: string;
-      currentBand: 'safe' | 'warning' | 'critical';
+      currentBand: 'SAFE' | 'WARNING' | 'CRITICAL';
       lastBillingShare: number;
       lastScannedAt: Date;
       contractorAssignment?: { contractor?: { countryCode: 'GB' | 'DE' } };
@@ -761,7 +761,7 @@ describe('classificationDashboard.activeAlertsByMarket (60-04-04)', () => {
         id: 'e1',
         organizationId: ORG_A,
         contractorAssignmentId: 'de-a1',
-        currentBand: 'warning',
+        currentBand: 'WARNING',
         lastBillingShare: 0.75,
         lastScannedAt: new Date(),
         contractorAssignment: { contractor: { countryCode: 'DE' } },
@@ -770,7 +770,7 @@ describe('classificationDashboard.activeAlertsByMarket (60-04-04)', () => {
         id: 'e2',
         organizationId: ORG_A,
         contractorAssignmentId: 'de-a2',
-        currentBand: 'critical',
+        currentBand: 'CRITICAL',
         lastBillingShare: 0.9,
         lastScannedAt: new Date(),
         contractorAssignment: { contractor: { countryCode: 'DE' } },
@@ -779,7 +779,7 @@ describe('classificationDashboard.activeAlertsByMarket (60-04-04)', () => {
         id: 'e3',
         organizationId: ORG_A,
         contractorAssignmentId: 'de-a3',
-        currentBand: 'safe',
+        currentBand: 'SAFE',
         lastBillingShare: 0.2,
         lastScannedAt: new Date(),
         contractorAssignment: { contractor: { countryCode: 'DE' } },
@@ -945,7 +945,7 @@ describe('classificationDashboard.globalHeader', () => {
         id: 'e1',
         organizationId: ORG_A,
         contractorAssignmentId: 'a1',
-        currentBand: 'safe',
+        currentBand: 'SAFE',
         lastBillingShare: 0.1,
         lastScannedAt: older,
       },

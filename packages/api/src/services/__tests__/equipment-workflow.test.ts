@@ -38,6 +38,10 @@ vi.mock('@contractor-ops/logger', () => {
   };
 });
 
+vi.mock('../audit-writer', () => ({
+  writeAuditLog: vi.fn(async () => undefined),
+}));
+
 import { checkShipmentTaskCompletion, handleEquipmentTaskStart } from '../equipment-workflow';
 
 const ORG_ID = 'org-eq-001';
@@ -63,6 +67,10 @@ function buildTxMock(
     findMany: vi.fn(async () => allTasksForRecompute),
     updateMany: vi.fn(async () => ({ count: 1 })),
     findUnique: vi.fn(async () => ({ workflowRunId: WF_RUN_ID })),
+    findFirst: vi.fn(async () => ({
+      id: TASK_ID,
+      workflowRun: { id: WF_RUN_ID, status: 'IN_PROGRESS' },
+    })),
   };
 
   const tx = {
@@ -119,7 +127,7 @@ describe('handleEquipmentTaskStart', () => {
 
   it('auto-completes task when contractor has no assigned equipment', async () => {
     const tx = buildTxMock({ assignments: [] });
-    const db = { $transaction: vi.fn(async (fn: (t: typeof tx) => Promise<void>) => fn(tx)) };
+    const db = makeEquipmentDb(tx);
 
     await handleEquipmentTaskStart(
       db as never,
@@ -150,7 +158,7 @@ describe('handleEquipmentTaskStart', () => {
     const tx = buildTxMock({
       assignments: [{ equipment: { id: 'eq-1', name: 'Laptop', status: 'ASSIGNED' } }],
     });
-    const db = { $transaction: vi.fn(async (fn: (t: typeof tx) => Promise<void>) => fn(tx)) };
+    const db = makeEquipmentDb(tx);
 
     await handleEquipmentTaskStart(
       db as never,
@@ -177,7 +185,7 @@ describe('handleEquipmentTaskStart', () => {
     const tx = buildTxMock({
       assignments: [{ equipment: { id: 'eq-2', name: 'Phone', status: 'ASSIGNED' } }],
     });
-    const db = { $transaction: vi.fn(async (fn: (t: typeof tx) => Promise<void>) => fn(tx)) };
+    const db = makeEquipmentDb(tx);
 
     await handleEquipmentTaskStart(
       db as never,
@@ -240,6 +248,10 @@ function buildFullTxMock(
       findMany: vi.fn(async () => allTasksForRecompute),
       updateMany: vi.fn(async () => ({ count: 1 })),
       findUnique: vi.fn(async () => ({ workflowRunId: WF_RUN_ID })),
+      findFirst: vi.fn(async () => ({
+        id: TASK_ID,
+        workflowRun: { id: WF_RUN_ID, status: 'IN_PROGRESS' },
+      })),
     },
     equipment: {
       updateMany: vi.fn(async () => ({ count: assignments.length })),
@@ -269,6 +281,15 @@ function buildFullTxMock(
   };
 }
 
+function makeEquipmentDb(tx: ReturnType<typeof buildFullTxMock>) {
+  return {
+    courierConfig: tx.courierConfig,
+    contractor: tx.contractor,
+    organization: tx.organization,
+    $transaction: vi.fn(async (fn: (t: typeof tx) => Promise<void>) => fn(tx)),
+  };
+}
+
 describe('autoCreateInPostReturnShipment (via handleEquipmentTaskStart)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -280,7 +301,7 @@ describe('autoCreateInPostReturnShipment (via handleEquipmentTaskStart)', () => 
       assignments: [{ equipment: { id: 'eq-1', name: 'Laptop', status: 'ASSIGNED' } }],
       courierConfig: null,
     });
-    const db = { $transaction: vi.fn(async (fn: (t: typeof tx) => Promise<void>) => fn(tx)) };
+    const db = makeEquipmentDb(tx);
 
     await handleEquipmentTaskStart(
       db as never,
@@ -313,7 +334,7 @@ describe('autoCreateInPostReturnShipment (via handleEquipmentTaskStart)', () => 
         preferredPaczkomatAddress: null,
       },
     });
-    const db = { $transaction: vi.fn(async (fn: (t: typeof tx) => Promise<void>) => fn(tx)) };
+    const db = makeEquipmentDb(tx);
 
     await handleEquipmentTaskStart(
       db as never,
@@ -356,7 +377,7 @@ describe('autoCreateInPostReturnShipment (via handleEquipmentTaskStart)', () => 
         preferredPaczkomatAddress: 'ul. Testowa 1, 30-001 Kraków',
       },
     });
-    const db = { $transaction: vi.fn(async (fn: (t: typeof tx) => Promise<void>) => fn(tx)) };
+    const db = makeEquipmentDb(tx);
 
     await handleEquipmentTaskStart(
       db as never,
@@ -423,7 +444,7 @@ describe('autoCreateInPostReturnShipment (via handleEquipmentTaskStart)', () => 
         preferredPaczkomatAddress: 'ul. Testowa 1, 30-001 Kraków',
       },
     });
-    const db = { $transaction: vi.fn(async (fn: (t: typeof tx) => Promise<void>) => fn(tx)) };
+    const db = makeEquipmentDb(tx);
 
     // Should NOT throw — error is caught internally
     await handleEquipmentTaskStart(
@@ -471,7 +492,7 @@ describe('autoCreateInPostReturnShipment (via handleEquipmentTaskStart)', () => 
         preferredPaczkomatAddress: 'ul. Przykładowa 5, 00-001 Warszawa',
       },
     });
-    const db = { $transaction: vi.fn(async (fn: (t: typeof tx) => Promise<void>) => fn(tx)) };
+    const db = makeEquipmentDb(tx);
 
     await handleEquipmentTaskStart(
       db as never,
@@ -552,10 +573,17 @@ describe('checkShipmentTaskCompletion', () => {
           { id: 'b', direction: 'RETURN', currentStatus: 'RETURNED' },
         ]),
       },
+      returnRequest: {
+        updateMany: vi.fn(async () => ({ count: 0 })),
+      },
       workflowTaskRun: {
         updateMany: vi.fn(async () => ({ count: 1 })),
         findUnique: vi.fn(async () => ({ workflowRunId: WF_RUN_ID })),
         findMany: vi.fn(async () => [{ status: 'DONE', required: true }]),
+        findFirst: vi.fn(async () => ({
+          id: TASK_ID,
+          workflowRun: { id: WF_RUN_ID, status: 'IN_PROGRESS' },
+        })),
       },
       workflowRun: { update: vi.fn(async () => ({})) },
     };

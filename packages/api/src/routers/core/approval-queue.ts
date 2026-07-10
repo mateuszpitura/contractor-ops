@@ -21,11 +21,15 @@ import { approvalStatusToPrismaWhere } from '../../services/approval-filters.js'
 import { writeAuditLog } from '../../services/audit-writer';
 import { CacheKeys, invalidateByPrefix } from '../../services/cache';
 import { syncPaymentDueDeadline } from '../../services/calendar-deadline-sync';
+import { enqueuePostApprovalEinvoiceJobs } from '../../services/einvoice-submission-triggers';
 import {
   approvalQueueSqlConditions,
   assertApprovalActionPermission,
+  assertDelegateeEligible,
   dispatchDecisionNotification,
   dispatchNextApproverNotification,
+  enqueueClarificationNotification,
+  enqueueDelegatedApprovalNotification,
   finalizeApprovedInvoice,
   finalizeApprovedLeave,
   plain,
@@ -209,6 +213,10 @@ export const approvalQueueRouter = router({
     .use(requireAnyPermission({ invoice: ['approve'] }, { employee: ['approve_leave'] }))
     .input(approveStepSchema)
     .mutation(async ({ ctx, input }) => {
+      // Timeout headroom: finalizing an approved LEAVE_REQUEST materialises one
+      // EmployeeTimeRecord per leave day (a full-year PARENTAL leave is ~700
+      // round-trips), which exceeds Prisma's default 5s interactive-tx timeout
+      // and would otherwise abort with P2028.
       const result = await ctx.db.$transaction(async tx => {
         const step = await tx.approvalStep.findFirst({
           where: { id: input.stepId, organizationId: ctx.organizationId },
@@ -271,6 +279,8 @@ export const approvalQueueRouter = router({
 
         const advanceResult = await advanceFlow(tx as TxClient, step.approvalFlowId);
 
+        let einvoiceEnqueue: { organizationId: string; invoiceId: string } | null = null;
+
         if (advanceResult.completed) {
           if (step.approvalFlow.resourceType === 'LEAVE_REQUEST') {
             await finalizeApprovedLeave(tx as TxClient, {
@@ -279,13 +289,21 @@ export const approvalQueueRouter = router({
               userId: ctx.user?.id,
             });
           } else {
-            await tx.invoice.update({
+            const inv = await tx.invoice.findUnique({
               where: { id: step.approvalFlow.resourceId },
-              data: {
-                status: 'APPROVED',
-                paymentStatus: 'READY',
-                readyForPaymentAt: new Date(),
-              },
+              select: { paymentStatus: true },
+            });
+            if (!inv || inv.paymentStatus === 'PAID' || inv.paymentStatus === 'IN_RUN') {
+              throw new TRPCError({
+                code: 'CONFLICT',
+                message: E.INVOICE_NOT_SUBMITTABLE,
+              });
+            }
+            einvoiceEnqueue = await finalizeApprovedInvoice(tx as TxClient, {
+              resourceId: step.approvalFlow.resourceId,
+              organizationId: ctx.organizationId,
+              db: ctx.db,
+              userId: ctx.user?.id,
             });
           }
         }
@@ -311,8 +329,15 @@ export const approvalQueueRouter = router({
           select: { id: true, createdByUserId: true, steps: { orderBy: { stepOrder: 'asc' } } },
         });
 
-        return { updatedStep, advanceResult, invoice, flow };
+        return { updatedStep, advanceResult, invoice, flow, einvoiceEnqueue };
       });
+
+      if (result.einvoiceEnqueue) {
+        enqueuePostApprovalEinvoiceJobs(
+          ctx.db as unknown as import('@contractor-ops/db').PrismaClient,
+          result.einvoiceEnqueue,
+        );
+      }
 
       dispatchDecisionNotification(
         ctx.organizationId,
@@ -445,7 +470,11 @@ export const approvalQueueRouter = router({
         } else {
           await tx.invoice.update({
             where: { id: step.approvalFlow.resourceId },
-            data: { status: 'REJECTED' },
+            data: {
+              status: 'REJECTED',
+              paymentStatus: 'NOT_READY',
+              readyForPaymentAt: null,
+            },
           });
         }
 
@@ -480,47 +509,93 @@ export const approvalQueueRouter = router({
     .use(requireAnyPermission({ invoice: ['approve'] }, { employee: ['approve_leave'] }))
     .input(delegateStepSchema)
     .mutation(async ({ ctx, input }) => {
-      const result = await ctx.db.$transaction(async tx => {
-        const step = await tx.approvalStep.findFirst({
-          where: { id: input.stepId, organizationId: ctx.organizationId },
-          include: { approvalFlow: true },
-        });
-        validateStepForAction(step, ctx.user?.id);
-        await assertApprovalActionPermission(ctx, step.approvalFlow.resourceType);
-
-        const delegateMember = await tx.member.findFirst({
-          where: {
-            organizationId: ctx.organizationId,
-            userId: input.delegateToUserId,
-          },
-        });
-
-        if (!delegateMember) {
-          throw new TRPCError({
-            code: 'BAD_REQUEST',
-            message: E.APPROVAL_DELEGATE_NOT_MEMBER,
+      const result = await ctx.db.$transaction(
+        async tx => {
+          const step = await tx.approvalStep.findFirst({
+            where: { id: input.stepId, organizationId: ctx.organizationId },
+            include: { approvalFlow: true },
           });
-        }
+          validateStepForAction(step, ctx.user?.id);
+          await assertApprovalActionPermission(ctx, step.approvalFlow.resourceType);
 
-        await tx.approvalDecision.create({
-          data: {
+          await assertDelegateeEligible(
+            tx as TxClient,
+            ctx.organizationId,
+            input.delegateToUserId,
+            step.approvalFlow.resourceType,
+          );
+
+          await tx.approvalDecision.create({
+            data: {
+              organizationId: ctx.organizationId,
+              approvalStepId: step.id,
+              actorUserId: ctx.user?.id,
+              decision: 'DELEGATE',
+              comment: input.comment ?? null,
+            },
+          });
+
+          const cas = await tx.approvalStep.updateMany({
+            where: {
+              id: step.id,
+              status: 'PENDING',
+              approverUserId: ctx.user?.id,
+            },
+            data: {
+              approverUserId: input.delegateToUserId,
+            },
+          });
+          if (cas.count === 0) {
+            throw new TRPCError({
+              code: 'CONFLICT',
+              message: E.APPROVAL_STEP_ALREADY_DECIDED,
+            });
+          }
+
+          const updatedStep = await tx.approvalStep.findUniqueOrThrow({
+            where: { id: step.id },
+          });
+
+          await writeAuditLog({
+            tx,
             organizationId: ctx.organizationId,
-            approvalStepId: step.id,
-            actorUserId: ctx.user?.id,
-            decision: 'DELEGATE',
-            comment: input.comment ?? null,
-          },
-        });
+            actorType: 'USER',
+            actorId: ctx.user?.id,
+            actorName: ctx.user?.name,
+            action: 'approval.delegate',
+            resourceType: step.approvalFlow.resourceType,
+            resourceId: step.approvalFlow.resourceId,
+            metadata: {
+              stepId: step.id,
+              approvalFlowId: step.approvalFlowId,
+              delegateToUserId: input.delegateToUserId,
+              comment: input.comment ?? null,
+            },
+          });
 
-        const updatedStep = await tx.approvalStep.update({
-          where: { id: step.id },
-          data: {
-            approverUserId: input.delegateToUserId,
-          },
-        });
+          const invoice = await tx.invoice.findUnique({
+            where: { id: step.approvalFlow.resourceId },
+            select: {
+              id: true,
+              invoiceNumber: true,
+              totalMinor: true,
+              currency: true,
+              contractorId: true,
+            },
+          });
 
-        return updatedStep;
-      });
+          await enqueueDelegatedApprovalNotification(tx as TxClient, {
+            organizationId: ctx.organizationId,
+            flowId: step.approvalFlowId,
+            step: updatedStep,
+            invoice,
+            delegatedByName: ctx.user?.name ?? 'approver',
+          });
+
+          return updatedStep;
+        },
+        { timeout: 120_000, maxWait: 10_000 },
+      );
 
       void invalidateByPrefix(CacheKeys.dashboardPrefix(ctx.organizationId));
 
@@ -548,6 +623,42 @@ export const approvalQueueRouter = router({
             comment: input.comment,
           },
         });
+
+        await writeAuditLog({
+          tx,
+          organizationId: ctx.organizationId,
+          actorType: 'USER',
+          actorId: ctx.user?.id,
+          actorName: ctx.user?.name,
+          action: 'approval.request_clarification',
+          resourceType: step.approvalFlow.resourceType,
+          resourceId: step.approvalFlow.resourceId,
+          metadata: {
+            stepId: step.id,
+            approvalFlowId: step.approvalFlowId,
+            comment: input.comment,
+          },
+        });
+
+        const flow = await tx.approvalFlow.findUnique({
+          where: { id: step.approvalFlowId },
+          select: { createdByUserId: true },
+        });
+
+        const invoice = await tx.invoice.findUnique({
+          where: { id: step.approvalFlow.resourceId },
+          select: { id: true, invoiceNumber: true },
+        });
+
+        if (flow?.createdByUserId) {
+          await enqueueClarificationNotification(tx as TxClient, {
+            organizationId: ctx.organizationId,
+            submitterUserId: flow.createdByUserId,
+            invoice,
+            approverName: ctx.user?.name ?? 'approver',
+            comment: input.comment,
+          });
+        }
 
         return step;
       });
@@ -586,7 +697,27 @@ export const approvalQueueRouter = router({
           },
         });
 
+        await writeAuditLog({
+          tx,
+          organizationId: ctx.organizationId,
+          actorType: 'USER',
+          actorId: ctx.user?.id,
+          actorName: ctx.user?.name,
+          action: 'approval.approve',
+          resourceType: step.approvalFlow.resourceType,
+          resourceId: step.approvalFlow.resourceId,
+          oldValues: { status: 'PENDING' },
+          newValues: { status: 'APPROVED' },
+          metadata: {
+            stepId: step.id,
+            approvalFlowId: step.approvalFlowId,
+            bulk: true,
+          },
+        });
+
         const advanceResult = await advanceFlow(tx, step.approvalFlowId);
+
+        let einvoiceEnqueue: { organizationId: string; invoiceId: string } | undefined;
 
         if (advanceResult.completed) {
           if (step.approvalFlow.resourceType === 'LEAVE_REQUEST') {
@@ -596,14 +727,27 @@ export const approvalQueueRouter = router({
               userId: ctx.user?.id,
             });
           } else {
-            await finalizeApprovedInvoice(tx, {
+            const inv = await tx.invoice.findUnique({
+              where: { id: step.approvalFlow.resourceId },
+              select: { paymentStatus: true },
+            });
+            if (!inv || inv.paymentStatus === 'PAID' || inv.paymentStatus === 'IN_RUN') {
+              throw new TRPCError({
+                code: 'CONFLICT',
+                message: E.INVOICE_NOT_SUBMITTABLE,
+              });
+            }
+            const enqueueTarget = await finalizeApprovedInvoice(tx, {
               resourceId: step.approvalFlow.resourceId,
               organizationId: ctx.organizationId,
               db: ctx.db,
               userId: ctx.user?.id,
             });
+            einvoiceEnqueue = enqueueTarget ?? undefined;
           }
         }
+
+        return { einvoiceEnqueue };
       }),
     ),
 
@@ -640,6 +784,25 @@ export const approvalQueueRouter = router({
           },
         });
 
+        await writeAuditLog({
+          tx,
+          organizationId: ctx.organizationId,
+          actorType: 'USER',
+          actorId: ctx.user?.id,
+          actorName: ctx.user?.name,
+          action: 'approval.reject',
+          resourceType: step.approvalFlow.resourceType,
+          resourceId: step.approvalFlow.resourceId,
+          oldValues: { status: 'PENDING' },
+          newValues: { status: 'REJECTED' },
+          metadata: {
+            stepId: step.id,
+            approvalFlowId: step.approvalFlowId,
+            comment: input.comment,
+            bulk: true,
+          },
+        });
+
         await tx.approvalFlow.update({
           where: { id: step.approvalFlowId },
           data: {
@@ -656,7 +819,11 @@ export const approvalQueueRouter = router({
         } else {
           await tx.invoice.update({
             where: { id: step.approvalFlow.resourceId },
-            data: { status: 'REJECTED' },
+            data: {
+              status: 'REJECTED',
+              paymentStatus: 'NOT_READY',
+              readyForPaymentAt: null,
+            },
           });
         }
       }),

@@ -149,6 +149,8 @@ export type MarkAllPaid = z.infer<typeof markAllPaidSchema>;
  */
 export const bankStatementConfirmSchema = z.object({
   runId: z.cuid(),
+  fileContent: z.string().max(5_000_000, 'Statement file too large (max ~5MB)'),
+  fileName: z.string(),
   matches: z.array(
     z.object({
       itemId: z.cuid(),

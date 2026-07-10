@@ -60,7 +60,7 @@ describe('ksefParsedInvoiceSchema', () => {
     expect(r.success).toBe(true);
   });
 
-  it('rejects short or non-numeric NIP', () => {
+  it('rejects short or non-numeric SELLER NIP', () => {
     const shortNip = ksefParsedInvoiceSchema.safeParse({
       invoiceNumber: 'FV/1/2026',
       issueDate: '2026-04-01',
@@ -74,18 +74,46 @@ describe('ksefParsedInvoiceSchema', () => {
     });
     expect(shortNip.success).toBe(false);
 
-    const nonNumeric = ksefParsedInvoiceSchema.safeParse({
+    const nonNumericSeller = ksefParsedInvoiceSchema.safeParse({
+      invoiceNumber: 'FV/1/2026',
+      issueDate: '2026-04-01',
+      invoiceType: 'VAT',
+      currency: 'PLN',
+      seller: { nip: '12345abcde', name: 'Seller' },
+      buyer: { nip: '1234563218', name: 'Buyer' },
+      lines: [{ lineNumber: 1, description: 'Svc' }],
+      totals: { netMinor: 10000, vatMinor: 2300, grossMinor: 12300 },
+      ksefReferenceNumber: 'ref-1',
+    });
+    expect(nonNumericSeller.success).toBe(false);
+  });
+
+  it('accepts non-PL buyer identifiers and missing buyer NIP (B2C / foreign)', () => {
+    const foreignBuyer = ksefParsedInvoiceSchema.safeParse({
       invoiceNumber: 'FV/1/2026',
       issueDate: '2026-04-01',
       invoiceType: 'VAT',
       currency: 'PLN',
       seller: { nip: '5261040828', name: 'Seller' },
-      buyer: { nip: '12345abcde', name: 'Buyer' },
+      buyer: { nip: 'DE123456789', name: 'Buyer GmbH' },
       lines: [{ lineNumber: 1, description: 'Svc' }],
       totals: { netMinor: 10000, vatMinor: 2300, grossMinor: 12300 },
       ksefReferenceNumber: 'ref-1',
     });
-    expect(nonNumeric.success).toBe(false);
+    expect(foreignBuyer.success).toBe(true);
+
+    const b2cBuyer = ksefParsedInvoiceSchema.safeParse({
+      invoiceNumber: 'FV/2/2026',
+      issueDate: '2026-04-01',
+      invoiceType: 'VAT',
+      currency: 'PLN',
+      seller: { nip: '5261040828', name: 'Seller' },
+      buyer: { name: 'Jan Kowalski' },
+      lines: [{ lineNumber: 1, description: 'Svc' }],
+      totals: { netMinor: 10000, vatMinor: 2300, grossMinor: 12300 },
+      ksefReferenceNumber: 'ref-2',
+    });
+    expect(b2cBuyer.success).toBe(true);
   });
 
   it('rejects empty lines array', () => {

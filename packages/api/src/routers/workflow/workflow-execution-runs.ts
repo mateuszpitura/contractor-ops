@@ -21,6 +21,7 @@ import { CacheKeys, invalidateByPrefix } from '../../services/cache';
 import { handleEquipmentTaskStart } from '../../services/equipment-workflow';
 import type { OutboxTransactionalClient } from '../../services/outbox';
 import { enqueueNotificationOutboxEvent } from '../../services/outbox';
+import { instantiateRoleKtTaskRuns } from '../../services/workflow-role-kt-instantiation';
 import type { TxClient } from './workflow-execution-shared';
 import {
   buildIntegrationEligibility,
@@ -171,6 +172,15 @@ export async function startWorkflowRun(
     contract,
     now,
   );
+
+  if (input.subjectType === 'CONTRACTOR' && input.roleTemplateId) {
+    await instantiateRoleKtTaskRuns(tx as import('../../services/approval-engine').TxClient, {
+      organizationId,
+      workflowRunId: workflowRun.id,
+      roleTemplateId: input.roleTemplateId,
+      startedAt: now,
+    });
+  }
 
   // Compute initial progress
   const allTasks = await tx.workflowTaskRun.findMany({
@@ -513,7 +523,7 @@ export const workflowExecutionRunsRouter = router({
    * `workflow.completed_with_pending_credentials` audit row.
    */
   forceCompleteRunWithPendingCredentials: tenantProcedure
-    .use(requirePermission({ workflow: ['execute'] }))
+    .use(requirePermission({ workflow: ['override_blocking_task'] }))
     .input(
       z.object({
         workflowRunId: z.string().min(1),
@@ -580,6 +590,22 @@ export const workflowExecutionRunsRouter = router({
             status: 'PENDING',
           },
         });
+
+        const openTasks = await tx.workflowTaskRun.findMany({
+          where: {
+            workflowRunId: input.workflowRunId,
+            organizationId: ctx.organizationId,
+            status: { in: ['TODO', 'IN_PROGRESS', 'BLOCKED'] },
+          },
+          select: { id: true, taskType: true },
+        });
+        if (openTasks.length > 0) {
+          throw new TRPCError({
+            code: 'PRECONDITION_FAILED',
+            message: E.WORKFLOW_RUN_HAS_OPEN_TASKS,
+            cause: { openTaskIds: openTasks.map(t => t.id) } as never,
+          });
+        }
 
         const now = new Date();
         await tx.workflowRun.update({

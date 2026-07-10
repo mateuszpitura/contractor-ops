@@ -25,6 +25,7 @@ Agents default to **surgical delegation** (locate → fix → review) instead of
 
 | Task | Subagent |
 |------|----------|
+| Domain feature / fix / multi-layer logic | **`business-logic-shield`** first — see [[business-logic-shield]] |
 | Locate symbol / callers | `cavecrew-investigator` (default); `explore` for prose |
 | Fix ≤2 files | `cavecrew-builder` or main `Edit` after `Read` |
 | Review diff/PR | `cavecrew-reviewer`; `bugbot` / `security-review` on request |

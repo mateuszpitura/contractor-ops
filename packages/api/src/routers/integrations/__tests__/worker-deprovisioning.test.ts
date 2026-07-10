@@ -1,21 +1,14 @@
-// Worker-keyed IdP deprovisioning trigger — Wave-0 RED scaffold (EMP-OFF-02).
+// Worker-keyed IdP deprovisioning trigger.
 //
-// Pins the contract Plan 04 turns GREEN: `startDeprovisioningRun` accepts an
+// Pins the contract: `startDeprovisioningRun` accepts an
 // `{ subjectType: 'EMPLOYEE', workerId }` subject, reads the dated termination
 // signal from `EmployeeProfile.terminatedAt` (+ countryCode + Worker.email),
 // reuses the pure `canStartDeprovisioning` cooldown gate, blocks pre-cooldown
 // with FORBIDDEN, and on allow writes a `DeprovisioningRun{ workerId,
-// contractorId: null, assignmentId: null }`. `COUNTRY_TZ` gains a US entry.
-//
-// Terminal-RED today: the input schema still mandates `assignmentId` (no
-// `subjectType`/`workerId`), the worker branch does not exist, and `COUNTRY_TZ`
-// is neither exported nor carries US — so the employee calls reject via Zod and
-// the run is never created. That is the expected Wave-0 state.
+// contractorId: null, assignmentId: null }`. `COUNTRY_TZ` carries a US entry.
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-// COUNTRY_TZ is not exported yet — this import resolves to `undefined` until
-// Plan 04 exports it and adds the US entry (asserted below).
 import { COUNTRY_TZ } from '../deprovisioning';
 
 const ORG_A = 'clorgaaaaaaaaaaaaaaaaaaaaaa';

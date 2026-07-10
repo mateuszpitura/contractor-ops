@@ -104,12 +104,22 @@ describe('markAllPaidSchema', () => {
 });
 
 describe('bankStatementConfirmSchema', () => {
-  it('accepts matches array', () => {
+  it('accepts matches array with the statement file for server-side re-match', () => {
+    const r = bankStatementConfirmSchema.safeParse({
+      runId: cuidLike,
+      fileContent: 'MT940 statement body',
+      fileName: 'statement.sta',
+      matches: [{ itemId: cuidLike, transactionIndex: 0 }],
+    });
+    expect(r.success).toBe(true);
+  });
+
+  it('rejects confirm without the statement file (client-trusted matches)', () => {
     const r = bankStatementConfirmSchema.safeParse({
       runId: cuidLike,
       matches: [{ itemId: cuidLike, transactionIndex: 0 }],
     });
-    expect(r.success).toBe(true);
+    expect(r.success).toBe(false);
   });
 });
 

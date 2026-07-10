@@ -433,7 +433,7 @@ describe('createApprovalFlow', () => {
       chainConfig: {
         id: 'chain-1',
         stepsJson: [
-          { name: 'Finance Review', approverRole: 'finance_admin', slaHours: 24, required: true },
+          { name: 'Finance Review', approverRole: 'FINANCE_ADMIN', slaHours: 24, required: true },
         ],
       },
       createdByUserId: 'creator',
@@ -446,7 +446,7 @@ describe('createApprovalFlow', () => {
     // Verify the resolved userId ends up in the step data
     const steps = captureCreateData(mockTx).steps.create;
     expect(steps[0].approverUserId).toBe('resolved-finance-user');
-    expect(steps[0].approverRole).toBe('finance_admin');
+    expect(steps[0].approverRole).toBe('FINANCE_ADMIN');
   });
 
   it('throws PRECONDITION_FAILED when member.findFirst returns null for a role', async () => {
@@ -705,5 +705,18 @@ describe('computeSlaStatus', () => {
 
     expect(result).not.toBeNull();
     expect(result?.label).toBe('OVERDUE 5h');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// memberRoleToUserRole — unmocked enum mapping (chain config → Prisma UserRole)
+// ---------------------------------------------------------------------------
+
+describe('memberRoleToUserRole integration', () => {
+  it('maps member-role strings to Prisma UserRole enum values', async () => {
+    const { memberRoleToUserRole } = await import('@contractor-ops/auth/role-normalization');
+    expect(memberRoleToUserRole('team_manager')).toBe('TEAM_MANAGER');
+    expect(memberRoleToUserRole('legal_compliance_viewer')).toBe('LEGAL_COMPLIANCE_VIEWER');
+    expect(memberRoleToUserRole('TEAM_MANAGER')).toBe('TEAM_MANAGER');
   });
 });

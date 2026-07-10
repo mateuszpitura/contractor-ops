@@ -13,6 +13,7 @@
 import { z } from 'zod';
 import { isValidSvNummer } from './de-validators.js';
 import {
+  kirchensteuerCodeSchema,
   lohnsteuerklasseSchema,
   nfzOddzialSchema,
   studentLoanPlanSchema,
@@ -75,7 +76,7 @@ export type PlEmployeeCountryFields = z.infer<typeof plEmployeeCountryFieldsSche
 export const deEmployeeCountryFieldsSchema = z
   .object({
     lohnsteuerklasse: lohnsteuerklasseSchema.optional(),
-    kirchensteuer: z.boolean().optional(),
+    kirchensteuer: kirchensteuerCodeSchema.optional(),
     steuerIdNr: z
       .string()
       .refine(v => !v || isValidSteuerIdNr(v), 'Invalid Steuer-IdNr checksum')

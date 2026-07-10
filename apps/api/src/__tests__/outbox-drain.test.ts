@@ -46,13 +46,27 @@ vi.mock('@contractor-ops/api/services/cron-monitor', () => ({
   getQueueDepthSnapshot: vi.fn(async () => []),
 }));
 
-vi.mock('@contractor-ops/db', () => ({
-  prisma: {},
-  prismaRaw: {
+vi.mock('@contractor-ops/db', () => {
+  const mockClient = {
     $queryRawUnsafe: (...a: unknown[]) =>
       (mockQueryRawUnsafe as (...a: unknown[]) => unknown)(...a),
-  },
-}));
+  };
+  return {
+    prisma: {},
+    prismaRaw: mockClient,
+    // Regional helpers delegate to the same mocked client so the drain
+    // route's per-region pending-count fan-out actually executes.
+    getRegionalClient: () => mockClient,
+    tryGetRegionalClient: () => mockClient,
+    SUPPORTED_REGIONS: ['EU'],
+    findAcrossRegions: async (
+      finder: (client: unknown, region: string) => Promise<unknown>,
+    ): Promise<{ result: unknown; region: string; client: unknown } | null> => {
+      const result = await finder(mockClient, 'EU');
+      return result == null ? null : { result, region: 'EU', client: mockClient };
+    },
+  };
+});
 
 import { __resetEnvForTests } from '../env.js';
 import { buildServer } from '../server.js';

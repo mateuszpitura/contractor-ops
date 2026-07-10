@@ -1,6 +1,6 @@
 /**
- * RED security net — INTEG-WEBHOOK-04 / INTEG-WEBHOOK-05 (HMAC signature + replay window).
- * Turned GREEN by 100-03 (`services/webhooks/signer.ts` + the sample verifiers).
+ * HMAC signature + replay-window security net
+ * (`services/webhooks/signer.ts` + the sample verifiers).
  *
  * Every delivery carries `X-CO-Signature: t={unix_ms},v1={hex}` where
  * `v1 = HMAC_SHA256(secret, "{t}.{rawBody}")`. A subscriber verifies with its

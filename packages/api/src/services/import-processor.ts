@@ -5,10 +5,10 @@
  * Supports contractor and contract entity types.
  */
 
-import { prisma } from '@contractor-ops/db';
 import * as E from '../errors';
 import { parseSpreadsheetBuffer } from '../lib/excel-parse';
 import { isValidContractorTaxId, normalizeContractorTaxId } from './contractor-tax-id';
+import type { DbClient } from './types';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -278,6 +278,7 @@ export async function processImportFile(
   entityType: 'contractor' | 'contract',
   organizationId: string,
   columnMapping: Record<string, string | null>,
+  db: DbClient,
 ): Promise<ImportResult> {
   const rawRows = await parseImportFile(buffer);
   const mappedRows = applyColumnMapping(rawRows, columnMapping);
@@ -287,9 +288,9 @@ export async function processImportFile(
 
   // Post-validation: duplicate detection / FK resolution
   if (entityType === 'contractor') {
-    await detectContractorDuplicates(validRows, duplicateRows, organizationId);
+    await detectContractorDuplicates(validRows, duplicateRows, organizationId, db);
   } else {
-    await resolveContractorForeignKeys(validRows, invalidRows, organizationId);
+    await resolveContractorForeignKeys(validRows, invalidRows, organizationId, db);
   }
 
   return {
@@ -360,6 +361,7 @@ async function detectContractorDuplicates(
   validRows: ImportRow[],
   duplicateRows: ImportRow[],
   organizationId: string,
+  db: DbClient,
 ): Promise<void> {
   const taxIds = validRows
     .map(r =>
@@ -368,7 +370,7 @@ async function detectContractorDuplicates(
     .filter((taxId): taxId is string => Boolean(taxId));
   if (taxIds.length === 0) return;
 
-  const existing = await prisma.contractor.findMany({
+  const existing = await db.contractor.findMany({
     where: { organizationId, taxId: { in: taxIds }, deletedAt: null },
     select: { id: true, taxId: true },
   });
@@ -402,6 +404,7 @@ async function resolveContractorForeignKeys(
   validRows: ImportRow[],
   invalidRows: ImportRow[],
   organizationId: string,
+  db: DbClient,
 ): Promise<void> {
   const taxIds = validRows
     .map(r =>
@@ -413,7 +416,7 @@ async function resolveContractorForeignKeys(
     .filter((taxId): taxId is string => Boolean(taxId));
   if (taxIds.length === 0) return;
 
-  const contractors = await prisma.contractor.findMany({
+  const contractors = await db.contractor.findMany({
     where: { organizationId, taxId: { in: taxIds }, deletedAt: null },
     select: { id: true, taxId: true },
   });

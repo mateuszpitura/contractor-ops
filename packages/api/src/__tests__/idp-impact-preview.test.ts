@@ -15,12 +15,11 @@ const { cached, invalidate, describeImpactGws, describeImpactSlack, resolveDepro
     })),
   }));
 
-vi.mock('../services/cache', () => ({
-  CacheKeys: { idpPreview: (o: string, p: string, u: string) => `${o}:idp:preview:${p}:${u}` },
-  CacheTTL: { IDP_PREVIEW: 300 },
-  cached,
-  invalidate,
-}));
+vi.mock('../services/cache', async importOriginal => {
+  const actual = await importOriginal<typeof import('../services/cache')>();
+  const { createPassthroughCacheMock } = await import('../__tests__/__mocks__/cache-service');
+  return createPassthroughCacheMock(actual, { cached, invalidate });
+});
 vi.mock('../services/idp-token-resolver', () => ({ resolveDeprovisionToken }));
 vi.mock('@contractor-ops/integrations', async () => {
   const actual = await vi.importActual<typeof import('@contractor-ops/integrations')>(
@@ -50,6 +49,7 @@ vi.mock('@contractor-ops/integrations/adapters/slack-adapter', () => ({
   },
 }));
 
+import { CacheKeys } from '../services/cache';
 import { getImpactPreview } from '../services/idp-impact-preview';
 
 const baseArgs = {
@@ -76,7 +76,9 @@ describe('getImpactPreview (Phase 77 D-02/D-03)', () => {
   it('forceRefresh invalidates the cache key first', async () => {
     cached.mockResolvedValueOnce({ provider: 'GOOGLE_WORKSPACE' });
     await getImpactPreview({ ...baseArgs, forceRefresh: true });
-    expect(invalidate).toHaveBeenCalledWith('org-1:idp:preview:GOOGLE_WORKSPACE:u@example.com');
+    expect(invalidate).toHaveBeenCalledWith(
+      CacheKeys.idpPreview('org-1', 'GOOGLE_WORKSPACE', 'u@example.com'),
+    );
   });
 
   it('reconnect_required when no connection token resolves', async () => {

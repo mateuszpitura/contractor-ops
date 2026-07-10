@@ -2,6 +2,7 @@ import { authApi } from '@contractor-ops/auth';
 import type { Prisma } from '@contractor-ops/db/generated/prisma/client';
 import {
   getServerEnv,
+  orgBankInfoSchema,
   orgExpiryReminderDefaultsSchema,
   updateOrganizationSettingsSchema,
 } from '@contractor-ops/validators';
@@ -246,6 +247,84 @@ export const settingsRouter = router({
           return {
             invoiceDeviationThresholdPercent: input.invoiceDeviationThresholdPercent,
           };
+        },
+      );
+    }),
+
+  /**
+   * Get organization debtor bank details for SEPA/SWIFT exports.
+   */
+  getOrgBankAccount: tenantProcedure
+    .use(requirePermission({ settings: ['read'] }))
+    .query(async ({ ctx }) => {
+      return cached(
+        CacheKeys.orgSettingsJson(ctx.organizationId, 'bank'),
+        CacheTTL.ORG_SETTINGS_JSON,
+        async () => {
+          const org = await ctx.db.organization.findUnique({
+            where: { id: ctx.organizationId },
+            select: { settingsJson: true },
+          });
+
+          const settings = (org?.settingsJson as Record<string, unknown>) ?? {};
+          const parsed = orgBankInfoSchema.safeParse(settings.bankAccount ?? {});
+          return parsed.success ? parsed.data : { iban: undefined, bic: undefined };
+        },
+      );
+    }),
+
+  /**
+   * Update organization debtor IBAN/BIC used as the SEPA debtor account.
+   */
+  updateOrgBankAccount: tenantProcedure
+    .use(requirePermission({ settings: ['update'] }))
+    .input(orgBankInfoSchema)
+    .mutation(async ({ ctx, input }) => {
+      const org = await ctx.db.organization.findUnique({
+        where: { id: ctx.organizationId },
+        select: { settingsJson: true },
+      });
+
+      const currentSettings = (org?.settingsJson as Record<string, unknown>) ?? {};
+      const previousBank =
+        (currentSettings.bankAccount as Record<string, unknown> | undefined) ?? {};
+
+      const newSettings: Record<string, unknown> = {
+        ...currentSettings,
+        bankAccount: {
+          ...previousBank,
+          ...(input.iban === undefined ? {} : { iban: input.iban }),
+          ...(input.bic === undefined ? {} : { bic: input.bic }),
+        },
+      };
+
+      // Record only the NAMES of the fields that changed — never the IBAN/BIC
+      // values themselves. Audit rows are not encrypted at rest, so persisting
+      // the plaintext debtor IBAN there would re-leak it outside the org's
+      // settings blob.
+      const fieldsUpdated = [
+        ...(input.iban === undefined ? [] : ['iban']),
+        ...(input.bic === undefined ? [] : ['bic']),
+      ];
+
+      return auditedMutation(
+        auditMutationCtx(ctx),
+        {
+          action: 'SETTINGS_ORG_BANK_ACCOUNT_UPDATE',
+          resourceType: 'ORGANIZATION',
+          resourceId: ctx.organizationId,
+          metadata: { fieldsUpdated },
+        },
+        async tx => {
+          await tx.organization.update({
+            where: { id: ctx.organizationId },
+            data: {
+              settingsJson: newSettings as Prisma.InputJsonValue,
+            },
+          });
+          void invalidateByPrefix(CacheKeys.settingsPrefix(ctx.organizationId));
+          const parsed = orgBankInfoSchema.safeParse(newSettings.bankAccount);
+          return parsed.success ? parsed.data : { iban: undefined, bic: undefined };
         },
       );
     }),

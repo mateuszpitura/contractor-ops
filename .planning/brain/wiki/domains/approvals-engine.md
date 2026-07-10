@@ -2,12 +2,13 @@
 title: Approvals engine
 type: domain
 tags: [approvals, workflow]
-source_commit: b618a39e5
+source_commit: e0d533fa
 verify_with:
   - packages/api/src/services/approval-engine.ts
   - packages/api/src/routers/core/approval-queue.ts
+  - packages/api/src/routers/core/approval-shared.ts
   - apps/cron-worker/src/jobs/handlers/reminders/approval-sla.ts
-updated: 2026-07-05
+updated: 2026-07-10
 ---
 
 # Approvals engine
@@ -43,10 +44,12 @@ flowchart TD
 - APPROVAL_REQUEST notification (`approval-submit.ts` submitForApproval) is enqueued through the outbox INSIDE the submit tx (`enqueueNotificationOutboxEvent`, dedupKey `approval-request:<stepId>`) so it commits atomically with the flow + the invoice `APPROVAL_PENDING` flip — exactly-once. See [[notifications-and-reminders]]
 - `submitForApproval` enqueues the first approver's `APPROVAL_REQUEST` into the transactional outbox **inside** the flow-creation tx (`enqueueNotificationDispatch({ tx })`, dedupKey `APPROVAL_REQUEST:${flowId}`) — delivered iff the flow commits, then exactly-once by the drain. Replaces the old post-commit fire-and-forget `dispatch(...)`. See [[patterns/transactional-outbox]].
 - Teams/Slack cards via integration framework
-- `approve` / `reject` each write a same-tx `writeAuditLog` row (`approval.approve` / `approval.reject`) keyed to the flow's `resourceType` / `resourceId` — see [[patterns/audit-log]]
+- `approve` / `reject` / `delegate` / `requestClarification` each write a same-tx `writeAuditLog` row keyed to the flow's `resourceType` / `resourceId` — see [[patterns/audit-log]]
+- **`bulkApprove` / `bulkReject`:** same-tx audit per step (`bulk: true` metadata) and **sequential** step processing (one `$transaction` at a time) so `advanceFlow` on the same flow never races.
 - **The engine is resource-agnostic — reuse it, never fork it.** A new approvable (Phase 92 `LEAVE_REQUEST`) plugs in at exactly two seams: a domain **route** helper (`routeToLeaveChain` in `approval-engine.ts`) + `createApprovalFlow({ resourceType })` at submit, and the **shared** `approve`/`reject`/bulk procedures at finalize. Those procedures are resourceType-gated (`requireAnyPermission({invoice:['approve']},{employee:['approve_leave']})` + a body `resourceType→permission` assertion), so a `leave_approver` actions a `LEAVE_REQUEST` via `employee:approve_leave` and never gains `invoice:approve` (the BFLA fence). Do NOT build a parallel leave approval flow. See [[leave-and-time]]
 - Deciding a step is compare-and-swap, not read-then-write: the state transition uses a guarded `updateMany({ where: { id, status: 'PENDING', approverUserId }, data })` and only proceeds (decision row, flow advancement, finalize) when `count === 1`. A `count === 0` loser throws `CONFLICT` (`approvalStepAlreadyDecided`). This closes the TOCTOU window where two racers (e.g. approve + reject) both read `PENDING` and both act. The `findFirst` + `validateStepForAction` read stays only for early 404/403/permission checks — the CAS is the real gate. `bulkApprove` / `bulkReject` carry the same guard per step (a lost race counts as a failed step in the aggregate result).
 - A stalled approval is escalated by cron, not left silent. `computeSlaStatus` only renders "overdue" in the queue UI; the breach action is `detectOverdueApprovals` (`apps/cron-worker/.../reminders/approval-sla.ts`), a reminders sub-job that finds PENDING `ApprovalStep` rows past `slaDeadline`, nudges the assigned approver (`APPROVAL_REQUEST`, entity `APPROVAL_FLOW`/step id, 24h dedup via the Notification table), and after N daily breaches escalates **once** (guarded by `claimCronNotificationDedup`) to the next `NOT_STARTED` chain step's approver. It deliberately does NOT mutate flow state (step status / `currentStepOrder`) — activating steps and advancing the flow stays owned by the engine so the cron never races the approve/reject CAS.
+- The compliance-held section (`apps/web-vite/src/components/approvals/compliance-held-section.tsx`) renders an inline `QueryErrorPanel` on query error instead of silently unmounting, and resume-mutation errors auto-translate — no static `errorMessage` override masking coded errors.
 
 ## Related
 

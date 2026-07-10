@@ -247,7 +247,8 @@
           "revokeItAccess": "إبطال وصول تكنولوجيا المعلومات",
           "returnEquipment": "إرجاع المعدّات",
           "financeWrapUp": "إنهاء الأمور المالية",
-          "finalDocumentation": "التوثيق النهائي"
+          "finalDocumentation": "التوثيق النهائي",
+          "ipVerification": "التحقق من نقل الملكية الفكرية"
         }
       }
     }
@@ -338,6 +339,32 @@
       "notePlaceholder": "إضافة a note...",
       "confirm": "تفويض الموافقة",
       "dismiss": "الإبقاء على الإسناد"
+    },
+    "complianceHold": {
+      "sectionTitle": "تعليقات الامتثال",
+      "sectionDescription": "اجتازت هذه الفواتير جميع خطوات الموافقة لكنها محجوبة حتى استيفاء مستندات الامتثال.",
+      "statusBadge": "PENDING_COMPLIANCE",
+      "unknownInvoice": "فاتورة غير معروفة",
+      "unknownContractor": "مقاول غير معروف",
+      "heldSince": "محجوبة منذ {date}",
+      "heldUnknown": "تاريخ التعليق غير معروف",
+      "holdingItems": "{count, plural, one {بند حظر واحد (#)} other {# بنود حظر}}",
+      "resumeAction": "استئناف الموافقة",
+      "resumeDialog": {
+        "title": "استئناف الموافقة من تعليق الامتثال",
+        "description": "أكد استيفاء الامتثال وأعد الفاتورة إلى قائمة انتظار الموافقة. السبب مطلوب لسجل التدقيق.",
+        "reasonPlaceholder": "مثال: تمت الموافقة على مستند RTW وتحديث تاريخ الانتهاء",
+        "cancel": "إلغاء",
+        "confirm": "استئناف الموافقة"
+      },
+      "toast": {
+        "resumed": "تم استئناف الموافقة من تعليق الامتثال",
+        "resumeFailed": "تعذر استئناف الموافقة. تحقق من حالة الامتثال وحاول مرة أخرى."
+      },
+      "error": {
+        "message": "تعذر تحميل تعليقات الامتثال. تحقق من اتصالك وحاول مرة أخرى.",
+        "retry": "إعادة المحاولة"
+      }
     },
     "toast": {
       "approved": "تم اعتماد الفاتورة",
@@ -1841,6 +1868,10 @@
       "currentlySaved": "المحفوظ حاليًا: {value}"
     },
     "countryCompliance": {
+      "error": {
+        "message": "تعذر تحميل إعدادات الامتثال الوطني. تحقق من اتصالك وحاول مرة أخرى.",
+        "retry": "إعادة المحاولة"
+      },
       "cardTitle": "الامتثال للمتطلبات الوطنية — {country}",
       "incompleteFields": "{count} غير مكتمل",
       "vatValidationLabel": "التحقق من ضريبة القيمة المضافة",
@@ -3460,6 +3491,7 @@
     "unknownError": "حدث خطأ غير متوقّع. يرجى المحاولة مجددًا.",
     "generic": "حدث خطأ ما. يرجى المحاولة مجددًا.",
     "contractorNotFound": "Contractor غير موجود.",
+    "contractorCountryMismatch": "يجب أن تطابق حقول البلد بلد المتعاقد.",
     "gulfAssignmentNotFound": "التعيين غير موجود.",
     "contractorHasUnpaidInvoices": "لا يمكن أرشفة مقاول لديه فواتير غير مدفوعة. سوِّ جميع المدفوعات المعلّقة أولًا.",
     "contractorHasActiveWorkflows": "لا يمكن أرشفة مقاول لديه Workflows نشطة. أكمل أو ألغِ Workflows أولًا.",
@@ -3522,6 +3554,7 @@
     "portalBillingProfileNotFound": "لم يُعثر على ملف الفوترة الافتراضي للمقاول.",
     "employeePortalDisabled": "بوابة الموظفين غير مُفعّلة لمؤسستك.",
     "portalNotAManager": "هذا القسم متاح فقط للمديرين الذين لديهم موظفون يتبعون لهم مباشرةً.",
+    "portalNotADirectReport": "هذا الموظف ليس من ضمن مرؤوسيك المباشرين.",
     "workerNotFound": "لم يُعثر على العامل.",
     "integrationNotFound": "Integration غير موجود.",
     "integrationNotConnected": "التكامل غير متصل.",
@@ -3656,6 +3689,19 @@
     "ir35OrderedIdsMustListAll": "يجب أن يسرد orderedIds كل مشارك مرة واحدة بالضبط.",
     "ir35ParticipantNotFound": "لم يتم العثور على المشارك.",
     "ir35ClientWorkerCannotBeRemoved": "صفوف CLIENT و WORKER تُملأ تلقائيًا ولا يمكن إزالتها.",
+    "ir35AttestationAlreadyExists": "الإقرار موجود بالفعل.",
+    "magicLinkRateLimitExceeded": "عدد كبير جدًا من طلبات رابط تسجيل الدخول. يُرجى الانتظار بضع دقائق والمحاولة مرة أخرى.",
+    "magicLinkRateLimiterUnavailable": "تسجيل الدخول غير متاح مؤقتًا. يُرجى المحاولة مرة أخرى بعد قليل.",
+    "portalRateLimitExceeded": "عدد كبير جدًا من الطلبات. يُرجى الانتظار لحظة والمحاولة مرة أخرى.",
+    "portalRateLimiterUnavailable": "هذا الإجراء غير متاح مؤقتًا. يُرجى المحاولة مرة أخرى بعد قليل.",
+    "documentScanPending": "لا يزال المستند قيد الفحص من الفيروسات. حاول بعد قليل.",
+    "lateInterestWaiverNotFound": "لم يتم العثور على إعفاء نشط.",
+    "payrollFeedEmpty": "لا يوجد موظفون مطابقون لتصدير الرواتب هذا.",
+    "payrollFeedMissingEmployees": "تعذر العثور على بعض الموظفين المحددين لتصدير الرواتب هذا.",
+    "payrollFeedCrossMarket": "تم استبعاد بعض الموظفين المحددين لأنهم ينتمون إلى سوق مختلف.",
+    "payrollFeedWrongMarket": "الموظفون المحددون لا يتطابقون مع سوق وجهة تصدير الرواتب هذه.",
+    "whtCertificateNumberConflict": "تعذر تخصيص رقم فريد لشهادة الاستقطاع الضريبي. أعد المحاولة.",
+    "whtCertificateIssueFailed": "تعذر إصدار شهادة الاستقطاع الضريبي. أعد المحاولة.",
     "classificationOnlyDraftCanRecreate": "يمكن إعادة إنشاء تقييمات المسودة فقط بعد الانحراف.",
     "classificationNoDriftToRecover": "المسودة تطابق إصدار مجموعة القواعد الحالي — لا يوجد انحراف.",
     "classificationAssessmentNotDraft": "التقييم ليس مسودة؛ الإجابات مجمدة بعد الإرسال.",
@@ -3710,10 +3756,13 @@
     "employeeInvalidIqama": "رقم الإقامة / الهوية غير صالح. أدخل رقم هوية سعوديًا صالحًا مكوّنًا من 10 أرقام.",
     "employeeInvalidEmiratesId": "تنسيق هوية الإمارات غير صالح. أدخله بالصيغة 784-YYYY-NNNNNNN-N.",
     "employeeEmiratesIdChecksumAdvisory": "تجتاز هوية الإمارات هذه فحص التنسيق لكن تعذّر التحقق من مجموعها الاختباري — يرجى التحقق من الرقم.",
+    "employeeLifecycleTemplateNotFound": "لم يتم العثور على قالب سير عمل دورة حياة نشط لاختصاص هذا الموظف.",
+    "employeeUnsupportedJurisdiction": "اختصاص هذا الموظف غير مدعوم في سير عمل دورة الحياة.",
     "vatValidationUnsupportedCountry": "لا يتم دعم التحقق من VAT لهذه الدولة.",
     "bacsUnmappableCharacters": "ملف BACS يحتوي على أحرف لا يمكن تعيينها؛ يرجى حل تحذيرات النقل الحرفي قبل التنزيل.",
     "paymentRunCancelAdminOnly": "يمكن للمسؤولين فقط إلغاء عمليات الدفع المُصدَّرة. تأكد من عدم إرسال التصدير إلى البنك قبل الإلغاء.",
     "classificationStaleAnswer": "تم تحديث التقييم من علامة تبويب أخرى؛ يرجى إعادة التحميل لجلب أحدث الإجابات قبل الحفظ مجددًا.",
+    "complianceRecomputeFailed": "فشل إعادة حساب الامتثال لهذا المتعاقد.",
     "clockifyApiKeyInvalid": "مفتاح Clockify API غير صالح أو منتهي. أعد توصيل تكامل Clockify.",
     "jiraTaskNotConfigured": "Jira غير مكوَّن لقالب المهمة هذا. حدد المشروع ونوع العنصر في إعدادات سير العمل.",
     "jiraAccountNotMapped": "لم يتم العثور على معرف حساب Jira. يرجى تعيين حسابك في إعدادات التكامل.",
@@ -3723,6 +3772,9 @@
     "featureFlagUnavailable": "خدمة أعلام الميزات غير متاحة مؤقتًا.",
     "organizationRateLimiterUnavailable": "محدد المعدل غير متاح. يرجى المحاولة لاحقًا.",
     "organizationCreateRateLimitExceeded": "تم بلوغ حد إنشاء المنظمات. يرجى المحاولة لاحقًا.",
+    "outboundWebhooksNotEnabled": "الويب هوك الصادرة غير مفعّلة لهذه المنظمة.",
+    "ewidencjaPeriodNotMonthAligned": "يجب أن تغطي فترة سجل وقت العمل شهرًا تقويميًا كاملًا (من اليوم الأول إلى الأخير).",
+    "ewidencjaVersionConflict": "تم إنشاء سجل وقت العمل لهذه الفترة بالفعل. حدّث الصفحة وحاول مرة أخرى.",
     "uploadRateLimiterUnavailable": "محدد معدل التحميل غير متاح. يرجى المحاولة لاحقًا.",
     "uploadRateLimitExceeded": "تم بلوغ حد التحميل. يرجى المحاولة لاحقًا.",
     "reportRateLimiterUnavailable": "محدد معدل التقارير غير متاح. يرجى المحاولة لاحقًا.",
@@ -3752,6 +3804,7 @@
     "approvalNotPendingCompliance": "هذه الموافقة ليست معلّقة بسبب الامتثال.",
     "approvalCannotResolveContractor": "تعذّر تحديد المقاول لهذه الموافقة.",
     "approvalStillComplianceBlocked": "لا يزال لدى المقاول مستند امتثال منتهٍ يمنع الدفع؛ لا يمكن استئناف الموافقة.",
+    "approvalComplianceResumeNoStep": "لا يمكن استئناف هذه الموافقة — لا يوجد خطوة موافقة متاحة لإعادة فتحها.",
     "deprovisioningProviderSignoffPending": "تتطلب ميزة إلغاء توفير هذا الموفّر الحصول على موافقة قبل تفعيلها.",
     "workflowAssigneeNotMember": "المُعيَّن المحدد ليس عضوًا في هذه المنظمة.",
     "importJobStateConflict": "تغيّرت حالة مهمة الاستيراد؛ حدّث الصفحة وحاول مرة أخرى.",
@@ -3772,7 +3825,44 @@
     "personnelFileNotFound": "ملف شؤون الموظفين غير موجود.",
     "personnelFileDocumentNotFound": "المستند غير موجود في ملف شؤون الموظفين هذا.",
     "personnelDocumentAlreadyAttached": "هذا المستند مرفق بالفعل بملف شؤون الموظفين.",
-    "personnelDocumentNotPendingReview": "هذا المستند ليس قيد المراجعة."
+    "personnelDocumentNotPendingReview": "هذا المستند ليس قيد المراجعة.",
+    "memberHasPendingApprovals": "لا يمكن إزالة هذا العضو لأن لديه موافقات معلّقة.",
+    "invoiceNotSubmittable": "لا يمكن إرسال هذه الفاتورة للموافقة في حالتها الحالية.",
+    "paymentRunNotExported": "يجب تصدير تشغيل الدفع قبل تنفيذ هذا الإجراء.",
+    "paymentRunItemInvalidTransition": "لا يمكن نقل عنصر تشغيل الدفع هذا إلى الحالة المطلوبة.",
+    "paymentExportFormatMismatch": "تنسيق التصدير لا يطابق إعداد تشغيل الدفع.",
+    "approvalDelegateNoPermission": "ليس لدى المفوَّض إليه صلاحية التصرف في خطوة الموافقة هذه.",
+    "workflowTemplateUnknownDependency": "يشير قالب سير العمل إلى تبعية مهمة غير معروفة.",
+    "workflowTemplateDependencyCycle": "يحتوي قالب سير العمل على تبعية مهام دائرية.",
+    "workflowRunHasOpenTasks": "لا يمكن إكمال هذا الإجراء بينما لا يزال تشغيل سير العمل يحتوي على مهام مفتوحة.",
+    "paymentStatementMatchInvalid": "تعذّر مطابقة بند كشف الحساب البنكي مع دفعة.",
+    "timesheetEntryDateOutOfWeek": "يجب أن يقع تاريخ الإدخال ضمن أسبوع الجدول الزمني المحدد.",
+    "timesheetInvalidContract": "لا يوجد عقد صالح مرتبط بإدخال الجدول الزمني هذا.",
+    "deprovisioningOtherActiveAssignment": "يوجد تعيين نشط آخر لهذا المستخدم؛ يرجى حله قبل إلغاء التزويد.",
+    "hrisEmployeeAlreadyLinked": "سجل الموظف هذا مرتبط بالفعل بملف شخصي آخر.",
+    "hrisExternalIdAlreadyLinked": "معرّف HRIS الخارجي هذا مرتبط بالفعل في هذه المؤسسة.",
+    "apiKeyCannotRotateSuperseded": "لا يمكن تدوير مفتاح API مُستبدَل.",
+    "invalidActingUser": "مستخدم منفّذ غير صالح لهذه العملية.",
+    "apiQuotaExceeded": "تم تجاوز حصة واجهة برمجة التطبيقات. حاول مرة أخرى لاحقًا.",
+    "form1099NotFound": "لم يتم العثور على نموذج 1099.",
+    "stateFilingConfigNotFound": "لم يتم العثور على إعداد التقديم على مستوى الولاية.",
+    "irisAckParseFailed": "تعذّر تحليل ملف إقرار IRIS.",
+    "hrDashboardDisabled": "لوحة الموارد البشرية غير مُفعّلة لمؤسستك.",
+    "leaveWorkerNotFound": "لم يتم العثور على العامل لهذا طلب الإجازة.",
+    "leaveTypeNotFound": "لم يتم العثور على نوع الإجازة.",
+    "leaveSickTypeNotConfigured": "نوع الإجازة المرضية غير مُكوَّن.",
+    "leaveBlackoutOverlap": "طلب الإجازة يتداخل مع فترة حظر.",
+    "leaveInsufficientBalance": "رصيد الإجازة غير كافٍ.",
+    "leaveNoChainConfigured": "لا يوجد سلسلة موافقة مُكوَّنة لطلبات الإجازة.",
+    "leaveRequestNotFound": "لم يتم العثور على طلب الإجازة.",
+    "leaveRequestNotPending": "طلب الإجازة ليس معلّقًا للموافقة.",
+    "blackoutPeriodNotFound": "لم يتم العثور على فترة الحظر.",
+    "employeeWorkerNotFound": "لم يتم العثور على سجل عامل الموظف.",
+    "publicApiDisabled": "واجهة برمجة التطبيقات العامة غير مُفعّلة لمؤسستك.",
+    "hrisAlreadyConnected": "تكامل HRIS متصل بالفعل.",
+    "hrisNotConnected": "تكامل HRIS غير متصل.",
+    "hrisNoConnectedToSync": "لا يوجد تكامل HRIS متصل للمزامنة.",
+    "hrisSyncNotEnabled": "مزامنة HRIS غير مُفعّلة."
   },
   "Compliance": {
     "paymentBlockModal": {
@@ -6095,7 +6185,17 @@
       "residency": "الإقامة",
       "standard": "قياسي",
       "certFooter": "تؤكد هذه الشهادة أن ضريبة الاستقطاع قد خُصمت من المصدر وفقاً للوائح الضريبية المعمول بها."
-    }
+    },
+    "orgBankHeading": "الحساب البنكي للمؤسسة",
+    "orgBankDescription": "رقم الآيبان وBIC للمدين المستخدمان كحساب مصدر في صادرات الدفع SEPA وSWIFT.",
+    "orgBankIbanLabel": "آيبان المؤسسة",
+    "orgBankIbanPlaceholder": "مثال: DE89370400440532013000",
+    "orgBankBicLabel": "BIC المؤسسة",
+    "orgBankBicPlaceholder": "مثال: COBADEFFXXX",
+    "orgBankCannotClear": "أدخل قيمة صالحة — لا يمكن ترك حقل بنكي محفوظ فارغًا. استبدله بدلاً من ذلك.",
+    "orgBankLoadError": "تعذر تحميل بيانات البنك للمؤسسة. تحقق من اتصالك وحاول مرة أخرى.",
+    "orgBankRetry": "إعادة المحاولة",
+    "toastOrgBankSaved": "تم حفظ بيانات البنك للمؤسسة"
   },
   "Peppol": {
     "statusCard": {
@@ -8926,7 +9026,9 @@
       "knowledgeTransfer": "نقل المعرفة",
       "meeting": "Meeting",
       "manual": "Manual",
-      "notification": "Notification"
+      "notification": "Notification",
+      "ipVerification": "التحقق من الملكية الفكرية",
+      "contractHealthCheck": "فحص سلامة العقد"
     },
     "operator": {
       "notEquals": "لا يساوي",
@@ -9115,6 +9217,9 @@
     "complianceCsid": {
       "title": "الخطوة 3 من 5: طلب شهادة الامتثال",
       "description": "سيتم تقديم طلب توقيع الشهادة الخاص بك إلى ZATCA للحصول على شهادة امتثال للاختبار.",
+      "otpLabel": "رمز OTP من بوابة ZATCA",
+      "otpPlaceholder": "أدخل كلمة المرور لمرة واحدة من ZATCA",
+      "otpHint": "أنشئ OTP في بوابة ZATCA Fatoora قبل الإرسال.",
       "requestButton": "طلب CSID للامتثال",
       "progressLabel": "تقدم CSID للامتثال",
       "status": {

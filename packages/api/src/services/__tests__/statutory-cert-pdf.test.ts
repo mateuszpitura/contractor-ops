@@ -1,8 +1,6 @@
-// Statutory termination-cert PDF render + archive — Wave-0 RED scaffold (EMP-OFF-01).
+// Statutory termination-cert PDF render + archive.
 //
-// `statutory-cert-pdf` does not exist yet, so importing it fails at resolution
-// and this suite is terminal-RED until the render/archive service lands (Plan
-// 06). The assertions pin the contract, mirroring the shipped form-1099-nec-pdf
+// The assertions pin the contract, mirroring the shipped form-1099-nec-pdf
 // sibling:
 //   - the cert renders from the stored immutable snapshot, never a live
 //     recompute, so the document reflects the figures as of generation;

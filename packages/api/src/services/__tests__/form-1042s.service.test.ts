@@ -193,12 +193,16 @@ function makeRollbackPersist(createImpl: (data: unknown) => Promise<{ id: string
   const persist = {
     $transaction: async <T>(
       fn: (tx: {
-        form1042S: { create: (a: { data: unknown }) => Promise<{ id: string }> };
+        form1042S: {
+          create: (a: { data: unknown }) => Promise<{ id: string }>;
+          updateMany: () => Promise<{ count: number }>;
+        };
       }) => Promise<T>,
     ): Promise<T> => {
       const staged: unknown[] = [];
       const tx = {
         form1042S: {
+          updateMany: vi.fn(async () => ({ count: 1 })),
           create: async ({ data }: { data: unknown }) => {
             const res = await createImpl(data);
             staged.push(data);

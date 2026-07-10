@@ -215,7 +215,20 @@ function parseParty(
   }
   const name = nodeText(raw['ram:Name']) ?? '';
   const legalOrg = raw['ram:SpecifiedLegalOrganization'] as Record<string, unknown> | undefined;
-  const id = nodeText(legalOrg?.['ram:ID']) ?? '';
+  const taxReg = raw['ram:SpecifiedTaxRegistration'] as
+    | Record<string, unknown>
+    | Record<string, unknown>[]
+    | undefined;
+  const taxRegEntry = Array.isArray(taxReg) ? taxReg[0] : taxReg;
+  const taxRegId = taxRegEntry?.['ram:ID'] as Record<string, unknown> | string | undefined;
+  const taxRegScheme =
+    typeof taxRegId === 'object' && taxRegId != null ? nodeText(taxRegId['@_schemeID']) : undefined;
+  const taxRegText =
+    typeof taxRegId === 'object' && taxRegId != null ? nodeText(taxRegId) : nodeText(taxRegId);
+  const id =
+    taxRegText && (taxRegScheme == null || taxRegScheme === 'VA')
+      ? taxRegText
+      : (nodeText(legalOrg?.['ram:ID']) ?? '');
 
   const postal = raw['ram:PostalTradeAddress'] as Record<string, unknown> | undefined;
   const address = postal ? nodeText(postal['ram:LineOne']) : undefined;

@@ -19,7 +19,12 @@
 // ---------------------------------------------------------------------------
 
 // TZ boundary math lives in the package that owns the date-fns deps.
-import { daysUntilExpiryInTz, jurisdictionDate } from '@contractor-ops/compliance-policy';
+import {
+  daysUntilExpiryInTz,
+  isExpired,
+  jurisdictionDate,
+  resolveExpiryJurisdictionTz,
+} from '@contractor-ops/compliance-policy';
 import type { Prisma } from '@contractor-ops/db';
 import { getRegionalClient, prisma, prismaRaw, SUPPORTED_REGIONS } from '@contractor-ops/db';
 import { pLimit } from '@contractor-ops/integrations/services/concurrency';
@@ -122,7 +127,7 @@ interface ItemForScan {
   status: string; // needed for the free-zone PENDING→EXPIRED boundary flip
   expiresAt: Date | null;
   expiryJurisdictionTz: string | null;
-  contractor: { displayName: string };
+  contractor: { displayName: string; countryCode: string };
 }
 
 // Free-zone license items are written out-of-band and key the payment gate on
@@ -212,9 +217,8 @@ export async function runComplianceReminderScanForClient(
     const items = (await client.contractorComplianceItem.findMany({
       where: {
         severity: 'BLOCKING',
-        status: { in: ['PENDING', 'EXPIRED'] }, // skip MISSING (no expiresAt yet), WAIVED, SATISFIED
+        status: { in: ['PENDING', 'EXPIRED', 'SATISFIED'] },
         expiresAt: { not: null },
-        expiryJurisdictionTz: { not: null },
       },
       select: {
         id: true,
@@ -225,22 +229,27 @@ export async function runComplianceReminderScanForClient(
         status: true,
         expiresAt: true,
         expiryJurisdictionTz: true,
-        contractor: { select: { displayName: true } },
+        contractor: { select: { displayName: true, countryCode: true } },
       },
     })) as ItemForScan[];
 
-    // Flip free-zone PENDING items that have crossed their TZ boundary to
-    // EXPIRED before the band pass, so the BLOCKING payment gate (which keys
-    // on status='EXPIRED') arms for licenses that expire after they were
-    // recorded. Idempotent + region-correct: the write rides the regional
-    // client, and reEvaluateFreeZoneStatus no-ops for already-EXPIRED / non-PENDING rows.
+    // Flip SATISFIED policy-doc items and free-zone PENDING items that have
+    // crossed their TZ boundary to EXPIRED before the band pass, so the
+    // BLOCKING payment gate (which keys on status='EXPIRED') arms when an
+    // approved document's expiresAt passes.
+    await flipExpiredSatisfiedItems(client, items, now);
     await flipExpiredFreeZoneItems(client, items, now);
+
+    // SATISFIED rows that are still within their expiry window need advance-band
+    // warnings too. flipExpiredSatisfiedItems above already promoted crossed
+    // boundaries to EXPIRED, so remaining SATISFIED items are pre-expiry only.
+    const itemsForBands = items;
 
     // Pass 1: collect band transitions per item, accumulate per-recipient groups.
     const { scanned, fires, recipientGroups } = await collectPendingFires(
       client,
       region,
-      items,
+      itemsForBands,
       now,
     );
     // Pass 2: dispatch ONE dedup-gated digest per recipient/day.
@@ -254,6 +263,38 @@ export async function runComplianceReminderScanForClient(
       'compliance-reminder-scan region failed (per-region catch — returning zero counts)',
     );
     return { scanned: 0, fires: 0, digests: 0 };
+  }
+}
+
+/**
+ * Persists SATISFIED→EXPIRED for approved policy-doc items whose jurisdiction
+ * expiry boundary has crossed. Without this flip an admin-approved document
+ * stays SATISFIED forever after expiresAt, so the payment gate never blocks.
+ *
+ * Per-item failures are logged and skipped — one bad flip never aborts the scan.
+ */
+async function flipExpiredSatisfiedItems(
+  client: ReminderScanClient,
+  items: ItemForScan[],
+  now: Date,
+): Promise<void> {
+  for (const item of items) {
+    if (item.status !== 'SATISFIED') continue;
+    if (!item.expiresAt) continue;
+    const tz = resolveExpiryJurisdictionTz(item.expiryJurisdictionTz, item.contractor.countryCode);
+    if (!isExpired(item.expiresAt, tz, now)) continue;
+    try {
+      await client.contractorComplianceItem.update({
+        where: { id: item.id },
+        data: { status: 'EXPIRED' },
+      });
+      item.status = 'EXPIRED';
+    } catch (err) {
+      log.error(
+        { err, itemId: item.id },
+        'compliance-reminder SATISFIED→EXPIRED flip failed; skipping item',
+      );
+    }
   }
 }
 
@@ -330,8 +371,11 @@ async function collectPendingFires(
           counters.fires++;
           // Resolve recipients in Pass 1 so we can group correctly in Pass 2.
           const recipients = await resolveRecipientsForItem(item);
-          // biome-ignore lint/style/noNonNullAssertion: query filters out null expiryJurisdictionTz
-          const date = jurisdictionDate(now, item.expiryJurisdictionTz!);
+          const expiryTz = resolveExpiryJurisdictionTz(
+            item.expiryJurisdictionTz,
+            item.contractor.countryCode,
+          );
+          const date = jurisdictionDate(now, expiryTz);
           for (const recipientUserId of recipients) {
             addFireToGroup(recipientGroups, recipientUserId, date, item.organizationId, fire);
           }
@@ -403,9 +447,13 @@ async function processItem(
   item: ItemForScan,
   now: Date,
 ): Promise<PendingFire | null> {
-  if (!(item.expiresAt && item.expiryJurisdictionTz)) return null;
+  if (!item.expiresAt) return null;
 
-  const days = daysUntilExpiryInTz(item.expiresAt, item.expiryJurisdictionTz, now);
+  const expiryTz = resolveExpiryJurisdictionTz(
+    item.expiryJurisdictionTz,
+    item.contractor.countryCode,
+  );
+  const days = daysUntilExpiryInTz(item.expiresAt, expiryTz, now);
   const nextBand = bandFor(days);
   if (nextBand === 'NONE') return null;
 
@@ -421,7 +469,7 @@ async function processItem(
 
   // Per-band dedup claim (region- + jurisdictionDate-scoped). Region-prefixed so the
   // same (item, band, date) claim does not collide across regions.
-  const date = jurisdictionDate(now, item.expiryJurisdictionTz);
+  const date = jurisdictionDate(now, expiryTz);
   const dedupKey = `compl:band:${region}:${item.id}:${nextBand}:${date}`;
   const claimed = await claimCronNotificationDedup(dedupKey);
   if (!claimed) return null;
@@ -585,49 +633,9 @@ async function dispatchDigest(client: ReminderScanClient, group: DigestGroup): P
   });
 }
 
-// ---------------------------------------------------------------------------
-// Renewal-reset listener — invoked from classification on expires_at_changed
-// ---------------------------------------------------------------------------
-
-export async function onComplianceItemExpiresAtChanged(
-  tx: Prisma.TransactionClient,
-  args: {
-    itemId: string;
-    organizationId: string;
-    triggerEvent: 'expires_at_changed' | 'status_satisfied' | 'manual_admin_reset';
-  },
-): Promise<void> {
-  const existing = await tx.contractorComplianceReminderState.findUnique({
-    where: { itemId: args.itemId },
-  });
-  await tx.contractorComplianceReminderState.upsert({
-    where: { itemId: args.itemId },
-    update: {
-      currentBand: 'NONE',
-      lastBandFired: null,
-      lastBandFiredAt: null,
-      version: { increment: 1 },
-    },
-    create: {
-      itemId: args.itemId,
-      organizationId: args.organizationId,
-      currentBand: 'NONE',
-      version: 0,
-    },
-  });
-  await writeAuditLog({
-    organizationId: args.organizationId,
-    actorType: 'SYSTEM',
-    action: 'compliance.reminder.reset',
-    resourceType: 'CONTRACTOR',
-    resourceId: args.itemId,
-    metadata: {
-      previousBand: existing?.lastBandFired ?? null,
-      triggerEvent: args.triggerEvent,
-    },
-    tx,
-  });
-}
+// Renewal-reset listener moved to `compliance-reminder-reset.ts` (import-cycle
+// break); re-exported here for existing importers.
+export { onComplianceItemExpiresAtChanged } from './compliance-reminder-reset';
 
 // Test-deps export (twin pattern from economic-dependency-scan.ts).
 // biome-ignore lint/style/useNamingConvention: test-internals export uses double-underscore prefix

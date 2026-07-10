@@ -159,10 +159,24 @@ describe('serverEnvSchema — additional branch coverage', () => {
 
   it('accepts all valid NODE_ENV values', () => {
     for (const nodeEnv of ['development', 'production', 'test']) {
-      const env = { ...minimalValidServerEnv(), NODE_ENV: nodeEnv };
+      // production refuses the localhost API_URL default, so it needs a real host.
+      const env = {
+        ...minimalValidServerEnv(),
+        NODE_ENV: nodeEnv,
+        ...(nodeEnv === 'production' ? { API_URL: 'https://api.example.com' } : {}),
+      };
       const result = serverEnvSchema.safeParse(env);
       expect(result.success).toBe(true);
     }
+  });
+
+  it('rejects the localhost API_URL default when NODE_ENV=production', () => {
+    const env = { ...minimalValidServerEnv(), NODE_ENV: 'production' };
+    const result = serverEnvSchema.safeParse(env);
+    expect(result.success).toBe(false);
+    expect(!result.success && result.error.issues.some(issue => issue.path[0] === 'API_URL')).toBe(
+      true,
+    );
   });
 
   it('rejects invalid NODE_ENV value', () => {

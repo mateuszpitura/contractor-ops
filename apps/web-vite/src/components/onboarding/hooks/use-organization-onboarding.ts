@@ -116,12 +116,7 @@ export function useOrganizationOnboarding(): UseOrganizationOnboardingResult {
         const { data, error } = await auth.organization.create({
           name,
           slug: toSlug(name),
-          // Better Auth's client plugin isn't configured with the
-          // `billingCountry` additionalField, so its types don't model it. The
-          // server validates + consumes it to set the org's data region; it
-          // is never written as a column.
-          // @ts-expect-error — extra field not present in client create type
-          billingCountry: values.billingCountry,
+          ...({ billingCountry: values.billingCountry } as Record<string, string>),
         });
         if (error) {
           toast.error(error.message ?? t('errors.createFailed'));

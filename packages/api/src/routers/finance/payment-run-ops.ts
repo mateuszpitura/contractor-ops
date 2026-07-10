@@ -10,27 +10,73 @@ import { router } from '../../init';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
 import { writeAuditLog } from '../../services/audit-writer';
+import type { OutboxTransactionalClient } from '../../services/outbox';
 import { enqueueHrisEmployeePush } from '../../services/outbox/hris-push-producer';
-import { autoCompleteRunIfTerminal, VALID_TRANSITIONS } from './payment-shared';
+import {
+  enqueuePaymentRunBatchPaidNotification,
+  enqueuePaymentStatusNotification,
+  getPaymentNotifyUserIds,
+} from '../../services/payment-notification';
+import {
+  applyInvoicePaymentOutcome,
+  autoCompleteRunIfTerminal,
+  VALID_TRANSITIONS,
+} from './payment-shared';
+
+/** Allowed payment-run item status transitions (server-enforced). */
+const ITEM_VALID_TRANSITIONS: Record<string, readonly string[]> = {
+  PENDING: ['EXPORTED', 'PAID', 'FAILED', 'SKIPPED'],
+  EXPORTED: ['PAID', 'FAILED'],
+  PAID: [],
+  FAILED: ['PENDING'],
+  SKIPPED: [],
+};
 
 export const paymentRunOpsRouter = router({
   updateItemStatus: tenantProcedure
     .use(requirePermission({ payment: ['create'] }))
     .input(paymentRunItemStatusSchema)
     .mutation(async ({ ctx, input }) => {
+      const financeRecipients =
+        input.status === 'PAID' || input.status === 'FAILED'
+          ? await getPaymentNotifyUserIds(ctx.db, ctx.organizationId)
+          : [];
+
       const result = await ctx.db.$transaction(async tx => {
         const item = await tx.paymentRunItem.findFirst({
           where: {
             id: input.itemId,
             organizationId: ctx.organizationId,
           },
-          include: { paymentRun: true },
+          include: {
+            paymentRun: { select: { id: true, runNumber: true, status: true } },
+            invoice: { select: { id: true, invoiceNumber: true, currency: true } },
+          },
         });
 
         if (!item) {
           throw new TRPCError({
             code: 'NOT_FOUND',
             message: E.PAYMENT_RUN_ITEM_NOT_FOUND,
+          });
+        }
+
+        const allowedNext = ITEM_VALID_TRANSITIONS[item.status] ?? [];
+        if (!allowedNext.includes(input.status)) {
+          throw new TRPCError({
+            code: 'PRECONDITION_FAILED',
+            message: E.PAYMENT_RUN_ITEM_INVALID_TRANSITION,
+          });
+        }
+
+        if (
+          input.status === 'PAID' &&
+          item.paymentRun.status !== 'EXPORTED' &&
+          item.paymentRun.status !== 'COMPLETED'
+        ) {
+          throw new TRPCError({
+            code: 'PRECONDITION_FAILED',
+            message: E.PAYMENT_RUN_NOT_EXPORTED,
           });
         }
 
@@ -45,9 +91,14 @@ export const paymentRunOpsRouter = router({
         });
 
         if (input.status === 'PAID') {
-          await tx.invoice.update({
-            where: { id: item.invoiceId },
-            data: { paymentStatus: 'PAID', paidAt: new Date() },
+          await applyInvoicePaymentOutcome(tx, {
+            organizationId: ctx.organizationId,
+            invoiceId: item.invoiceId,
+            amountMinor: item.amountMinor,
+            paidAt: new Date(),
+            sourceKind: 'PAYMENT_RUN',
+            sourcePaymentRunItemId: updatedItem.id,
+            createdByUserId: ctx.user.id,
           });
         } else if (input.status === 'FAILED') {
           await tx.invoice.update({
@@ -104,6 +155,22 @@ export const paymentRunOpsRouter = router({
 
         await autoCompleteRunIfTerminal(tx, item.paymentRunId);
 
+        if (input.status === 'PAID' || input.status === 'FAILED') {
+          await enqueuePaymentStatusNotification(tx as unknown as OutboxTransactionalClient, {
+            organizationId: ctx.organizationId,
+            paymentRunId: item.paymentRunId,
+            runNumber: item.paymentRun.runNumber,
+            itemId: updatedItem.id,
+            invoiceId: item.invoiceId,
+            invoiceNumber: item.invoice?.invoiceNumber ?? null,
+            status: input.status,
+            amountMinor: item.amountMinor,
+            currency: item.invoice?.currency ?? 'EUR',
+            failureReason: updatedItem.failureReason,
+            recipientUserIds: financeRecipients,
+          });
+        }
+
         await writeAuditLog({
           tx,
           organizationId: ctx.organizationId,
@@ -132,6 +199,8 @@ export const paymentRunOpsRouter = router({
     .use(requirePermission({ payment: ['create'] }))
     .input(markAllPaidSchema)
     .mutation(async ({ ctx, input }) => {
+      const financeRecipients = await getPaymentNotifyUserIds(ctx.db, ctx.organizationId);
+
       const result = await ctx.db.$transaction(async tx => {
         const run = await tx.paymentRun.findFirst({
           where: {
@@ -152,6 +221,13 @@ export const paymentRunOpsRouter = router({
           });
         }
 
+        if (run.status !== 'EXPORTED') {
+          throw new TRPCError({
+            code: 'PRECONDITION_FAILED',
+            message: E.PAYMENT_RUN_NOT_EXPORTED,
+          });
+        }
+
         const now = new Date();
         const itemIds = run.items.map(i => i.id);
         const invoiceIds = run.items.map(i => i.invoiceId);
@@ -165,10 +241,17 @@ export const paymentRunOpsRouter = router({
           },
         });
 
-        await tx.invoice.updateMany({
-          where: { id: { in: invoiceIds } },
-          data: { paymentStatus: 'PAID', paidAt: now },
-        });
+        for (const item of run.items) {
+          await applyInvoicePaymentOutcome(tx, {
+            organizationId: ctx.organizationId,
+            invoiceId: item.invoiceId,
+            amountMinor: item.amountMinor,
+            paidAt: now,
+            sourceKind: 'PAYMENT_RUN',
+            sourcePaymentRunItemId: item.id,
+            createdByUserId: ctx.user.id,
+          });
+        }
 
         const updatedRun = await tx.paymentRun.update({
           where: { id: run.id },
@@ -176,6 +259,14 @@ export const paymentRunOpsRouter = router({
             status: 'COMPLETED',
             completedAt: now,
           },
+        });
+
+        await enqueuePaymentRunBatchPaidNotification(tx as unknown as OutboxTransactionalClient, {
+          organizationId: ctx.organizationId,
+          paymentRunId: run.id,
+          runNumber: run.runNumber,
+          itemCount: itemIds.length,
+          recipientUserIds: financeRecipients,
         });
 
         await writeAuditLog({

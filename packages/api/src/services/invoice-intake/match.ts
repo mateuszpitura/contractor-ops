@@ -4,15 +4,14 @@ import { makeError } from './shared.js';
 import type { ConfirmMatchInput } from './types.js';
 
 export async function confirmMatch(db: PrismaClient, input: ConfirmMatchInput): Promise<void> {
-  const intake = await db.invoiceIntakeRequest.findUnique({
-    where: { id: input.intakeId },
+  const intake = await db.invoiceIntakeRequest.findFirst({
+    where: { id: input.intakeId, organizationId: input.orgId },
     select: {
       id: true,
-      organizationId: true,
       status: true,
     },
   });
-  if (!intake || intake.organizationId !== input.orgId) {
+  if (!intake) {
     throw makeError('NOT_FOUND', `Intake ${input.intakeId} not found`);
   }
   if (intake.status !== 'PARSED' && intake.status !== 'NEEDS_REVIEW') {

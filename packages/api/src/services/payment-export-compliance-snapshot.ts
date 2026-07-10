@@ -6,7 +6,7 @@
 // resulting snapshotJson is replay-ready: a future audit can reconstruct "why
 // did this export pass for contractor X on date Y" without joining live tables.
 
-import { POLICY_RULE_SET_VERSION } from '@contractor-ops/compliance-policy';
+import { isExpired, POLICY_RULE_SET_VERSION } from '@contractor-ops/compliance-policy';
 import type { Prisma } from '@contractor-ops/db';
 
 /** Minimal structural client — satisfied by the tx, the extended client, or the bare client. */
@@ -94,11 +94,24 @@ export async function buildSnapshotForContractor(
     createdAt: it.createdAt.toISOString(),
   }));
 
+  const now = new Date();
   const failureReasons: FailureReason[] = items
-    .filter(it => it.status === 'EXPIRED' || it.status === 'MISSING')
+    .filter(it => {
+      if (it.status === 'MISSING') return true;
+      if (it.status === 'EXPIRED') return true;
+      if (
+        it.status === 'SATISFIED' &&
+        it.expiresAt &&
+        it.expiryJurisdictionTz &&
+        isExpired(it.expiresAt, it.expiryJurisdictionTz, now)
+      ) {
+        return true;
+      }
+      return false;
+    })
     .map(it => ({
       itemId: it.id,
-      reason: it.status === 'EXPIRED' ? 'severity_blocking_expired' : 'severity_blocking_missing',
+      reason: it.status === 'MISSING' ? 'severity_blocking_missing' : 'severity_blocking_expired',
       expiredOnDate: it.expiresAt ? it.expiresAt.toISOString().slice(0, 10) : undefined,
     }));
 

@@ -62,7 +62,7 @@ function makeParsed(override: Partial<Parsed> = {}): Parsed {
       trialEnd: null,
       currentPeriodEnd: '2026-06-01',
     },
-    credits: { balance: 80, allowance: 100, used: 20, tier: 'PRO' },
+    credits: { balance: 80, allowance: 100, used: 20, topUp: 0, tier: 'PRO' },
     activeContractors: 5,
     includedSeats: 10,
     planConfig: { tiers: [{ id: 'PRO', seatPriceMinor: 1500 }] },
@@ -134,7 +134,7 @@ describe('UsageDashboardView (presentational)', () => {
     const { user } = setup(
       <UsageDashboardView
         parsed={makeParsed({
-          credits: { balance: 5, allowance: 100, used: 95, tier: 'PRO' },
+          credits: { balance: 5, allowance: 100, used: 95, topUp: 0, tier: 'PRO' },
         })}
         currentTier={'PRO' as TierId}
       />,

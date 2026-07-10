@@ -95,7 +95,7 @@ export const employeeLifecycleRouter = router({
           () =>
             tx.employeeProfile.findFirst({
               where: { workerId: input.workerId, organizationId: ctx.organizationId },
-              select: { id: true },
+              select: { id: true, countryCode: true },
             }),
           E.WORKER_NOT_FOUND,
         );
@@ -104,6 +104,17 @@ export const employeeLifecycleRouter = router({
           where: { id: emp.id },
           data: { terminatedAt: input.terminatedAt, employmentStatus: 'TERMINATED' },
           select: { terminatedAt: true },
+        });
+
+        await tx.personnelFile.upsert({
+          where: { workerId: input.workerId },
+          create: {
+            organizationId: ctx.organizationId,
+            workerId: input.workerId,
+            countryCode: emp.countryCode,
+            terminatedAt: input.terminatedAt,
+          },
+          update: { terminatedAt: input.terminatedAt },
         });
 
         await writeAuditLog({
@@ -256,22 +267,26 @@ async function startLifecycleRun(
     throw new TRPCError({ code: 'NOT_FOUND', message: E.EMPLOYEE_LIFECYCLE_TEMPLATE_NOT_FOUND });
   }
 
-  const started = await ctx.db.$transaction(tx =>
-    startWorkflowRun(
+  const started = await ctx.db.$transaction(async tx => {
+    const run = await startWorkflowRun(
       tx,
       { subjectType: 'EMPLOYEE', templateId: template.id, workerId },
       { organizationId: ctx.organizationId, actorUserId: ctx.user.id },
-    ),
-  );
+    );
 
-  await writeAuditLog({
-    organizationId: ctx.organizationId,
-    actorType: 'USER',
-    actorId: ctx.user.id,
-    action: type === 'ONBOARDING' ? 'employee.onboarding.started' : 'employee.offboarding.started',
-    resourceType: 'EMPLOYEE',
-    resourceId: workerId,
-    metadata: { workflowRunId: started.run.id, jurisdiction, type },
+    await writeAuditLog({
+      tx,
+      organizationId: ctx.organizationId,
+      actorType: 'USER',
+      actorId: ctx.user.id,
+      action:
+        type === 'ONBOARDING' ? 'employee.onboarding.started' : 'employee.offboarding.started',
+      resourceType: 'EMPLOYEE',
+      resourceId: workerId,
+      metadata: { workflowRunId: run.run.id, jurisdiction, type },
+    });
+
+    return run;
   });
 
   return { runId: started.run.id };

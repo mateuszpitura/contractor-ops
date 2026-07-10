@@ -1,4 +1,4 @@
-// TIME-EMP-01 shape contract: the employee statutory time model is a NEW model
+// Shape contract: the employee statutory time model is a NEW model
 // keyed on the Worker identity root (workerId), deliberately distinct from the
 // contractor-coupled TimeEntry — it carries no contractorId/contractId and owns
 // the statutory dimensions (overtime bands, night, weekend/holiday, on-call).

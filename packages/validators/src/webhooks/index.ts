@@ -7,7 +7,7 @@
 
 import { z } from 'zod';
 
-/** The 16 locked outbound event types (INTEG-WEBHOOK-02). */
+/** The 16 locked outbound event types. */
 export const WEBHOOK_EVENT_TYPES = [
   'contractor.created',
   'contractor.updated',

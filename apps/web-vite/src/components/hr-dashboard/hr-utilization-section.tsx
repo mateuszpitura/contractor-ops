@@ -16,7 +16,7 @@ export interface HrUtilizationViewProps {
   underUtilizedCount: number;
 }
 
-/** Presentational vacation-utilization (HR-DASH-02). Props-in → JSX-out. */
+/** Presentational vacation-utilization. Props-in → JSX-out. */
 export function HrUtilizationView({ items, underUtilizedCount }: HrUtilizationViewProps) {
   const t = useTranslations('HrDashboard');
   const locale = useLocale();

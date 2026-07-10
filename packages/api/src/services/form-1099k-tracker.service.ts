@@ -23,7 +23,8 @@
 // a proactive heads-up so a contractor is not surprised by a threshold. The
 // figures are adviser-verify before any production reliance.
 
-import { prisma, prismaRaw } from '@contractor-ops/db';
+import type { PrismaClient } from '@contractor-ops/db';
+import { getRegionalClient, prisma, prismaRaw, SUPPORTED_REGIONS } from '@contractor-ops/db';
 import { pLimit } from '@contractor-ops/integrations/services/concurrency';
 import { createCronLogger } from '@contractor-ops/logger';
 import { metrics } from '@contractor-ops/logger/metrics';
@@ -160,8 +161,11 @@ function taxYearFor(now: Date): number {
   return now.getUTCFullYear();
 }
 
-async function loadThresholdConfig(taxYear: number): Promise<Form1099KThresholdConfig | null> {
-  const row = await prismaRaw.tax1099KThreshold.findUnique({
+async function loadThresholdConfig(
+  client: PrismaClient,
+  taxYear: number,
+): Promise<Form1099KThresholdConfig | null> {
+  const row = await client.tax1099KThreshold.findUnique({
     where: { taxYear },
     select: { taxYear: true, amountThresholdMinor: true, transactionCountThreshold: true },
   });
@@ -187,27 +191,46 @@ interface ContractorPayoutTotals {
  * client can never assert the figure. Runs cross-org (no tenant frame) but only
  * returns per-contractor scalars, never row-level cross-org data.
  */
-async function aggregateTaxYearPayouts(taxYear: number): Promise<ContractorPayoutTotals[]> {
+async function aggregateTaxYearPayouts(
+  client: PrismaClient,
+  taxYear: number,
+): Promise<ContractorPayoutTotals[]> {
   const from = new Date(Date.UTC(taxYear, 0, 1));
   const to = new Date(Date.UTC(taxYear + 1, 0, 1));
 
-  const groups = await prismaRaw.paymentRunItem.groupBy({
-    by: ['contractorId', 'organizationId'],
+  const items = await client.paymentRunItem.findMany({
     where: {
       status: 'PAID',
       currency: 'USD',
       paymentRun: { completedAt: { gte: from, lt: to } },
     },
-    _sum: { amountMinor: true },
-    _count: { _all: true },
+    select: {
+      contractorId: true,
+      organizationId: true,
+      grossAmountMinor: true,
+      amountMinor: true,
+    },
   });
 
-  return groups.map(group => ({
-    contractorId: group.contractorId,
-    organizationId: group.organizationId,
-    cumulativePayoutMinor: group._sum.amountMinor ?? 0,
-    transactionCount: group._count._all,
-  }));
+  const byContractor = new Map<string, ContractorPayoutTotals>();
+  for (const item of items) {
+    const key = `${item.organizationId}:${item.contractorId}`;
+    const grossMinor = item.grossAmountMinor ?? item.amountMinor;
+    const existing = byContractor.get(key);
+    if (existing) {
+      existing.cumulativePayoutMinor += grossMinor;
+      existing.transactionCount += 1;
+    } else {
+      byContractor.set(key, {
+        contractorId: item.contractorId,
+        organizationId: item.organizationId,
+        cumulativePayoutMinor: grossMinor,
+        transactionCount: 1,
+      });
+    }
+  }
+
+  return [...byContractor.values()];
 }
 
 // ---------------------------------------------------------------------------
@@ -251,6 +274,7 @@ interface ContractorNameById {
 }
 
 async function processContractor(
+  client: PrismaClient,
   totals: ContractorPayoutTotals,
   config: Form1099KThresholdConfig,
   now: Date,
@@ -263,7 +287,7 @@ async function processContractor(
     config,
   );
 
-  const existing = await prismaRaw.form1099KTrackerState.findUnique({
+  const existing = await client.form1099KTrackerState.findUnique({
     where: { contractorId_taxYear: { contractorId: totals.contractorId, taxYear: config.taxYear } },
     select: { currentBand: true, lastReminderAt: true, lastCrossedAt: true },
   });
@@ -292,7 +316,7 @@ async function processContractor(
   if (emitted && nextBand !== 'SAFE') {
     const recipients = await resolveRbacRecipients(totals.organizationId, 'contractor:read');
     if (recipients.length > 0) {
-      const contractor = (await prismaRaw.contractor.findUnique({
+      const contractor = (await client.contractor.findUnique({
         where: { id: totals.contractorId },
         select: { displayName: true },
       })) as ContractorNameById | null;
@@ -324,7 +348,7 @@ async function processContractor(
   // longer bump lastReminderAt to "notified" while dropping the notice — closing
   // a silent 30-day gap. No dedupKey: the state machine (lastReminderAt +
   // cadence) already gates emission, and each emit deserves its own durable row.
-  await prismaRaw.$transaction(async tx => {
+  await client.$transaction(async tx => {
     await tx.form1099KTrackerState.upsert({
       where: {
         contractorId_taxYear: { contractorId: totals.contractorId, taxYear: config.taxYear },
@@ -356,17 +380,50 @@ async function processContractor(
 export async function runForm1099KTrackerScan(
   now: Date = new Date(),
 ): Promise<Form1099KScanResult> {
+  const total: Form1099KScanResult = { scanned: 0, crossings: 0, notificationsDispatched: 0 };
+
+  for (const region of SUPPORTED_REGIONS) {
+    let client: PrismaClient;
+    try {
+      client = getRegionalClient(region);
+    } catch (err) {
+      log.warn({ err, region }, 'form-1099k-tracker: region client unavailable; skipping');
+      continue;
+    }
+
+    const result = await runForm1099KTrackerScanForClient(client, now);
+    total.scanned += result.scanned;
+    total.crossings += result.crossings;
+    total.notificationsDispatched += result.notificationsDispatched;
+  }
+
+  metrics.gauge('cron.form_1099k_tracker.scanned', total.scanned);
+  metrics.gauge('cron.form_1099k_tracker.crossings', total.crossings);
+  metrics.gauge('cron.form_1099k_tracker.notifications', total.notificationsDispatched);
+
+  log.info(
+    { taxYear: taxYearFor(now), ...total },
+    'form-1099k-tracker scan complete (informational only — no 1099-K filed)',
+  );
+
+  return total;
+}
+
+async function runForm1099KTrackerScanForClient(
+  client: PrismaClient,
+  now: Date = new Date(),
+): Promise<Form1099KScanResult> {
   const taxYear = taxYearFor(now);
-  const config = await loadThresholdConfig(taxYear);
+  const config = await loadThresholdConfig(client, taxYear);
   if (!config) {
     log.warn(
-      { taxYear },
+      { taxYear, region: 'per-client' },
       'form-1099k-tracker skipped: no Tax1099KThreshold config for tax year (threshold is never a constant)',
     );
     return { scanned: 0, crossings: 0, notificationsDispatched: 0 };
   }
 
-  const payouts = await aggregateTaxYearPayouts(taxYear);
+  const payouts = await aggregateTaxYearPayouts(client, taxYear);
 
   const SCAN_FANOUT_CONCURRENCY = 10;
   const limit = pLimit(SCAN_FANOUT_CONCURRENCY);
@@ -377,7 +434,7 @@ export async function runForm1099KTrackerScan(
       limit(async () => {
         counters.scanned++;
         try {
-          const { crossed, dispatched } = await processContractor(totals, config, now);
+          const { crossed, dispatched } = await processContractor(client, totals, config, now);
           if (crossed) counters.crossings++;
           if (dispatched) counters.notificationsDispatched++;
         } catch (err) {
@@ -388,15 +445,6 @@ export async function runForm1099KTrackerScan(
         }
       }),
     ),
-  );
-
-  metrics.gauge('cron.form_1099k_tracker.scanned', counters.scanned);
-  metrics.gauge('cron.form_1099k_tracker.crossings', counters.crossings);
-  metrics.gauge('cron.form_1099k_tracker.notifications', counters.notificationsDispatched);
-
-  log.info(
-    { taxYear, ...counters },
-    'form-1099k-tracker scan complete (informational only — no 1099-K filed)',
   );
 
   return { ...counters };

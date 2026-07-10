@@ -11,6 +11,7 @@ import {
   CLOCKIFY_CONNECTION_NOT_FOUND,
   CLOCKIFY_SYNC_FAILED,
 } from '../errors';
+import { assertTimesheetEditable } from './time-entry';
 import type { DbClient } from './types';
 
 type PrismaClient = DbClient;
@@ -276,14 +277,34 @@ async function upsertTimeEntry(
       source: 'CLOCKIFY',
       externalId: entry.id,
     },
-    select: { id: true },
+    select: { id: true, timesheetId: true },
   });
 
   if (existingEntry) {
+    const timesheet = await prisma.timesheet.findUnique({
+      where: { id: existingEntry.timesheetId },
+      select: { status: true },
+    });
+    if (timesheet?.status !== 'DRAFT' && timesheet?.status !== 'REJECTED') {
+      return 'skipped';
+    }
+
     await prisma.timeEntry.update({
       where: { id: existingEntry.id },
       data: { minutes, description: entry.description || null, metadataJson },
     });
+    await recalculateTimesheetTotal(prisma, existingEntry.timesheetId);
+    return 'skipped';
+  }
+
+  const targetTimesheet = await prisma.timesheet.findUnique({
+    where: { id: ctx.timesheetId },
+    select: { status: true },
+  });
+  if (!targetTimesheet) return 'skipped';
+  try {
+    assertTimesheetEditable(targetTimesheet.status);
+  } catch {
     return 'skipped';
   }
 

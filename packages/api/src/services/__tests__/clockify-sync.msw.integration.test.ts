@@ -33,6 +33,7 @@ const { mockPrisma } = vi.hoisted(() => {
       aggregate: vi.fn().mockResolvedValue({ _sum: { minutes: 300 } }),
     },
     timesheet: {
+      findUnique: vi.fn().mockResolvedValue({ status: 'DRAFT' }),
       update: vi.fn().mockResolvedValue({}),
     },
   };
@@ -152,7 +153,10 @@ describe('clockify-sync + MSW', () => {
     });
 
     // All entries already exist
-    mockPrisma.timeEntry.findFirst.mockResolvedValue({ id: 'existing-te-001' });
+    mockPrisma.timeEntry.findFirst.mockResolvedValue({
+      id: 'existing-te-001',
+      timesheetId: TIMESHEET_ID,
+    });
 
     const result = await syncClockifyEntries(
       mockPrisma as never,

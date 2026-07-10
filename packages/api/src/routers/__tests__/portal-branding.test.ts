@@ -28,6 +28,12 @@ const { ORG_ID, USER_ID, PORTAL_SESSION_TOKEN, CONTRACTOR_ID, mockPrisma } = vi.
       findUnique: vi.fn(),
       update: vi.fn(),
     },
+    contractor: {
+      findFirst: vi.fn(async () => ({
+        id: ContractorId,
+        displayName: 'Portal Contractor',
+      })),
+    },
     $transaction: vi.fn(async (fn: (tx: Rec) => Promise<unknown>) => fn(mockPrisma)),
   };
 
@@ -95,19 +101,11 @@ vi.mock('../../services/r2', () => ({
   generateStorageKey: vi.fn(() => 'mock-key'),
 }));
 
-vi.mock('../../services/cache', () => ({
-  cacheKey: vi.fn((...s: string[]) => s.join(':')),
-  cachedSingleflight: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  cached: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  invalidate: vi.fn(async () => undefined),
-  invalidateByPrefix: vi.fn(async () => undefined),
-  CacheKeys: {
-    orgBranding: (orgId: string) => `org-branding:${orgId}`,
-    settingsPrefix: (orgId: string) => `settings:${orgId}`,
-    approvalChains: (orgId: string) => `approval-chains:${orgId}`,
-  },
-  CacheTTL: { ORG_BRANDING: 300, APPROVAL_CHAINS: 300 },
-}));
+vi.mock('../../services/cache', async importOriginal => {
+  const actual = await importOriginal<typeof import('../../services/cache')>();
+  const { createPassthroughCacheMock } = await import('../../__tests__/__mocks__/cache-service');
+  return createPassthroughCacheMock(actual);
+});
 
 vi.mock('../../services/portal-session', () => ({
   validatePortalSession: vi.fn(async (token: string) => {
@@ -289,6 +287,10 @@ const portalCaller = makePortalCaller();
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mockPrisma.contractor.findFirst.mockResolvedValue({
+    id: CONTRACTOR_ID,
+    displayName: 'Portal Contractor',
+  });
 });
 
 // ===========================================================================

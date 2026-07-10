@@ -37,7 +37,7 @@ export const zatcaRouter = router({
     .use(requirePermission({ settings: ['update'] }))
     .input(z.object({ taxDetails: zatcaTaxDetailsSchema }))
     .mutation(async ({ ctx, input }) => {
-      await saveTaxDetails(ctx.organizationId, input.taxDetails);
+      await saveTaxDetails(ctx.organizationId, input.taxDetails, ctx.user.id, ctx.db);
       return { success: true };
     }),
 
@@ -49,7 +49,7 @@ export const zatcaRouter = router({
   generateCsr: tenantProcedure
     .use(requirePermission({ settings: ['update'] }))
     .mutation(async ({ ctx }) => {
-      return generateAndStoreCsr(ctx.organizationId);
+      return generateAndStoreCsr(ctx.organizationId, ctx.db);
     }),
 
   /**
@@ -58,8 +58,13 @@ export const zatcaRouter = router({
    */
   requestComplianceCsid: tenantProcedure
     .use(requirePermission({ settings: ['update'] }))
-    .mutation(async ({ ctx }) => {
-      return requestComplianceCsid(ctx.organizationId);
+    .input(z.object({ otp: z.string().min(4).max(32) }))
+    .mutation(async ({ ctx, input }) => {
+      return requestComplianceCsid(ctx.organizationId, input.otp, {
+        db: ctx.db,
+        actorId: ctx.user.id,
+        actorName: ctx.user.name,
+      });
     }),
 
   /**
@@ -69,7 +74,7 @@ export const zatcaRouter = router({
   runComplianceChecks: tenantProcedure
     .use(requirePermission({ settings: ['update'] }))
     .mutation(async ({ ctx }) => {
-      return runComplianceChecks(ctx.organizationId);
+      return runComplianceChecks(ctx.organizationId, ctx.db);
     }),
 
   /**
@@ -79,7 +84,11 @@ export const zatcaRouter = router({
   exchangeProductionCert: tenantProcedure
     .use(requirePermission({ settings: ['update'] }))
     .mutation(async ({ ctx }) => {
-      await exchangeProductionCertificate(ctx.organizationId);
+      await exchangeProductionCertificate(ctx.organizationId, {
+        db: ctx.db,
+        actorId: ctx.user.id,
+        actorName: ctx.user.name,
+      });
       return { success: true };
     }),
 
@@ -90,7 +99,7 @@ export const zatcaRouter = router({
   getOnboardingState: tenantProcedure
     .use(requirePermission({ settings: ['read'] }))
     .query(async ({ ctx }) => {
-      return getOnboardingState(ctx.organizationId);
+      return getOnboardingState(ctx.organizationId, ctx.db);
     }),
 
   // -------------------------------------------------------------------------

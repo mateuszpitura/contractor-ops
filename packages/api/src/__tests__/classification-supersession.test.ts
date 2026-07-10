@@ -10,6 +10,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import '@contractor-ops/compliance-policy'; // registers all policy rules
 import type { SupersessionClient } from '../services/compliance-supersession';
 import {
+  buildEngagementOutcome,
   extractOutcomeKind,
   materialiseFromPolicy,
   outcomesEqualForPolicyResolution,
@@ -131,12 +132,37 @@ describe('extractOutcomeKind', () => {
   });
 });
 
+describe('buildEngagementOutcome', () => {
+  it('maps IR35 verdicts to kind+verdict composite for policy resolution', () => {
+    expect(buildEngagementOutcome({ kind: 'IR35', verdict: 'inside' })).toBe('IR35-INSIDE');
+    expect(buildEngagementOutcome({ kind: 'IR35', verdict: 'outside' })).toBe('IR35-OUTSIDE');
+    expect(buildEngagementOutcome({ kind: 'IR35', verdict: 'indeterminate' })).toBe(
+      'IR35-INDETERMINATE',
+    );
+  });
+
+  it('falls back to kind for non-IR35 outcomes', () => {
+    expect(buildEngagementOutcome({ kind: 'SCHEINSELBSTANDIGKEIT', verdict: 'abhangig' })).toBe(
+      'SCHEINSELBSTANDIGKEIT',
+    );
+  });
+});
+
 describe('outcomesEqualForPolicyResolution', () => {
-  it('treats outcomes with identical kind as equal', () => {
+  it('treats IR35 inside vs outside as unequal for policy resolution', () => {
     expect(
       outcomesEqualForPolicyResolution(
         { kind: 'IR35', verdict: 'inside' },
         { kind: 'IR35', verdict: 'outside' },
+      ),
+    ).toBe(false);
+  });
+
+  it('treats identical IR35 verdict composites as equal', () => {
+    expect(
+      outcomesEqualForPolicyResolution(
+        { kind: 'IR35', verdict: 'inside' },
+        { kind: 'IR35', verdict: 'inside' },
       ),
     ).toBe(true);
   });
@@ -250,16 +276,19 @@ describe('classification.submit — Phase 71 supersession on outcome change (D-1
     expect(newRows[0]?.policyRuleId).toBe('de.a1@v1');
   });
 
-  it('same outcome resubmit: no row churn (caller skips supersession when outcome.kind unchanged)', () => {
-    // Caller-side concern: classification.submit's branch checks
-    // extractOutcomeKind(prior) === extractOutcomeKind(new). When equal, neither
-    // helper is invoked. Verified via the equality helper directly.
+  it('same policy outcome resubmit: no row churn when verdict composite is unchanged', () => {
+    expect(
+      outcomesEqualForPolicyResolution(
+        { kind: 'IR35', verdict: 'inside' },
+        { kind: 'IR35', verdict: 'inside' },
+      ),
+    ).toBe(true);
     expect(
       outcomesEqualForPolicyResolution(
         { kind: 'IR35', verdict: 'inside' },
         { kind: 'IR35', verdict: 'outside' },
       ),
-    ).toBe(true);
+    ).toBe(false);
   });
 
   it('carry-forward: when new rule documentType matches old, satisfiedByDocumentId + expiresAt copied; status = SATISFIED', async () => {

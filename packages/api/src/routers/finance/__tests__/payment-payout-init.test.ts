@@ -47,6 +47,10 @@ vi.mock('../../../lib/idempotency', () => {
   };
 });
 
+vi.mock('../../../services/compliance-payment-gate', () => ({
+  assertContractorPaymentEligibility: vi.fn(async () => undefined),
+}));
+
 const ORG_ID = 'org-1';
 const OTHER_ORG_ID = 'org-2';
 const USER_ID = 'user-1';
@@ -56,6 +60,8 @@ type StubItem = {
   id: string;
   amountMinor: number;
   currency: string;
+  contractorId: string;
+  status: string;
   billingProfile: {
     plaidVerificationStatus: string | null;
     usRoutingNumberMasked: string | null;
@@ -69,6 +75,8 @@ function makeItem(overrides: Partial<StubItem> = {}): StubItem {
     id: 'item-1',
     amountMinor: 50_000,
     currency: 'USD',
+    contractorId: 'contractor-1',
+    status: 'PENDING',
     billingProfile: {
       plaidVerificationStatus: 'VERIFIED',
       usRoutingNumberMasked: '****0021',
@@ -86,11 +94,25 @@ function makeItem(overrides: Partial<StubItem> = {}): StubItem {
  * feed (absent key → missing rate → null).
  */
 function makeDb(items: StubItem[], rates: Record<string, number> = {}) {
-  const findMany = vi.fn(async (_args: unknown) => items);
+  const seeded = items.map(i => ({ ...i, status: i.status ?? 'PENDING' }));
+  const findMany = vi.fn(async (args?: { where?: { status?: { in: string[] } } }) => {
+    const allowed = args?.where?.status?.in;
+    if (!allowed) return seeded;
+    return seeded.filter(i => allowed.includes(i.status));
+  });
   const auditCreate = vi.fn(async () => ({}));
   const itemUpdate = vi.fn(async (_args: { where: { id: string }; data: unknown }) => ({}));
+  const itemUpdateMany = vi.fn(async () => ({ count: 0 }));
+  const runFindFirst = vi.fn(async () => ({ status: 'LOCKED' }));
+  const runUpdate = vi.fn(async () => ({}));
+  const tx = {
+    paymentRunItem: { update: itemUpdate, updateMany: itemUpdateMany },
+    paymentRun: { update: runUpdate },
+  };
+  const transaction = vi.fn(async (fn: (client: typeof tx) => Promise<void>) => fn(tx));
   return {
     db: {
+      paymentRun: { findFirst: runFindFirst, update: runUpdate },
       paymentRunItem: { findMany, update: itemUpdate },
       auditLog: { create: auditCreate },
       exchangeRate: {
@@ -100,10 +122,15 @@ function makeDb(items: StubItem[], rates: Record<string, number> = {}) {
           return { rate, date: new Date('2026-07-01'), source: 'ECB' };
         },
       },
+      $transaction: transaction,
     } as never,
     findMany,
     auditCreate,
     itemUpdate,
+    runFindFirst,
+    itemUpdateMany,
+    runUpdate,
+    transaction,
   };
 }
 
@@ -225,7 +252,11 @@ describe('_initiatePayoutForRun — tenant isolation', () => {
       where: { paymentRunId: string; organizationId: string };
       include: { billingProfile: { select: { plaidVerificationStatus: boolean } } };
     };
-    expect(call.where).toEqual({ paymentRunId: RUN_ID, organizationId: ORG_ID });
+    expect(call.where).toEqual({
+      paymentRunId: RUN_ID,
+      organizationId: ORG_ID,
+      status: { in: ['PENDING'] },
+    });
     expect(call.where.organizationId).not.toBe(OTHER_ORG_ID);
     expect(call.include.billingProfile.select.plaidVerificationStatus).toBe(true);
   });
@@ -257,8 +288,12 @@ describe('_initiatePayoutForRun — settlement wiring (88-05 seam)', () => {
     expect(result.orders[0]?.settledAmountMinor).toBe(50_000);
     expect(spy.mock.calls[0]?.[0]?.currency).toBe('USD');
     expect(spy.mock.calls[0]?.[0]?.amountMinor).toBe(50_000);
-    // Same-currency: no FX provenance persisted (rate 1, nothing to reconstruct).
-    expect(itemUpdate).not.toHaveBeenCalled();
+    // Same-currency: no FX provenance, but the provider order id is persisted for ACH reconciliation.
+    expect(itemUpdate).toHaveBeenCalledTimes(1);
+    expect(itemUpdate.mock.calls[0]?.[0]?.data).toMatchObject({
+      status: 'EXPORTED',
+      paymentReference: expect.any(String),
+    });
   });
 
   it('threads the per-run settlementCurrency override into the adapter amount', async () => {
@@ -286,8 +321,8 @@ describe('_initiatePayoutForRun — settlement wiring (88-05 seam)', () => {
     expect(result.orders[0]?.settledAmountMinor).toBe(200_000);
     expect(spy.mock.calls[0]?.[0]?.currency).toBe('PLN');
 
-    // FX provenance persisted so the payout row reconstructs its settled amount.
-    expect(itemUpdate).toHaveBeenCalledTimes(1);
+    // FX provenance persisted, plus a second write stores the provider order id.
+    expect(itemUpdate).toHaveBeenCalledTimes(2);
     const persisted = itemUpdate.mock.calls[0]?.[0]?.data as {
       settlementRate: number;
       settlementRateDate: Date;

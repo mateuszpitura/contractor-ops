@@ -1,4 +1,6 @@
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Input } from '@contractor-ops/ui/components/shadcn/input';
+import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import { ArrowLeft, ArrowRight, Check, Loader2 } from 'lucide-react';
 import type { ReactNode } from 'react';
 import type { useComplianceCsid as UseComplianceCsid } from './hooks/use-compliance-csid.js';
@@ -75,7 +77,10 @@ function StepShell({
 export type ComplianceCsidIdleProps = {
   onSuccess: () => void;
   onBack: () => void;
+  otp: string;
+  onOtpChange: (value: string) => void;
   requestComplianceCsid: HookResult['requestComplianceCsid'];
+  canRequest: boolean;
   isPending: boolean;
   t: T;
 };
@@ -83,7 +88,10 @@ export type ComplianceCsidIdleProps = {
 export function ComplianceCsidIdle({
   onSuccess,
   onBack,
+  otp,
+  onOtpChange,
   requestComplianceCsid,
+  canRequest,
   isPending,
   t,
 }: ComplianceCsidIdleProps) {
@@ -94,12 +102,28 @@ export function ComplianceCsidIdle({
       canAdvance={false}
       t={t}
       body={
-        <Button onClick={requestComplianceCsid} disabled={isPending}>
-          {!!isPending && (
-            <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" aria-hidden="true" />
-          )}
-          {t('requestButton')}
-        </Button>
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="zatca-otp">{t('otpLabel')}</Label>
+            <Input
+              id="zatca-otp"
+              type="text"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              value={otp}
+              onChange={event => onOtpChange(event.target.value)}
+              placeholder={t('otpPlaceholder')}
+              maxLength={32}
+            />
+            <p className="text-sm text-muted-foreground">{t('otpHint')}</p>
+          </div>
+          <Button onClick={requestComplianceCsid} disabled={!canRequest || isPending}>
+            {!!isPending && (
+              <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" aria-hidden="true" />
+            )}
+            {t('requestButton')}
+          </Button>
+        </div>
       }
     />
   );
@@ -160,15 +184,27 @@ export type ComplianceCsidViewProps = {
 } & HookResult;
 
 export function ComplianceCsid(props: Pick<ComplianceCsidViewProps, 'onSuccess' | 'onBack'>) {
-  const { phase, requestComplianceCsid, isPending, csidReceived, certStored, t } =
-    useComplianceCsid();
+  const {
+    phase,
+    otp,
+    setOtp,
+    canRequest,
+    requestComplianceCsid,
+    isPending,
+    csidReceived,
+    certStored,
+    t,
+  } = useComplianceCsid();
 
   if (phase === 'idle') {
     return (
       <ComplianceCsidIdle
         onSuccess={props.onSuccess}
         onBack={props.onBack}
+        otp={otp}
+        onOtpChange={setOtp}
         requestComplianceCsid={requestComplianceCsid}
+        canRequest={canRequest}
         isPending={isPending}
         t={t}
       />

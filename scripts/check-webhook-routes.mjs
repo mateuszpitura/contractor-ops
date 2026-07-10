@@ -208,6 +208,50 @@ const EXPECTED_ROUTES = {
     signature: 'none',
     note: 'CSRF-guarded session bridge',
   },
+
+  // --- Public-API developer portal (read-only; module.developer-portal) ---
+  'GET /docs/changelog': {
+    provider: 'self',
+    publisher: 'internal',
+    signature: 'none',
+    note: 'read-only developer docs behind module.developer-portal',
+  },
+  'GET /docs/deprecations': {
+    provider: 'self',
+    publisher: 'internal',
+    signature: 'none',
+    note: 'read-only developer docs behind module.developer-portal',
+  },
+  'GET /docs/recipes': {
+    provider: 'self',
+    publisher: 'internal',
+    signature: 'none',
+    note: 'read-only developer docs behind module.developer-portal',
+  },
+  'GET /docs/sdks': {
+    provider: 'self',
+    publisher: 'internal',
+    signature: 'none',
+    note: 'read-only developer docs behind module.developer-portal',
+  },
+  'GET /docs/webhooks': {
+    provider: 'self',
+    publisher: 'internal',
+    signature: 'none',
+    note: 'read-only developer docs behind module.developer-portal',
+  },
+  'GET /collections/insomnia.json': {
+    provider: 'self',
+    publisher: 'internal',
+    signature: 'none',
+    note: 'generated client collection behind module.developer-portal',
+  },
+  'GET /collections/postman.json': {
+    provider: 'self',
+    publisher: 'internal',
+    signature: 'none',
+    note: 'generated client collection behind module.developer-portal',
+  },
 };
 
 // Tokens that count as a signature / authn reference inside a route file.

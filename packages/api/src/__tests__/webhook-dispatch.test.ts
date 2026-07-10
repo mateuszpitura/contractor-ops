@@ -1,6 +1,6 @@
 /**
- * RED contract — INTEG-WEBHOOK-03 (retry backoff + DLQ + poison isolation + alert).
- * Turned GREEN by 100-06 (`services/webhooks/dispatcher.ts` + the outbox fan-out handler).
+ * Retry backoff + DLQ + poison isolation + alert contract
+ * (`services/webhooks/dispatcher.ts` + the outbox fan-out handler).
  *
  * Delivery retries follow the fixed webhook backoff [1m,5m,30m,2h,12h,24h] to a
  * max of 6 attempts; on exhaustion the attempt moves to the `webhook_failures`
@@ -38,7 +38,7 @@ describe('webhook backoff schedule (INTEG-WEBHOOK-03)', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Fan-out poison isolation (INTEG-WEBHOOK-03) — mocked prisma, no network I/O.
+// Fan-out poison isolation — mocked prisma, no network I/O.
 // ---------------------------------------------------------------------------
 
 const { prismaMock, enqueueJobMock } = vi.hoisted(() => {

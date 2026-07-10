@@ -13,19 +13,11 @@ const { mockContractorFindMany } = vi.hoisted(() => ({
   mockContractorFindMany: vi.fn(),
 }));
 
-vi.mock('@contractor-ops/db', () => {
-  const MockDbPrisma = {
-    contractor: {
-      findMany: mockContractorFindMany,
-    },
-  };
-  return {
-    withRlsTransactions: <T>(c: T) => c,
-    withRlsReads: <T>(c: T) => c,
-    prisma: MockDbPrisma,
-    prismaRaw: MockDbPrisma,
-  };
-});
+const testDb = {
+  contractor: {
+    findMany: mockContractorFindMany,
+  },
+};
 
 describe('normalizeHeader', () => {
   it('lowercases and strips punctuation', () => {
@@ -126,7 +118,7 @@ describe('processImportFile', () => {
       ['Test Ltd', '5260250995', 'x@example.com'],
     );
     const columnMapping = autoMapColumns(['legalName', 'taxId', 'email'], 'contractor');
-    const result = await processImportFile(buf, 'contractor', 'org_1', columnMapping);
+    const result = await processImportFile(buf, 'contractor', 'org_1', columnMapping, testDb);
     expect(result.totalRows).toBe(1);
     expect(result.validRows).toHaveLength(1);
     expect(result.invalidRows).toHaveLength(0);
@@ -140,7 +132,7 @@ describe('processImportFile', () => {
       ['Test Ltd', '5260250995', 'x@example.com'],
     );
     const columnMapping = autoMapColumns(['legalName', 'taxId', 'email'], 'contractor');
-    const result = await processImportFile(buf, 'contractor', 'org_1', columnMapping);
+    const result = await processImportFile(buf, 'contractor', 'org_1', columnMapping, testDb);
     expect(result.duplicateRows).toHaveLength(1);
     expect(result.duplicateRows[0]?.duplicateOf).toBe('c-existing');
     expect(result.validRows).toHaveLength(0);

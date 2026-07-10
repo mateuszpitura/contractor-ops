@@ -53,19 +53,36 @@ vi.mock('@contractor-ops/einvoice', () => {
     ksefConnectionConfigSchema: {
       parse: vi.fn().mockReturnValue({ environment: 'prod', authMethod: 'token' }),
     },
-    parseFa3Xml: vi.fn().mockReturnValue({ parsed: true }),
+    parseFa3Xml: vi.fn().mockReturnValue({
+      invoiceType: 'VAT',
+      seller: { taxId: '1234567890', name: 'Seller Sp. z o.o.' },
+      buyer: { taxId: '0987654321', name: 'Buyer Ltd' },
+      totals: { net: 8130, vat: 1870, gross: 10000 },
+      lines: [{ description: 'Service', net: 8130, vat: 1870, gross: 10000 }],
+    }),
     mapKsefToInvoiceFields: vi.fn().mockReturnValue({
       invoice: {
         invoiceNumber: 'FV/2026/001',
         sellerTaxId: '1234567890',
+        sellerName: 'Seller Sp. z o.o.',
+        subtotalMinor: 8130,
+        vatAmountMinor: 1870,
         totalMinor: 10000,
+        amountToPayMinor: 10000,
         currency: 'PLN',
         issueDate: new Date('2026-03-01'),
         dueDate: new Date('2026-03-15'),
         source: 'KSEF',
         externalInvoiceId: 'ref-001',
       },
-      lines: [{ description: 'Service', netMinor: 8130, vatMinor: 1870 }],
+      lines: [
+        {
+          description: 'Service',
+          netAmountMinor: 8130,
+          vatAmountMinor: 1870,
+          grossAmountMinor: 10000,
+        },
+      ],
     }),
   };
 });

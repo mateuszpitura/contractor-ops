@@ -160,7 +160,7 @@ export type UsageDashboardData = {
     currentPeriodEnd: string | null;
     cancelAt: string | null;
   } | null;
-  credits: { balance: number; allowance: number; used: number; tier: string };
+  credits: { balance: number; allowance: number; topUp: number; used: number; tier: string };
   activeContractors: number;
   includedSeats: number;
   planConfig: { tiers: Array<{ id: string; seatPriceMinor: number; [key: string]: unknown }> };

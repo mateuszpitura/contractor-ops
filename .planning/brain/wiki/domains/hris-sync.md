@@ -2,8 +2,9 @@
 title: HRIS two-way sync
 type: domain
 tags: [hris, personio, bamboohr, sync, integrations, workforce]
-source_commit: f0779951
+source_commit: e0d533fa
 verify_with:
+  - packages/integrations/src/services/token-refresh.ts
   - packages/api/src/services/hris-sync/field-partition.ts
   - packages/api/src/services/hris-sync/sync-hash.ts
   - packages/api/src/services/hris-sync/pull-orchestrator.ts
@@ -13,7 +14,7 @@ verify_with:
   - packages/api/src/services/outbox/hris-push-target.ts
   - packages/api/src/services/outbox/hris-push-producer.ts
   - packages/api/src/routers/workforce/hris-sync-router.ts
-updated: 2026-07-05
+updated: 2026-07-10
 ---
 
 # HRIS two-way sync
@@ -45,6 +46,7 @@ flowchart LR
   pull --> project[projectToWritablePatch]
   project --> hash[syncHash skip-if-unchanged]
   hash --> apply[applyPatchToWorker allowlist + ExternalLink org-scoped]
+  apply --> link[email auto-match or hrisSync.linkEmployee → ExternalLink]
   event[invoice-paid / payment-status / classification-outcome] --> enqueue[enqueueHrisEmployeePush EMPLOYEE-guarded]
   enqueue --> outbox[(OutboxEvent)]
   outbox --> handler[hris.*.push handler]
@@ -55,7 +57,7 @@ flowchart LR
 ## Loop-break
 
 - **Disjoint partition** — the pull writes only HRIS-owned fields (no push trigger); the push carries only CO-owned events (the pull allowlist can't map them). No cycle exists.
-- **`syncHash`** (SHA-256 of the writable projection, key-order-independent) makes the pull idempotent: an unchanged snapshot is a no-op write.
+- **`syncHash`** (SHA-256 of the writable projection, key-order-independent) makes the pull idempotent: an unchanged snapshot is a no-op write. **Hash is recorded only when `applyPatchToWorker` returns `applied:true`** — unlinked records are re-attempted after linking.
 - **`assertNotHrisOwnedField`** — a change-origin guard on every push that throws if a payload ever carries an HRIS-owned key (defense-in-depth against a future co-owned field re-introducing a loop).
 - HRIS-wins for HRIS-owned; CO-wins for CO-owned. No merge, no AI.
 
@@ -71,6 +73,12 @@ flowchart LR
 | Adapters | `personio-adapter.ts`, `bamboohr-adapter.ts` |
 | Cron | `hris-sync` hourly (`CRON_HRIS_SYNC_SCHEDULE`) |
 | UI | `components/hris-sync/*`, `pages/dashboard/settings/integrations-hris.tsx` |
+
+## Token refresh (`packages/integrations/src/services/token-refresh.ts`)
+
+- **Refresh-lock claim happens before the try/finally.** Losing the optimistic `refreshLockedAt` claim returns early, so the `finally` block can no longer clear ANOTHER process's `refreshLockedAt` — the claim, not a read-then-write check, is what prevents two concurrent callers from both hitting the OAuth token endpoint (double-refresh race).
+- **Refresh never writes `lastSyncAt` / `lastSuccessAt`.** Those are the hourly-sync throttle fields owned by the pull orchestrator; stamping them from refresh starved sync for short-TTL token providers. Refresh persists only the rotated credentials + expiry.
+- **Adapters without a `refreshToken` handler are skipped before claim/markFailed** (e.g. Personio, which uses long-lived credentials) — the refresh cron never flips them to `REAUTH_REQUIRED`.
 
 ## Agent mistakes
 

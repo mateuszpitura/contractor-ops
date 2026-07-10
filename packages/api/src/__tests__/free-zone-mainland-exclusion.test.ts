@@ -17,7 +17,14 @@ vi.mock('@contractor-ops/logger', () => ({
     debug: vi.fn(),
     child: vi.fn(),
   })),
+  createIntegrationLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+  })),
   createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
+  createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
 }));
 
 import type { FreeZoneComplianceClient } from '../services/free-zone-compliance';
@@ -77,6 +84,10 @@ function makeClient(): FreeZoneComplianceClient {
         if (row) Object.assign(row, args.data);
         return row;
       }) as never,
+    },
+    contractorComplianceReminderState: {
+      findUnique: (async () => null) as never,
+      upsert: (async () => ({})) as never,
     },
     auditLog: {
       create: (async (args: { data: Record<string, unknown> }) => {
@@ -148,8 +159,7 @@ describe('C2 (GULF-01/02, D-04) Mainland exclusion — no free-zone item, no pay
     expect(items[0]?.policyRuleId).toBe(FREE_ZONE_POLICY_RULE_ID);
     expect(items[0]?.status).toBe('EXPIRED');
     // Sensitive mutation is audited.
-    expect(audits).toHaveLength(1);
-    expect(audits[0]?.data.action).toBe('gulf.free_zone.compliance_item.create');
+    expect(audits.some(a => a.data.action === 'gulf.free_zone.compliance_item.create')).toBe(true);
   });
 
   it('writes a PENDING (not EXPIRED) item for a future-dated free-zone license [79-03]', async () => {

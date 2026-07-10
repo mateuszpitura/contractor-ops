@@ -48,8 +48,8 @@ describe('PUBLIC_API_SCOPES', () => {
     expect(PUBLIC_API_SCOPES).toContain('document:read');
   });
 
-  it('has exactly 4 scopes', () => {
-    expect(PUBLIC_API_SCOPES).toHaveLength(4);
+  it('has exactly 21 scopes', () => {
+    expect(PUBLIC_API_SCOPES).toHaveLength(21);
   });
 
   it('is readonly (frozen at the type level via as const)', () => {

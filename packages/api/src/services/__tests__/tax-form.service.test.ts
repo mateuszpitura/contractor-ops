@@ -125,13 +125,17 @@ describe('tax-form.service — computeExpiry (D-05)', () => {
 describe('tax-form.service — supersedeAndInsert (D-05, Pitfall 4)', () => {
   type Rec = Record<string, unknown>;
   let updateMany: ReturnType<typeof vi.fn>;
+  let findFirst: ReturnType<typeof vi.fn>;
+  let update: ReturnType<typeof vi.fn>;
   let create: ReturnType<typeof vi.fn>;
   let tx: Rec;
 
   beforeEach(() => {
     updateMany = vi.fn().mockResolvedValue({ count: 1 });
+    findFirst = vi.fn().mockResolvedValue({ id: 'prior-form-1' });
+    update = vi.fn().mockResolvedValue({});
     create = vi.fn().mockResolvedValue({ id: 'new-form-1', status: 'ACTIVE' });
-    tx = { taxFormSubmission: { updateMany, create } };
+    tx = { taxFormSubmission: { updateMany, findFirst, update, create } };
   });
 
   it('flips the prior ACTIVE row to SUPERSEDED then inserts the new ACTIVE row', async () => {
@@ -169,6 +173,12 @@ describe('tax-form.service — supersedeAndInsert (D-05, Pitfall 4)', () => {
     });
 
     expect(result.id).toBe('new-form-1');
+
+    expect(findFirst).toHaveBeenCalled();
+    expect(update).toHaveBeenCalledWith({
+      where: { id: 'prior-form-1' },
+      data: { supersededById: 'new-form-1' },
+    });
   });
 
   it('supersede runs before the insert (ordering)', async () => {
@@ -181,6 +191,7 @@ describe('tax-form.service — supersedeAndInsert (D-05, Pitfall 4)', () => {
       order.push('insert');
       return { id: 'x', status: 'ACTIVE' };
     });
+    findFirst.mockResolvedValue(null);
 
     await supersedeAndInsert(tx as never, {
       contractorId: 'c',

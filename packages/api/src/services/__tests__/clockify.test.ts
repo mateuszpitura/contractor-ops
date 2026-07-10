@@ -1,8 +1,16 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ---------------------------------------------------------------------------
 // Mocks (must be declared before imports)
 // ---------------------------------------------------------------------------
+
+const { mockFetchWithTimeout } = vi.hoisted(() => ({
+  mockFetchWithTimeout: vi.fn(),
+}));
+
+vi.mock('@contractor-ops/integrations', () => ({
+  fetchWithTimeout: mockFetchWithTimeout,
+}));
 
 vi.mock('@contractor-ops/integrations/services/credential-service', () => ({
   decryptCredentials: vi.fn().mockReturnValue({ accessToken: 'fake-api-key' }),
@@ -48,6 +56,7 @@ function createMockPrisma(overrides: Record<string, unknown> = {}) {
       aggregate: vi.fn().mockResolvedValue({ _sum: { minutes: 90 } }),
     },
     timesheet: {
+      findUnique: vi.fn().mockResolvedValue({ status: 'DRAFT' }),
       update: vi.fn().mockResolvedValue({}),
     },
     ...overrides,
@@ -59,13 +68,14 @@ function createMockPrisma(overrides: Record<string, unknown> = {}) {
 // ---------------------------------------------------------------------------
 
 function mockFetchResponse(entries: unknown[], status = 200) {
-  return vi.fn().mockResolvedValue({
+  mockFetchWithTimeout.mockResolvedValue({
     ok: status >= 200 && status < 300,
     status,
     json: () => Promise.resolve(entries),
     text: () => Promise.resolve(JSON.stringify(entries)),
     headers: { get: () => null },
   });
+  return mockFetchWithTimeout;
 }
 
 function makeClockifyEntry(id: string, duration: string, description = 'Work') {
@@ -130,17 +140,13 @@ describe('clockify', () => {
 
     beforeEach(() => {
       vi.clearAllMocks();
+      mockFetchWithTimeout.mockReset();
       mockPrisma = createMockPrisma();
-    });
-
-    afterEach(() => {
-      vi.unstubAllGlobals();
     });
 
     it('uses correct regional base URL for API calls', async () => {
       const entries = [makeClockifyEntry('e1', 'PT1H30M')];
       const fetchSpy = mockFetchResponse(entries);
-      vi.stubGlobal('fetch', fetchSpy);
 
       await syncClockifyEntries(
         mockPrisma,
@@ -167,7 +173,6 @@ describe('clockify', () => {
       });
 
       const fetchSpy = mockFetchResponse([]);
-      vi.stubGlobal('fetch', fetchSpy);
 
       await syncClockifyEntries(
         mockPrisma,
@@ -190,8 +195,7 @@ describe('clockify', () => {
       // Second page: fewer than 100 (last page)
       const page2 = [makeClockifyEntry('e100', 'PT30M')];
 
-      const fetchSpy = vi
-        .fn()
+      mockFetchWithTimeout
         .mockResolvedValueOnce({
           ok: true,
           status: 200,
@@ -204,8 +208,7 @@ describe('clockify', () => {
           json: () => Promise.resolve(page2),
           headers: { get: () => null },
         });
-
-      vi.stubGlobal('fetch', fetchSpy);
+      const fetchSpy = mockFetchWithTimeout;
 
       const result = await syncClockifyEntries(
         mockPrisma,
@@ -234,7 +237,7 @@ describe('clockify', () => {
 
     it('creates time entries with source=CLOCKIFY', async () => {
       const entries = [makeClockifyEntry('e1', 'PT1H')];
-      vi.stubGlobal('fetch', mockFetchResponse(entries));
+      mockFetchResponse(entries);
 
       await syncClockifyEntries(
         mockPrisma,
@@ -265,7 +268,7 @@ describe('clockify', () => {
       mockPrisma.timeEntry.findFirst.mockResolvedValueOnce({ id: 'existing_te_1' });
 
       const entries = [makeClockifyEntry('e1', 'PT2H')];
-      vi.stubGlobal('fetch', mockFetchResponse(entries));
+      mockFetchResponse(entries);
 
       const result = await syncClockifyEntries(
         mockPrisma,
@@ -290,7 +293,7 @@ describe('clockify', () => {
 
     it('recalculates timesheet totalMinutes after sync', async () => {
       const entries = [makeClockifyEntry('e1', 'PT1H30M')];
-      vi.stubGlobal('fetch', mockFetchResponse(entries));
+      mockFetchResponse(entries);
 
       mockPrisma.timeEntry.aggregate.mockResolvedValueOnce({
         _sum: { minutes: 150 },
@@ -318,7 +321,7 @@ describe('clockify', () => {
     });
 
     it('throws UNAUTHORIZED TRPCError on 401 response', async () => {
-      vi.stubGlobal('fetch', mockFetchResponse([], 401));
+      mockFetchResponse([], 401);
 
       await expect(
         syncClockifyEntries(
@@ -385,7 +388,7 @@ describe('clockify', () => {
         makeClockifyEntry('e1', 'PT1H'),
         makeClockifyEntry('e2', 'PT0S'), // zero duration
       ];
-      vi.stubGlobal('fetch', mockFetchResponse(entries));
+      mockFetchResponse(entries);
 
       const result = await syncClockifyEntries(
         mockPrisma,
@@ -404,7 +407,7 @@ describe('clockify', () => {
     });
 
     it('passes API key from decrypted credentials in X-Api-Key header', async () => {
-      vi.stubGlobal('fetch', mockFetchResponse([]));
+      mockFetchResponse([]);
 
       await syncClockifyEntries(
         mockPrisma,
@@ -417,7 +420,7 @@ describe('clockify', () => {
         '2024-06-30',
       );
 
-      const fetchCall = vi.mocked(fetch).mock.calls[0];
+      const fetchCall = mockFetchWithTimeout.mock.calls[0];
       const headers = fetchCall[1]?.headers as Record<string, string>;
       expect(headers['X-Api-Key']).toBe('fake-api-key');
     });

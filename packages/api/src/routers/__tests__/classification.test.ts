@@ -137,6 +137,28 @@ const {
         assessments.set(existing.id, updated);
         return updated;
       }),
+      updateMany: vi.fn(
+        async (args: { where: Record<string, unknown>; data: Partial<AssessmentRow> }) => {
+          const where = args.where ?? {};
+          const existing = assessments.get(where.id as string);
+          if (!existing) return { count: 0 };
+          if ('status' in where && where.status !== existing.status) return { count: 0 };
+          if ('updatedAt' in where && where.updatedAt !== existing.updatedAt) return { count: 0 };
+          const updated: AssessmentRow = {
+            ...existing,
+            ...args.data,
+            answers: (args.data.answers as Record<string, unknown>) ?? existing.answers,
+            updatedAt: new Date(),
+          };
+          assessments.set(existing.id, updated);
+          return { count: 1 };
+        },
+      ),
+      findFirstOrThrow: vi.fn(async (args: { where: { id: string } }) => {
+        const row = assessments.get(args.where.id);
+        if (!row) throw new Error('Row not found');
+        return row;
+      }),
     },
     contractorAssignment: {
       findFirst: vi.fn(async (args: { where: { id: string } }) => {
@@ -163,6 +185,9 @@ const {
     organization: {
       findUnique: vi.fn(async () => ({ dataRegion: 'EU', status: 'ACTIVE' })),
       findUniqueOrThrow: vi.fn(async () => ({ countryCode: 'GB' })),
+    },
+    auditLog: {
+      create: vi.fn(async () => ({})),
     },
     $transaction: vi.fn(async (fn: (tx: unknown) => Promise<unknown>) => fn(mockPrisma)),
   };
@@ -673,7 +698,7 @@ describe('classification.saveAnswer', () => {
       answer: 'yes',
     });
 
-    expect(updated.answers).toEqual({ 'Q-SUB-01': 'yes' });
+    expect(updated.answers).toEqual({ 'Q-SUB-01': { value: 'yes' } });
   });
 
   it('SA-2: rejects malformed answer payload as BAD_REQUEST', async () => {
@@ -706,16 +731,16 @@ describe('classification.saveAnswer', () => {
 
   it('SA-4: optimistic concurrency — stale expectedUpdatedAt rejects with CONFLICT', async () => {
     seedOrgAAssignmentGB();
-    const now = new Date();
-    seedDraft(DRAFT_ID_A, { updatedAt: new Date(now.getTime() + 5000) });
+    seedDraft(DRAFT_ID_A);
     const caller = makeCaller(ORG_A_ID);
+
+    mockPrisma.classificationAssessment.updateMany.mockResolvedValueOnce({ count: 0 });
 
     await expect(
       caller.classification.saveAnswer({
         assessmentId: DRAFT_ID_A,
         questionId: 'Q-SUB-01',
         answer: 'yes',
-        expectedUpdatedAt: now, // stale — row is 5s newer
       }),
     ).rejects.toMatchObject({ code: 'CONFLICT' });
   });

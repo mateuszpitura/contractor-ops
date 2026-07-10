@@ -21,7 +21,9 @@ export const GLOBAL_LOOKUP_MODELS_ALLOWLIST = [
   'WithholdingTaxRate', // reason: jurisdictional withholding-tax lookup — global reference
   'UaeFreeZone', // reason: global seed of UAE free zones (code + authority-name key); non-PII lookup, no tenant scope
   'Tax1099Threshold', // reason: tax-year-keyed federal 1099-NEC reporting threshold — global IRS reference, not tenant-scoped
+  'Tax1099KThreshold', // reason: tax-year-keyed 1099-K reporting threshold — global IRS reference, not tenant-scoped
   'StateFilingConfig', // reason: per-state Combined Federal/State Filing config keyed by state+year — global reference, not tenant-scoped
+  'PublicHoliday', // reason: global seeded holiday calendar keyed by country+date(+region); registered in globalModels, shared by all tenants
 
   // ── Tenant root (cannot reference itself) ──────────────────────────────
   'Organization', // reason: the tenant itself; organizationId points back to id
@@ -35,7 +37,10 @@ export const GLOBAL_LOOKUP_MODELS_ALLOWLIST = [
 
   // ── System / cron / dedup records (outside tenant boundary) ────────────
   'StripeEvent', // reason: webhook idempotency table keyed by event id — global
+  'MarketplaceListing', // reason: platform-level listing-status tracker keyed by unique marketplace platform — one row per marketplace, no tenant data
   'CronScanState', // reason: cron-job watermark keyed by job name — global
+  'CronJobRunState', // reason: per-job runner state keyed by unique jobName; per-region singleton, no tenant data
+  'IncidentReport', // reason: operator-authored public status-page incident history — platform resource, never customer data
   'NotificationCronDedup', // reason: cron-dedup keyed by notification id — global
   'PortalMagicToken', // reason: short-lived contractor-portal token; scoped via contractorId relation
 

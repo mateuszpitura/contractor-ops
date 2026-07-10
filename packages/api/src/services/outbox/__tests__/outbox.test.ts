@@ -4,13 +4,23 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 // Hoisted mocks
 // ---------------------------------------------------------------------------
 
-const { mockExecuteRawUnsafe, mockQueryRawUnsafe, mockTransaction, mockDispatchNotification } =
-  vi.hoisted(() => ({
-    mockExecuteRawUnsafe: vi.fn(),
-    mockQueryRawUnsafe: vi.fn(),
-    mockTransaction: vi.fn(),
-    mockDispatchNotification: vi.fn(),
-  }));
+const {
+  mockExecuteRawUnsafe,
+  mockQueryRawUnsafe,
+  mockTransaction,
+  mockDispatchNotification,
+  mockRegionalClient,
+} = vi.hoisted(() => ({
+  mockExecuteRawUnsafe: vi.fn(),
+  mockQueryRawUnsafe: vi.fn(),
+  mockTransaction: vi.fn(),
+  mockDispatchNotification: vi.fn(),
+  mockRegionalClient: {
+    $transaction: vi.fn(),
+    $executeRawUnsafe: vi.fn(),
+    $queryRawUnsafe: vi.fn(),
+  },
+}));
 
 vi.mock('@contractor-ops/logger', () => {
   const stub = {
@@ -47,13 +57,8 @@ vi.mock('@contractor-ops/logger', () => {
 vi.mock('@contractor-ops/db', () => ({
   withRlsTransactions: <T>(c: T) => c,
   withRlsReads: <T>(c: T) => c,
-  prismaRaw: {
-    // The drain splits work across
-    // a claim transaction (uses $transaction) plus per-row finalize
-    // updates (direct $executeRawUnsafe on the raw client, NO outer tx).
-    $transaction: (fn: (tx: unknown) => Promise<unknown>) => mockTransaction(fn),
-    $executeRawUnsafe: (...args: unknown[]) => mockExecuteRawUnsafe(...args),
-  },
+  SUPPORTED_REGIONS: ['EU'],
+  getRegionalClient: vi.fn(() => mockRegionalClient),
 }));
 
 vi.mock('@sentry/node', () => ({
@@ -98,6 +103,9 @@ beforeEach(() => {
       $queryRawUnsafe: mockQueryRawUnsafe,
     }),
   );
+  mockRegionalClient.$transaction = mockTransaction;
+  mockRegionalClient.$executeRawUnsafe = mockExecuteRawUnsafe;
+  mockRegionalClient.$queryRawUnsafe = mockQueryRawUnsafe;
   mockDispatchNotification.mockResolvedValue(undefined);
 });
 

@@ -35,6 +35,7 @@ import {
   GripVertical,
   KeyRound,
   Monitor,
+  ShieldCheck,
 } from 'lucide-react';
 import { useCallback, useState } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
@@ -140,6 +141,8 @@ const TASK_TYPE_ICONS: Record<string, React.ComponentType<{ className?: string }
   MEETING: Calendar,
   MANUAL: ClipboardList,
   NOTIFICATION: Bell,
+  IP_VERIFICATION: ShieldCheck,
+  CONTRACT_HEALTH_CHECK: ShieldCheck,
 };
 
 const TASK_TYPES = [
@@ -153,6 +156,8 @@ const TASK_TYPES = [
   'MEETING',
   'MANUAL',
   'NOTIFICATION',
+  'IP_VERIFICATION',
+  'CONTRACT_HEALTH_CHECK',
 ] as const;
 
 const ASSIGNEE_MODES = [

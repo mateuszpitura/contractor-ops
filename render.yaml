@@ -234,6 +234,10 @@ envVarGroups:
         sync: false
       - key: AUTENTI_WEBHOOK_SECRET
         sync: false
+      # Storecove (Peppol / e-invoicing) webhook HMAC secret — verifies
+      # inbound delivery-status callbacks (apps/api webhook route).
+      - key: STORECOVE_WEBHOOK_SECRET
+        sync: false
       - key: AZURE_BOT_APP_ID
         sync: false
       - key: AZURE_BOT_APP_SECRET
@@ -620,6 +624,17 @@ services:
         sync: false
       - key: API_URL
         sync: false
+      # ClamAV virus scanner (private service `clamav` above). Host auto-wired
+      # from the pserv over Render's private network; port is clamd's fixed
+      # 3310. Without these, virus-scanner.ts (packages/api) falls back to the
+      # 127.0.0.1:3310 dev default and every production scan throws.
+      - key: CLAMAV_HOST
+        fromService:
+          type: pserv
+          name: clamav
+          property: host
+      - key: CLAMAV_PORT
+        value: '3310'
 
   # ── Background Worker: in-process cron scheduler (node-cron) ────────────
   # Owns every schedule in-process. Job binding table:
@@ -669,16 +684,44 @@ services:
         sync: false
       - key: CRON_CLASSIFICATION_ECONOMIC_DEPENDENCY_SCHEDULE
         sync: false
+      - key: CRON_CONTRACT_EXPIRY_SCAN_SCHEDULE
+        sync: false
       - key: CRON_INPOST_STATUS_POLL_SCHEDULE
         sync: false
       - key: CRON_JOB_HEALTH_SCHEDULE
         sync: false
       - key: CRON_LATE_INTEREST_PDF_REAPER_SCHEDULE
         sync: false
+      - key: CRON_DOCUMENT_VIRUS_SCAN_RECONCILE_SCHEDULE
+        sync: false
       - key: CRON_TRIAL_NOTIFICATIONS_SCHEDULE
         sync: false
       - key: CRON_REMINDERS_SCHEDULE
         sync: false
+      - key: CRON_HRIS_SYNC_SCHEDULE
+        sync: false
+      - key: CRON_FORM_1099K_TRACKER_SCHEDULE
+        sync: false
+      - key: CRON_API_KEY_LEAK_ALARM_SCHEDULE
+        sync: false
+      - key: CRON_YEAR_END_1099_REMINDER_SCHEDULE
+        sync: false
+      - key: CRON_STRIPE_RECONCILE_SCHEDULE
+        sync: false
+      - key: CRON_ZATCA_RECONCILE_SCHEDULE
+        sync: false
+      - key: CRON_PEPPOL_RECONCILE_SCHEDULE
+        sync: false
+      # ClamAV virus scanner — the document-virus-scan-reconcile job re-invokes
+      # the packages/api scan path, which reads CLAMAV_HOST/PORT via
+      # getServerEnv(). Same wiring as api-server (see above).
+      - key: CLAMAV_HOST
+        fromService:
+          type: pserv
+          name: clamav
+          property: host
+      - key: CLAMAV_PORT
+        value: '3310'
 
   # ── Static Site: Vite SPA (replaces apps/web's [locale]/** pages) ───────
   # Bind the custom domain `app-next.contractor-ops.com` in the Render

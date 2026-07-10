@@ -130,7 +130,7 @@ describe('compliance-payment-gate assertion', () => {
       unknown
     >;
     expect(where.severity).toBe('BLOCKING');
-    expect(where.status).toBe('EXPIRED');
+    expect(where.status).toEqual({ in: ['EXPIRED', 'MISSING'] });
   });
 
   it('includes contractor.organizationId in WHERE when organizationId is provided (M-3 tenant guard)', async () => {
@@ -141,7 +141,9 @@ describe('compliance-payment-gate assertion', () => {
     >;
     // Defense-in-depth: the query must scope items to the calling org via the
     // contractor relation so a widened contractorIds set cannot read other orgs.
-    expect(where.contractor).toEqual({ is: { organizationId: ORG } });
+    expect(where.contractor).toEqual({
+      is: { organizationId: ORG, status: 'ACTIVE', deletedAt: null },
+    });
   });
 
   it('always scopes the tx path by contractor.organizationId (tenant guard cannot be bypassed via tx)', async () => {
@@ -152,7 +154,9 @@ describe('compliance-payment-gate assertion', () => {
     } as never;
     await assertContractorPaymentEligibility(['ctr-1'], { tx, organizationId: ORG });
     const where = txFindMany.mock.calls[0]?.[0]?.where as Record<string, unknown>;
-    expect(where.contractor).toEqual({ is: { organizationId: ORG } });
+    expect(where.contractor).toEqual({
+      is: { organizationId: ORG, status: 'ACTIVE', deletedAt: null },
+    });
   });
 
   it('returns immediately for an empty contractorIds array (no DB query)', async () => {
@@ -207,7 +211,7 @@ describe('compliance-payment-gate tx interop', () => {
 
     const result = await assertContractorPaymentEligibility(['ctr-1'], { tx, organizationId: ORG });
 
-    expect(txFindMany).toHaveBeenCalledTimes(1);
+    expect(txFindMany).toHaveBeenCalledTimes(2);
     expect(mockPrisma.contractorComplianceItem.findMany).not.toHaveBeenCalled();
     expect(result.blocked).toBe(false);
   });
@@ -230,5 +234,29 @@ describe('getDocumentTypeLabelKey', () => {
     expect(getDocumentTypeLabelKey('A1_CERTIFICATE', null)).toBe(
       'Compliance.documentType.compliance-policy-engine.a1_certificate',
     );
+  });
+});
+
+describe('compliance-payment-gate date-driven SATISFIED expiry', () => {
+  it('blocks when a SATISFIED BLOCKING item is past its jurisdiction expiry boundary', async () => {
+    const pastExpiry = new Date('2020-01-01T00:00:00Z');
+    mockPrisma.contractorComplianceItem.findMany
+      .mockImplementationOnce(async () => [])
+      .mockImplementationOnce(async () => [
+        blockingExpiredItem({
+          status: 'SATISFIED',
+          expiresAt: pastExpiry,
+          expiryJurisdictionTz: 'Europe/Berlin',
+        }),
+      ]);
+
+    await expect(
+      assertContractorPaymentEligibility(['ctr-1'], { organizationId: ORG }),
+    ).rejects.toMatchObject({ code: 'PRECONDITION_FAILED' });
+
+    expect(mockPrisma.contractorComplianceItem.findMany).toHaveBeenCalledTimes(2);
+    const satisfiedWhere = mockPrisma.contractorComplianceItem.findMany.mock.calls[1]?.[0]
+      ?.where as Record<string, unknown>;
+    expect(satisfiedWhere.status).toBe('SATISFIED');
   });
 });

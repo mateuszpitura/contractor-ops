@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+
 import {
   CARRIED_FORWARD_SOURCE_PREFIX,
   deriveAedRate,
@@ -6,6 +7,7 @@ import {
   fetchAndStoreRates,
   getRate,
   parseEcbXml,
+  roundHalfUpMinor,
   StaleExchangeRateError,
 } from '../exchange-rate';
 
@@ -187,5 +189,13 @@ describe('fetchAndStoreRates — carry-forward provenance', () => {
     ]);
     await fetchAndStoreRates(db, failingFetch);
     expect(upsertArgs[0]?.create.source).toBe(`${CARRIED_FORWARD_SOURCE_PREFIX}:2026-04-01`);
+  });
+});
+
+describe('roundHalfUpMinor', () => {
+  it('rounds negative amounts away from zero (HALF-UP)', () => {
+    expect(roundHalfUpMinor(-2.5)).toBe(-3);
+    expect(roundHalfUpMinor(-2.4)).toBe(-2);
+    expect(roundHalfUpMinor(2.5)).toBe(3);
   });
 });

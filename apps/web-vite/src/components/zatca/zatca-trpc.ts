@@ -74,7 +74,10 @@ export interface ZatcaTrpcProxy {
     mutationOptions: () => Record<string, unknown>;
   };
   requestComplianceCsid: {
-    mutationOptions: () => Record<string, unknown>;
+    mutationOptions: () => {
+      mutationFn?: (input: { otp: string }) => Promise<unknown>;
+      [key: string]: unknown;
+    };
   };
   runComplianceChecks: {
     mutationOptions: () => Record<string, unknown>;

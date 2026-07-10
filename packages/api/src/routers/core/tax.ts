@@ -2,6 +2,7 @@ import { whtServiceTypeEnum } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { router } from '../../init';
+import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
 import {
   calculateWht,
@@ -69,6 +70,7 @@ export const taxRouter = router({
     .input(z.object({ paymentRunItemId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       return createWhtCertificate({
+        db: ctx.db,
         organizationId: ctx.organizationId,
         paymentRunItemId: input.paymentRunItemId,
         generatedByUserId: ctx.user.id,
@@ -76,12 +78,15 @@ export const taxRouter = router({
     }),
 
   /** List WHT certificates for the org */
-  listWhtCertificates: tenantProcedure.query(async ({ ctx }) => {
-    return listWhtCertificates(ctx.organizationId);
-  }),
+  listWhtCertificates: tenantProcedure
+    .use(requirePermission({ payment: ['read'] }))
+    .query(async ({ ctx }) => {
+      return listWhtCertificates(ctx.organizationId, ctx.db);
+    }),
 
   /** Get a single WHT certificate by ID */
   getWhtCertificate: tenantProcedure
+    .use(requirePermission({ payment: ['read'] }))
     .input(z.object({ certificateId: z.string() }))
     .query(async ({ ctx, input }) => {
       const cert = await ctx.db.whtCertificate.findUnique({
@@ -121,7 +126,7 @@ export const taxRouter = router({
       _sum: { vatAmountMinor: true },
     });
 
-    // WHT withheld this period
+    // WHT withheld this period (certificates issued in the window)
     const whtCerts = await ctx.db.whtCertificate.findMany({
       where: {
         organizationId: ctx.organizationId,
@@ -132,16 +137,30 @@ export const taxRouter = router({
     const whtWithheld = whtCerts.reduce((sum, c) => sum + c.whtAmountMinor, 0);
     const whtCertCount = whtCerts.length;
 
-    // Pending WHT (payment run items with WHT but no certificate)
-    const pendingWht = await ctx.db.paymentRunItem.aggregate({
+    // Pending WHT: items in period with WHT that still lack any linked certificate
+    const itemsWithWht = await ctx.db.paymentRunItem.findMany({
       where: {
         organizationId: ctx.organizationId,
         whtAmountMinor: { gt: 0 },
         createdAt: { gte: startOfPeriod, lte: endOfPeriod },
       },
-      _sum: { whtAmountMinor: true },
-      _count: true,
+      select: { id: true, whtAmountMinor: true },
     });
+    const itemIds = itemsWithWht.map(i => i.id);
+    const linkedCerts =
+      itemIds.length === 0
+        ? []
+        : await ctx.db.whtCertificate.findMany({
+            where: {
+              organizationId: ctx.organizationId,
+              paymentRunItemId: { in: itemIds },
+            },
+            select: { paymentRunItemId: true },
+          });
+    const certedItemIds = new Set(linkedCerts.map(c => c.paymentRunItemId));
+    const pendingItems = itemsWithWht.filter(i => !certedItemIds.has(i.id));
+    const whtPendingMinor = pendingItems.reduce((sum, i) => sum + (i.whtAmountMinor ?? 0), 0);
+    const whtPendingCount = pendingItems.length;
 
     return {
       vatCollectedMinor: vatCollected._sum.vatAmountMinor ?? 0,
@@ -149,8 +168,8 @@ export const taxRouter = router({
       vatNetMinor: (vatCollected._sum.vatAmountMinor ?? 0) - (vatOwed._sum.vatAmountMinor ?? 0),
       whtWithheldMinor: whtWithheld,
       whtCertCount,
-      whtPendingMinor: (pendingWht._sum.whtAmountMinor ?? 0) - whtWithheld,
-      whtPendingCount: Math.max(0, (pendingWht._count ?? 0) - whtCertCount),
+      whtPendingMinor,
+      whtPendingCount,
       periodStart: startOfPeriod.toISOString(),
       periodEnd: endOfPeriod.toISOString(),
     };

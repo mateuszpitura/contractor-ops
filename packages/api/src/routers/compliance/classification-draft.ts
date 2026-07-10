@@ -213,22 +213,30 @@ export const classificationDraftRouter = router({
         });
       }
 
-      // Optimistic concurrency — reject stale writes before merging.
-      if (input.expectedUpdatedAt && row.updatedAt.getTime() > input.expectedUpdatedAt.getTime()) {
+      const mergedAnswers: Record<string, unknown> = {
+        ...((row.answers as Record<string, unknown>) ?? {}),
+        [input.questionId]: parsed.data,
+      };
+
+      // Optimistic concurrency — atomic compare-and-swap on updatedAt + DRAFT status.
+      const updated = await ctx.db.classificationAssessment.updateMany({
+        where: {
+          id: row.id,
+          status: 'DRAFT',
+          updatedAt: row.updatedAt,
+        },
+        data: { answers: mergedAnswers as Prisma.InputJsonValue },
+      });
+
+      if (updated.count === 0) {
         throw new TRPCError({
           code: 'CONFLICT',
           message: CLASSIFICATION_STALE_ANSWER,
         });
       }
 
-      const mergedAnswers: Record<string, unknown> = {
-        ...((row.answers as Record<string, unknown>) ?? {}),
-        [input.questionId]: parsed.data,
-      };
-
-      return ctx.db.classificationAssessment.update({
+      return ctx.db.classificationAssessment.findFirstOrThrow({
         where: { id: row.id },
-        data: { answers: mergedAnswers as Prisma.InputJsonValue },
       });
     }),
 

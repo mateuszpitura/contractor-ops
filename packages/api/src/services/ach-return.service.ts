@@ -17,7 +17,10 @@
  */
 
 import { createLogger } from '@contractor-ops/logger';
+import { revertInvoicePaymentOutcome } from '../routers/finance/payment-shared';
 import { writeAuditLog } from './audit-writer';
+import type { OutboxTransactionalClient } from './outbox';
+import { enqueuePaymentStatusNotification, getPaymentNotifyUserIds } from './payment-notification';
 import type { DbClient } from './types';
 
 const log = createLogger({ service: 'ach-return' });
@@ -46,6 +49,11 @@ export interface ApplyAchReturnsArgs {
   paymentRunId: string;
   actorId: string;
   entries: AchReturnEntry[];
+  /** Optional ingestion-level audit written in the same transaction. */
+  ingestAudit?: {
+    entryCount: number;
+    fileBytes: number;
+  };
 }
 
 export interface ApplyAchReturnsResult {
@@ -166,7 +174,14 @@ type LoadedRunItem = {
   status: string;
   failureReason: string | null;
   paymentReference: string | null;
-  invoice: { invoiceNumber: string | null } | null;
+  amountMinor: number;
+  invoiceId: string | null;
+  invoice: {
+    id: string;
+    invoiceNumber: string | null;
+    currency: string;
+    paymentStatus: string;
+  } | null;
 };
 
 /** Match a return entry to its live item by invoice number, then payment reference. */
@@ -199,12 +214,26 @@ export async function applyAchReturns(
   db: DbClient,
   args: ApplyAchReturnsArgs,
 ): Promise<ApplyAchReturnsResult> {
-  const { organizationId, paymentRunId, actorId, entries } = args;
+  const { organizationId, paymentRunId, actorId, entries, ingestAudit } = args;
+
+  const financeRecipients = await getPaymentNotifyUserIds(
+    db as unknown as import('../lib/tenant-db').TenantScopedDb,
+    organizationId,
+  );
 
   const result = await db.$transaction(async tx => {
+    const run = await tx.paymentRun.findFirst({
+      where: { id: paymentRunId, organizationId },
+      select: { runNumber: true },
+    });
+
     const items = (await tx.paymentRunItem.findMany({
       where: { paymentRunId, organizationId },
-      include: { invoice: { select: { invoiceNumber: true } } },
+      include: {
+        invoice: {
+          select: { id: true, invoiceNumber: true, currency: true, paymentStatus: true },
+        },
+      },
     })) as LoadedRunItem[];
 
     let failed = 0;
@@ -252,6 +281,28 @@ export async function applyAchReturns(
         where: { id: match.id },
         data: { status: 'FAILED', failureReason },
       });
+      if (match.invoiceId) {
+        const paymentStatus = match.invoice?.paymentStatus;
+        if (paymentStatus === 'PAID' || paymentStatus === 'PARTIALLY_PAID') {
+          await revertInvoicePaymentOutcome(tx, {
+            organizationId,
+            invoiceId: match.invoiceId,
+            sourcePaymentRunItemId: match.id,
+          });
+        } else {
+          await tx.invoice.updateMany({
+            where: {
+              id: match.invoiceId,
+              organizationId,
+              paymentStatus: { in: ['READY', 'IN_RUN'] },
+            },
+            data: {
+              paymentStatus: 'NOT_READY',
+              readyForPaymentAt: null,
+            },
+          });
+        }
+      }
       // Reflect the transition locally so a second entry in the same file that
       // targets this item is skipped rather than re-flipped.
       match.status = 'FAILED';
@@ -272,7 +323,42 @@ export async function applyAchReturns(
           amountMinor: entry.amountMinor,
         },
       });
+
+      await enqueuePaymentStatusNotification(tx as unknown as OutboxTransactionalClient, {
+        organizationId,
+        paymentRunId,
+        runNumber: run?.runNumber ?? null,
+        itemId: match.id,
+        invoiceId: match.invoiceId ?? match.id,
+        invoiceNumber: match.invoice?.invoiceNumber ?? null,
+        status: 'FAILED',
+        amountMinor: match.amountMinor,
+        currency: match.invoice?.currency ?? 'USD',
+        failureReason,
+        recipientUserIds: financeRecipients,
+      });
+
       failed += 1;
+    }
+
+    if (ingestAudit) {
+      await writeAuditLog({
+        tx,
+        organizationId,
+        actorType: 'USER',
+        actorId,
+        action: 'payment_run.ach_return_ingested',
+        resourceType: 'PAYMENT_RUN',
+        resourceId: paymentRunId,
+        metadata: {
+          entryCount: ingestAudit.entryCount,
+          fileBytes: ingestAudit.fileBytes,
+          failed,
+          advisory,
+          skipped,
+          unmatched,
+        },
+      });
     }
 
     return { failed, advisory, skipped, unmatched };

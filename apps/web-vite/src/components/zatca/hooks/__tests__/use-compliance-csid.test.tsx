@@ -53,6 +53,7 @@ describe('useComplianceCsid', () => {
     });
     const { result } = renderHookWithProviders(() => useComplianceCsid());
 
+    act(() => result.current.setOtp('1234'));
     await act(async () => {
       result.current.requestComplianceCsid();
     });
@@ -73,6 +74,7 @@ describe('useComplianceCsid', () => {
     });
     const { result } = renderHookWithProviders(() => useComplianceCsid());
 
+    act(() => result.current.setOtp('1234'));
     await act(async () => {
       result.current.requestComplianceCsid();
     });

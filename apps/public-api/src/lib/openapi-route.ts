@@ -20,7 +20,7 @@ export const errorResponses = {
 /**
  * Wraps a per-entity `.strict()` list DTO so the `createRoute` request.query
  * validation reconstructs `filter[field]=` bracket params into the nested
- * `{ filter: {...} }` object BEFORE `.strict()` runs (Pitfall 6). The params
+ * `{ filter: {...} }` object BEFORE `.strict()` runs. The params
  * still surface in the OpenAPI spec.
  *
  * At runtime this is a `z.preprocess(...)` wrapper; the return type is cast back

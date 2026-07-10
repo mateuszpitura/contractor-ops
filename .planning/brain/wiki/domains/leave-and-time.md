@@ -2,7 +2,8 @@
 title: Leave & KP-grade employee time
 type: domain
 tags: [leave, time, ewidencja, working-time, approval-chain, append-only, workforce, feature-flags]
-source_commit: a264e82032ff13d5460ffa408419104ee40287d3
+source_commit: e0d533fa5
+updated: 2026-07-10
 verify_with:
   - packages/db/prisma/schema/leave.prisma
   - packages/db/prisma/schema/employee-time.prisma
@@ -10,6 +11,7 @@ verify_with:
   - packages/db/prisma/schema/reference.prisma
   - packages/db/src/tenant.ts
   - packages/api/src/routers/workforce/leave.ts
+  - packages/api/src/routers/core/approval-shared.ts
   - packages/api/src/routers/workforce/employee-time.ts
   - packages/api/src/routers/workforce/ewidencja.ts
   - packages/api/src/services/leave-balance.ts
@@ -20,7 +22,6 @@ verify_with:
   - apps/web-vite/src/components/leave/hooks/use-team-calendar.ts
   - apps/web-vite/src/components/employee-time/hooks/use-employee-time.ts
   - apps/web-vite/src/components/employee-time/ewidencja/hooks/use-ewidencja.ts
-updated: 2026-07-05
 ---
 
 # Leave & KP-grade employee time
@@ -50,10 +51,10 @@ flowchart TB
 
 - **Leave balance is a fold over an append-only ledger.** `LeaveLedgerEntry` is registered in `APPEND_ONLY_MODELS` (`packages/db/src/tenant.ts`) — rows are written once; corrections are **reversing `ADJUSTMENT` rows**, never edits. `computeLeaveBalance(rows)` (`leave-balance.ts`) sums `minutes`; `recomputeBalanceCache` refreshes the `LeaveBalance` cache row per (worker, leaveType, year). A missing `etat`/entitlement never throws (defaults apply).
 - **Leave requests ride the generic approval chain at two seams.** `submitLeaveRequest` calls `routeToLeaveChain` + `createApprovalFlow` (`approval-engine.ts`) with `resourceType='LEAVE_REQUEST'`; approve/reject is NOT re-implemented — it is the shared, resourceType-gated approval procedure, so a `leave_approver`/`hr_admin` actions a leave request via `employee:approve_leave` and never gains `invoice:approve` (the BFLA fence). See [[approvals-engine]].
-- **Sick is direct.** `recordSickAbsence` writes a negative `DEDUCTION` ledger row against the org's `SICK` leave type and dispatches `LEAVE_SICK_RECORDED` to the approver roles — zero `ApprovalFlow` rows. Blackout overlap + insufficient-balance are rejected at submit; `listTeamCalendar` buckets PENDING/APPROVED requests per team and flags a day in conflict when ≥2 overlap.
+- **Sick is direct.** `recordSickAbsence` writes a negative `DEDUCTION` ledger row against the org's `SICK` leave type and dispatches `LEAVE_SICK_RECORDED` to the approver roles — zero `ApprovalFlow` rows. Fire-and-forget notification failures are logged (not swallowed). Sick/adjustment audits use `resourceType:'WORKER'`; org-level leave-type/blackout config audits use `resourceType:'ORGANIZATION'` with the config id in metadata. Blackout overlap + insufficient-balance are rejected at submit; `listTeamCalendar` buckets PENDING/APPROVED requests per team and flags a day in conflict when ≥2 overlap.
 - **Employee time is a distinct day-grain model.** `EmployeeTimeRecord` (one row per worker per `workDate`, upserted) is the statutory model keyed on `workerId` — **separate** from the contractor-coupled `TimeEntry` (see [[time-and-reconciliation]]). `upsertRecord` returns `{ record, findings }`: the sync `checkWtLimits` (pure, per-jurisdiction, `compliance-policy`) flags daily-ceiling / current-week breaches as a **non-blocking advisory payload** carrying dotted i18n copy-keys — it never throws, so a legitimate save is never blocked.
 - **The true rolling breach is the daily scan.** `runWtLimitScan` (`wt-limit-scan.ts`, executed inside the reminders cron) fans out over regions, computes per-worker rolling weekly averages, and dispatches ONE `employee.wt_limit_breach` digest per recipient/day, deduped by a **region-prefixed** key. See [[structure/cron-jobs]].
-- **Ewidencja is INSERT-only and DB-immutable.** `generate` freezes the KP §149 field set via `buildEwidencjaSnapshot` + `supersedeAndInsertEwidencja` (`ewidencja-builder.ts`): regenerating INSERTs a superseding version (`version+1` + `previousSnapshotId`), never updating a prior row. A `BEFORE UPDATE` trigger `app.reject_ewidencja_update` (migration `20260701000000_ewidencja_append_only`) rejects any UPDATE at the DB. The current register for a period is the highest-`version` row; no `status` flip is written.
+- **Ewidencja is INSERT-only and DB-immutable.** `generate` freezes the KP §149 field set via `buildEwidencjaSnapshot` + `supersedeAndInsertEwidencja` (`ewidencja-builder.ts`): regenerating INSERTs a superseding version (`version+1` + `previousSnapshotId`), never updating a prior row. Periods must be **month-aligned** (UTC first day through last day of the same month); concurrent regenerate races map `P2002` → typed `CONFLICT`. A `BEFORE UPDATE` trigger `app.reject_ewidencja_update` (migration `20260701000000_ewidencja_append_only`) rejects any UPDATE at the DB. The current register for a period is the highest-`version` row; no `status` flip is written.
 
 ## Entry points
 
@@ -84,13 +85,16 @@ Staff/manager surfaces in `apps/web-vite`, each a thin flag-gated page + wired s
 
 ## Invariants
 
-- **Leave balance = Σ append-only `LeaveLedgerEntry.minutes`**; corrections are reversing `ADJUSTMENT` rows, never row edits (`LeaveLedgerEntry` ∈ `APPEND_ONLY_MODELS`). Balance compute never throws on a missing entitlement.
+- **Leave balance = Σ append-only `LeaveLedgerEntry.minutes`**; corrections are reversing `ADJUSTMENT` rows, never row edits (`LeaveLedgerEntry` ∈ `APPEND_ONLY_MODELS`). Balance compute never throws on a missing entitlement. **`submitLeaveRequest` and `getBalance` both scope ledger rows to the leave year** (UTC `[Jan 1, Jan 1 next year)` of the request start date / optional `year` param) so submit-time sufficiency matches the UI balance anchor.
 - **`EmployeeTimeRecord` is the employee statutory time model on `workerId`** — DISTINCT from the contractor-coupled `TimeEntry`; the web-vite hook must call `employeeTime.*`, never `time.*` (`check:web-vite-data-layer` + distinct namespaces enforce the boundary).
 - **`EwidencjaSnapshot` is INSERT-only + DB-trigger-immutable** (`app.reject_ewidencja_update`): supersession is a new version row (`version+1` + `previousSnapshotId`); the old row stays archived — never deleted (a 10yr KP §94⁴ retention floor is satisfied by non-deletion; the 3yr immutability floor by the trigger).
 - **`LEAVE_REQUEST` extends the generic approval chain at exactly two seams** (route → `routeToLeaveChain`, finalize → shared approve/reject); no leave-specific approval fork. The resourceType→permission gate keeps `leave_approver` off `invoice:approve`.
 - **The WT-limit daily scan fans out over regions with region-prefixed dedup keys** — one digest per recipient/day per region.
 - **On-save WT breach is a warning, not a gate** — `upsertRecord` commits and returns `findings`; it never throws on breach.
 - **Statutory leave-accrual + working-time rules are per-market registries in `compliance-policy`** (`leave-registry.ts` / `wt-registry.ts`, registered on import from `policies/<cc>.ts`). Registered markets: **PL, DE, UK, UAE, KSA** (ANNUAL leave + a working-time limit each). **US is intentionally unregistered** — federal law has no statutory paid-leave floor and the FLSA sets no maximum-hours cap (overtime-premium only), so `resolveLeaveAccrual('US','ANNUAL')` / `resolveWtLimits('US')` return `undefined` and the caller falls back to org policy (documented in `policies/us.ts`; do not add a fabricated rule). All registered rule values carry a cited statute + `PENDING legal review` adviser-verify annotation.
+- **Leave finalize materializes ewidencja inside a 120s `$transaction`.** The per-day ewidencja materialization loop runs inside `$transaction({ timeout: 120_000, maxWait: 10_000 })` on all three approval paths — bulk approve (`packages/api/src/routers/core/approval-queue.ts`), single approve (`packages/api/src/routers/core/approval-shared.ts`), and portal-manager approve (`packages/api/src/routers/portal/portal-manager-router.ts`). Long ranges (PARENTAL ≈ 1 year ≈ 700 round-trips) exceed Prisma's 5s interactive-tx default and would abort with P2028.
+- **`use-ewidencja.ts` does not override `errorMessage` statically** — coded errors like `ewidencjaVersionConflict` surface their translated refresh guidance instead of a generic message.
+- **ACCRUAL/CARRYOVER/ADJUSTMENT writers are live.** `leave-accrual.ts` wires `accrueAnnual` on `employee.register` + the daily reminders sub-job (`runLeaveAccrualScan`); year-end carryover runs on 1 Jan; HR corrections use `leave.adjustBalance` (append-only `ADJUSTMENT` rows).
 
 ## Related
 

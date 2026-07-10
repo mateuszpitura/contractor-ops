@@ -3,10 +3,12 @@
  *
  * Routing matrix:
  *
- *   - /api/auth/*    → exempt (Better Auth owns granular per-endpoint
- *                      limits, account lockout, Turnstile).
- *   - /api/portal/*  → 10 req/min per IP.
- *   - /api/* (rest)  → 60 req/min per IP.
+ *   - /api/auth/*         → exempt (Better Auth owns granular per-endpoint
+ *                           limits, account lockout, Turnstile).
+ *   - /api/trpc/portal/*  → 10 req/min per IP (portal tRPC).
+ *   - /api/portal/*       → 10 req/min per IP.
+ *   - /portal/*           → 10 req/min per IP (session set/clear REST).
+ *   - /api/* (rest)       → 60 req/min per IP (incl. staff /api/trpc/*).
  *
  * Hooked at `preHandler` so route handlers never see throttled traffic.
  * On `RateLimiterUnavailableError` (prod-only fail-closed posture) the
@@ -18,6 +20,23 @@ import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import type { Env } from '../env.js';
 import { createClientIpExtractor } from '../lib/client-ip.js';
 import { createRateLimiter, RateLimiterUnavailableError } from '../lib/rate-limit-store.js';
+
+/**
+ * Whether `url` belongs to a portal surface and must use the strict 10/min
+ * portal bucket rather than the 60/min API bucket.
+ *
+ * `/api/trpc/portal/` is matched with the trailing slash so it mirrors the
+ * portal-mount guard in `plugins/trpc.ts` and never swallows a hypothetical
+ * staff namespace like `/api/trpc/portalfoo`. Portal tRPC requests always take
+ * the form `/api/trpc/portal/<procedure>` (see `PORTAL_PREFIX` in trpc.ts).
+ */
+export function usesPortalLimiter(url: string): boolean {
+  return (
+    url.startsWith('/api/trpc/portal/') ||
+    url.startsWith('/api/portal') ||
+    url.startsWith('/portal')
+  );
+}
 
 export async function registerRateLimit(app: FastifyInstance, env: Env): Promise<void> {
   const failurePosture = env.NODE_ENV === 'production' ? 'production' : 'permissive';
@@ -68,8 +87,7 @@ export async function registerRateLimit(app: FastifyInstance, env: Env): Promise
     // Exempt: health/ready/csp-report — operator probes + browser beacons.
     if (url === '/health' || url === '/ready' || url === '/csp-report') return;
 
-    const limiter =
-      url.startsWith('/api/portal') || url.startsWith('/portal') ? portalLimiter : apiLimiter;
+    const limiter = usesPortalLimiter(url) ? portalLimiter : apiLimiter;
 
     const identifier = extractIp(request);
     try {

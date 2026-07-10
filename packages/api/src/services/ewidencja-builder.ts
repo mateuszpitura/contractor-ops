@@ -12,6 +12,9 @@
 // UPDATE-reject trigger on EwidencjaSnapshot never conflicts. Prior rows are
 // never updated. The "current" register is the highest-version row.
 
+import { TRPCError } from '@trpc/server';
+
+import * as E from '../errors';
 import type { TxClient } from './approval-engine';
 
 export interface EwidencjaDayEntry {
@@ -86,6 +89,35 @@ function periodKeyFor(periodStart: Date): string {
   const year = periodStart.getUTCFullYear();
   const month = String(periodStart.getUTCMonth() + 1).padStart(2, '0');
   return `${year}-${month}`;
+}
+
+function isPrismaUniqueViolation(err: unknown): boolean {
+  return (
+    typeof err === 'object' &&
+    err !== null &&
+    'code' in err &&
+    (err as { code?: unknown }).code === 'P2002'
+  );
+}
+
+/**
+ * Ewidencja registers are keyed by calendar month. Reject spans that are not
+ * exactly one UTC month (first day through last day of the same month).
+ */
+export function assertMonthAlignedPeriod(periodStart: Date, periodEnd: Date): void {
+  const year = periodStart.getUTCFullYear();
+  const month = periodStart.getUTCMonth();
+  const lastDay = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
+
+  const aligned =
+    periodStart.getUTCDate() === 1 &&
+    periodEnd.getUTCFullYear() === year &&
+    periodEnd.getUTCMonth() === month &&
+    periodEnd.getUTCDate() === lastDay;
+
+  if (!aligned) {
+    throw new TRPCError({ code: 'BAD_REQUEST', message: E.EWIDENCJA_PERIOD_NOT_MONTH_ALIGNED });
+  }
 }
 
 export async function buildEwidencjaSnapshot(
@@ -194,21 +226,28 @@ export async function supersedeAndInsertEwidencja(
 
   const nextVersion = (prior?.version ?? 0) + 1;
 
-  const created = await tx.ewidencjaSnapshot.create({
-    data: {
-      organizationId: input.organizationId,
-      workerId: input.workerId,
-      periodStart: input.periodStart,
-      periodEnd: input.periodEnd,
-      periodKey: input.periodKey,
-      version: nextVersion,
-      previousSnapshotId: prior?.id ?? null,
-      status: 'ACTIVE',
-      snapshotJson: input.snapshotJson as unknown as object,
-      generatedByUserId: input.generatedByUserId ?? null,
-    },
-    select: { id: true, version: true },
-  });
+  try {
+    const created = await tx.ewidencjaSnapshot.create({
+      data: {
+        organizationId: input.organizationId,
+        workerId: input.workerId,
+        periodStart: input.periodStart,
+        periodEnd: input.periodEnd,
+        periodKey: input.periodKey,
+        version: nextVersion,
+        previousSnapshotId: prior?.id ?? null,
+        status: 'ACTIVE',
+        snapshotJson: input.snapshotJson as unknown as object,
+        generatedByUserId: input.generatedByUserId ?? null,
+      },
+      select: { id: true, version: true },
+    });
 
-  return created;
+    return created;
+  } catch (err) {
+    if (isPrismaUniqueViolation(err)) {
+      throw new TRPCError({ code: 'CONFLICT', message: E.EWIDENCJA_VERSION_CONFLICT });
+    }
+    throw err;
+  }
 }

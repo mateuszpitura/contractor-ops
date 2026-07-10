@@ -26,6 +26,12 @@ vi.mock('@contractor-ops/logger', () => ({
     debug: vi.fn(),
     child: vi.fn(),
   })),
+  createIntegrationLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+  })),
   createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
 }));
 vi.mock('../compliance-payment-gate', () => ({
@@ -53,7 +59,22 @@ function makeTx(heldFlows: FlowRow[]) {
         updates.push({ id: args.where.id, data: args.data });
         return {};
       }),
+      findUniqueOrThrow: vi.fn(async ({ where }: { where: { id: string } }) => {
+        const flow = heldFlows.find(f => f.id === where.id);
+        return {
+          id: where.id,
+          currentStepOrder: 1,
+          chainConfigId: null,
+          resourceType: flow?.resourceType ?? 'INVOICE',
+          resourceId: flow?.resourceId ?? 'inv-1',
+          steps: [{ id: 'step-1', stepOrder: 1, status: 'APPROVED', approverUserId: null }],
+        };
+      }),
     },
+    approvalStep: { update: vi.fn(async () => ({})) },
+    approvalChainConfig: { findUnique: vi.fn(async () => null) },
+    invoice: { findUnique: vi.fn(async () => null) },
+    contractor: { findUnique: vi.fn(async () => null) },
     auditLog: {
       create: vi.fn(async (args: { data: Record<string, unknown> }) => {
         audits.push(args.data);

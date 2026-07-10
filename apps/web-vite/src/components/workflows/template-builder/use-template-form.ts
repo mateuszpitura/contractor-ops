@@ -4,7 +4,7 @@
 
 import { workflowAssignableRoleValues } from '@contractor-ops/validators/roles';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { z } from 'zod';
 
@@ -34,6 +34,8 @@ const taskSchema = z.object({
     'MEETING',
     'MANUAL',
     'NOTIFICATION',
+    'IP_VERIFICATION',
+    'CONTRACT_HEALTH_CHECK',
   ]),
   sortOrder: z.number().int().nonnegative(),
   required: z.boolean(),
@@ -63,6 +65,17 @@ export const templateFormSchema = z.object({
 export type TemplateFormValues = z.infer<typeof templateFormSchema>;
 export type TaskFormValues = z.infer<typeof taskSchema>;
 
+const OFFBOARDING_IP_VERIFICATION_TASK: Omit<TaskFormValues, 'sortOrder'> = {
+  title: 'IP verification',
+  description: 'Confirm no IP retained off-platform.',
+  taskType: 'IP_VERIFICATION',
+  required: true,
+  assigneeMode: 'ROLE_BASED',
+  assigneeRole: 'legal_compliance_viewer',
+  dueOffsetDays: 5,
+  conditions: null,
+};
+
 export function useTemplateForm(defaultValues?: Partial<TemplateFormValues>) {
   const form = useForm<TemplateFormValues>({
     resolver: zodResolver(templateFormSchema),
@@ -82,6 +95,7 @@ export function useTemplateForm(defaultValues?: Partial<TemplateFormValues>) {
   });
 
   const isDirty = form.formState.isDirty;
+  const offboardingInjectedRef = useRef(false);
 
   useEffect(() => {
     if (!isDirty) return;
@@ -93,6 +107,26 @@ export function useTemplateForm(defaultValues?: Partial<TemplateFormValues>) {
     window.addEventListener('beforeunload', handler);
     return () => window.removeEventListener('beforeunload', handler);
   }, [isDirty]);
+
+  const templateType = form.watch('type');
+
+  useEffect(() => {
+    if (templateType !== 'OFFBOARDING') {
+      offboardingInjectedRef.current = false;
+      return;
+    }
+    const tasks = form.getValues('tasks');
+    if (tasks.some(task => task.taskType === 'IP_VERIFICATION')) {
+      offboardingInjectedRef.current = true;
+      return;
+    }
+    if (offboardingInjectedRef.current) return;
+    offboardingInjectedRef.current = true;
+    append({
+      ...OFFBOARDING_IP_VERIFICATION_TASK,
+      sortOrder: tasks.length,
+    });
+  }, [append, form, templateType]);
 
   const addTask = useCallback(() => {
     append({

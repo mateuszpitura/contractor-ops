@@ -124,7 +124,7 @@ export interface HrNationalisationViewProps {
   uae: NationalisationRollup | undefined;
 }
 
-/** Presentational Gulf nationalisation rollup (HR-DASH-05). Props-in → JSX-out. */
+/** Presentational Gulf nationalisation rollup. Props-in → JSX-out. */
 export function HrNationalisationView({ ksa, uae }: HrNationalisationViewProps) {
   const t = useTranslations('HrDashboard');
   const locale = useLocale();

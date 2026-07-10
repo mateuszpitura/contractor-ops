@@ -14,7 +14,7 @@ import {
 
 describe('peppolParticipantIdSchema', () => {
   it('accepts valid UAE Peppol participant ID', () => {
-    const r = peppolParticipantIdSchema.safeParse('0192:123456789012345');
+    const r = peppolParticipantIdSchema.safeParse('0235:123456789012345');
     expect(r.success).toBe(true);
   });
 
@@ -29,17 +29,17 @@ describe('peppolParticipantIdSchema', () => {
   });
 
   it('rejects TRN shorter than 15 digits', () => {
-    const r = peppolParticipantIdSchema.safeParse('0192:12345678901234');
+    const r = peppolParticipantIdSchema.safeParse('0235:12345678901234');
     expect(r.success).toBe(false);
   });
 
   it('rejects TRN longer than 15 digits', () => {
-    const r = peppolParticipantIdSchema.safeParse('0192:1234567890123456');
+    const r = peppolParticipantIdSchema.safeParse('0235:1234567890123456');
     expect(r.success).toBe(false);
   });
 
   it('rejects non-digit characters in TRN', () => {
-    const r = peppolParticipantIdSchema.safeParse('0192:12345678901234a');
+    const r = peppolParticipantIdSchema.safeParse('0235:12345678901234a');
     expect(r.success).toBe(false);
   });
 });
@@ -100,7 +100,7 @@ describe('transmitInvoiceSchema', () => {
   it('accepts valid input', () => {
     const r = transmitInvoiceSchema.safeParse({
       invoiceId: 'clh1234567890abcdefghijk',
-      receiverParticipantId: '0192:123456789012345',
+      receiverParticipantId: '0235:123456789012345',
     });
     expect(r.success).toBe(true);
   });
@@ -108,7 +108,7 @@ describe('transmitInvoiceSchema', () => {
   it('rejects non-cuid invoiceId', () => {
     const r = transmitInvoiceSchema.safeParse({
       invoiceId: 'not-a-cuid',
-      receiverParticipantId: '0192:123456789012345',
+      receiverParticipantId: '0235:123456789012345',
     });
     expect(r.success).toBe(false);
   });

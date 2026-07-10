@@ -8,9 +8,13 @@
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('@contractor-ops/compliance-policy', () => ({
-  POLICY_RULE_SET_VERSION: 'v6.0.0',
-}));
+vi.mock('@contractor-ops/compliance-policy', async importOriginal => {
+  const actual = await importOriginal<typeof import('@contractor-ops/compliance-policy')>();
+  return {
+    ...actual,
+    POLICY_RULE_SET_VERSION: 'v6.0.0',
+  };
+});
 
 import type { SnapshotClient } from '../payment-export-compliance-snapshot';
 import { buildSnapshotForContractor } from '../payment-export-compliance-snapshot';

@@ -133,7 +133,7 @@ export function usePortalInvoiceFileUploadWithOcr(t: LooseTranslator) {
 
         if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
           try {
-            const ocrResult = await ocrTriggerMutation.mutateAsync({ documentId, storageKey });
+            const ocrResult = await ocrTriggerMutation.mutateAsync({ documentId });
             setExtractionId(ocrResult.extractionId);
             setPdfBlobUrl(URL.createObjectURL(file));
           } catch (error) {

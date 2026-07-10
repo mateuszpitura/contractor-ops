@@ -26,6 +26,7 @@ const { ORG_ID, USER_ID, mockPrisma, mockGenerateAuditCsv } = vi.hoisted(() => {
     auditLog: {
       findMany: vi.fn(async () => []),
       count: vi.fn(async () => 0),
+      create: vi.fn().mockResolvedValue({ id: 'audit-1' }),
     },
     $transaction: vi.fn(async (fn: (tx: Rec) => Promise<unknown>) => fn(mockPrisma)),
   };
@@ -74,15 +75,11 @@ vi.mock('../../services/report-export', () => ({
   generateAuditCsv: mockGenerateAuditCsv,
 }));
 
-vi.mock('../../services/cache', () => ({
-  cacheKey: vi.fn((...s: string[]) => s.join(':')),
-  cachedSingleflight: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  cached: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  invalidate: vi.fn(async () => undefined),
-  invalidateByPrefix: vi.fn(async () => undefined),
-  CacheKeys: {},
-  CacheTTL: {},
-}));
+vi.mock('../../services/cache', async importOriginal => {
+  const actual = await importOriginal<typeof import('../../services/cache')>();
+  const { createPassthroughCacheMock } = await import('../../__tests__/__mocks__/cache-service');
+  return createPassthroughCacheMock(actual);
+});
 
 vi.mock('@sentry/node', () => {
   const mockSpan = { setStatus: vi.fn(), setAttribute: vi.fn(), end: vi.fn() };

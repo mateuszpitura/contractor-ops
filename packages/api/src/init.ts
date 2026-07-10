@@ -3,7 +3,8 @@ import { initTRPC, TRPCError } from '@trpc/server';
 import superjson from 'superjson';
 import { ZodError } from 'zod';
 import type { Context } from './context';
-import { isKnownApiErrorValue, UNKNOWN_ERROR } from './errors';
+import { UNKNOWN_ERROR } from './errors';
+import { isKnownApiErrorValue } from './errors-registry';
 import { observabilityMiddleware } from './middleware/observability';
 
 type ErrorParams = Record<string, string | number>;

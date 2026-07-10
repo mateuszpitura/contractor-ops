@@ -1,3 +1,4 @@
+import type { DataRegion } from '@contractor-ops/db';
 import { TRPCError } from '@trpc/server';
 import * as E from '../errors';
 import { publicProcedure, t } from '../init';
@@ -65,11 +66,18 @@ const apiKeyAuthMiddleware = t.middleware(async ({ ctx, next }) => {
   }
 
   // Fire-and-forget
-  touchLastUsed(keyRecord.id);
+  const keyRegion = (keyRecord.organization.dataRegion ?? 'EU') as DataRegion;
+  touchLastUsed(keyRecord.id, keyRegion);
   // Fire-and-forget source-IP log — only when a client IP was captured at the
   // HTTP boundary by createPublicCaller (absent for direct in-process callers).
   if (ctx.sourceIp) {
-    appendApiKeyIpEvent(keyRecord.id, keyRecord.organizationId, ctx.sourceIp, ctx.userAgent);
+    appendApiKeyIpEvent(
+      keyRecord.id,
+      keyRecord.organizationId,
+      ctx.sourceIp,
+      ctx.userAgent,
+      keyRegion,
+    );
   }
 
   // Pass pre-resolved dataRegion to skip redundant org lookup

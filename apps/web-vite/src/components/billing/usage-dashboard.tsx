@@ -92,9 +92,12 @@ export function UsageDashboardView({ parsed, currentTier }: UsageDashboardViewPr
   const isTrialing = subscription.status === 'TRIALING';
   const billingDate = isTrialing ? subscription.trialEnd : subscription.currentPeriodEnd;
   const badgeVariant = STATUS_BADGE_VARIANT[subscription.status] ?? 'secondary';
-  const remaining = credits?.balance ?? 0;
-  const total = credits?.allowance ?? 0;
-  const isLowCredits = total > 0 && remaining / total < 0.2;
+  const creditAllowance = credits?.allowance ?? 0;
+  const creditTopUp = credits?.topUp ?? 0;
+  const creditUsed = credits?.used ?? 0;
+  const creditPool = creditAllowance + creditTopUp;
+  const remaining = credits?.balance ?? Math.max(0, creditPool - creditUsed);
+  const isLowCredits = creditPool > 0 && remaining / creditPool < 0.2;
 
   return (
     <div className="space-y-8">
@@ -123,8 +126,9 @@ export function UsageDashboardView({ parsed, currentTier }: UsageDashboardViewPr
 
         {/* Card 3: OCR Credits */}
         <CreditCard
-          used={credits?.used ?? 0}
-          total={total}
+          used={creditUsed}
+          total={creditPool}
+          remaining={remaining}
           isLowCredits={isLowCredits}
           onBuyMore={handleBuyMore}
         />

@@ -55,7 +55,7 @@ export const reminderRuleCreateSchema = z.object({
 
 export type ReminderRuleCreateInput = z.infer<typeof reminderRuleCreateSchema>;
 
-export const reminderRuleUpdateSchema = reminderRuleCreateSchema.partial();
+export const reminderRuleUpdateSchema = reminderRuleCreateSchema.partial().strict();
 
 export type ReminderRuleUpdateInput = z.infer<typeof reminderRuleUpdateSchema>;
 

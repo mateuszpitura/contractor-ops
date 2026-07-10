@@ -25,6 +25,7 @@ import type { Prisma } from '@contractor-ops/db';
 import { createLogger } from '@contractor-ops/logger';
 import type { AuditWriterClient } from './audit-writer';
 import { writeAuditLog } from './audit-writer';
+import { onComplianceItemExpiresAtChanged } from './compliance-reminder-reset';
 
 const log = createLogger({ service: 'free-zone-compliance' });
 
@@ -111,7 +112,27 @@ export async function writeFreeZoneComplianceItem(
 
   // The zone narrowing lives HERE, not in appliesIf (EngagementContext has no zone field).
   if (assignment.zone === MAINLAND_ZONE) {
-    return { written: false, itemId: null, status: null, reason: 'MAINLAND' };
+    const existing = (await client.contractorComplianceItem.findFirst({
+      where: {
+        organizationId: assignment.organizationId,
+        contractorId: assignment.contractorId,
+        policyRuleId: FREE_ZONE_POLICY_RULE_ID,
+        status: { not: 'WAIVED' },
+      },
+      select: { id: true },
+    })) as { id: string } | null;
+
+    if (existing) {
+      await client.contractorComplianceItem.update({
+        where: { id: existing.id },
+        data: {
+          status: 'WAIVED',
+          waivedReason: 'SUPERSEDED_BY_POLICY_VERSION',
+        },
+      });
+    }
+
+    return { written: false, itemId: existing?.id ?? null, status: null, reason: 'MAINLAND' };
   }
 
   const status = deriveStatus(assignment.licenseExpiresAt, now);
@@ -179,6 +200,15 @@ export async function writeFreeZoneComplianceItem(
     },
     tx: client,
   });
+
+  await onComplianceItemExpiresAtChanged(
+    client as unknown as Parameters<typeof onComplianceItemExpiresAtChanged>[0],
+    {
+      itemId,
+      organizationId: assignment.organizationId,
+      triggerEvent: 'expires_at_changed',
+    },
+  );
 
   log.info(
     { itemId, contractorId: assignment.contractorId, zone: assignment.zone, status },

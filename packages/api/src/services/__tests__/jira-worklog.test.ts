@@ -34,6 +34,7 @@ function createMockPrisma(overrides: Record<string, unknown> = {}) {
       aggregate: vi.fn().mockResolvedValue({ _sum: { minutes: 120 } }),
     },
     timesheet: {
+      findUnique: vi.fn().mockResolvedValue({ status: 'DRAFT' }),
       update: vi.fn().mockResolvedValue({}),
     },
     ...overrides,

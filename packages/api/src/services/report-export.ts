@@ -5,6 +5,7 @@
  */
 
 import { minorToDecimalStr } from '@contractor-ops/shared';
+import { escapeCsvField } from '../lib/csv';
 import { convertAmount } from './exchange-rate';
 import type { DbClient } from './types';
 
@@ -56,7 +57,7 @@ export async function generateReportCsv(
   for (const row of rows) {
     const mapped: Record<string, unknown> = {};
     for (const col of columns) {
-      mapped[col.key] = row[col.key] ?? '';
+      mapped[col.key] = escapeCsvField(row[col.key] ?? '');
     }
     worksheet.addRow(mapped);
   }
