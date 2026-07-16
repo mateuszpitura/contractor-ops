@@ -4,6 +4,7 @@ import { TRPCError } from '@trpc/server';
 import { APPROVAL_NO_USER_WITH_ROLE } from '../errors';
 import './approval-engine/operators/index'; // side-effect: registers all condition operators
 import { evaluateOperator } from './approval-engine/operators/registry';
+import { enqueueWebhookEvent } from './webhooks/enqueue';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -291,6 +292,30 @@ export async function advanceFlow(tx: TxClient, flowId: string): Promise<Advance
           complianceHoldsJson: complianceHold as unknown as Prisma.InputJsonValue,
         },
       });
+
+      // A held invoice approval means its contractor is now blocked from payment
+      // on compliance grounds — surface that to external subscribers, keyed on
+      // the contractor. Enqueued in-tx so it commits iff the hold is persisted.
+      if (flow.resourceType === 'INVOICE') {
+        const heldInvoice = await tx.invoice.findUnique({
+          where: { id: flow.resourceId },
+          select: { id: true, contractorId: true, invoiceNumber: true },
+        });
+        if (heldInvoice?.contractorId) {
+          await enqueueWebhookEvent(tx, flow.organizationId, {
+            eventType: 'contractor.compliance_blocked',
+            aggregateId: heldInvoice.contractorId,
+            data: {
+              contractorId: heldInvoice.contractorId,
+              invoiceId: heldInvoice.id,
+              invoiceNumber: heldInvoice.invoiceNumber,
+              blockedComplianceItemIds: complianceHold.itemIds,
+              heldAt: complianceHold.heldAt,
+            },
+          });
+        }
+      }
+
       return { completed: false, flowStatus: 'PENDING_COMPLIANCE' };
     }
 
