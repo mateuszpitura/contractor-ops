@@ -21,6 +21,7 @@ import { CacheKeys, invalidateByPrefix } from '../../services/cache';
 import { handleEquipmentTaskStart } from '../../services/equipment-workflow';
 import type { OutboxTransactionalClient } from '../../services/outbox';
 import { enqueueNotificationOutboxEvent } from '../../services/outbox';
+import { enqueueWebhookEvent } from '../../services/webhooks/enqueue';
 import { instantiateRoleKtTaskRuns } from '../../services/workflow-role-kt-instantiation';
 import type { TxClient } from './workflow-execution-shared';
 import {
@@ -608,9 +609,15 @@ export const workflowExecutionRunsRouter = router({
         }
 
         const now = new Date();
-        await tx.workflowRun.update({
+        const completedRun = await tx.workflowRun.update({
           where: { id: input.workflowRunId },
           data: { status: 'COMPLETED', completedAt: now },
+        });
+
+        await enqueueWebhookEvent(tx, ctx.organizationId, {
+          eventType: 'workflow.completed',
+          aggregateId: completedRun.id,
+          data: completedRun,
         });
 
         await writeAuditLog({

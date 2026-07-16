@@ -266,7 +266,7 @@ export async function unblockDependentsAndRecomputeRun(
   // (hard-block) + PENDING credentials (soft-warning).
   // Omitted by callers that do not need the gate (preserves existing behaviour).
   gate?: { organizationId: string },
-): Promise<void> {
+): Promise<{ runCompleted: boolean }> {
   await tx.workflowTaskRun.updateMany({
     where: {
       dependsOnTaskRunId: closedTask.id,
@@ -296,6 +296,8 @@ export async function unblockDependentsAndRecomputeRun(
       ...(isComplete ? { status: 'COMPLETED', completedAt } : {}),
     },
   });
+
+  return { runCompleted: isComplete };
 }
 
 interface RunGateClient {
