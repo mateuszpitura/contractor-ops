@@ -39,6 +39,8 @@ updated: 2026-07-05
 | `shared` | `packages/shared` | Money helpers, shared types |
 | `gov-api` | `packages/gov-api` | Government API schemas |
 | `marketplace-manifests` | `packages/marketplace-manifests` | Generates the Zapier/n8n/Make marketplace definitions + Postman/Insomnia collections from the OpenAPI snapshot + the 16-event webhook catalog (triggers→events, actions→write operationIds); `generate --check` drift gate. Consumed by the developer portal's `/collections/*`. See [[domains/developer-experience]] |
+| `n8n-nodes` | `packages/n8n-nodes` | `@contractor-ops/n8n-nodes` community node package — write-action node + webhook trigger node + `co_live_`/`co_test_` credential, all built from `generateN8n` (marketplace-manifests) so the surface can't drift; example workflows + dark `publish-n8n-nodes.yml`. Publish deferred (EXTERNAL-ENABLEMENT). See [[domains/developer-experience]] |
+| `zapier-app` | `packages/zapier-app` | `@contractor-ops/zapier-app` Zapier CLI app — API-key auth, 16 REST-hook triggers + one create per write op, built from `generateZapier`; `validateApp` bundle test. Submission deferred (EXTERNAL-ENABLEMENT). See [[domains/developer-experience]] |
 
 ## Invariants
 

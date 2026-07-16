@@ -2,9 +2,11 @@
 title: Developer experience (marketplace + sandbox + status + portal)
 type: domain
 tags: [developer-experience, marketplace, sandbox, status-page, developer-portal, theme-c]
-source_commit: efb2b079
+source_commit: 41435355b
 verify_with:
   - packages/marketplace-manifests/
+  - packages/n8n-nodes/
+  - packages/zapier-app/
   - packages/api/src/services/sandbox-provisioning.ts
   - packages/api/src/services/status-aggregator.ts
   - packages/api/src/routers/core/incident.ts
@@ -12,6 +14,9 @@ verify_with:
   - apps/public-api/src/routes/status.ts
   - apps/public-api/src/routes/docs.ts
   - apps/public-api/src/lib/portal-content.ts
+  - apps/public-api/marketplace/make/blueprint.json
+  - apps/web-vite/src/components/settings/marketplace-tab.tsx
+  - apps/web-vite/src/components/settings/hooks/use-marketplace-tab.ts
 updated: 2026-07-06
 ---
 
@@ -40,7 +45,9 @@ fixture contractor; `apiKey.createSandboxKey` mints a read-only key.
 `status-aggregator.ts` into three coarse component states (`api` / `webhooks-dispatcher` /
 `background-jobs`, each `operational|degraded|down`) + open-incident history. Every probe is
 timeout-guarded + fail-safe. The payload carries **NO tenant data** (deep-scan invariant). Incidents are
-operator-authored via the `IncidentReport` model + `incident` router.
+operator-authored via the `IncidentReport` model + `incident` router. The public front-end that renders
+`/v1/status.json` lives in **`apps/landing`** (`/status`), behind `module.public-status-page`; the
+`status.contractor-ops.{tld}` DNS is a deferred external step.
 
 ## Developer portal
 
@@ -54,8 +61,18 @@ verifier snippets, the RFC-8594 version policy); collections generate from the l
 
 `@contractor-ops/marketplace-manifests` generates the Zapier/n8n/Make definitions + Postman/Insomnia
 collections from the OpenAPI snapshot + the 16-event catalog (triggers → events, actions → write
-operationIds). The `marketplaceListing` router + model track each listing's review state
-(`admin:marketplace`-gated). Submission to each marketplace is a deferred external step.
+operationIds). Two **runnable, publish-dark packages** are built from that same generator (so their
+surface cannot drift): **`packages/n8n-nodes`** (`@contractor-ops/n8n-nodes` — a community node package:
+regular write-action node + a webhook trigger node over the 16-event catalog + `co_live_`/`co_test_`
+bearer credential + example workflows; dark `publish-n8n-nodes.yml`) and **`packages/zapier-app`**
+(`@contractor-ops/zapier-app` — Zapier CLI app: API-key auth, 16 REST-hook triggers, one create per
+write op; `validateApp` bundle test). The **Make.com blueprint** is CLI-generated to
+`apps/public-api/marketplace/make/blueprint.json` behind the same `generate --check` drift gate.
+The `marketplaceListing` router + model track each listing's review state, surfaced in the
+**web-vite Settings → Developer marketplace dashboard** (`components/settings/marketplace-tab.tsx`
+→ `hooks/use-marketplace-tab.ts`, `admin:marketplace`-gated). Each package builds + tests now; the
+npm publish + Zapier/Make **submissions** are deferred external steps (per-adapter
+`integration.marketplace-{zapier,n8n,make}` flags + `EXTERNAL-ENABLEMENT` rows).
 
 ## Agent mistakes to avoid
 

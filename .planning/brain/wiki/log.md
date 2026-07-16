@@ -5,6 +5,17 @@ type: log
 
 # Wiki log (append only)
 
+## 2026-07-16 — Marketplace runnable packages + UIs (Phase 101 waves-2 build)
+
+Built the three deferred Phase-101 plans (06/07/09): `@contractor-ops/n8n-nodes` + `@contractor-ops/zapier-app`
+runnable packages (both generated from `marketplace-manifests` so their surface can't drift; publish/submission
+dark), the Make.com blueprint (`apps/public-api/marketplace/make/blueprint.json`), the web-vite Settings→Developer
+marketplace listing-status dashboard (`marketplace-tab.tsx` + `use-marketplace-tab.ts`, wired to the
+`marketplaceListing` router), and the `apps/landing` public `/status` front-end over `/v1/status.json`. Dep-age
+gate cleared (`n8n-workflow@2.16.0`, `zapier-platform-core@19.0.0`, both ≥7 days). Post-merge tests green
+(n8n 23, zapier 9, manifests 20, marketplace-tab 8, landing status 9). Updated [[domains/developer-experience]]
++ [[structure/packages]].
+
 ## 2026-07-10 — Shield patterns from adversarial round 2 (~01:45 batch)
 
 Extended skill with S8–S10, T8–T11 (same-file stale refs, seed backfill, handler sibling fan-out, nullable silent wrong math, batch determinism, boolean→enum guess, mandatory touched-module vitest). Wiki table maps handoff round-2 findings → pattern classes. Hooks unchanged — T11 is verify-gate not PreToolUse.
