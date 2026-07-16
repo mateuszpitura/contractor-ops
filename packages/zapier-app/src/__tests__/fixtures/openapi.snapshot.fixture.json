@@ -1,0 +1,77 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Contractor Ops Enterprise API",
+    "version": "1.0.0",
+    "description": "Fixture spec (writes un-hidden) for the Zapier bundle test."
+  },
+  "servers": [{ "url": "https://api.contractor-ops.com", "description": "Production" }],
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": { "type": "http", "scheme": "bearer", "bearerFormat": "co_live_ / co_test_" }
+    }
+  },
+  "security": [{ "ApiKeyAuth": [] }],
+  "paths": {
+    "/v1/contractors": {
+      "get": {
+        "operationId": "listContractors",
+        "summary": "List contractors",
+        "tags": ["Contractors"],
+        "responses": { "200": { "description": "OK" } }
+      },
+      "post": {
+        "operationId": "createContractor",
+        "summary": "Create a contractor",
+        "tags": ["Contractors"],
+        "responses": { "201": { "description": "Created" } }
+      }
+    },
+    "/v1/contractors/{id}": {
+      "get": {
+        "operationId": "getContractor",
+        "summary": "Get a contractor by id",
+        "tags": ["Contractors"],
+        "responses": { "200": { "description": "OK" } }
+      },
+      "patch": {
+        "operationId": "updateContractor",
+        "summary": "Update a contractor",
+        "tags": ["Contractors"],
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/v1/invoices": {
+      "post": {
+        "operationId": "createInvoice",
+        "summary": "Create an invoice",
+        "tags": ["Invoices"],
+        "responses": { "201": { "description": "Created" } }
+      }
+    },
+    "/v1/invoices/{id}/approve": {
+      "patch": {
+        "operationId": "approveInvoice",
+        "summary": "Approve an invoice",
+        "tags": ["Invoices"],
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/v1/payments/{id}/mark-paid": {
+      "post": {
+        "operationId": "markPaymentPaid",
+        "summary": "Mark a payment paid",
+        "tags": ["Payments"],
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/v1/workflow-tasks": {
+      "post": {
+        "operationId": "createWorkflowTask",
+        "summary": "Create a workflow task",
+        "tags": ["Workflows"],
+        "responses": { "201": { "description": "Created" } }
+      }
+    }
+  }
+}
