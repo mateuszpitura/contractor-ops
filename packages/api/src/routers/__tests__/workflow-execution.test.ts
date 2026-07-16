@@ -45,6 +45,7 @@ const { mockPrisma, ORG_ID, USER_ID, RUN_ID, TASK_RUN_ID, TEMPLATE_ID, CONTRACTO
       workflowRun: {
         findFirst: vi.fn(),
         findMany: vi.fn(),
+        findUnique: vi.fn().mockResolvedValue({ id: RUN_ID, organizationId: ORG_ID }),
         findUniqueOrThrow: vi.fn(),
         create: vi.fn(),
         update: vi.fn(),
@@ -147,6 +148,9 @@ vi.mock('../../services/notification-service', () => ({
 
 vi.mock('../../services/outbox', () => ({
   enqueueNotificationOutboxEvent: vi.fn(async () => 'oxe_test'),
+  // enqueueWebhookEvent (the workflow.task.completed / workflow.completed emit)
+  // wraps enqueueOutboxEvent — stub it so the producer resolves without a DB.
+  enqueueOutboxEvent: vi.fn(async () => 'oxe_test'),
 }));
 
 vi.mock('../../services/equipment-workflow', () => ({

@@ -123,6 +123,8 @@ vi.mock('../../services/notification-service', () => ({
 
 vi.mock('../../services/outbox', () => ({
   enqueueNotificationOutboxEvent: vi.fn(async () => 'oxe_test'),
+  // Webhook emits wrap enqueueOutboxEvent — stub it so the producer resolves.
+  enqueueOutboxEvent: vi.fn(async () => 'oxe_test'),
 }));
 
 vi.mock('../../services/calendar-deadline-sync', () => ({
