@@ -1,0 +1,102 @@
+{
+  "name": "Contractor Ops — Onboard a contractor from Personio",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "personio-employee-created",
+        "options": {}
+      },
+      "id": "a3c9e1f4-5f6b-4c32-9e43-2b3c4d5e6f70",
+      "name": "Personio: Employee Created",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [400, 300],
+      "webhookId": "personio-employee-created"
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f1",
+              "name": "email",
+              "value": "={{$json[\"body\"][\"attributes\"][\"email\"]}}",
+              "type": "string"
+            },
+            {
+              "id": "f2",
+              "name": "displayName",
+              "value": "={{$json[\"body\"][\"attributes\"][\"first_name\"]}} {{$json[\"body\"][\"attributes\"][\"last_name\"]}}",
+              "type": "string"
+            },
+            {
+              "id": "f3",
+              "name": "countryCode",
+              "value": "={{$json[\"body\"][\"attributes\"][\"country\"]}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b4d0f2a5-6a7c-4d43-8f54-3c4d5e6f7081",
+      "name": "Map Personio fields",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "operation": "createContractor",
+        "pathParameters": "{}",
+        "body": "={{ { \"email\": $json[\"email\"], \"displayName\": $json[\"displayName\"], \"countryCode\": $json[\"countryCode\"] } }}"
+      },
+      "id": "c5e1a3b6-7b8d-4e54-9a65-4d5e6f708192",
+      "name": "Create contractor in Contractor Ops",
+      "type": "@contractor-ops/n8n-nodes.contractorOps",
+      "typeVersion": 1,
+      "position": [960, 300],
+      "credentials": {
+        "contractorOpsApi": {
+          "id": "1",
+          "name": "Contractor Ops account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Personio: Employee Created": {
+      "main": [
+        [
+          {
+            "node": "Map Personio fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Map Personio fields": {
+      "main": [
+        [
+          {
+            "node": "Create contractor in Contractor Ops",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": [{ "name": "contractor-ops" }, { "name": "onboarding" }]
+}

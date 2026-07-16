@@ -1,0 +1,67 @@
+{
+  "name": "Contractor Ops — Approved invoices to Slack",
+  "nodes": [
+    {
+      "parameters": {
+        "events": ["invoice.approved", "invoice.paid"]
+      },
+      "id": "b1a7c9e2-3d4f-4a10-9c21-0f1e2d3c4b5a",
+      "name": "Contractor Ops Trigger",
+      "type": "@contractor-ops/n8n-nodes.contractorOpsTrigger",
+      "typeVersion": 1,
+      "position": [420, 300],
+      "webhookId": "co-invoice-slack",
+      "credentials": {
+        "contractorOpsApi": {
+          "id": "1",
+          "name": "Contractor Ops account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "#finance",
+          "mode": "name"
+        },
+        "text": "=:receipt: Invoice *{{$json[\"data\"][\"invoiceNumber\"]}}* for {{$json[\"data\"][\"contractorName\"]}} is now *{{$json[\"type\"]}}* — {{$json[\"data\"][\"amount\"]}} {{$json[\"data\"][\"currency\"]}}.",
+        "otherOptions": {}
+      },
+      "id": "c2b8d0f3-4e5a-4b21-8d32-1a2b3c4d5e6f",
+      "name": "Post to Slack",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.2,
+      "position": [720, 300],
+      "credentials": {
+        "slackApi": {
+          "id": "2",
+          "name": "Slack account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Contractor Ops Trigger": {
+      "main": [
+        [
+          {
+            "node": "Post to Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": [{ "name": "contractor-ops" }, { "name": "invoicing" }]
+}

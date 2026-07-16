@@ -1,0 +1,66 @@
+{
+  "name": "Contractor Ops — Compliance expiry to PagerDuty",
+  "nodes": [
+    {
+      "parameters": {
+        "events": ["compliance_doc.expiring_soon", "compliance_doc.expired"]
+      },
+      "id": "d6f2b4c7-8c9e-4f65-8b76-5e6f70819203",
+      "name": "Contractor Ops Trigger",
+      "type": "@contractor-ops/n8n-nodes.contractorOpsTrigger",
+      "typeVersion": 1,
+      "position": [420, 300],
+      "webhookId": "co-compliance-pagerduty",
+      "credentials": {
+        "contractorOpsApi": {
+          "id": "1",
+          "name": "Contractor Ops account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "incident",
+        "operation": "create",
+        "title": "=Compliance document {{$json[\"data\"][\"documentType\"]}} for {{$json[\"data\"][\"contractorName\"]}} is {{$json[\"type\"]}}",
+        "additionalFields": {
+          "urgency": "high",
+          "details": "=Document {{$json[\"data\"][\"documentType\"]}} (contractor {{$json[\"data\"][\"contractorId\"]}}) expires {{$json[\"data\"][\"expiresAt\"]}}. Event: {{$json[\"type\"]}}."
+        }
+      },
+      "id": "e7a3c5d8-9d0f-4076-9c87-6f7081920314",
+      "name": "Create PagerDuty incident",
+      "type": "n8n-nodes-base.pagerDuty",
+      "typeVersion": 1,
+      "position": [720, 300],
+      "credentials": {
+        "pagerDutyApi": {
+          "id": "3",
+          "name": "PagerDuty account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Contractor Ops Trigger": {
+      "main": [
+        [
+          {
+            "node": "Create PagerDuty incident",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": [{ "name": "contractor-ops" }, { "name": "compliance" }]
+}
