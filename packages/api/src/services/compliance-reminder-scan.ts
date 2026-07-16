@@ -38,6 +38,7 @@ import { claimCronNotificationDedup } from './cron-dedup';
 import { reEvaluateFreeZoneStatus } from './free-zone-compliance';
 import { dispatch } from './notification-service';
 import { resolveRbacRecipients } from './rbac-recipients';
+import { enqueueWebhookEvent } from './webhooks/enqueue';
 
 const log = createCronLogger('compliance-reminder-scan');
 
@@ -116,6 +117,11 @@ export interface ReminderScanClient {
   organization: {
     findUnique: (args: Prisma.OrganizationFindUniqueArgs) => Promise<unknown>;
   };
+  // Raw writers for the outbound-webhook emit. The regional client resolved from
+  // getRegionalClient is a full Prisma client, so these are always present at
+  // runtime even though the scan otherwise only reaches typed model delegates.
+  $executeRaw: (query: TemplateStringsArray, ...values: readonly unknown[]) => Promise<number>;
+  $executeRawUnsafe: (query: string, ...values: readonly unknown[]) => Promise<number>;
 }
 
 interface ItemForScan {
@@ -483,6 +489,26 @@ async function processItem(
     now,
   );
   if (!persisted) return null;
+
+  // The band fire is now durably recorded (optimistic-concurrency state row +
+  // Redis dedup claim). Surface it to external subscribers: the terminal EXPIRED
+  // band maps to compliance_doc.expired, every earlier band to expiring_soon.
+  // The cron has no $transaction seam, so this enqueue is not atomic with the
+  // state write — it sits immediately after the durable fire and inherits the
+  // same once-per-band dedup, matching the existing post-persist digest dispatch.
+  await enqueueWebhookEvent(client, item.organizationId, {
+    eventType: nextBand === 'EXPIRED' ? 'compliance_doc.expired' : 'compliance_doc.expiring_soon',
+    aggregateId: item.id,
+    data: {
+      complianceItemId: item.id,
+      contractorId: item.contractorId,
+      contractorDisplayName: item.contractor.displayName,
+      documentType: item.documentType,
+      policyRuleId: item.policyRuleId,
+      expiresAt: item.expiresAt,
+      band: nextBand,
+    },
+  });
 
   return {
     itemId: item.id,

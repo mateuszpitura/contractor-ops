@@ -102,6 +102,10 @@ const {
     organization: {
       findUnique: vi.fn(async () => ({ language: 'en' })),
     },
+    // The band-fire emit routes an outbound-webhook event through the outbox on
+    // the same regional client; enqueueOutboxEvent writes via $executeRawUnsafe.
+    $executeRaw: vi.fn(async () => 1),
+    $executeRawUnsafe: vi.fn(async () => 1),
   };
 
   // mockPrisma is used only by the renewal-reset listener (onComplianceItemExpiresAtChanged),
