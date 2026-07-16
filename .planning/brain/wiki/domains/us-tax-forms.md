@@ -8,6 +8,7 @@ source_commit: 28061f01e
 source_commit: 730cc8e69
 source_commit: 60258402c
 source_commit: cbcf8a2bb
+source_commit: 1c38ab9d0
 verify_with:
   - packages/db/prisma/schema/tax.prisma
   - packages/db/prisma/schema/migrations/20260705000000_us_tax_form_tables_plus_additive_integrity/
@@ -250,7 +251,7 @@ contractor profile; it never mutates band state.
 | Staff read/track | `taxForm.listFormSubmissions` / `requestTaxForm` — `packages/api/src/routers/core/tax-form-router.ts` |
 | Record service | `packages/api/src/services/tax-form.service.ts` (`buildFormSnapshot` / `supersedeAndInsert` / `computeExpiry`) |
 | Treaty engine | `packages/api/src/services/treaty-rate.service.ts` (`resolveTreatyDecision` / `applyTreaty`) |
-| TIN-match service | `packages/api/src/services/tin-match.service.ts` (`matchRecipientTin` / `revalidateBatchTins` / `createDbTinMatchPersistence`) |
+| TIN-match service | `packages/api/src/services/tin-match.service.ts` (`matchRecipientTin` / `revalidateBatchTins` / `revalidateYearEndTins` / `createDbTinMatchPersistence` / `createTinMismatchEscalationWriter`) — producers wired at `tax1099.generateBatch` (year-end) + `contractor.updateUsProfile` (intake) |
 | TIN-match seam | `packages/integrations/src/adapters/tin-match/` (`TinMatchClient` / `MockTinMatchClient` default / `EServicesTinMatchClient` dark) |
 | 1099-NEC engine | `packages/api/src/services/form-1099-nec.service.ts` (`generateBatch` / `aggregateBox1[Async]` / `getBox1ThresholdMinor` / `computeBox4Minor` / `buildForm1099NecSnapshot` / `supersedeCorrected` / `fileCorrection`) |
 | 1099-NEC Copy-B PDF | `packages/api/src/services/form-1099-nec-pdf.ts` (`renderAndArchiveCopyB` / `renderForm1099NecCopyB`) + `packages/api/src/pdf-templates/form-1099-nec-copy-b.tsx` (`Form1099NecCopyBDocument`) |

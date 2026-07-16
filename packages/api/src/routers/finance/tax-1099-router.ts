@@ -1,4 +1,7 @@
 import type { Prisma } from '@contractor-ops/db';
+import type { TinType } from '@contractor-ops/integrations';
+import { MockTinMatchClient } from '@contractor-ops/integrations';
+import { createLogger } from '@contractor-ops/logger';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 
@@ -17,8 +20,54 @@ import {
   sumBackupWithholdingUsdMinor,
 } from '../../services/form-1099-nec.service';
 import { parseIrisAck } from '../../services/iris-ack-parser';
+import { decryptSsn } from '../../services/ssn-crypto';
 import { buildStateFilingOutput } from '../../services/state-filing-output';
 import { createTaxFilingTransmitter } from '../../services/tax-filing-transmitter';
+import { revalidateYearEndTins } from '../../services/tin-match.service';
+
+const log = createLogger({ service: 'tax-1099-router' });
+
+/** The resolvable recipient TIN for IRS TIN-matching: a full SSN or EIN plus its type. */
+interface ResolvedRecipientTin {
+  tin: string;
+  tinType: TinType;
+}
+
+/**
+ * Read a full EIN from a contractor's `countryFields` JSON. Narrowed before
+ * access (never an unsafe cast) — the value is server-written by the US-profile
+ * update, but the read stays defensive.
+ */
+function readEinFromCountryFields(countryFields: unknown): string | null {
+  if (countryFields && typeof countryFields === 'object' && !Array.isArray(countryFields)) {
+    const ein = (countryFields as Record<string, unknown>).ein;
+    if (typeof ein === 'string' && ein.trim().length > 0) {
+      return ein.trim();
+    }
+  }
+  return null;
+}
+
+/**
+ * Resolve a recipient's full TIN for IRS TIN-matching: the decrypted SSN when
+ * present, else the EIN from `countryFields`. A recipient with neither (or a
+ * malformed SSN blob) yields null — fail-closed, so it is skipped from the
+ * TIN-match rather than matched on a fabricated value.
+ */
+function resolveRecipientTin(contractor: {
+  ssnEncrypted: string | null;
+  countryFields: Prisma.JsonValue | null;
+}): ResolvedRecipientTin | null {
+  if (contractor.ssnEncrypted) {
+    try {
+      return { tin: decryptSsn(contractor.ssnEncrypted), tinType: 'SSN' };
+    } catch {
+      return null;
+    }
+  }
+  const ein = readEinFromCountryFields(contractor.countryFields);
+  return ein ? { tin: ein, tinType: 'EIN' } : null;
+}
 
 // ---------------------------------------------------------------------------
 // Staff Form 1099-NEC year-end filing surface.
@@ -182,12 +231,24 @@ export const tax1099Router = router({
         select: {
           snapshotJson: true,
           contractor: {
-            select: { id: true, legalName: true, ssnLast4: true, backupWithholdingFlagged: true },
+            select: {
+              id: true,
+              legalName: true,
+              ssnLast4: true,
+              backupWithholdingFlagged: true,
+              ssnEncrypted: true,
+              countryFields: true,
+            },
           },
         },
       });
 
       const recipients: BatchRecipient[] = [];
+      // Recipients (with a resolvable full TIN) fed into the year-end IRS
+      // TIN-match revalidation. A recipient whose TIN cannot be resolved is
+      // skipped here (fail-closed) and keeps its stored flag / local last-4 check.
+      const tinRecipients: { recipientId: string; name: string; tin: string; tinType: TinType }[] =
+        [];
       for (const submission of submissions) {
         const contractor = submission.contractor;
 
@@ -236,6 +297,54 @@ export const tax1099Router = router({
           recordedBackupWithholdingMinor,
           cfsfStateCode: null,
         });
+
+        const resolvedTin = resolveRecipientTin(contractor);
+        if (resolvedTin) {
+          tinRecipients.push({
+            recipientId: contractor.id,
+            name: contractor.legalName,
+            tin: resolvedTin.tin,
+            tinType: resolvedTin.tinType,
+          });
+        } else {
+          log.warn(
+            { organizationId: ctx.organizationId, recipientId: contractor.id },
+            'year-end TIN-match skipped: no resolvable full TIN (fail-closed, advisory)',
+          );
+        }
+      }
+
+      // Year-end IRS TIN-match revalidation: sets the backup-withholding flag on a
+      // mismatch (via createDbTinMatchPersistence) inside its own transaction. A
+      // mismatch is advisory and NEVER blocks generation — a revalidation failure
+      // degrades to the stored flags rather than aborting the 1099 batch.
+      let tinMismatchIds = new Set<string>();
+      if (tinRecipients.length > 0) {
+        try {
+          const revalidation = await revalidateYearEndTins(
+            {
+              organizationId: ctx.organizationId,
+              recipients: tinRecipients,
+              actorId: ctx.user.id,
+            },
+            { db: ctx.db, client: new MockTinMatchClient() },
+          );
+          tinMismatchIds = revalidation.mismatchRecipientIds;
+        } catch (err) {
+          log.warn(
+            { err, organizationId: ctx.organizationId, taxYear: input.taxYear },
+            'year-end TIN-match revalidation failed; proceeding with stored flags (advisory, non-blocking)',
+          );
+        }
+      }
+
+      // Fold a fresh mismatch into this same batch's box-4 population so the flag
+      // just written is reflected without re-reading the contractor row.
+      for (const recipient of recipients) {
+        if (tinMismatchIds.has(recipient.recipientId)) {
+          recipient.backupWithholdingFlagged = true;
+          recipient.tinMismatch = true;
+        }
       }
 
       const result = await generateBatch(

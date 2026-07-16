@@ -12,14 +12,22 @@
 // escalation, audit) are injected, so the deterministic core is fully tested
 // against mocks and the generated types only.
 
+import { MockTinMatchClient } from '@contractor-ops/integrations';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { TinMatchPersistence } from '../tin-match.service';
+import type { AuditWriterClient } from '../audit-writer';
+import type {
+  TinMatchPersistence,
+  YearEndTinRevalidationDb,
+  YearEndTinRevalidationTx,
+} from '../tin-match.service';
 import {
   clearTinMatchCache,
   createBackupWithholdingFlagWriter,
   createDbTinMatchPersistence,
+  createTinMismatchEscalationWriter,
   matchRecipientTin,
   revalidateBatchTins,
+  revalidateYearEndTins,
 } from '../tin-match.service';
 
 beforeEach(() => {
@@ -221,5 +229,128 @@ describe('tin-match.service — year-end batch revalidate', () => {
     expect(results.map(r => r.matched)).toEqual([true, false, true]);
     expect(results.every(r => r.hardBlocked === false)).toBe(true);
     expect(persistence.createEscalation).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('tin-match.service — mismatch escalation writer', () => {
+  it('writes the escalation audit row on the tx (last-4 only, USER actor when supplied)', async () => {
+    const create = vi.fn(async () => ({}));
+    const createMany = vi.fn(async () => ({ count: 0 }));
+    const tx: AuditWriterClient = { auditLog: { create, createMany } };
+
+    const escalate = createTinMismatchEscalationWriter(tx, 'user-9');
+    await escalate({
+      organizationId: 'org-1',
+      recipientId: 'rcpt-1',
+      responseIndicator: 3,
+      tinLast4: '1120',
+    });
+
+    expect(create).toHaveBeenCalledTimes(1);
+    const json = JSON.stringify(create.mock.calls[0]?.[0]);
+    expect(json).toContain('form1099.tin_mismatch.escalated');
+    expect(json).toContain('1120');
+    expect(json).toContain('user-9');
+    // A full TIN never reaches the escalation metadata.
+    expect(json).not.toContain('078051120');
+  });
+
+  it('records a SYSTEM actor when no actor id is supplied', async () => {
+    const create = vi.fn(async () => ({}));
+    const createMany = vi.fn(async () => ({ count: 0 }));
+    const tx: AuditWriterClient = { auditLog: { create, createMany } };
+
+    const escalate = createTinMismatchEscalationWriter(tx, null);
+    await escalate({
+      organizationId: 'org-1',
+      recipientId: 'rcpt-1',
+      responseIndicator: 1,
+      tinLast4: '9999',
+    });
+
+    expect(JSON.stringify(create.mock.calls[0]?.[0])).toContain('SYSTEM');
+  });
+});
+
+describe('tin-match.service — year-end revalidation trigger (real MockTinMatchClient seam)', () => {
+  function mockTxDb() {
+    const updateMany = vi.fn(async () => ({ count: 1 }));
+    const auditCreate = vi.fn(async () => ({}));
+    const auditCreateMany = vi.fn(async () => ({ count: 0 }));
+    const tx: YearEndTinRevalidationTx = {
+      contractor: { updateMany },
+      auditLog: { create: auditCreate, createMany: auditCreateMany },
+    };
+    let txOpened = 0;
+    const db: YearEndTinRevalidationDb = {
+      $transaction: async <T>(fn: (t: YearEndTinRevalidationTx) => Promise<T>): Promise<T> => {
+        txOpened += 1;
+        return fn(tx);
+      },
+    };
+    return { updateMany, auditCreate, txCount: () => txOpened, db };
+  }
+
+  it('sets the flag for the mismatched recipient only, escalates + audits in-tx, and never blocks', async () => {
+    const { updateMany, auditCreate, db } = mockTxDb();
+
+    const result = await revalidateYearEndTins(
+      {
+        organizationId: 'org-1',
+        actorId: 'user-1',
+        recipients: [
+          { recipientId: 'ok-ein', name: 'Match Co', tin: '12-3456789', tinType: 'EIN' },
+          { recipientId: 'bad-ssn', name: 'Jane Q', tin: '078051120', tinType: 'SSN' },
+        ],
+      },
+      { db, client: new MockTinMatchClient() },
+    );
+
+    expect(result.mismatchRecipientIds).toEqual(new Set(['bad-ssn']));
+    // Exactly the mismatched recipient's flag is written, tenant-scoped.
+    expect(updateMany).toHaveBeenCalledTimes(1);
+    expect(updateMany).toHaveBeenCalledWith({
+      where: { id: 'bad-ssn', organizationId: 'org-1' },
+      data: { backupWithholdingFlagged: true },
+    });
+
+    // Both the escalation and the mismatch audit rows commit in the same tx.
+    const auditJson = JSON.stringify(auditCreate.mock.calls);
+    expect(auditJson).toContain('form1099.tin_mismatch.escalated');
+    expect(auditJson).toContain('tin_match.mismatch');
+    // Advisory only: the full TIN never reaches the audit metadata (last-4 only).
+    expect(auditJson).not.toContain('078051120');
+    expect(auditJson).toContain('1120');
+  });
+
+  it('writes no flag and opens no escalation when every recipient matches', async () => {
+    const { updateMany, auditCreate, db } = mockTxDb();
+
+    const result = await revalidateYearEndTins(
+      {
+        organizationId: 'org-1',
+        recipients: [
+          { recipientId: 'a', name: 'A Co', tin: '12-3456789', tinType: 'EIN' },
+          { recipientId: 'b', name: 'B Co', tin: '13-1234567', tinType: 'EIN' },
+        ],
+      },
+      { db, client: new MockTinMatchClient() },
+    );
+
+    expect(result.mismatchRecipientIds.size).toBe(0);
+    expect(updateMany).not.toHaveBeenCalled();
+    expect(auditCreate).not.toHaveBeenCalled();
+  });
+
+  it('is a no-op (opens no transaction) when there are no recipients', async () => {
+    const { db, txCount } = mockTxDb();
+
+    const result = await revalidateYearEndTins(
+      { organizationId: 'org-1', recipients: [] },
+      { db, client: new MockTinMatchClient() },
+    );
+
+    expect(result.mismatchRecipientIds.size).toBe(0);
+    expect(txCount()).toBe(0);
   });
 });
