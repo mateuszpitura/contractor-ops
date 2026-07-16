@@ -192,19 +192,19 @@ Requirements for the v7.0 milestone. Each maps to exactly one phase (filled by r
 
 ### Theme C — Marketplace Listings (INTEG-ZAPIER / N8N / MAKE / MARKETPLACE)
 
-- [ ] **INTEG-ZAPIER-01**: Zapier app — auth (API key or OAuth 2.0), 8+ triggers (event-catalog-mapped), 6+ actions (create contractor/invoice, approve invoice, mark payment paid, create workflow task, lookup contractor by tax ID); Zapier-sandbox bundle test
-- [ ] **INTEG-ZAPIER-02**: Zapier public-listing submission + review iteration (2–4 week cycle tracked as a separate milestone)
-- [ ] **INTEG-N8N-01**: n8n community node package `@contractor-ops/n8n-nodes` published to npm; nodes mirror the Zapier trigger/action surface; installable via n8n community-nodes UI
-- [ ] **INTEG-N8N-02**: n8n docs page + example workflows (invoice→Slack, contractor-onboard-from-Personio, compliance-expiry→PagerDuty)
-- [ ] **INTEG-MAKE-01**: Make.com app submission to the Make App Directory (same trigger/action surface as Zapier)
-- [ ] **INTEG-MARKETPLACE-01**: Internal listing-status dashboard — track all three marketplace approval states, version pins, last review feedback
+- [x] **INTEG-ZAPIER-01**: Zapier app — auth (API key or OAuth 2.0), 8+ triggers (event-catalog-mapped), 6+ actions (create contractor/invoice, approve invoice, mark payment paid, create workflow task, lookup contractor by tax ID); Zapier-sandbox bundle test
+- [x] **INTEG-ZAPIER-02**: Zapier public-listing submission + review iteration (2–4 week cycle tracked as a separate milestone)
+- [x] **INTEG-N8N-01**: n8n community node package `@contractor-ops/n8n-nodes` published to npm; nodes mirror the Zapier trigger/action surface; installable via n8n community-nodes UI
+- [x] **INTEG-N8N-02**: n8n docs page + example workflows (invoice→Slack, contractor-onboard-from-Personio, compliance-expiry→PagerDuty)
+- [x] **INTEG-MAKE-01**: Make.com app submission to the Make App Directory (same trigger/action surface as Zapier)
+- [x] **INTEG-MARKETPLACE-01**: Internal listing-status dashboard — track all three marketplace approval states, version pins, last review feedback
 
 ### Theme C — Developer Experience (INTEG-DX)
 
-- [ ] **INTEG-DX-01**: Developer portal (`developers.contractor-ops.{tld}`, Scalar) — OpenAPI reference, webhook event catalog, SDK install guides, sample apps (Zapier/n8n/Make recipes), changelog, deprecation notices
-- [ ] **INTEG-DX-02**: Postman collection (auto-generated from OpenAPI) + downloadable Insomnia workspace
-- [ ] **INTEG-DX-03**: Public status page (`status.contractor-ops.{tld}`) — API + webhook-dispatcher uptime + incident history (reuse v2.0 health-monitoring pattern)
-- [ ] **INTEG-DX-04**: Sandbox environment + free-forever public-API tier (100 req/day, no real data writes — auto-seed fresh test org per developer signup)
+- [x] **INTEG-DX-01**: Developer portal (`developers.contractor-ops.{tld}`, Scalar) — OpenAPI reference, webhook event catalog, SDK install guides, sample apps (Zapier/n8n/Make recipes), changelog, deprecation notices
+- [x] **INTEG-DX-02**: Postman collection (auto-generated from OpenAPI) + downloadable Insomnia workspace
+- [x] **INTEG-DX-03**: Public status page (`status.contractor-ops.{tld}`) — API + webhook-dispatcher uptime + incident history (reuse v2.0 health-monitoring pattern)
+- [x] **INTEG-DX-04**: Sandbox environment + free-forever public-API tier (100 req/day, no real data writes — auto-seed fresh test org per developer signup)
 
 ## Future Requirements (deferred — v7.5 / v8.0)
 
@@ -351,16 +351,16 @@ Which phases cover which requirements. Phase numbering continues from v6.0 (ende
 | INTEG-SEC-03 | Phase 100 | Pending |
 | INTEG-SEC-04 | Phase 100 | Pending |
 | INTEG-SEC-05 | Phase 100 | Pending |
-| INTEG-ZAPIER-01 | Phase 101 | Pending |
-| INTEG-ZAPIER-02 | Phase 101 | Pending |
-| INTEG-N8N-01 | Phase 101 | Pending |
-| INTEG-N8N-02 | Phase 101 | Pending |
-| INTEG-MAKE-01 | Phase 101 | Pending |
-| INTEG-MARKETPLACE-01 | Phase 101 | Pending |
-| INTEG-DX-01 | Phase 101 | Pending |
-| INTEG-DX-02 | Phase 101 | Pending |
-| INTEG-DX-03 | Phase 101 | Pending |
-| INTEG-DX-04 | Phase 101 | Pending |
+| INTEG-ZAPIER-01 | Phase 101 | Complete |
+| INTEG-ZAPIER-02 | Phase 101 | Complete |
+| INTEG-N8N-01 | Phase 101 | Complete |
+| INTEG-N8N-02 | Phase 101 | Complete |
+| INTEG-MAKE-01 | Phase 101 | Complete |
+| INTEG-MARKETPLACE-01 | Phase 101 | Complete |
+| INTEG-DX-01 | Phase 101 | Complete |
+| INTEG-DX-02 | Phase 101 | Complete |
+| INTEG-DX-03 | Phase 101 | Complete |
+| INTEG-DX-04 | Phase 101 | Complete |
 
 **Coverage:**
 - v7.0 requirements: **107 total** (3 FOUND7 + Theme A 26 + Theme B 46 + Theme C 32)

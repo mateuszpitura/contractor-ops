@@ -629,4 +629,4 @@ Phases execute in numeric order: 82 → 83 → … → 101. After Foundation (82
 | 98. Theme C — Public REST API Surface (gate) | v7.0 | 8/12 | Complete    | 2026-07-05 |
 | 99. Theme C — API Keys + Scopes + Rate Limiting | v7.0 | 0/TBD | Not started | - |
 | 100. Theme C — Outbound Webhooks + Integration Security | v7.0 | 0/TBD | Not started | - |
-| 101. Theme C — Marketplace Listings + Developer Experience | v7.0 | 10/10 | Complete   | 2026-07-16 |
+| 101. Theme C — Marketplace Listings + Developer Experience | v7.0 | 10/10 | Complete    | 2026-07-16 |
