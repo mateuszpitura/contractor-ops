@@ -7938,6 +7938,60 @@
         "ipLogError": "Nie udało się wczytać dziennika adresów IP.",
         "ipLogEmpty": "Nie zarejestrowano jeszcze żadnych żądań.",
         "closeButton": "Zamknij"
+      },
+      "sandbox": {
+        "createButton": "Utwórz klucz sandbox",
+        "dialogTitle": "Utwórz klucz sandbox",
+        "dialogDescription": "Klucze sandbox wywołują API w izolowanym środowisku demo — nigdy na danych produkcyjnych. Bezpłatnie, limit 100 żądań dziennie.",
+        "nameLabel": "Nazwa",
+        "namePlaceholder": "np. Testy lokalne",
+        "submit": "Utwórz klucz sandbox",
+        "createdTitle": "Utworzono klucz sandbox",
+        "createdDescription": "Skopiuj teraz swój klucz testowy. Nie zobaczysz go ponownie.",
+        "limitNote": "Limit 100 żądań dziennie.",
+        "orgNote": "Kieruje do izolowanego środowiska sandbox z danymi demo — nigdy nie sięga danych produkcyjnych.",
+        "securityWarning": "Przechowuj ten klucz bezpiecznie. Nie można go odzyskać po zamknięciu tego okna.",
+        "copyKey": "Kopiuj klucz sandbox",
+        "doneButton": "Gotowe",
+        "toast": {
+          "created": "Utworzono klucz sandbox",
+          "createFailed": "Nie udało się utworzyć klucza sandbox"
+        }
+      }
+    },
+    "marketplace": {
+      "title": "Wpisy w marketplace",
+      "description": "Śledź stan weryfikacji wpisów Zapier, n8n i Make.",
+      "statusLabel": "Bieżący stan",
+      "versionPin": "Przypięto do API {version}",
+      "lastFeedback": "Ostatnia opinia z weryfikacji",
+      "noFeedback": "Brak opinii z weryfikacji.",
+      "viewListing": "Zobacz wpis",
+      "advanceLabel": "Przejdź do następnego stanu",
+      "selectNextStatus": "Wybierz następny stan",
+      "advanceButton": "Przejdź dalej",
+      "noTransitions": "Brak dalszych przejść z tego stanu.",
+      "emptyHeading": "Brak wpisów",
+      "emptyBody": "Wpisy w marketplace pojawią się tutaj po ich utworzeniu.",
+      "errorHeading": "Nie udało się wczytać wpisów",
+      "errorBody": "Możesz nie mieć dostępu operatora marketplace lub usługa jest niedostępna.",
+      "retry": "Spróbuj ponownie",
+      "platforms": {
+        "ZAPIER": "Zapier",
+        "N8N": "n8n",
+        "MAKE": "Make"
+      },
+      "statuses": {
+        "DRAFT": "Szkic",
+        "SUBMITTED": "Wysłano",
+        "IN_REVIEW": "W weryfikacji",
+        "LIVE": "Aktywny",
+        "REJECTED": "Odrzucono",
+        "NEEDS_CHANGES": "Wymaga zmian"
+      },
+      "toast": {
+        "updated": "Zaktualizowano wpis",
+        "updateFailed": "Nie udało się zaktualizować wpisu"
       }
     },
     "featureFlags": {
