@@ -26,6 +26,7 @@ import {
 } from '../../services/portal-session';
 import { captureEvent } from '../../services/posthog';
 import { sanitizeStrings } from '../../services/sanitize';
+import { enqueueWebhookEvent } from '../../services/webhooks/enqueue';
 import {
   buildContractorListWhere,
   buildContractorRelationUpdates,
@@ -622,6 +623,12 @@ export const contractorCoreRouter = router({
             countryCode: created.countryCode,
           });
 
+          await enqueueWebhookEvent(tx, ctx.organizationId, {
+            eventType: 'contractor.created',
+            aggregateId: created.id,
+            data: created,
+          });
+
           return created;
         });
       } catch (err) {
@@ -713,10 +720,20 @@ export const contractorCoreRouter = router({
         updateData.customFieldsJson = mergedCustomFields as Prisma.InputJsonValue;
       }
 
-      const updated = await ctx.db.contractor.update({
-        where: { id },
-        data: updateData,
-        omit: { ssnEncrypted: true },
+      const updated = await ctx.db.$transaction(async tx => {
+        const row = await tx.contractor.update({
+          where: { id },
+          data: updateData,
+          omit: { ssnEncrypted: true },
+        });
+
+        await enqueueWebhookEvent(tx, ctx.organizationId, {
+          eventType: 'contractor.updated',
+          aggregateId: row.id,
+          data: row,
+        });
+
+        return row;
       });
 
       const emailChanged =
@@ -823,6 +840,15 @@ export const contractorCoreRouter = router({
             organizationId: ctx.organizationId,
             contractorId: input.id,
             countryCode: contractor.countryCode,
+          });
+        }
+
+        // ENDED is the contractor's terminal offboarding transition.
+        if (input.stage === 'ENDED') {
+          await enqueueWebhookEvent(tx, ctx.organizationId, {
+            eventType: 'contractor.offboarded',
+            aggregateId: result.id,
+            data: result,
           });
         }
 
@@ -936,7 +962,7 @@ export const contractorCoreRouter = router({
           },
         });
 
-        return tx.contractor.update({
+        const archived = await tx.contractor.update({
           where: { id: input.id },
           data: {
             status: 'ARCHIVED',
@@ -945,6 +971,14 @@ export const contractorCoreRouter = router({
           },
           omit: { ssnEncrypted: true },
         });
+
+        await enqueueWebhookEvent(tx, ctx.organizationId, {
+          eventType: 'contractor.offboarded',
+          aggregateId: archived.id,
+          data: archived,
+        });
+
+        return archived;
       });
 
       await writeAuditLog({

@@ -62,6 +62,10 @@ const { mockPrisma, contractorCreate } = vi.hoisted(() => {
       create: vi.fn(async (a: { data: Rec }) => ({ id: 'cci-1', ...a.data })),
     },
     $queryRaw: vi.fn(async () => []),
+    // Contractor create emits an outbound-webhook event through the outbox on
+    // the tx client (enqueueOutboxEvent → $executeRawUnsafe).
+    $executeRaw: vi.fn(async () => 1),
+    $executeRawUnsafe: vi.fn(async () => 1),
     $transaction: vi.fn(async (fn: (tx: Rec) => Promise<unknown>) => fn(mockPrisma)),
   };
 

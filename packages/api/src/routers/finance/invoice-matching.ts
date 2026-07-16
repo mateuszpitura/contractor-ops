@@ -14,6 +14,7 @@ import { writeAuditLog } from '../../services/audit-writer';
 import { CacheKeys, invalidateByPrefix } from '../../services/cache';
 import { resolveInvoiceMatchLinks, runAutoMatch } from '../../services/invoice-matching';
 import { applyReverseCharge } from '../../services/reverse-charge.service';
+import { enqueueWebhookEvent } from '../../services/webhooks/enqueue';
 
 export const invoiceMatchingRouter = router({
   /**
@@ -124,6 +125,12 @@ export const invoiceMatchingRouter = router({
             flagsJson: matchResult.flags.length > 0 ? matchResult.flags : undefined,
             ...reverseChargeUpdate,
           },
+        });
+
+        await enqueueWebhookEvent(tx, ctx.organizationId, {
+          eventType: 'invoice.matched',
+          aggregateId: inv.id,
+          data: inv,
         });
 
         return inv;
@@ -245,6 +252,12 @@ export const invoiceMatchingRouter = router({
             contractId: input.contractId ?? null,
             isReverseCharge: rcResult.isReverseCharge,
           },
+        });
+
+        await enqueueWebhookEvent(tx, ctx.organizationId, {
+          eventType: 'invoice.matched',
+          aggregateId: inv.id,
+          data: inv,
         });
 
         return inv;

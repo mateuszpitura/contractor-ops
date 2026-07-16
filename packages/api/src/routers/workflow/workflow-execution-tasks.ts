@@ -18,6 +18,7 @@ import { tenantProcedure } from '../../middleware/tenant';
 import { writeAuditLog } from '../../services/audit-writer';
 import { CacheKeys, invalidateByPrefix } from '../../services/cache';
 import { enqueueNotificationOutboxEvent } from '../../services/outbox';
+import { enqueueWebhookEvent } from '../../services/webhooks/enqueue';
 import { syncTaskToExternalSystems } from './workflow-execution-shared';
 import { unblockDependentsAndRecomputeRun, validateTransition } from './workflow-shared';
 
@@ -214,7 +215,7 @@ export const workflowExecutionTasksRouter = router({
           },
         });
 
-        await unblockDependentsAndRecomputeRun(tx, task, now, {
+        const recompute = await unblockDependentsAndRecomputeRun(tx, task, now, {
           organizationId: ctx.organizationId,
         });
 
@@ -232,6 +233,23 @@ export const workflowExecutionTasksRouter = router({
           },
           tx,
         });
+
+        await enqueueWebhookEvent(tx, ctx.organizationId, {
+          eventType: 'workflow.task.completed',
+          aggregateId: updated.id,
+          data: updated,
+        });
+
+        if (recompute.runCompleted) {
+          const run = await tx.workflowRun.findUnique({ where: { id: task.workflowRun.id } });
+          if (run) {
+            await enqueueWebhookEvent(tx, ctx.organizationId, {
+              eventType: 'workflow.completed',
+              aggregateId: run.id,
+              data: run,
+            });
+          }
+        }
 
         return updated;
       });
@@ -291,7 +309,7 @@ export const workflowExecutionTasksRouter = router({
           },
         });
 
-        await unblockDependentsAndRecomputeRun(tx, task, new Date(), {
+        const recompute = await unblockDependentsAndRecomputeRun(tx, task, new Date(), {
           organizationId: ctx.organizationId,
         });
 
@@ -310,6 +328,17 @@ export const workflowExecutionTasksRouter = router({
           },
           tx,
         });
+
+        if (recompute.runCompleted) {
+          const run = await tx.workflowRun.findUnique({ where: { id: task.workflowRun.id } });
+          if (run) {
+            await enqueueWebhookEvent(tx, ctx.organizationId, {
+              eventType: 'workflow.completed',
+              aggregateId: run.id,
+              data: run,
+            });
+          }
+        }
 
         return updated;
       });
@@ -517,13 +546,15 @@ export const workflowExecutionTasksRouter = router({
         });
 
         const overrideCompletedAt = new Date();
+        let runCompleted = false;
         for (const ipTask of openIpTasks) {
-          await unblockDependentsAndRecomputeRun(
+          const recompute = await unblockDependentsAndRecomputeRun(
             tx,
             { id: ipTask.id, workflowRun: { id: input.workflowRunId } },
             overrideCompletedAt,
             { organizationId: ctx.organizationId },
           );
+          if (recompute.runCompleted) runCompleted = true;
         }
 
         // Write override metadata onto the run
@@ -557,6 +588,17 @@ export const workflowExecutionTasksRouter = router({
           },
           tx,
         });
+
+        if (runCompleted) {
+          const run = await tx.workflowRun.findUnique({ where: { id: input.workflowRunId } });
+          if (run) {
+            await enqueueWebhookEvent(tx, ctx.organizationId, {
+              eventType: 'workflow.completed',
+              aggregateId: run.id,
+              data: run,
+            });
+          }
+        }
 
         return { workflowRunId: input.workflowRunId, overrideMetadata };
       });

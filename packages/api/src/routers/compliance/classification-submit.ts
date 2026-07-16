@@ -15,6 +15,7 @@ import { router } from '../../init';
 import { findOrThrow } from '../../lib/find-or-throw';
 import { writeAuditLog } from '../../services/audit-writer';
 import { enqueueHrisEmployeePush } from '../../services/outbox/hris-push-producer';
+import { enqueueWebhookEvent } from '../../services/webhooks/enqueue';
 import type { DbClient } from '../../services/types';
 import type { Outcome, Prisma } from './classification-shared';
 import {
@@ -280,6 +281,12 @@ export const classificationSubmitRouter = router({
         },
         ipAddress: ctx.headers.get('x-forwarded-for')?.split(',')[0] ?? null,
         userAgent: ctx.headers.get('user-agent') ?? null,
+      });
+
+      await enqueueWebhookEvent(tx, row.organizationId, {
+        eventType: 'classification.outcome',
+        aggregateId: updated.id,
+        data: updated,
       });
 
       return updated;

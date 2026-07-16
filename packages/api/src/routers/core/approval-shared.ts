@@ -22,6 +22,7 @@ import { materializeApprovedLeaveDays } from '../../services/leave-ewidencja-mat
 import { dispatch } from '../../services/notification-service';
 import type { OutboxTransactionalClient } from '../../services/outbox';
 import { enqueueNotificationOutboxEvent } from '../../services/outbox';
+import { enqueueWebhookEvent } from '../../services/webhooks/enqueue';
 
 /**
  * Strips Prisma class prototype from query results, producing plain
@@ -411,9 +412,14 @@ export async function finalizeApprovedInvoice(
 
   const invoice = await tx.invoice.findUnique({
     where: { id: opts.resourceId },
-    select: { id: true, invoiceNumber: true, dueDate: true, contractorId: true },
   });
   if (!invoice) return null;
+
+  await enqueueWebhookEvent(tx, opts.organizationId, {
+    eventType: 'invoice.approved',
+    aggregateId: invoice.id,
+    data: invoice,
+  });
 
   if (invoice.dueDate) {
     const contractor = invoice.contractorId

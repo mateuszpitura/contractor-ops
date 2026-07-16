@@ -100,6 +100,10 @@ const { mockPrisma } = vi.hoisted(() => {
       findFirst: vi.fn(async () => ({ role: 'admin' })),
     },
     $queryRaw: vi.fn(async () => []),
+    // Contractor create/update/offboard emit an outbound-webhook event through
+    // the outbox on the tx client (enqueueOutboxEvent → $executeRawUnsafe).
+    $executeRaw: vi.fn(async () => 1),
+    $executeRawUnsafe: vi.fn(async () => 1),
     $transaction: vi.fn(async (fn: (tx: Rec) => Promise<unknown>) => fn(mockPrisma)),
   };
 

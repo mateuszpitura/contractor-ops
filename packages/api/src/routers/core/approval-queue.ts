@@ -22,6 +22,7 @@ import { writeAuditLog } from '../../services/audit-writer';
 import { CacheKeys, invalidateByPrefix } from '../../services/cache';
 import { syncPaymentDueDeadline } from '../../services/calendar-deadline-sync';
 import { enqueuePostApprovalEinvoiceJobs } from '../../services/einvoice-submission-triggers';
+import { enqueueWebhookEvent } from '../../services/webhooks/enqueue';
 import {
   approvalQueueSqlConditions,
   assertApprovalActionPermission,
@@ -468,13 +469,19 @@ export const approvalQueueRouter = router({
             data: { status: 'REJECTED' },
           });
         } else {
-          await tx.invoice.update({
+          const rejectedInvoice = await tx.invoice.update({
             where: { id: step.approvalFlow.resourceId },
             data: {
               status: 'REJECTED',
               paymentStatus: 'NOT_READY',
               readyForPaymentAt: null,
             },
+          });
+
+          await enqueueWebhookEvent(tx, ctx.organizationId, {
+            eventType: 'invoice.rejected',
+            aggregateId: rejectedInvoice.id,
+            data: rejectedInvoice,
           });
         }
 
@@ -817,13 +824,19 @@ export const approvalQueueRouter = router({
             data: { status: 'REJECTED' },
           });
         } else {
-          await tx.invoice.update({
+          const rejectedInvoice = await tx.invoice.update({
             where: { id: step.approvalFlow.resourceId },
             data: {
               status: 'REJECTED',
               paymentStatus: 'NOT_READY',
               readyForPaymentAt: null,
             },
+          });
+
+          await enqueueWebhookEvent(tx, ctx.organizationId, {
+            eventType: 'invoice.rejected',
+            aggregateId: rejectedInvoice.id,
+            data: rejectedInvoice,
           });
         }
       }),

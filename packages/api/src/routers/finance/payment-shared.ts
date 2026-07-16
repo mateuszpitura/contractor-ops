@@ -31,6 +31,7 @@ import type { ExportFormat } from '../../services/payment-format-detection';
 import { groupItemsByFormat } from '../../services/payment-format-detection';
 import { convertForSettlement, resolveSettlementCurrency } from '../../services/payment-settlement';
 import { calculateWht } from '../../services/tax-rate.service';
+import { enqueueWebhookEvent } from '../../services/webhooks/enqueue';
 import { applyTreaty } from '../../services/treaty-rate.service';
 import type { DbClient } from '../../services/types';
 
@@ -290,13 +291,23 @@ export async function autoCompleteRunIfTerminal(tx: TxClient, paymentRunId: stri
     where: { paymentRunId, status: 'FAILED' },
   });
 
-  await tx.paymentRun.update({
+  const completedRun = await tx.paymentRun.update({
     where: { id: paymentRunId },
     data: {
       status: failedCount > 0 ? 'FAILED' : 'COMPLETED',
       completedAt: new Date(),
     },
   });
+
+  // A run that finished with a failed item is FAILED, not completed — only the
+  // clean-completion transition is surfaced to subscribers of this event.
+  if (completedRun.status === 'COMPLETED') {
+    await enqueueWebhookEvent(tx, completedRun.organizationId, {
+      eventType: 'payment_run.completed',
+      aggregateId: completedRun.id,
+      data: completedRun,
+    });
+  }
 }
 
 /** Source kinds accepted by {@link applyInvoicePaymentOutcome}. */
@@ -343,13 +354,19 @@ export async function applyInvoicePaymentOutcome(
   const totalPaidMinor = paidAgg._sum.amountMinor ?? 0;
 
   if (totalPaidMinor >= invoice.amountToPayMinor) {
-    await tx.invoice.update({
+    const paidInvoice = await tx.invoice.update({
       where: { id: args.invoiceId },
       data: {
         status: 'PAID',
         paymentStatus: 'PAID',
         paidAt: args.paidAt,
       },
+    });
+
+    await enqueueWebhookEvent(tx, args.organizationId, {
+      eventType: 'invoice.paid',
+      aggregateId: paidInvoice.id,
+      data: paidInvoice,
     });
     return;
   }

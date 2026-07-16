@@ -12,6 +12,7 @@ import { cursorClause, paginateByLastKeptUndefined } from '../../lib/pagination'
 import { publicOrderBy } from '../../lib/public-cursor';
 import { apiKeyTenantProcedure } from '../../middleware/api-key-auth';
 import { requirePermission } from '../../middleware/rbac';
+import { enqueueWebhookEvent } from '../../services/webhooks/enqueue';
 import { unblockDependentsAndRecomputeRun, validateTransition } from '../workflow/workflow-shared';
 import { writePublicApiAudit } from './write-shared';
 
@@ -100,9 +101,28 @@ export const publicWorkflowTaskRouter = router({
           select: workflowTaskSelect,
         });
 
-        await unblockDependentsAndRecomputeRun(tx, task, now, {
+        const recompute = await unblockDependentsAndRecomputeRun(tx, task, now, {
           organizationId: ctx.organizationId,
         });
+
+        if (input.status === 'DONE') {
+          await enqueueWebhookEvent(tx, ctx.organizationId, {
+            eventType: 'workflow.task.completed',
+            aggregateId: updated.id,
+            data: updated,
+          });
+        }
+
+        if (recompute.runCompleted) {
+          const run = await tx.workflowRun.findUnique({ where: { id: task.workflowRun.id } });
+          if (run) {
+            await enqueueWebhookEvent(tx, ctx.organizationId, {
+              eventType: 'workflow.completed',
+              aggregateId: run.id,
+              data: run,
+            });
+          }
+        }
 
         await writePublicApiAudit({
           tx,

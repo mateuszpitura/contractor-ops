@@ -46,6 +46,10 @@ const {
       organization: {
         findUnique: vi.fn(async () => ({ language: 'en' })),
       },
+      // The band-fire emit routes an outbound-webhook event through the outbox
+      // on this same regional client (enqueueOutboxEvent → $executeRawUnsafe).
+      $executeRaw: vi.fn(async () => 1),
+      $executeRawUnsafe: vi.fn(async () => 1),
     };
   }
 
