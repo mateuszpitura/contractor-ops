@@ -1,0 +1,86 @@
+name: Publish n8n community node (dark)
+
+# DARK publish job. It NEVER runs on push or pull_request — manual dispatch only,
+# and it no-ops unless the NPM_TOKEN secret has been added. This mirrors the
+# Speakeasy SDK publish posture: the package builds + tests on every run, but the
+# npm publish is deferred behind an explicit token + a deliberate dispatch, so a
+# stray merge can never leak a half-baked package.
+#
+# To enable (see .planning/EXTERNAL-ENABLEMENT.md):
+#   1. Add the `NPM_TOKEN` repository secret (an npm automation token with
+#      publish rights to the @contractor-ops scope).
+#   2. Create the `npm-publish` environment with required reviewers.
+#   3. Dispatch this workflow with `dry_run: false`.
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Run npm publish in --dry-run mode (no upload). Set false to actually publish."
+        type: boolean
+        default: true
+
+concurrency:
+  group: publish-n8n-nodes
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  TURBO_TELEMETRY_DISABLED: 1
+  SKIP_ENV_VALIDATION: true
+
+jobs:
+  publish:
+    name: Build, test & (dark) publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: npm-publish
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build package
+        run: pnpm --filter @contractor-ops/n8n-nodes build
+
+      - name: Test package
+        run: pnpm --filter @contractor-ops/n8n-nodes test
+
+      - name: Guard — require NPM_TOKEN (dark until set)
+        id: guard
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          if [ -z "$NPM_TOKEN" ]; then
+            echo "NPM_TOKEN is not set — this is the dark publish job. The package was built + tested only; nothing was published."
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Publish to npm
+        if: steps.guard.outputs.enabled == 'true'
+        working-directory: packages/n8n-nodes
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            echo "Dry run — validating the publish without uploading."
+            npm publish --dry-run --access public
+          else
+            npm publish --access public
+          fi

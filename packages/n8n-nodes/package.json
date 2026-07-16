@@ -1,0 +1,55 @@
+{
+  "name": "@contractor-ops/n8n-nodes",
+  "version": "0.1.0",
+  "description": "n8n community nodes for Contractor Ops — the public REST API surfaced as n8n actions (write operations) and a webhook trigger, generated from the OpenAPI snapshot + the webhook event catalog.",
+  "keywords": [
+    "n8n-community-node-package",
+    "n8n",
+    "contractor-ops",
+    "contractors",
+    "invoicing",
+    "compliance"
+  ],
+  "license": "MIT",
+  "homepage": "https://developers.contractor-ops.com",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "n8n": {
+    "n8nNodesApiVersion": 1,
+    "credentials": [
+      "dist/credentials/ContractorOpsApi.credentials.js"
+    ],
+    "nodes": [
+      "dist/nodes/ContractorOps/ContractorOps.node.js",
+      "dist/nodes/ContractorOpsTrigger/ContractorOpsTrigger.node.js"
+    ]
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "typecheck": "tsc --noEmit",
+    "typecheck:fast": "tsgo --noEmit"
+  },
+  "dependencies": {
+    "@contractor-ops/marketplace-manifests": "workspace:*",
+    "@contractor-ops/validators": "workspace:*"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^4.1.5",
+    "n8n-workflow": "2.16.0",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.5"
+  },
+  "peerDependencies": {
+    "n8n-workflow": "*"
+  }
+}
