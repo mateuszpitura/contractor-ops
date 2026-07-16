@@ -7942,6 +7942,60 @@
         "ipLogError": "Could not load the source-IP log.",
         "ipLogEmpty": "No requests recorded yet.",
         "closeButton": "Close"
+      },
+      "sandbox": {
+        "createButton": "Create sandbox key",
+        "dialogTitle": "Create a sandbox key",
+        "dialogDescription": "Sandbox keys call the API against an isolated demo workspace — never your live data. Free, capped at 100 requests a day.",
+        "nameLabel": "Name",
+        "namePlaceholder": "e.g. Local testing",
+        "submit": "Create sandbox key",
+        "createdTitle": "Sandbox key created",
+        "createdDescription": "Copy your test key now. You won't be able to see it again.",
+        "limitNote": "Capped at 100 requests per day.",
+        "orgNote": "Resolves to an isolated sandbox workspace with seeded demo data — it can never reach your live data.",
+        "securityWarning": "Store this key securely. It cannot be retrieved after closing this dialog.",
+        "copyKey": "Copy sandbox key",
+        "doneButton": "Done",
+        "toast": {
+          "created": "Sandbox key created",
+          "createFailed": "Failed to create sandbox key"
+        }
+      }
+    },
+    "marketplace": {
+      "title": "Marketplace listings",
+      "description": "Track the review state of the Zapier, n8n, and Make listings.",
+      "statusLabel": "Current state",
+      "versionPin": "Pinned to API {version}",
+      "lastFeedback": "Last review feedback",
+      "noFeedback": "No review feedback yet.",
+      "viewListing": "View listing",
+      "advanceLabel": "Advance review state",
+      "selectNextStatus": "Select next state",
+      "advanceButton": "Advance",
+      "noTransitions": "No further transitions from this state.",
+      "emptyHeading": "No listings yet",
+      "emptyBody": "Marketplace listings appear here once they are seeded.",
+      "errorHeading": "Couldn't load listings",
+      "errorBody": "You may not have marketplace-operator access, or the service is unavailable.",
+      "retry": "Try again",
+      "platforms": {
+        "ZAPIER": "Zapier",
+        "N8N": "n8n",
+        "MAKE": "Make"
+      },
+      "statuses": {
+        "DRAFT": "Draft",
+        "SUBMITTED": "Submitted",
+        "IN_REVIEW": "In review",
+        "LIVE": "Live",
+        "REJECTED": "Rejected",
+        "NEEDS_CHANGES": "Needs changes"
+      },
+      "toast": {
+        "updated": "Listing updated",
+        "updateFailed": "Failed to update the listing"
       }
     },
     "featureFlags": {

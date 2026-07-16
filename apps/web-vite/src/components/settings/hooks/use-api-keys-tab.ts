@@ -31,6 +31,73 @@ export function useApiKeysTab() {
   return { t, keys, isLoading } as const;
 }
 
+interface UseCreateSandboxKeyDialogOptions {
+  onOpenChange: (open: boolean) => void;
+}
+
+/**
+ * Mints a free `co_test_` sandbox key. The plaintext is revealed exactly once
+ * (mirrors the live-key create flow) and is never re-fetchable.
+ */
+export function useCreateSandboxKeyDialog({ onOpenChange }: UseCreateSandboxKeyDialogOptions) {
+  const trpc = useTRPC();
+  const t = useTranslations('Settings.apiKeys.sandbox');
+  const tCommon = useTranslations('Common');
+  const id = useId();
+  const [name, setName] = useState('');
+  const [sandboxKey, setSandboxKey] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  const createMutation = useResourceMutation(
+    trpc.apiKey.createSandboxKey.mutationOptions({
+      onSuccess: data => {
+        setSandboxKey(data.plaintext);
+      },
+    }),
+    {
+      invalidate: [trpc.apiKey.list.queryKey()],
+      successMessage: t('toast.created'),
+      errorMessage: t('toast.createFailed'),
+    },
+  );
+
+  function handleCreate() {
+    if (!name.trim()) return;
+    createMutation.mutate({ name: name.trim() });
+  }
+
+  function handleCopy() {
+    if (!sandboxKey) return;
+    void navigator.clipboard.writeText(sandboxKey);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  function handleClose(value: boolean) {
+    if (!value) {
+      setName('');
+      setSandboxKey(null);
+      setCopied(false);
+      createMutation.reset();
+    }
+    onOpenChange(value);
+  }
+
+  return {
+    t,
+    tCommon,
+    id,
+    name,
+    setName,
+    sandboxKey,
+    copied,
+    createMutation,
+    handleCreate,
+    handleCopy,
+    handleClose,
+  } as const;
+}
+
 interface UseRotateKeyDialogOptions {
   keyId: string;
   keyName: string;

@@ -7938,6 +7938,60 @@
         "ipLogError": "Das Quell-IP-Protokoll konnte nicht geladen werden.",
         "ipLogEmpty": "Noch keine Anfragen erfasst.",
         "closeButton": "Schließen"
+      },
+      "sandbox": {
+        "createButton": "Sandbox-Schlüssel erstellen",
+        "dialogTitle": "Sandbox-Schlüssel erstellen",
+        "dialogDescription": "Sandbox-Schlüssel rufen die API gegen einen isolierten Demo-Arbeitsbereich auf – niemals Ihre Echtdaten. Kostenlos, begrenzt auf 100 Anfragen pro Tag.",
+        "nameLabel": "Name",
+        "namePlaceholder": "z. B. Lokales Testen",
+        "submit": "Sandbox-Schlüssel erstellen",
+        "createdTitle": "Sandbox-Schlüssel erstellt",
+        "createdDescription": "Kopieren Sie Ihren Test-Schlüssel jetzt. Er wird nicht erneut angezeigt.",
+        "limitNote": "Begrenzt auf 100 Anfragen pro Tag.",
+        "orgNote": "Verweist auf einen isolierten Sandbox-Arbeitsbereich mit Demo-Daten – er kann niemals Ihre Echtdaten erreichen.",
+        "securityWarning": "Bewahren Sie diesen Schlüssel sicher auf. Er kann nach dem Schließen dieses Dialogs nicht mehr abgerufen werden.",
+        "copyKey": "Sandbox-Schlüssel kopieren",
+        "doneButton": "Fertig",
+        "toast": {
+          "created": "Sandbox-Schlüssel erstellt",
+          "createFailed": "Sandbox-Schlüssel konnte nicht erstellt werden"
+        }
+      }
+    },
+    "marketplace": {
+      "title": "Marktplatz-Einträge",
+      "description": "Verfolgen Sie den Prüfstatus der Zapier-, n8n- und Make-Einträge.",
+      "statusLabel": "Aktueller Status",
+      "versionPin": "Angeheftet an API {version}",
+      "lastFeedback": "Letztes Prüf-Feedback",
+      "noFeedback": "Noch kein Prüf-Feedback.",
+      "viewListing": "Eintrag ansehen",
+      "advanceLabel": "Prüfstatus weiterschalten",
+      "selectNextStatus": "Nächsten Status wählen",
+      "advanceButton": "Weiterschalten",
+      "noTransitions": "Keine weiteren Übergänge aus diesem Status.",
+      "emptyHeading": "Noch keine Einträge",
+      "emptyBody": "Marktplatz-Einträge erscheinen hier, sobald sie angelegt sind.",
+      "errorHeading": "Einträge konnten nicht geladen werden",
+      "errorBody": "Möglicherweise fehlt Ihnen der Marktplatz-Operator-Zugriff oder der Dienst ist nicht verfügbar.",
+      "retry": "Erneut versuchen",
+      "platforms": {
+        "ZAPIER": "Zapier",
+        "N8N": "n8n",
+        "MAKE": "Make"
+      },
+      "statuses": {
+        "DRAFT": "Entwurf",
+        "SUBMITTED": "Eingereicht",
+        "IN_REVIEW": "In Prüfung",
+        "LIVE": "Live",
+        "REJECTED": "Abgelehnt",
+        "NEEDS_CHANGES": "Änderungen nötig"
+      },
+      "toast": {
+        "updated": "Eintrag aktualisiert",
+        "updateFailed": "Eintrag konnte nicht aktualisiert werden"
       }
     },
     "featureFlags": {

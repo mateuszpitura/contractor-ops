@@ -11,6 +11,8 @@
     "lint:fix": "biome check --write .",
     "typecheck": "tsc --noEmit",
     "typecheck:fast": "tsgo --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "lhci": "lhci autorun --config=./lighthouserc.json",
     "smoke": "bash ../../scripts/landing-smoke.sh"
   },
@@ -32,10 +34,16 @@
     "tailwindcss": "^4.2.4"
   },
   "devDependencies": {
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
     "@types/node": "^24.12.2",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.0.4",
     "dotenv-cli": "^11.0.0",
-    "typescript": "^6.0.3"
+    "jsdom": "^29.1.1",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.5"
   }
 }
