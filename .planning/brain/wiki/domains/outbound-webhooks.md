@@ -2,7 +2,7 @@
 title: Outbound webhooks
 type: domain
 tags: [webhooks, outbound, ssrf, hmac, dlq, redaction, integration-security]
-source_commit: e0d533fa
+source_commit: 222d0daab
 verify_with:
   - apps/api/src/plugins/csrf-origin.ts
   - packages/api/src/services/webhooks/ssrf-guard.ts
@@ -17,7 +17,22 @@ verify_with:
   - packages/db/prisma/schema/webhook.prisma
   - packages/validators/src/webhooks/index.ts
   - apps/api/src/routes/webhooks-outbound.ts
-updated: 2026-07-10
+  - packages/api/src/routers/core/contractor-core.ts
+  - packages/api/src/services/approval-engine.ts
+  - packages/api/src/routers/core/approval-shared.ts
+  - packages/api/src/routers/core/approval-queue.ts
+  - packages/api/src/routers/finance/invoice-crud.ts
+  - packages/api/src/routers/finance/invoice-matching.ts
+  - packages/api/src/routers/finance/payment-shared.ts
+  - packages/api/src/routers/finance/payment-core.ts
+  - packages/api/src/routers/portal/portal-invoices-router.ts
+  - packages/api/src/routers/workflow/workflow-shared.ts
+  - packages/api/src/routers/workflow/workflow-execution-tasks.ts
+  - packages/api/src/routers/workflow/workflow-execution-runs.ts
+  - packages/api/src/routers/public-api/workflow-task.ts
+  - packages/api/src/routers/compliance/classification-submit.ts
+  - packages/api/src/services/compliance-reminder-scan.ts
+updated: 2026-07-17
 ---
 
 # Outbound webhooks
@@ -62,6 +77,34 @@ flag (kill switch); the SSRF guard is a hard control, not a deferral.
 `contractor.{created,updated,offboarded,compliance_blocked}`, `invoice.{received,matched,approved,rejected,
 paid}`, `payment_run.{created,completed}`, `workflow.{task.completed,completed}`, `classification.outcome`,
 `compliance_doc.{expiring_soon,expired}`. Envelope: `{ id, type, created_at, organization_id, data, include_pii }`.
+
+## Producer emit sites (every catalog type is wired)
+
+Each type is emitted from the domain mutation that owns the transition, inside that mutation's `$transaction`
+(so the event is durable iff the write commits). Shared helpers are emitted from once and cover every caller.
+The full domain object is passed as `data` — the fan-out redacts per-subscription, so producers never pre-redact.
+
+- `contractor.created|updated|offboarded` — `contractor-core.ts` `create` / `update` (wrapped in a tx) /
+  `updateLifecycleStage`(→ENDED) + `archive`.
+- `contractor.compliance_blocked` — `approval-engine.ts` `advanceFlow` when the final-step gate arms a
+  `PENDING_COMPLIANCE` hold (keyed on the held invoice's contractor).
+- `invoice.received` — `invoice-crud.ts` (staff intake) + `portal-invoices-router.ts` (portal submit).
+- `invoice.matched` — `invoice-matching.ts` auto-match + manual-match.
+- `invoice.approved` — shared `finalizeApprovedInvoice` (`approval-shared.ts`) → covers single + bulk approve.
+- `invoice.rejected` — `approval-queue.ts` `reject` + `bulkReject`.
+- `invoice.paid` — shared `applyInvoicePaymentOutcome` (`payment-shared.ts`) on full settlement → covers
+  payment-run / bank-statement / manual sources.
+- `payment_run.created` — `payment-core.ts` per created run; `payment_run.completed` — shared
+  `autoCompleteRunIfTerminal` (`payment-shared.ts`) on clean completion (FAILED runs do not emit).
+- `workflow.task.completed` — `workflow-execution-tasks.ts` `completeTask` + public-api DONE transition.
+- `workflow.completed` — `unblockDependentsAndRecomputeRun` (`workflow-shared.ts`) now returns `runCompleted`;
+  callers (completeTask, skipTask, IP-override, public-api, complete-with-pending-credentials) emit on the
+  auto/explicit completion transition.
+- `classification.outcome` — `classification-submit.ts` on assessment submit (contractors AND employees).
+- `compliance_doc.expiring_soon|expired` — `compliance-reminder-scan.ts` cron, per band fire (EXPIRED band →
+  `expired`, earlier bands → `expiring_soon`). The cron has **no `$transaction` seam**; the emit sits
+  immediately after the durable optimistic-concurrency band-state write and inherits the same once-per-band
+  Redis dedup (at-most-once, matching the co-located digest dispatch).
 
 ## Security controls
 
