@@ -1,4 +1,7 @@
 import type { Prisma } from '@contractor-ops/db';
+import type { TinType } from '@contractor-ops/integrations';
+import { MockTinMatchClient } from '@contractor-ops/integrations';
+import { createLogger } from '@contractor-ops/logger';
 import { isValidEin, isValidSsn } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
@@ -9,10 +12,18 @@ import { tenantProcedure } from '../../middleware/tenant';
 import { writeAuditLog } from '../../services/audit-writer';
 import { decryptSsn, encryptSsn } from '../../services/ssn-crypto';
 import {
+  createBackupWithholdingFlagWriter,
+  createDbTinMatchPersistence,
+  createTinMismatchEscalationWriter,
+  matchRecipientTin,
+} from '../../services/tin-match.service';
+import {
   applyUspsAdvisory,
   buildUsCountryFields,
   validateContractorVatId,
 } from './contractor-shared.js';
+
+const log = createLogger({ service: 'contractor-tax-router' });
 
 export const contractorTaxRouter = router({
   revalidateVat: tenantProcedure
@@ -70,11 +81,51 @@ export const contractorTaxRouter = router({
         });
       }
 
-      return ctx.db.contractor.update({
+      const updated = await ctx.db.contractor.update({
         where: { id: input.contractorId, organizationId: ctx.organizationId },
         data,
         omit: { ssnEncrypted: true },
       });
+
+      // Intake TIN-match: when a full TIN is (re)captured, verify it against IRS
+      // records and set the backup-withholding flag on a mismatch — advisory,
+      // never blocks the profile save. The flag + escalation + audit commit in one
+      // transaction; a match leaves the recipient untouched. Runs only when a TIN
+      // was supplied this call (both SSN and EIN already passed format validation).
+      const verifyTin: { tin: string; tinType: TinType } | null = input.ssn
+        ? { tin: input.ssn.replace(/[\s-]/g, ''), tinType: 'SSN' }
+        : input.ein
+          ? { tin: input.ein, tinType: 'EIN' }
+          : null;
+
+      if (verifyTin) {
+        try {
+          await ctx.db.$transaction(async tx => {
+            await matchRecipientTin({
+              organizationId: ctx.organizationId,
+              recipientId: input.contractorId,
+              name: updated.legalName,
+              tin: verifyTin.tin,
+              tinType: verifyTin.tinType,
+              client: new MockTinMatchClient(),
+              persistence: createDbTinMatchPersistence(
+                {
+                  setBackupWithholdingFlag: createBackupWithholdingFlagWriter(tx),
+                  createEscalation: createTinMismatchEscalationWriter(tx, ctx.user?.id ?? null),
+                },
+                tx,
+              ),
+            });
+          });
+        } catch (err) {
+          log.warn(
+            { err, contractorId: input.contractorId },
+            'intake TIN-match failed; TIN saved, backup-withholding flag not refreshed (advisory, non-blocking)',
+          );
+        }
+      }
+
+      return updated;
     }),
 
   revealSsn: tenantProcedure

@@ -3,6 +3,7 @@ title: US payment rail
 type: domain
 tags: [payments, ach, nacha, fedwire, pacs008, withholding, usd, plaid, modern-treasury, ach-return]
 source_commit: 730cc8e69
+source_commit: 1c38ab9d0
 verify_with:
   - packages/db/prisma/schema/payment.prisma
   - packages/api/src/services/payment-export.ts
@@ -43,7 +44,7 @@ flowchart TD
 
 - **One jurisdiction-agnostic deduction.** `applyWithholding` (pure, per item, in `payment-shared.ts`) resolves the deduction by jurisdiction: Saudi cross-border via the unchanged `calculateWht`; US source + `Contractor.backupWithholdingFlagged` → 24% backup withholding (IRC §3406); US source + foreign recipient → the `applyTreaty` rate (30% statutory fallback). One HALF-UP round at the rate; `amountMinor = grossAmountMinor − whtAmountMinor`. Returns `null` (item untouched) for a US domestic recipient, a 0% treaty outcome, or a non-withholding jurisdiction. The SA branch is byte-preserved and regression-guarded.
 - **The recorded figure is authoritative.** `applyWithholdingToRun` writes `grossAmountMinor / amountMinor / whtAmountMinor / whtRate / whtTreatyApplied / whtTreatyReference / whtServiceType` per applied item and one `payment_run.withholding_applied` audit row per applied item. The withheld figure recorded on `PaymentRunItem` **is the single source of truth**: the 1099-NEC box-4 and 1042-S box-2 aggregate the year's actual payment-run withholding — the forms never recompute the deduction. The export file carries the net.
-- **The flag is a real column.** `createBackupWithholdingFlagWriter` (`tin-match.service.ts`) persists `Contractor.backupWithholdingFlagged` via a tenant-scoped idempotent `updateMany({ id, organizationId })` — the TIN never reaches the write (boolean only).
+- **The flag is a real column, now fed by wired producers.** `createBackupWithholdingFlagWriter` (`tin-match.service.ts`) persists `Contractor.backupWithholdingFlagged` via a tenant-scoped idempotent `updateMany({ id, organizationId })` — the TIN never reaches the write (boolean only). The IRS TIN-match trigger that SETS it is wired at `tax1099.generateBatch` (year-end, via `revalidateYearEndTins`) and `contractor.updateUsProfile` (intake SSN/EIN capture); before that this payout read side was live-but-unfed. The flag is monotonic (set-true only) — clearing a corrected recipient is a separate admin concern, not the writer's remit.
 
 ## US export formats
 

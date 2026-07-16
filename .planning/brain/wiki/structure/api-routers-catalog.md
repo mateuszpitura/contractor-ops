@@ -3,6 +3,7 @@ title: API routers catalog
 type: structure
 tags: [structure, api, trpc, catalog]
 source_commit: efb2b079
+source_commit: 1c38ab9d0
 verify_with:
   - packages/api/src/root.ts
   - packages/api/src/portal-root.ts
@@ -121,7 +122,7 @@ Gated by `module.us-expansion` (or `QA_DEFAULT_ORG_ID`) in `root.ts`; each proce
 | `taxForm` | staff read/track of US W-form submissions (status, treaty claim, expiry) + request/remind — no on-behalf signing; full SSN never projected |
 | `form1042s` | staff Form 1042-S generate / build+validate XML / download validated XML / upload ack / correct / recipient-copy + `contractorPii:read`-gated full-FTIN reveal; box figures always server-derived from settled USD payouts + the W-form on file; the transmit tail reuses the shared IRIS seam (Pub 1187 build/validate via `form-1042s-transmit.service` + shared `iris-ack-parser`), stamping the Pub 1187 schema version so an ack never lands on a 1099 submission; BUNDLE_UNAVAILABLE (non-throwing) until the human Pub 1187 XSD lands |
 | `form1099kTracker` | read-only informational 1099-K band for the contractor profile (`getTrackerState`): band + cumulative settled-USD payout + transaction count + the tax-year threshold. Band state is written **exclusively** by the `form-1099k-tracker` cron — the router never mutates it. Purely informational; the platform never files a 1099-K |
-| `tax1099` | staff 1099-NEC year-end filing (`routers/finance/tax-1099-router.ts`): `list`, `generateBatch` (review-before-file — aggregates box-1 by payment date, never transmits), `buildAndValidateXml` / `downloadValidatedXml` (ManualDownload default — build IRIS XML → `xsdValidate` → download; records an `IrisSubmission` via idempotency), `uploadAck` (XXE-safe `parseIrisAck` → `IrisAck`), `listTinMismatches` / `escalateMismatch` / `resolveMismatch` (**amber advisory, never blocks generation**), `fileCorrection` (supersede), `getStateFilingOutput` (CFSF code vs per-state CSV). Zod-strict, audited, box figures server-derived. Full loop: [[domains/us-tax-year-end-filing]] |
+| `tax1099` | staff 1099-NEC year-end filing (`routers/finance/tax-1099-router.ts`): `list`, `generateBatch` (review-before-file — runs the year-end IRS TIN-match revalidation `revalidateYearEndTins` first, setting `backupWithholdingFlagged` on a mismatch before box-4; aggregates box-1 by payment date, never transmits), `buildAndValidateXml` / `downloadValidatedXml` (ManualDownload default — build IRIS XML → `xsdValidate` → download; records an `IrisSubmission` via idempotency), `uploadAck` (XXE-safe `parseIrisAck` → `IrisAck`), `listTinMismatches` / `escalateMismatch` / `resolveMismatch` (**amber advisory, never blocks generation**), `fileCorrection` (supersede), `getStateFilingOutput` (CFSF code vs per-state CSV). Zod-strict, audited, box figures server-derived. Full loop: [[domains/us-tax-year-end-filing]] |
 
 When flag OFF: runtime `METHOD_NOT_FOUND`; the portal W-form + 1099 procedures throw `FORBIDDEN`.
 

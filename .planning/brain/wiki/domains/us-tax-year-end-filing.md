@@ -3,6 +3,7 @@ title: US tax year-end filing (TIN-match → 1099-NEC → IRIS e-file → state 
 type: domain
 tags: [us, tax, 1099-nec, iris, tin-match, e-file, state-filing, immutable-record, flag-dark]
 source_commit: 18d6df46b
+source_commit: 1c38ab9d0
 verify_with:
   - packages/iris/src/generator.ts
   - packages/iris/src/validator.ts
@@ -36,13 +37,19 @@ before production filing (local-only / legal-deferred posture).
 
 ## Flow
 
-1. **TIN match** (`tin-match.service.ts`) — at W-9 intake + a year-end
+1. **TIN match** (`tin-match.service.ts`) — at W-9/SSN intake + a year-end
    revalidation, the recipient name/TIN is matched via the IRS e-Services
    adapter seam (deterministic mock default; dark SSRF-safe live client). A
    mismatch sets the backup-withholding flag + raises an admin escalation +
    writes an audit row — **advisory only, never a hard block**; the 1099 still
    generates. 24h cache keyed on TIN-last4 (a full TIN never enters a cache key,
-   log, or audit row).
+   log, or audit row). The trigger is wired from two producers:
+   `tax1099.generateBatch` (year-end, via `revalidateYearEndTins`, in its own tx
+   before box-4 population — a fresh mismatch folds into the same batch's box-4)
+   and `contractor.updateUsProfile` (staff SSN/EIN capture, via `matchRecipientTin`).
+   A recipient with no resolvable full TIN is skipped (fail-closed). The portal
+   W-9 self-cert path is an intentional gap — it never holds the full TIN (the
+   snapshot keeps last-4 only; the full value lands via the staff capture path).
 2. **Aggregate + gate** (`form-1099-nec.service.ts`) — box-1 nonemployee comp is
    summed by payment (settlement) date per recipient per payer-org, FX-converted
    to USD at the payment-date rate, and gated by the **tax-year-keyed

@@ -61,3 +61,16 @@ not a wire.
 **Phase 86 action:** when the year-end tin-match batch lands, call
 `createDbTinMatchPersistence` (which composes `createBackupWithholdingFlagWriter`) from the
 batch's per-recipient mismatch path — no new writer code is needed, only the trigger.
+
+**RESOLVED (Phase 86, plan 86-09 — milestone-audit gap #2 TIN-MATCH-TRIGGER-UNWIRED).** The
+trigger is wired at two producers, both persisting the flag + escalation + audit atomically via
+`createDbTinMatchPersistence` (+ `createBackupWithholdingFlagWriter` + the new
+`createTinMismatchEscalationWriter`), advisory / never-blocking:
+- **Year-end** — `tax1099.generateBatch` calls the new `revalidateYearEndTins`
+  (`tin-match.service.ts`) before box-4 population; a fresh mismatch folds into the same batch's
+  box-4. The full TIN is resolved server-side (`decryptSsn` / EIN from `countryFields`); a
+  recipient without a resolvable TIN is skipped (fail-closed).
+- **Intake** — `contractor.updateUsProfile` calls `matchRecipientTin` when a full SSN/EIN is
+  (re)captured. The portal W-9 self-cert path is an intentional gap (it holds only the TIN last-4).
+The live `EServicesTinMatchClient` stays dark behind per-org PAF enrollment (EXTERNAL-ENABLEMENT
+row 5); the shipped `MockTinMatchClient` runs the whole trigger without it.

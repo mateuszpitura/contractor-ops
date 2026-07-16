@@ -5,10 +5,13 @@ import { writeAuditLog } from './audit-writer';
 
 // IRS TIN-Matching service.
 //
-// Deferred seam: `matchRecipientTin` and `createBackupWithholdingFlagWriter`
-// have no production callers yet — they are wired in with the year-end 1099
-// batch. Built and tested ahead of that phase, so this reads as complete but is
-// currently unreachable, not dead code.
+// Production triggers: `revalidateYearEndTins` is called from the year-end
+// 1099-NEC batch (staff finance router) before generation, and `matchRecipientTin`
+// is called from the staff US-profile SSN-capture path — both persist the
+// backup-withholding flag on a mismatch through `createDbTinMatchPersistence` +
+// `createBackupWithholdingFlagWriter`. The portal W-9 self-cert path is an
+// intentional gap: it never holds the full TIN (the snapshot keeps last-4 only;
+// the full value lands via the staff SSN-capture path).
 //
 // Owns the policy around the TinMatchClient seam: a 24h result cache, a bounded
 // retry on transient client failures, and the mismatch handler. The client
@@ -350,4 +353,111 @@ export function createBackupWithholdingFlagWriter(
       data: { backupWithholdingFlagged: true },
     });
   };
+}
+
+/**
+ * Build the mismatch-escalation writer a DB-backed caller supplies to
+ * {@link createDbTinMatchPersistence}. The escalation is recorded as an audit row
+ * on the caller's transaction (last-4 only in metadata) — the mismatch also
+ * surfaces on the staff review list through the recipient's set
+ * backup-withholding flag, so there is no dedicated escalation table to write.
+ * The row is written inside the caller's `tx` so it commits atomically with the
+ * flag set and the mismatch audit.
+ */
+export function createTinMismatchEscalationWriter(
+  tx: AuditWriterClient,
+  actorId: string | null,
+): DbBackedPersistenceWriters['createEscalation'] {
+  return async ({ organizationId, recipientId, responseIndicator, tinLast4 }) => {
+    await writeAuditLog({
+      tx,
+      organizationId,
+      actorType: actorId ? 'USER' : 'SYSTEM',
+      actorId,
+      action: 'form1099.tin_mismatch.escalated',
+      resourceType: 'CONTRACTOR',
+      resourceId: recipientId,
+      metadata: { responseIndicator, tinLast4, source: 'tin_match_revalidation' },
+    });
+  };
+}
+
+/**
+ * Transaction surface the year-end revalidation needs: the backup-withholding
+ * flag write (`contractor.updateMany`) and the audit writer (`auditLog`). A real
+ * Prisma `$transaction` tx satisfies both.
+ */
+export interface YearEndTinRevalidationTx extends BackupWithholdingFlagDb, AuditWriterClient {}
+
+/**
+ * Minimal transactional Prisma surface accepted by {@link revalidateYearEndTins}.
+ * Declared structurally (mirrors the 1099 batch persist client) so the tenant
+ * client or a test double satisfy it.
+ */
+export interface YearEndTinRevalidationDb {
+  $transaction: <T>(fn: (tx: YearEndTinRevalidationTx) => Promise<T>) => Promise<T>;
+}
+
+export interface YearEndTinRevalidationInput {
+  organizationId: string;
+  recipients: readonly BatchRecipient[];
+  /** Staff actor initiating the year-end batch; null records a SYSTEM escalation actor. */
+  actorId?: string | null;
+}
+
+export interface YearEndTinRevalidationDeps {
+  db: YearEndTinRevalidationDb;
+  /** The TIN-matching client — the deterministic mock by default; the live client only once PAF clears. */
+  client: TinMatchClientLike;
+}
+
+export interface YearEndTinRevalidationResult {
+  /** Recipients whose name/TIN did not match — their backup-withholding flag was set. */
+  mismatchRecipientIds: Set<string>;
+}
+
+/**
+ * Year-end producer trigger for the previously-unwired TIN-match seam. Runs every
+ * supplied recipient's name/TIN through the injected client and, on a mismatch,
+ * sets `Contractor.backupWithholdingFlagged = true` + raises an escalation + writes
+ * the mismatch audit — all inside ONE transaction so the flag, escalation, and
+ * audit commit atomically (or roll back together). A mismatch is advisory and
+ * NEVER blocks: the caller still generates the 1099 with the TIN as captured.
+ *
+ * The returned mismatch id set lets the caller fold a fresh mismatch into the
+ * same batch's box-4 population without re-reading the flag it just wrote.
+ */
+export async function revalidateYearEndTins(
+  input: YearEndTinRevalidationInput,
+  deps: YearEndTinRevalidationDeps,
+): Promise<YearEndTinRevalidationResult> {
+  const mismatchRecipientIds = new Set<string>();
+  if (input.recipients.length === 0) {
+    return { mismatchRecipientIds };
+  }
+
+  const results = await deps.db.$transaction(async tx => {
+    const persistence = createDbTinMatchPersistence(
+      {
+        setBackupWithholdingFlag: createBackupWithholdingFlagWriter(tx),
+        createEscalation: createTinMismatchEscalationWriter(tx, input.actorId ?? null),
+      },
+      tx,
+    );
+    return revalidateBatchTins({
+      organizationId: input.organizationId,
+      recipients: input.recipients,
+      client: deps.client,
+      persistence,
+    });
+  });
+
+  input.recipients.forEach((recipient, index) => {
+    const result = results[index];
+    if (result && !result.matched) {
+      mismatchRecipientIds.add(recipient.recipientId);
+    }
+  });
+
+  return { mismatchRecipientIds };
 }
