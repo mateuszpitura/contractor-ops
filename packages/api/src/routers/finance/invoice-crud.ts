@@ -24,6 +24,7 @@ import { computeDuplicateCheckHash } from '../../services/invoice-matching';
 import type { OutboxTransactionalClient } from '../../services/outbox';
 import { enqueueNotificationOutboxEvent } from '../../services/outbox';
 import { sanitizeStrings } from '../../services/sanitize';
+import { enqueueWebhookEvent } from '../../services/webhooks/enqueue';
 import type { ContractorTaxSnapshot } from './invoice-shared';
 import {
   coerceInvoiceDateFields,
@@ -235,6 +236,16 @@ export const invoiceCrudRouter = router({
             totalMinor: invoiceData.totalMinor,
             currency: invoiceData.currency,
           });
+
+          await enqueueWebhookEvent(
+            tx as unknown as OutboxTransactionalClient,
+            ctx.organizationId,
+            {
+              eventType: 'invoice.received',
+              aggregateId: inv.id,
+              data: inv,
+            },
+          );
 
           return inv;
         });

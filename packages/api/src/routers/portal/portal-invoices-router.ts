@@ -8,6 +8,7 @@ import { computeDuplicateCheckHashForInvoice } from '../../services/invoice-matc
 import type { OutboxTransactionalClient } from '../../services/outbox';
 import { consumePendingUpload, createPendingUpload } from '../../services/pending-upload';
 import { createRegionalPresignedDownloadUrl } from '../../services/regional-storage';
+import { enqueueWebhookEvent } from '../../services/webhooks/enqueue';
 import {
   enqueueInvoiceReceivedNotification,
   getFinanceTeamUserIds,
@@ -375,6 +376,12 @@ export const portalInvoicesRouter = router({
           sellerName: contractor?.legalName ?? contractor?.displayName ?? null,
           totalMinor: inv.totalMinor,
           currency: inv.currency,
+        });
+
+        await enqueueWebhookEvent(tx as unknown as OutboxTransactionalClient, ctx.organizationId, {
+          eventType: 'invoice.received',
+          aggregateId: inv.id,
+          data: inv,
         });
 
         return inv;
