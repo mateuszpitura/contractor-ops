@@ -6,10 +6,21 @@
 // fresh generation, so nothing drifts from the API.
 
 export { generateInsomnia, type InsomniaExport } from './generate-insomnia.js';
-export { generateMake, type MakeBlueprint } from './generate-make.js';
+export {
+  generateMake,
+  type MakeBlueprint,
+  type MakeInstantTrigger,
+  type MakeModule,
+} from './generate-make.js';
 export { generateN8n, type N8nDescriptor } from './generate-n8n.js';
 export { generatePostman, type PostmanCollection } from './generate-postman.js';
-export { generateZapier, type ZapierApp } from './generate-zapier.js';
+export {
+  generateZapier,
+  type ZapierApp,
+  type ZapierAuthentication,
+  type ZapierCreate,
+  type ZapierTrigger,
+} from './generate-zapier.js';
 export * from './load-spec.js';
 
 import type { MakeBlueprint } from './generate-make.js';

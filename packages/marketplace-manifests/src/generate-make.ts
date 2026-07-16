@@ -19,10 +19,17 @@ export interface MakeInstantTrigger {
   event: string;
 }
 
+export interface MakeConnection {
+  name: string;
+  type: 'apiKey';
+  apiKeyHeader: string;
+  apiKeyPrefix: string;
+}
+
 export interface MakeBlueprint {
   name: string;
   version: number;
-  connection: { name: string; type: 'apiKey'; apiKeyHeader: string };
+  connection: MakeConnection;
   baseUrl: string;
   modules: MakeModule[];
   instantTriggers: MakeInstantTrigger[];
@@ -54,7 +61,12 @@ export function generateMake(spec: OpenApiSnapshot, events: readonly string[]): 
   return {
     name: 'Contractor Ops',
     version: 1,
-    connection: { name: 'contractorOps', type: 'apiKey', apiKeyHeader: 'Authorization' },
+    connection: {
+      name: 'contractorOps',
+      type: 'apiKey',
+      apiKeyHeader: 'Authorization',
+      apiKeyPrefix: 'Bearer ',
+    },
     baseUrl: `${base}/v1`,
     modules,
     instantTriggers,
