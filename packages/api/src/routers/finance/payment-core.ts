@@ -28,6 +28,7 @@ import { tenantProcedure } from '../../middleware/tenant';
 import { applyAchReturns, parseNachaReturnFile } from '../../services/ach-return.service';
 import { writeAuditLog, writeAuditLogMany } from '../../services/audit-writer';
 import { assertContractorPaymentEligibility } from '../../services/compliance-payment-gate';
+import { enqueueWebhookEvent } from '../../services/webhooks/enqueue';
 import type { PayoutProvider } from './payment-shared';
 import {
   _initiatePayoutForRun,
@@ -183,6 +184,12 @@ export const paymentCoreRouter = router({
               organizationId: ctx.organizationId,
               runId: run.id,
               invoices: groupInvoices,
+            });
+
+            await enqueueWebhookEvent(tx, ctx.organizationId, {
+              eventType: 'payment_run.created',
+              aggregateId: run.id,
+              data: run,
             });
 
             runs.push(run);
