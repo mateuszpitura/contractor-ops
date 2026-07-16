@@ -1,0 +1,116 @@
+{
+  "name": "Contractor Ops",
+  "version": 1,
+  "connection": {
+    "name": "contractorOps",
+    "type": "apiKey",
+    "apiKeyHeader": "Authorization",
+    "apiKeyPrefix": "Bearer "
+  },
+  "baseUrl": "https://api.contractor-ops.com/v1",
+  "modules": [
+    {
+      "name": "create_contractor",
+      "label": "Create a contractor",
+      "operationId": "createContractor",
+      "method": "POST",
+      "url": "https://api.contractor-ops.com/v1/contractors"
+    },
+    {
+      "name": "create_invoice",
+      "label": "Create an invoice",
+      "operationId": "createInvoice",
+      "method": "POST",
+      "url": "https://api.contractor-ops.com/v1/invoices"
+    },
+    {
+      "name": "approve_invoice",
+      "label": "Approve an invoice",
+      "operationId": "approveInvoice",
+      "method": "PATCH",
+      "url": "https://api.contractor-ops.com/v1/invoices/{id}/approve"
+    }
+  ],
+  "instantTriggers": [
+    {
+      "name": "contractor_created",
+      "label": "On contractor.created",
+      "event": "contractor.created"
+    },
+    {
+      "name": "contractor_updated",
+      "label": "On contractor.updated",
+      "event": "contractor.updated"
+    },
+    {
+      "name": "contractor_offboarded",
+      "label": "On contractor.offboarded",
+      "event": "contractor.offboarded"
+    },
+    {
+      "name": "contractor_compliance_blocked",
+      "label": "On contractor.compliance_blocked",
+      "event": "contractor.compliance_blocked"
+    },
+    {
+      "name": "invoice_received",
+      "label": "On invoice.received",
+      "event": "invoice.received"
+    },
+    {
+      "name": "invoice_matched",
+      "label": "On invoice.matched",
+      "event": "invoice.matched"
+    },
+    {
+      "name": "invoice_approved",
+      "label": "On invoice.approved",
+      "event": "invoice.approved"
+    },
+    {
+      "name": "invoice_rejected",
+      "label": "On invoice.rejected",
+      "event": "invoice.rejected"
+    },
+    {
+      "name": "invoice_paid",
+      "label": "On invoice.paid",
+      "event": "invoice.paid"
+    },
+    {
+      "name": "payment_run_created",
+      "label": "On payment_run.created",
+      "event": "payment_run.created"
+    },
+    {
+      "name": "payment_run_completed",
+      "label": "On payment_run.completed",
+      "event": "payment_run.completed"
+    },
+    {
+      "name": "workflow_task_completed",
+      "label": "On workflow.task.completed",
+      "event": "workflow.task.completed"
+    },
+    {
+      "name": "workflow_completed",
+      "label": "On workflow.completed",
+      "event": "workflow.completed"
+    },
+    {
+      "name": "classification_outcome",
+      "label": "On classification.outcome",
+      "event": "classification.outcome"
+    },
+    {
+      "name": "compliance_doc_expiring_soon",
+      "label": "On compliance_doc.expiring_soon",
+      "event": "compliance_doc.expiring_soon"
+    },
+    {
+      "name": "compliance_doc_expired",
+      "label": "On compliance_doc.expired",
+      "event": "compliance_doc.expired"
+    }
+  ]
+}
