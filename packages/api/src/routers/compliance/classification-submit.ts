@@ -15,8 +15,8 @@ import { router } from '../../init';
 import { findOrThrow } from '../../lib/find-or-throw';
 import { writeAuditLog } from '../../services/audit-writer';
 import { enqueueHrisEmployeePush } from '../../services/outbox/hris-push-producer';
-import { enqueueWebhookEvent } from '../../services/webhooks/enqueue';
 import type { DbClient } from '../../services/types';
+import { enqueueWebhookEvent } from '../../services/webhooks/enqueue';
 import type { Outcome, Prisma } from './classification-shared';
 import {
   acknowledgeDisclaimerInput,
