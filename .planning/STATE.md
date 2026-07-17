@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v7.0
 milestone_name: GTM Expansion
-status: milestone_complete
-stopped_at: Milestone complete (Phase 101 was final phase)
-last_updated: 2026-07-16T21:57:47.115Z
-last_activity: 2026-07-01 -- Phase 93 planning complete
+status: Awaiting next milestone
+stopped_at: context exhaustion at 75% (2026-07-05)
+last_updated: "2026-07-17T20:58:18.262Z"
+last_activity: 2026-07-17 — Milestone v7.0 completed and archived
 progress:
   total_phases: 20
-  completed_phases: 15
+  completed_phases: 18
   total_plans: 176
-  completed_plans: 168
-  percent: 75
+  completed_plans: 170
+  percent: 90
 ---
 
 # Project State
@@ -29,12 +29,26 @@ See: .planning/PROJECT.md (updated 2026-06-07 — v7.0 GTM Expansion started; v6
 
 ## Current Position
 
-Phase: 101
-Plan: Not started
-Status: Milestone complete
-Last activity: 2026-07-16
+Phase: Milestone v7.0 complete
+Plan: —
+Status: Awaiting next milestone
+Last activity: 2026-07-17 — Milestone v7.0 completed and archived
 
-Progress: [██████░░░░] 58%
+## Deferred Items
+
+Items acknowledged and deferred at milestone close on 2026-07-17:
+
+| Category | Item | Status |
+|----------|------|--------|
+| human-uat | 84-HUMAN-UAT (US profile / W-form scenarios) | partial — 4 scenarios need manual QA |
+| human-uat | 85-HUMAN-UAT (W-form intake + tax-treaty wizard) | partial — 5 scenarios need manual QA |
+| verification | 84-VERIFICATION | human_needed |
+| verification | 85-VERIFICATION | human_needed |
+
+These are manual human-QA / adviser-verify items for the US tax-form flows, consistent with the local-only /
+legal-sign-off-deferred posture — post-deploy activities, not code blockers. Also carried: the v7.5 deferrals
+(e-ZLA/eAU/HMRC-RTI-direct), ADP native (v7.1), and the external marketplace submissions
+(INTEG-ZAPIER-02 + npm/Make publish) tracked in EXTERNAL-ENABLEMENT.md.
 
 ## v7.0 Roadmap Summary (created 2026-06-07)
 
@@ -202,3 +216,7 @@ Last session: 2026-07-05T19:48:48.325Z
 Stopped at: context exhaustion at 75% (2026-07-05)
 Resume file: None
 Next command: `/gsd:verify-phase 89` (Theme B gate is closed — the parallel Theme B phases 90–97 can proceed), or resume Theme A (86 verification / 87)
+
+## Operator Next Steps
+
+- Start the next milestone with /gsd-new-milestone

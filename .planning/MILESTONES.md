@@ -1,5 +1,188 @@
 # Milestones
 
+## v7.0 GTM Expansion (Shipped: 2026-07-17)
+
+**Phases completed:** 20 phases, 176 plans, 151 tasks
+
+**Key accomplishments:**
+
+- Wave:
+- Wave:
+- Wave:
+- Wave:
+- Wave:
+- Wave:
+- Wave:
+- Wave:
+- Wave:
+- Wave:
+- 1. [Rule 2 / T1] Wrapped `contractor.update` in a `$transaction`
+- Status:
+- Status:
+- Status:
+- Status:
+- Status:
+- `@contractor-ops/n8n-nodes` is a build-verified, community-installable n8n package whose regular node (write actions), webhook trigger (16-event catalog), and apiKey credential are all generated from the marketplace-manifests surface — shipping three importable example workflows + docs, with the npm publish deferred behind a dark, token-gated CI dispatch.
+- A Zapier CLI app (custom `co_live_`/`co_test_` API-key auth, 16 REST-hook triggers, one create per write op) and a Make.com blueprint — both generated from the one marketplace-manifests source, bundle-validated locally, with the public-listing submissions recorded as deferred, dashboard-tracked external steps.
+- Status:
+- Built the two front-ends over the shipped 101-03/101-05/101-02 backends: the internal marketplace listing-status dashboard + reveal-once sandbox-key action in Settings -> Developer (web-vite container+hooks), and the public /status page in apps/landing over the /status.json aggregator — both wired to real routers, both ship-dark behind their phase flags.
+- Status:
+- 1. [Rule 3 - Blocking] error-handler.test.ts already existed → extended, not created
+- 1. [Rule 1 - Stale test assertion] Updated `region.test.ts` EU/ME-only assertions
+- Task 1 — 19 v7.0 FLAGS + V7_FLAG_KEYS cohort
+- 1. [Rule 3 - Blocking] Schema applied via scoped ALTER (db push fallback) instead of `migrate dev`
+- Widened the Postgres `DataRegion` enum to `{ EU ME US }` (the genuinely-missing Phase-82 piece — `dataRegion='US'` threw at the DB), added the Prisma-enum lockstep guard that closes the drift gap forever, and laid the two RED test scaffolds Plans 02/04 will turn green.
+- Better Auth `beforeCreateOrganization` hook assigns `dataRegion='US'` for US-billing orgs (immutable, single origin), and every scattered `'EU'|'ME'` cast site widened to the shared `DataRegion` type so a US org resolves the `us-east-1` Prisma client end-to-end.
+- US-region R2 bucket wired via Record<DataRegion> lockstep with optional R2_BUCKET_NAME_US env that lazy-throws on access until provisioned (US-INFRA-02 data residency).
+- One statutory-retention resolver in packages/db (4yr 1099-NEC / 7yr backup-withholding, EMPTY model map per D-06) consumed by all three deletion chokepoints — soft-delete extension, the load-bearing base-prisma data-purge cron, and gdpr RODO erasure — so no retained record can be hard-deleted in-window.
+- Six RED test scaffolds locking the EIN/SSN validator, SSN AES-256-GCM crypto, revealSsn RBAC+audit + updateUsProfile storage invariants, USPS fail-open adapter, and the two web-vite SSN/US-compliance component contracts — every downstream task now has a concrete automated target.
+- `isValidEin` (XX-XXXXXXX + IRS valid-prefix table) and `isValidSsn` (format + SSA invalid-range exclusion) pure validators, the `usCountryFieldsSchema` (entityType + EIN + US address, SSN excluded) registered as `US` in `countryFieldsSchemaMap`, and a dedicated required `SSN_ENCRYPTION_KEY` plus optional USPS creds across both env schemas + `.env.example`.
+- Task 1 — fallback-aware i18n:parity guard (TDD):
+- SSN encrypt-at-rest in dedicated Contractor columns (AES-256-GCM, dedicated SSN_ENCRYPTION_KEY) + contractorPii:read RBAC granted to owner/admin/finance_admin only + ssn/ein pino log-masking.
+- 1. [Rule 3 - Blocking] Stale built artifacts for dependency packages
+- US compliance section (UsComplianceFields) dispatched as place 3 of 3, with a role-gated audit-logged SSN masked-reveal, an advisory USPS address-status pill, and full en/de/pl/ar i18n parity plus en-US divergent overrides.
+- 1. [Rule 2 - Missing critical functionality] applyTreaty resolves the auto value under an override
+- Portal-primary W-9/W-8BEN/W-8BEN-E self-certification: IDOR-scoped portal procedures build a server-signed immutable JSON snapshot (ESIGN attestation, full SSN stripped to last-4), resolve the treaty claim, append-only supersede the prior cert, and audit — all flag-gated behind `module.us-expansion`; staff get a read/track-only mirror.
+- The contractor-facing surface that makes the US W-form intake real: a portal-primary W-9/W-8BEN/W-8BEN-E self-certification wizard (determination → form → attestation → receipt) with the treaty article/rate auto-populated and announced via `aria-live`, an ESIGN attestation gate (real perjury checkboxes + typed legal-name match + signature affirmation), a PII-safe staff read/track status card, full en/de/pl/ar + RTL parity, and the documentation-follows-code wiki/MEMORY updates — all on the established page→container→hook→component layering.
+- Immutable, supersede-able Form1099Nec + append-only IrisSubmission/IrisAck records + tax-year/per-state config tables, seeded ($600 TY2025 / $2,000 TY2026 + CF/SF participation) and retention-registered ('1099-NEC' 4yr at the purge chokepoint); the [BLOCKING] multi-region migration is held at a human gate.
+- A `TinMatchClient` adapter seam (deterministic mock default + dark SSRF-safe e-Services client) plus `tin-match.service` that applies a 24h cache + bounded retry and, on a mismatch, sets the recipient backup-withholding flag + raises an admin escalation + writes an audit row — advisory only, never a hard block; the 1099 still generates.
+- The deterministic IRIS 1099-NEC XML core (`buildIrisXml`) + `xsdValidate` were
+
+pre-built by Phase 87's sibling-builder work; this plan reconciled the validator
+to the flag-defer operating model (typed `BUNDLE_UNAVAILABLE` report, tests that
+skip-and-auto-flip on the missing XSD bundle), added the golden fixture, and
+built the single `iris-ack-parser` mapping all six IRIS statuses for both the
+manual-upload and dark A2A paths.
+
+- Deterministic 1099-NEC year-end engine — box-1 aggregated by payment-date + FX-to-USD per recipient/payer-org, gated by the tax-year-keyed Tax1099Threshold table ($600 TY2025 / $2,000 TY2026 OBBBA), box-4 backup withholding, CORRECTED = immutable supersede, idempotent + audited batch — plus a recipient Copy-B substitute PDF (Pub 1179 §4.6, last-4 TIN, adviser-verify) rendered from the immutable snapshot and archived to the US R2 tax bucket.
+- Wired the year-end loop's transmit tail and control surface, all dark behind
+
+`module.us-expansion` (+ `module.iris-efile` for A2A): the `TaxFilingTransmitter`
+factory (ManualDownload default | IrisA2A dark | Vendor stub), per-state CFSF /
+non-CFSF output, the staff `tax1099` router (batch / build+validate / download /
+upload-ack / TIN-mismatch advisory / correction / per-state), the portal
+`portalTax1099` consent + Copy-B download scoped to `ctx.contractorId`, root/
+portal wiring, and a notify-only year-end reminder cron.
+
+- Built the full staff `tax-filing/` surface (1099-NEC batch panel, IRIS filing
+
+card with a 6-status pill, TIN-mismatch amber-advisory list, correction dialog,
+per-state output) and the portal IRS electronic-delivery consent step gating the
+Copy-B download — strictly web-vite layered (hook = sole tRPC boundary → wired
+4-state section → presentational), full i18n parity (en/en-US/de/pl/ar RTL), and
+WCAG. The human visual-QA gate is recorded deferred to US-enablement (the surface
+is dark behind `module.us-expansion`).
+
+- Satisfied the documentation-follows-code mandate for Plans 86-04/06/07: a new US
+
+year-end-filing domain page + two IRS integration pages + structure/pattern
+catalog updates + log/hot/index + MEMORY invariants; `pnpm check:wiki-brain`
+passes with no NEW drift.
+
+- Closed v7.0 milestone-audit gap #2 (TIN-MATCH-TRIGGER-UNWIRED): the TIN-match verify + backup-withholding writer had zero production callers, so the live payout read side (`applyWithholding`, 1099 box-4) read `Contractor.backupWithholdingFlagged` but nothing set it — now wired at the year-end 1099 batch and the staff SSN/EIN-capture intake path, advisory and never-blocking, with the flag+escalation+audit committed atomically in one transaction.
+- 8 terminal-RED scaffold tests pinning every deterministic Phase 87 surface (US classification, Form 1042-S service/PDF, determination letter, 1099-K tracker, 1042-S IRIS generator/validator); the one human-only blocker — the Pub 1187 1042-S XSD SOR download — recorded as deferred.
+- Form1042S immutable/supersede model with Chapter-3/4 boxes + treaty snapshot, a tax-year-keyed 1099-K band tracker + threshold config, the US_DETERMINATION_LETTER document kind, and a nullable AB5 workState field — all tenant-isolated and covered by a cross-org leak test; the live-regional migration is deferred to the P82–86 human gate.
+- Registered US ClassificationProfile scoring the federal IRS common-law three-category base with a dispositive California AB5 ABC overlay and a §530 safe-harbor relief flag, wired to a reason-required, audit-logged override — advisory decision-support, never a legal verdict.
+- Form 1042-S non-transmit core — a §875(d)-gated chapter-3 withholding engine (treaty rate only on a complete W-8 chain, else 30% statutory), immutable one-transaction supersede, idempotent audited batch, a last-4-FTIN recipient PDF archived to the US R2 tax bucket, and a us-expansion-gated staff router — turning the Plan 87-01 RED scaffolds GREEN.
+- Deterministic no-LLM react-pdf Determination Letter (verdict + federal factors + AB5/§530 flags + citations + locked advisory footer) archived append-only as a US_DETERMINATION_LETTER ClassificationDocument with a frozen ruleSetVersion and audit-logged generation, wired through a staff-only us-expansion-gated document-router procedure.
+- A daily `module.us-expansion`-gated cron that sums each contractor's cumulative settled-USD payouts + transaction count, bands SAFE/APPROACHING/OVER against the tax-year-keyed $20,000 + 200 `Tax1099KThreshold`, fires a proactive heads-up on an up-crossing, and surfaces the band read-only for the profile — never filing a 1099-K.
+- Sibling `buildIris1042SXml` + form-parameterized `xsdValidate1042S` land GREEN (generator + the two non-VALID validator cases); the 1042-S transmit is a clean cross-phase HOLD on the unlanded P86 TaxFilingTransmitter seam, and the validator VALID case stays RED behind the deferred human Pub 1187 XSD.
+- Staff US worker-classification result (verdict + scored federal factors + amber AB5 flag + info §530 flag + citations) behind a sticky advisory banner and blocking disclaimer, with a reason-required audit-logged override, an SDS-mirror Determination-Letter generate button, and a read-only informational 1099-K profile band — all strings i18n at en/en-US/de/pl/ar parity.
+- Task 1 (staff 1042-S batch review) is COMPLETE and now MOUNTED: the recovered wired panel + summary + treaty-rate caption + hook are reachable via a new flag-gated `/tax-filing` page, and the `Tax1042SBatch` i18n namespace landed at en/de/pl/ar parity. Tasks 2-3 (the P86-reusing filing card + portal consent-gated download) are a recorded CROSS-PHASE HOLD — the P86 UI seam is not on disk and is reused-not-rebuilt.
+- The wiki now tracks every Phase 87 product change — a new US-classification domain page, the 1042-S surface added to us-tax-forms, a new IRS-1042-S integration page, the new Prisma models in prisma-schema-areas, the mounted /tax-filing UI in web-vite-domains, refreshed log/hot/MEMORY, and a rebuilt BM25 index — with `check:wiki-brain` green (0 errors).
+- Six failing Wave-0 test contracts pin the US payment rail (NACHA ACH file, Fedwire pacs.008, generalized withholding deduction, USD settlement FX, Modern Treasury + Plaid adapter mocks) before any implementation, with a GREEN Saudi-WHT regression guard locking the existing withholding math.
+- Additive Prisma schema for the US payout rail — Contractor backup-withholding flag, ContractorBillingProfile US ACH routing/account encrypted+masked pairs + Plaid advisory status, and ACH_NACHA/FEDWIRE on the PaymentExportFormat enum — plus the regenerated client and a reviewed additive migration.
+- Generalized the single-jurisdiction Saudi WHT path into one jurisdiction-agnostic withholding deduction (SA WHT, US 24% backup withholding per IRC §3406, and 1042-S treaty withholding) applied at payment-run item seeding, recorded the withheld figure as the single source of truth on PaymentRunItem with an audit row per applied item, and wired the previously-unwired P86 tin-match writer to persist Contractor.backupWithholdingFlagged.
+- Added the two US export-format generators to the payment-export factory — a hand-rolled zero-dependency NACHA ACH credit file (mirroring `generateBacsStandard18`) and a Fedwire ISO 20022 `pacs.008.001.08` XML (mirroring `generateSwiftXml`) — plus the `detectUsFormat` routing with the Same-Day ACH ceiling as a dated config, the `_generateExportFileForFormat` dispatch branches, and the wiring that runs the 88-05 settlement conversion in `_buildExportItems` so the export file carries the settled amount, not the raw run amount.
+- USD made first-class through the existing EUR-based ECB FX path (no special-case short-circuit) plus a thin `payment-settlement.ts` seam — `resolveSettlementCurrency` (per-run override or Contractor.currency default) + `convertForSettlement` (payment-date ECB rate via `convertAmount`, null on a missing rate) — ready for the 88-04 export path and 88-06 payout override to consume.
+- Built the two flag-dark adapter seams — the Modern Treasury `PayoutInitiationAdapter` (deterministic mock default + dark live originator + Stripe stub) and the Plaid Identity verification client (mock default, advisory fail-open) — then wired the opt-in `initiatePayout` tRPC procedure (idempotent, audited, US-expansion + `payments.ach-payouts` gated) that threads the 88-05 settlement seam per item and reads the per-item Plaid advisory via the exact tenant-scoped `PaymentRunItem.billingProfile.plaidVerificationStatus` include. The GA mock path installs ZERO external packages; the live SDK install is gated and deferred.
+- Closed the documentation-follows-code loop for the US payment rail: authored a new `domains/us-payment-rail.md` domain compass + `integrations/modern-treasury.md` and `integrations/plaid.md` provider pages, updated the catalog/schema/money-rounding/feature-flags pages to track the merged Phase-88 code (88-02..88-06), recorded the payment-run-is-the-withholding-source-of-truth invariant in MEMORY.md, appended the wiki log entry, rebuilt the BM25 index, and left `check:wiki-brain` green with zero errors — all matched against the actual shipped source on main.
+- Four failing Nyquist scaffolds + one throwing `ach-return.service` contract stub that pin the enum-parity, US routing precedence, end-to-end lockAndExport reachability, and ACH return-code parse/map contracts — every new assertion fails against today's code, exactly as a RED plan requires.
+- Closed Gap A (mirror ACH_NACHA/FEDWIRE into the Zod export-format enum) and Gap B (thread the existing detectUsFormat into detectFormatForDestination + US-aware groupItemsByFormat, and surface the decrypted US routing/account into ExportItem) so the already-complete NACHA/Fedwire generators are now reachable end-to-end from a real payment run — restoring ROADMAP Success Criteria #1 and #4. Wiring only: no generator, serializer, dispatch, or Prisma enum member was reimplemented.
+- A bounced ACH credit now reliably flips its live `PaymentRunItem` back to `FAILED`: `ach-return.service.ts` parses a NACHA return file into structured entries, maps R01/R02/R03 (and the R-family) to a FAILED disposition with a human reason while C-codes / NOC stay ADVISORY, and applies the returns idempotently and tenant-scoped with one masked audit row per transition — returning `{failed, advisory, skipped, unmatched}` so a mis-uploaded / wrong-run file is distinguishable from a clean no-bounce run.
+- An operator can now upload a NACHA return file through a reachable, US-expansion-gated, `payment:export`-permissioned tRPC mutation (`payment.ingestAchReturnFile`) that parses it (`parseNachaReturnFile`) and idempotently applies the returns (`applyAchReturns`) to the run's live `PaymentRunItem`s — a bounced R01/R02/R03 credit flips to `FAILED` with an audited reason, a re-upload is a no-op, and the returned `{failed, advisory, skipped, unmatched}` surfaces a mis-uploaded / wrong-run file as `unmatched > 0` rather than a silent zeros-everywhere no-op — closing the ROADMAP SC#1 return-code clause end-to-end.
+- Wired `payment.verifyBillingProfilePlaid` — a reachable, mock-triggerable, tenant-scoped tRPC mutation that runs `MockPlaidIdentityClient.verify` and persists `ContractorBillingProfile.plaidVerificationStatus` (advisory fail-open) — and recorded the tin-match backup-withholding writer as an explicit defer to Phase 86.
+- Worker identity-root table + sidecar nullable Contractor.workerId FK (additive Migration A authored as un-applied files), the withWorkerTypeDefault explicit-where-wins extension chained outermost in the tenant client, and a check:contractor-rawsql-workertype CI guard wired into lint:ci — all CODE + codegen only, with NO database migration applied.
+- A new HR-only `employee` RBAC resource and four narrow HR roles (`hr_admin`, `hr_manager`, `payroll_officer`, `leave_approver`) — each granting only `employee` (+ a narrow `contractor:read`) and never a contractor mutation (BFLA fence) — with the 10 pre-existing roles proven byte-identical and a Worker cross-org leak regression that proves an ORG_A caller never sees an ORG_B Worker row (the tenant-owning invariant on the new Worker base table).
+- Documentation-follows-code closure for the Theme B Worker gate: a new `worker-foundation` domain page plus refreshed structure/patterns/feature-flags pages and two MEMORY invariants now track the landed Worker abstraction (Worker base table + sidecar `Contractor.workerId` FK + `withWorkerTypeDefault` explicit-where-wins extension + the 4 raw-SQL blind-spot guard + the idempotent two-step backfill + the worker/employee router split + three-layer flag-off + per-type `employee` RBAC/HR roles + Worker tenant isolation) — so Phases 90–97 inherit an accurate compass; `check:wiki-brain` GREEN (0 errors).
+- Five RED/skip test scaffolds pinning the greenfield statutory-validator contracts (PESEL/Steuer-IdNr/NI/tax-code/Saudi-ID/Emirates-ID/GOSI/WPS) with canonical vectors, the country-fields PII boundary, the employee-PII AES-256-GCM round-trip, and the P89-gated tenant-isolation + reveal-RBAC contracts.
+- Eight per-market national-ID/tax validators (PESEL, Steuer-IdNr, UK NI, UK tax code, Saudi ID, Emirates ID, GOSI, WPS) at full depth with reused ISO 7064 check-digit math and an advisory-only Emirates-ID checksum, plus inline reference enums and three versioned adviser-verify seed tables — turning the Plan-01 RED validator scaffold GREEN (36/36) with no live government calls.
+- A parallel `employeeCountryFieldsSchemaMap` (PL/DE/GB/US/AE/SA, every schema `.strict()` so no national-ID key can enter the JSON) consuming the Plan-02 statutory validators, plus a field-agnostic `employee-pii-crypto` (AES-256-GCM `iv:authTag:ciphertext`, random IV) keyed by a new dedicated `EMPLOYEE_PII_ENCRYPTION_KEY` — turning the two P89-independent Plan-01 RED scaffolds GREEN while the contractor registry and `ssn-crypto` stay byte-identical.
+- Tenant-owning EmployeeProfile model attached 1:1 to Worker, with hybrid storage (countryFields JSON + dedicated AES-256-GCM national-ID columns + promoted typed columns), the least-privilege employeePii:read permission, and a GREEN cross-org leak test driving the real tenant-scope extension.
+- A flag-gated employee registration surface that dispatches PL/DE/UK/US/AE/SA statutory field sets through a single wired section, with masked-PII reveal, reference-list pickers, three-class validation feedback, and full en/de/pl/ar parity.
+- Closed the documentation-follows-code gate for the Phase 90 employee registry: a new `wiki/domains/employee-registry.md` compass documenting the ACTUAL shipped implementation (Worker(EMPLOYEE)+EmployeeProfile via `workerId` FK, `mergeRouters` registry, encrypted national-ID columns with omit-on-return, advisory Emirates-ID checksum, `resourceType: 'ORGANIZATION'` audit, staff-only `revealPii`, seeded LOCAL-ONLY reference lists, `Employees` i18n namespace), the four touched structure pages + three reusable pattern idioms, two MEMORY invariants (PII boundary + seeded-not-live-gov), and a rebuilt graph + BM25 index with `check:wiki-brain` green.
+- Seven terminal-RED tests pin the locked personnel-file behaviors — retention resolver math (PL/DE/UK/US + US I-9 max() + active-indefinite), 4-section per-jurisdiction registry, per-section RBAC + owner BFLA fence, PersonnelFile cross-org isolation, legally-honest per-section erasure, and taxonomy/AI/kill-switch/low-confidence classifier routing — before any implementation exists.
+- Tenant-owning PersonnelFile (1:1 → Worker) + PersonnelFileDocument enum-on-link join into the existing Document stack, with SECTION_A..D + classification-method enums, hireDate/terminatedAt retention read-seams, an additive/reversible migration, and a regenerated Prisma client.
+- Register-on-import per-jurisdiction (PL/DE/UK/US) personnel-file section taxonomy with deterministic DocumentType->section resolution and event-anchored retention rules, feeding 8 akta year tokens into the shared db RETENTION_YEARS map; turns the 91-01 personnel-registry RED scaffold GREEN (9/9).
+- Resource-per-section RBAC (employeeFileA..D, each read+write) wired into the 4 HR roles — payroll sees pay (C) without discipline (B), and the owner BFLA fence holds — turning the 91-01 personnel-file-rbac RED scaffold GREEN.
+- Event-anchored personnel-file retention resolver on the shared RETENTION_YEARS primitive (per-rule HIRE_DATE|TERMINATION_DATE|DOCUMENT_DATE anchor, US I-9 max(hire+3y, termination+1y), indefinite-while-active), wired into the soft-delete guard and the data-purge cron so personnel files only ever hard-delete past their per-row statutory window; turns personnel-retention.test.ts GREEN (11/11).
+- Hybrid document→section classifier for personnel-file uploads — deterministic taxonomy first (no model call), then a `killswitch.ai-personnel-classifier`-gated Claude-Vision fallback, then a below-threshold PENDING_REVIEW admin step — that never blocks the upload and fails safe to admin on an Unleash outage; turns the 91-01 `personnel-classifier.test.ts` scaffold GREEN (4/4).
+- A flag-gated `personnelFile` router mounted in `workforceRouters` with a per-section `getFile` that decides each section's lock at the permission layer (real employeeFileA..D role statements) BEFORE querying — a locked section returns its retention posture with no document payload, cross-org reads resolve to null — plus a `getRetentionSummary` panel and empty classify/erasure stubs; turns the 91-01 rbac-router (3/3) + tenant-isolation (3/3) scaffolds GREEN.
+- Filled the personnel-file `classifyRouter`: `attachDocument` links a virus-scanned Document into a worker's file and runs the 91-06 hybrid classifier (deterministic taxonomy → kill-switch-gated AI → admin), filing most documents into their section (Document ACTIVE) and routing the ambiguous tail to a `PENDING_REVIEW` admin queue without ever blocking the upload; `classifyApprove` / `classifyReject` clear that queue (section MANUAL + ACTIVE, or ARCHIVED) with an in-tx audit row, and `pendingReviewQueue` lists the caller-org's awaiting documents — all admin actions gated by `compliance:override`.
+- A per-employee `personnelFile.requestErasure` that resolves each of the four sections against its per-jurisdiction statutory window, erases only past-window sections (soft-deleting their documents) while retaining in-window sections with their statutory citation + retainUntil, and NEVER claims full erasure while any hold is active (`fullErasureClaimed = retained.length === 0`) — auditing every retention-blocked erasure in the same transaction; turns the 91-01 erasure test GREEN (3/3).
+- A flag-gated staff `employees/:workerId/personnel-file` surface whose `use-personnel-file` hook is the sole tRPC boundary over `personnelFile.getFile`, mapping each server section into one of five visually distinct states — with a deliberately conspicuous, server-driven Locked card that mounts NO document body or count (the per-section RBAC from 91-07 made undeniable in the UI), a section-scoped error + Retry, per-section retention posture chips, a page-level retention panel with an amber adviser-verify note, and a new `PersonnelFile` i18n namespace in real en/de/pl/ar translations (ar RTL).
+- 1. [Rule 3 - Idiom] Locked phrases in a new `legal/personnel-file.ts`, re-exported through `index.ts`.
+- Closed the documentation-follows-code loop for the akta osobowe / Personalakte feature in the same milestone change set — a new `domains/personnel-file.md` compass plus refreshed `prisma-schema-areas` / `key-services` / `api-routers-catalog` / `rbac-permissions` / `audit-log` / `feature-flags` pages, three Phase-91 invariants in MEMORY.md, and a hot/log refresh — then sealed the phase with all seven Wave-0 tests GREEN, api typecheck 0 errors, the guards + `check:wiki-brain` green.
+- Status:
+- Status:
+- Status:
+- Status:
+- Status:
+- Status:
+- Status:
+- Wave:
+- Wave:
+- Wave:
+- Wave:
+- Wave:
+- Wave:
+- Wave:
+- Wave:
+- Wave:
+- Wave:
+- Wave:
+- Wave:
+- Wave:
+- Wave:
+- Wave:
+- Wave:
+- Wave:
+- Wave:
+- Wave:
+- Laid the DB + flag + entitlement foundation the employee portal rests on: PortalSession can now be an EMPLOYEE subject (DB-enforced one-of), EmployeeProfile carries the manager reporting-line edge, module.employee-portal is a registered dark gate, and the personnel-file self-view allowlist (section C excluded) is a GREEN-tested constant.
+- One magic-link + cookie now resolves a Contractor OR an employee Worker: `validatePortalSession` returns a discriminated subject, `portalEmployeeProcedure`/`portalManagerProcedure` expose a typed employee/manager ctx (`ctx.workerId`, never `ctx.contractorId`), and the contractor login is a proven regression.
+- Seeded the failing security-first net the router waves must flip GREEN: the load-bearing two-employee IDOR fence (an employee sees ONLY its own records), the manager reporting-line fence (a manager touches ONLY direct reports), time-off session-scoping, the akta section-allowlist, pay-stub-unavailable, and per-request flag gating — every case RED via a not-yet-built router, none bricking `tsc`.
+- Built the `portalEmployee` tRPC namespace — self-scoped leave-balance / leave-request / time / ewidencja reads and a time-off write that reuses the shipped leave services under an EMPLOYEE-actor audit — flipping the 96-03 employee-IDOR and time-off RED tests GREEN. The surface is dark behind `module.employee-portal`.
+- Built the two bespoke-entitlement read surfaces (EMP-PORTAL-02): the employee's own personnel-file view (own file, section-allowlist filtered — section C/pay+PII excluded in the query) plus a lazy presigned download, and a truthful pay-stub availability read model — flipping the 96-03 `portal-akta-selfview` and `portal-paystub-unavailable` RED tests GREEN.
+- Built the `portalManager` namespace (EMP-PORTAL-03): a dark-mounted, flag + >=1-report-gated surface whose every read/approval is scoped to the caller's direct reports via the server-side reporting-line edge, executing leave approvals through the shared `finalizeApprovedLeave` transition under an EMPLOYEE-actor audit — flipping the 96-03 manager-IDOR + manager-approve + root-gating RED tests GREEN.
+- Closed the phase: 5-locale i18n parity for the new employee + manager surfaces, the documentation-follows-code set (employee-portal domain page + indexes + MEMORY invariants + EXTERNAL-ENABLEMENT rows), the BM25/wiki refresh (`check:wiki-brain` green), and the pre-existing 96-02 `portal.test.ts` debt fixed. The portal top-bar nav is deferred behind a newly-surfaced foundational shell-bootstrap gap.
+- Wave:
+- Wave:
+- Wave:
+- Wave:
+- Wave:
+- Wave:
+- Wave:
+- Wave:
+- Wave:
+- Wave:
+- Wave:
+- Wave:
+- Wave:
+- Wave:
+- Wave:
+- Wave:
+- Wave:
+- Wave:
+- Wave:
+- Wave:
+- Wave:
+- Wave:
+- Wave:
+- Wave:
+
+---
+
 ## v6.0 Platform Maturity & Operational Hardening (Shipped: 2026-06-07)
 
 **Phases completed:** 12 phases, 90 plans, 392 tasks
