@@ -191,6 +191,39 @@ F1 Compliance Document Lifecycle Engine (per-jurisdiction policy package, 90/60/
 
 ---
 
+## Milestone: v7.0 — GTM Expansion
+
+**Shipped:** 2026-07-17
+**Phases:** 20 (82–101) | **Themes:** A (US cross-border) / B (workforce) / C (integration platform), run in parallel
+
+### What Was Built
+US tax + payment rail (treaty engine, TIN-match → 1099/1042-S → IRIS e-file, USD ACH/Fedwire); six-market workforce (Worker abstraction, EmployeeProfile ×6, akta/ewidencja, leave + KP-grade time, payroll export + native Gusto/QuickBooks, Personio/BambooHR sync, employee portal, HR dashboard); public REST API + keys/scopes/rate-limits + OWASP-gated outbound webhooks + Zapier/n8n/Make marketplace + dev portal + sandbox.
+
+### What Worked
+- **Discuss → parallel-plan → parallel-execute** at fleet scale: discussing 94–97 fed a parallel agent fleet that planned + built them concurrently; the manager terminal stayed the single point of coordination.
+- **Investigate-before-reconcile** caught three different failure modes behind a "20/20 complete" facade: 98 was pure summary-backfill drift (safe rubber-stamp), 92 hid a real 3-market functional gap (UAE/KSA statutory leave/WT), and 101 hid three genuinely-unbuilt plans. Blindly marking complete would have shipped all three unnoticed.
+- **Milestone audit's integration-checker** found two latent **built-but-unwired producer seams** (outbound-webhook emit, TIN-match trigger) — dark-masked behind flags, so invisible until a flag flipped — and both were closed before archive.
+- **business-logic-shield** (S1-wired / S2-seam-test / T1-audit-in-tx) on every gap fix kept the money/compliance wiring honest; the proven `enqueueHrisEmployeePush` mirror made the webhook wiring mechanical.
+
+### What Was Inefficient
+- **Summary-backfill drift** recurred at three scales (plan, phase, milestone-traceability): the fleet executed code without writing SUMMARYs / updating the requirements status column, so GSD state undercounted delivery and required reconciliation passes. A post-execute summary/traceability sync would prevent it.
+- **Per-phase VERIFICATION.md skipped** on ~12 fleet-built phases — verification became a milestone-close scramble instead of a per-phase gate.
+
+### Patterns Established
+- **Build-now, flag-defer-approvals** for external-dependency surfaces (marketplace submissions, IRS PAF, npm publish): ship the buildable artifact behind a default-off flag + an EXTERNAL-ENABLEMENT row; never gate GA on an external reviewer.
+- **Correct-by-design absence documented in code** (US statutory-leave / FLSA no-cap; UAE Emiratisation manual-headcount) — so an audit doesn't re-flag it as a gap.
+- **Dark-masked ≠ safe:** a producer seam wired only behind a default-off flag still needs its emit wired, or the whole downstream deliverable is hollow when the flag flips.
+
+### Key Lessons
+- A milestone at "N/N phases complete" is a claim, not a fact — audit the *integration seams* and the *requirements traceability* independently before archiving.
+- Reconcile, don't rubber-stamp: verify whether "drift" is untracked-but-built vs genuinely-unbuilt before flipping status.
+
+### Cost Observations
+- Heavy use of parallel worktree executors (opus) for fleet build + gap fixes; the manager terminal orchestrated inline while background agents did the multi-file work.
+- Investigate-first (cheap read-only cavecrew-investigator passes) repeatedly prevented expensive duplicate-execution on already-built code.
+
+---
+
 ## Cross-Milestone Trends
 
 | Milestone | Phases | Plans | Days | LOC | Key Pattern |
