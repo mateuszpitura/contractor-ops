@@ -42,24 +42,24 @@ Requirements for the v7.0 milestone. Each maps to exactly one phase (filled by r
 - [x] **US-FORM-02**: Foreign contractor of a US client completes a W-8BEN / W-8BEN-E wizard (treaty country + treaty article picker, FTIN, certifications)
 - [x] **US-FORM-03**: System integrates IRS TIN-Matching (e-Services) with 24h cache, retry, and admin escalation on mismatch
 - [x] **US-FORM-04**: System generates 1099-NEC per recipient at year-end with a **tax-year-keyed threshold config table ($2,000 for TY2026 per OBBBA)**, CORRECTED-form support, recipient PDF copy, and audit-immutable archive
-- [ ] **US-FORM-05**: System e-files year-end returns via **IRS IRIS (XML A2A, primary/mandatory path)** with TCC-enrollment workflow doc, automated file build, transmit, and acknowledgement parsing; FIRE retained only as a documented legacy fallback
-- [ ] **US-FORM-06**: System generates 1042-S for US-source payments to foreign contractors (withholding rate sourced from the treaty table) with recipient PDF + IRS file
-- [ ] **US-FORM-07**: System handles per-state 1099 filing for the states that require separate filing (Combined Federal/State Filing Program participation where eligible)
+- [x] **US-FORM-05**: System e-files year-end returns via **IRS IRIS (XML A2A, primary/mandatory path)** with TCC-enrollment workflow doc, automated file build, transmit, and acknowledgement parsing; FIRE retained only as a documented legacy fallback
+- [x] **US-FORM-06**: System generates 1042-S for US-source payments to foreign contractors (withholding rate sourced from the treaty table) with recipient PDF + IRS file
+- [x] **US-FORM-07**: System handles per-state 1099 filing for the states that require separate filing (Combined Federal/State Filing Program participation where eligible)
 
 ### Theme A — US Payment Rail (US-PAY)
 
-- [ ] **US-PAY-01**: System generates an ACH NACHA file (PPD/CCD/CTX entry types) as a new format in the existing payment-export factory (same shape as BACS/SWIFT/Elixir/SEPA)
-- [ ] **US-PAY-02**: USD is a first-class currency with per-org default, exchange-rate sourcing, and settlement-currency choice on cross-border payouts
-- [ ] **US-PAY-03**: System initiates programmatic ACH payouts via a Modern Treasury / Stripe Treasury adapter (opt-in, on the v2.0 integration framework)
-- [ ] **US-PAY-04**: System exports a Fedwire wire-transfer format for high-value cross-border payouts above the Same-Day ACH ceiling
-- [ ] **US-PAY-05**: System verifies US contractor bank accounts at onboarding via Plaid Identity (anti-fraud; reuses the OAuth-credential-store pattern)
+- [x] **US-PAY-01**: System generates an ACH NACHA file (PPD/CCD/CTX entry types) as a new format in the existing payment-export factory (same shape as BACS/SWIFT/Elixir/SEPA)
+- [x] **US-PAY-02**: USD is a first-class currency with per-org default, exchange-rate sourcing, and settlement-currency choice on cross-border payouts
+- [x] **US-PAY-03**: System initiates programmatic ACH payouts via a Modern Treasury / Stripe Treasury adapter (opt-in, on the v2.0 integration framework)
+- [x] **US-PAY-04**: System exports a Fedwire wire-transfer format for high-value cross-border payouts above the Same-Day ACH ceiling
+- [x] **US-PAY-05**: System verifies US contractor bank accounts at onboarding via Plaid Identity (anti-fraud; reuses the OAuth-credential-store pattern)
 
 ### Theme A — US Classification + State Nuance (US-CLASS)
 
-- [ ] **US-CLASS-01**: Classification engine gains a US rule set (federal common-law / economic-realities test, CA ABC test / AB5, §530 safe-harbor flagger)
-- [ ] **US-CLASS-02**: California AB5 watchlist flags CA-worker engagements and applies the stricter ABC test by default, with audit-logged admin override
-- [ ] **US-CLASS-03**: 1099-K threshold tracker (informational) surfaces on the contractor profile as cumulative payouts approach the **$20,000 + 200-transaction** threshold
-- [ ] **US-CLASS-04**: System generates a "Classification Determination Letter" PDF (mirrors the UK SDS generator from v5.0)
+- [x] **US-CLASS-01**: Classification engine gains a US rule set (federal common-law / economic-realities test, CA ABC test / AB5, §530 safe-harbor flagger)
+- [x] **US-CLASS-02**: California AB5 watchlist flags CA-worker engagements and applies the stricter ABC test by default, with audit-logged admin override
+- [x] **US-CLASS-03**: 1099-K threshold tracker (informational) surfaces on the contractor profile as cumulative payouts approach the **$20,000 + 200-transaction** threshold
+- [x] **US-CLASS-04**: System generates a "Classification Determination Letter" PDF (mirrors the UK SDS generator from v5.0)
 
 ### Theme A — US Contractor Profile Fields (US-FIELD)
 
@@ -90,19 +90,19 @@ Requirements for the v7.0 milestone. Each maps to exactly one phase (filled by r
 
 ### Theme B — Employee Registry per Market (EMP-REG)
 
-- [ ] **EMP-REG-PL-01**: PL employee fields — PESEL (mod-11 + dob check), urząd skarbowy ID, ZUS oddział ID, stanowisko, wymiar etatu (0.10–1.00), stawka brutto, ZUS title code, NFZ oddział
-- [ ] **EMP-REG-DE-01**: DE employee fields — Steuer-IdNr (11-digit mod-11), Sozialversicherungsnummer (v5.0 validator), Krankenkasse ID, Lohnsteuerklasse (I–VI), Kinderfreibetrag, Kirchensteuer flag, ELStAM lookup hook
-- [ ] **EMP-REG-UK-01**: UK employee fields — NI number (format + DWP exclusion ranges), PAYE reference, tax code (1257L pattern + emergency/W1/M1/K flags), student-loan plan, pension auto-enrol flag
-- [ ] **EMP-REG-US-01**: US employee fields — SSN (PII-masked per US-FIELD-02), W-4 step-1c filing status, state withholding (10 highest-population states + free-text fallback)
-- [ ] **EMP-REG-AE-01**: UAE employee fields — Emirates ID + visa type + WPS Establishment ID
-- [ ] **EMP-REG-SA-01**: KSA employee fields — Iqama / National ID, GOSI registration number, Saudization category contribution flag
+- [x] **EMP-REG-PL-01**: PL employee fields — PESEL (mod-11 + dob check), urząd skarbowy ID, ZUS oddział ID, stanowisko, wymiar etatu (0.10–1.00), stawka brutto, ZUS title code, NFZ oddział
+- [x] **EMP-REG-DE-01**: DE employee fields — Steuer-IdNr (11-digit mod-11), Sozialversicherungsnummer (v5.0 validator), Krankenkasse ID, Lohnsteuerklasse (I–VI), Kinderfreibetrag, Kirchensteuer flag, ELStAM lookup hook
+- [x] **EMP-REG-UK-01**: UK employee fields — NI number (format + DWP exclusion ranges), PAYE reference, tax code (1257L pattern + emergency/W1/M1/K flags), student-loan plan, pension auto-enrol flag
+- [x] **EMP-REG-US-01**: US employee fields — SSN (PII-masked per US-FIELD-02), W-4 step-1c filing status, state withholding (10 highest-population states + free-text fallback)
+- [x] **EMP-REG-AE-01**: UAE employee fields — Emirates ID + visa type + WPS Establishment ID
+- [x] **EMP-REG-SA-01**: KSA employee fields — Iqama / National ID, GOSI registration number, Saudization category contribution flag
 
 ### Theme B — Akta Osobowe / Personnel File (AKTA)
 
-- [ ] **AKTA-01**: 4-section personnel file (PL cz. A/B/C/D per KP §94; equivalent DE Personalakte, UK personnel file, US I-9 + file) with per-section RBAC
-- [ ] **AKTA-02**: Per-jurisdiction retention engine — PL 10-yr (post-2019) / 50-yr legacy, DE 10-yr tax / 30-yr accident, UK 6-yr general / 7-yr financial, US I-9 3-yr-post-hire-or-1-yr-post-termination
-- [ ] **AKTA-03**: GDPR / RODO erasure-request handler with statutory-retention exemption layer (honors erasure only past the retention window; flags blocked sections with statutory citation)
-- [ ] **AKTA-04**: Document classification at upload — assigns section A/B/C/D via doc-type taxonomy; ambiguous docs trigger an admin classify-step
+- [x] **AKTA-01**: 4-section personnel file (PL cz. A/B/C/D per KP §94; equivalent DE Personalakte, UK personnel file, US I-9 + file) with per-section RBAC
+- [x] **AKTA-02**: Per-jurisdiction retention engine — PL 10-yr (post-2019) / 50-yr legacy, DE 10-yr tax / 30-yr accident, UK 6-yr general / 7-yr financial, US I-9 3-yr-post-hire-or-1-yr-post-termination
+- [x] **AKTA-03**: GDPR / RODO erasure-request handler with statutory-retention exemption layer (honors erasure only past the retention window; flags blocked sections with statutory citation)
+- [x] **AKTA-04**: Document classification at upload — assigns section A/B/C/D via doc-type taxonomy; ambiguous docs trigger an admin classify-step
 
 ### Theme B — Leave Management (LEAVE)
 
@@ -118,43 +118,43 @@ Requirements for the v7.0 milestone. Each maps to exactly one phase (filled by r
 
 ### Theme B — Employee Onboarding / Offboarding (EMP-ON / EMP-OFF)
 
-- [ ] **EMP-ON-01**: Per-market onboarding workflow templates — PL (badania wstępne, PIT-2, PPK auto-zapis, świadectwo, IKE/IKZE), DE (Personalfragebogen, Steuer-ID lookup, SV-Ausweis, bAV), UK (P45/P46, RTI flag, pension auto-enrol), US (W-4, I-9 + E-Verify hook, state W-4, direct-deposit)
-- [ ] **EMP-OFF-01**: Per-market offboarding workflow — PL (świadectwo pracy, ekwiwalent za urlop, ZUS ZWUA, PIT-11), DE (Arbeitszeugnis qualified/simple, Abmeldung SV, Lohnsteuerbescheinigung), UK (P45, final RTI, pension, P11D), US (final paycheck per state, COBRA, W-2, 401(k))
-- [ ] **EMP-OFF-02**: Employee offboarding composes with v6.0 F4 offboarding hardening (IP verification, KT templates, IdP deprovisioning) — extends rather than duplicates
+- [x] **EMP-ON-01**: Per-market onboarding workflow templates — PL (badania wstępne, PIT-2, PPK auto-zapis, świadectwo, IKE/IKZE), DE (Personalfragebogen, Steuer-ID lookup, SV-Ausweis, bAV), UK (P45/P46, RTI flag, pension auto-enrol), US (W-4, I-9 + E-Verify hook, state W-4, direct-deposit)
+- [x] **EMP-OFF-01**: Per-market offboarding workflow — PL (świadectwo pracy, ekwiwalent za urlop, ZUS ZWUA, PIT-11), DE (Arbeitszeugnis qualified/simple, Abmeldung SV, Lohnsteuerbescheinigung), UK (P45, final RTI, pension, P11D), US (final paycheck per state, COBRA, W-2, 401(k))
+- [x] **EMP-OFF-02**: Employee offboarding composes with v6.0 F4 offboarding hardening (IP verification, KT templates, IdP deprovisioning) — extends rather than duplicates
 
 ### Theme B — Payroll Integration Adapters (PAYROLL — export/integration only, NOT own engine)
 
-- [ ] **PAYROLL-PL-01**: Symfonia Kadry i Płace export adapter (CSV + XML)
-- [ ] **PAYROLL-PL-02**: Comarch ERP XL / Optima export adapter
-- [ ] **PAYROLL-PL-03**: Enova365 export adapter
-- [ ] **PAYROLL-DE-01**: DATEV Lohn und Gehalt export adapter (ASCII import format + DATEVconnect REST where subscribed)
-- [ ] **PAYROLL-DE-02**: Sage HR / Personalwirtschaft export adapter
-- [ ] **PAYROLL-UK-01**: Sage Payroll / BrightPay / Moneysoft export adapters (RTI-compatible FPS/EPS XML)
-- [ ] **PAYROLL-US-01**: Gusto + QuickBooks Payroll + ADP export adapters (CSV mappings + native API where available)
+- [x] **PAYROLL-PL-01**: Symfonia Kadry i Płace export adapter (CSV + XML)
+- [x] **PAYROLL-PL-02**: Comarch ERP XL / Optima export adapter
+- [x] **PAYROLL-PL-03**: Enova365 export adapter
+- [x] **PAYROLL-DE-01**: DATEV Lohn und Gehalt export adapter (ASCII import format + DATEVconnect REST where subscribed)
+- [x] **PAYROLL-DE-02**: Sage HR / Personalwirtschaft export adapter
+- [x] **PAYROLL-UK-01**: Sage Payroll / BrightPay / Moneysoft export adapters (RTI-compatible FPS/EPS XML)
+- [x] **PAYROLL-US-01**: Gusto + QuickBooks Payroll + ADP export adapters (CSV mappings + native API where available)
 
 ### Theme B — HRIS Two-Way Sync (HRIS-SYNC)
 
-- [ ] **HRIS-SYNC-01**: Personio adapter on the v2.0 integration framework (proprietary client-credentials bearer, API v2, 200 req/min, offset pagination)
-- [ ] **HRIS-SYNC-02**: Personio → Contractor Ops one-way pull (people, contracts, departments, custom attributes) on hourly cron + on-demand
-- [ ] **HRIS-SYNC-03**: Contractor Ops → Personio one-way push (invoice-paid, payment status, classification outcome) on event
-- [ ] **HRIS-SYNC-04**: BambooHR adapter (OAuth 2.0, REST; same shape as Personio)
-- [ ] **HRIS-SYNC-05**: Conflict-resolution policy — HRIS is source of truth for registry fields (name/contact/position); Contractor Ops is source of truth for invoice/payment/compliance fields; on conflict, registry updates from HRIS while financial/compliance fields lock against HRIS overwrite
-- [ ] **HRIS-SYNC-06**: Per-org single-adapter choice (Personio OR BambooHR, not both — prevents three-way sync hell)
+- [x] **HRIS-SYNC-01**: Personio adapter on the v2.0 integration framework (proprietary client-credentials bearer, API v2, 200 req/min, offset pagination)
+- [x] **HRIS-SYNC-02**: Personio → Contractor Ops one-way pull (people, contracts, departments, custom attributes) on hourly cron + on-demand
+- [x] **HRIS-SYNC-03**: Contractor Ops → Personio one-way push (invoice-paid, payment status, classification outcome) on event
+- [x] **HRIS-SYNC-04**: BambooHR adapter (OAuth 2.0, REST; same shape as Personio)
+- [x] **HRIS-SYNC-05**: Conflict-resolution policy — HRIS is source of truth for registry fields (name/contact/position); Contractor Ops is source of truth for invoice/payment/compliance fields; on conflict, registry updates from HRIS while financial/compliance fields lock against HRIS overwrite
+- [x] **HRIS-SYNC-06**: Per-org single-adapter choice (Personio OR BambooHR, not both — prevents three-way sync hell)
 
 ### Theme B — Employee Self-Service Portal (EMP-PORTAL)
 
-- [ ] **EMP-PORTAL-01**: Employee portal extends the v2.0 contractor portal (magic-link auth, subdomain routing, additional `/employee/*` routes)
-- [ ] **EMP-PORTAL-02**: Employee dashboard — pay stubs (from payroll integration where available), leave balance, time-off request, document upload, personal akta view
-- [ ] **EMP-PORTAL-03**: Manager dashboard — direct reports' leave requests, time entries to approve, document-expiry flags
-- [ ] **EMP-PORTAL-04**: Portal i18n parity — en/pl/de/ar/en-US (Arabic RTL from v4.0, formal-Sie register from v5.0)
+- [x] **EMP-PORTAL-01**: Employee portal extends the v2.0 contractor portal (magic-link auth, subdomain routing, additional `/employee/*` routes)
+- [x] **EMP-PORTAL-02**: Employee dashboard — pay stubs (from payroll integration where available), leave balance, time-off request, document upload, personal akta view
+- [x] **EMP-PORTAL-03**: Manager dashboard — direct reports' leave requests, time entries to approve, document-expiry flags
+- [x] **EMP-PORTAL-04**: Portal i18n parity — en/pl/de/ar/en-US (Arabic RTL from v4.0, formal-Sie register from v5.0)
 
 ### Theme B — HR Dashboard (HR-DASH)
 
-- [ ] **HR-DASH-01**: Headcount widget — total / by department / by jurisdiction / by employment-type / by contract-end date
-- [ ] **HR-DASH-02**: Vacation-utilization widget — cumulative days taken vs entitled per worker; flags under-utilization (>10 days unused approaching year-end)
-- [ ] **HR-DASH-03**: Document-expiry widget (visa, work-permit, contract renewal, medical-cert, training-cert) composing with the v6.0 F1 compliance-document engine
-- [ ] **HR-DASH-04**: Probation-end watchlist — auto-surface workers within 14/7/0 days of probation end
-- [ ] **HR-DASH-05**: Saudization / Emiratisation rollup composing with v6.0 F3 Gulf operational polish
+- [x] **HR-DASH-01**: Headcount widget — total / by department / by jurisdiction / by employment-type / by contract-end date
+- [x] **HR-DASH-02**: Vacation-utilization widget — cumulative days taken vs entitled per worker; flags under-utilization (>10 days unused approaching year-end)
+- [x] **HR-DASH-03**: Document-expiry widget (visa, work-permit, contract renewal, medical-cert, training-cert) composing with the v6.0 F1 compliance-document engine
+- [x] **HR-DASH-04**: Probation-end watchlist — auto-surface workers within 14/7/0 days of probation end
+- [x] **HR-DASH-05**: Saudization / Emiratisation rollup composing with v6.0 F3 Gulf operational polish
 
 ### Theme C — Public REST API Surface (INTEG-API)
 
@@ -166,34 +166,34 @@ Requirements for the v7.0 milestone. Each maps to exactly one phase (filled by r
 
 ### Theme C — API Key Management + Scopes (INTEG-AUTH)
 
-- [ ] **INTEG-AUTH-01**: `ApiKey`/`OrganizationApiKey` model — org-scoped, named labels, creation/rotation/revocation audit, **HMAC-SHA256 hashed storage** (high-entropy keys; repo convention), `co_live_xxx` prefix display
-- [ ] **INTEG-AUTH-02**: Per-key scopes (`contractors:read|write`, `invoices:read|write`, `payments:read|write`, `webhooks:manage`, `classifications:read`, `compliance:read`, `audit:read`) enforced **per-endpoint** (closes the current `apiKeyTenantProcedure` no-per-scope-check BFLA gap); least-privilege default; UI scope picker
-- [ ] **INTEG-AUTH-03**: Settings → Developer page — key CRUD UI, last-used-at, source-IP log, scope visualization, rotation flow with grace period
-- [ ] **INTEG-AUTH-04**: Per-key rate limiting via Redis (Upstash) token bucket; per-tier limits (Starter 1k req/mo + 1 webhook sub, Pro 10k + 5, Enterprise unlimited/custom)
-- [ ] **INTEG-AUTH-05**: Every external mutation audit-logged with `apiKeyId` + `sourceIp` + `userAgent` (composes with v3.0 `writeAuditLog`)
+- [x] **INTEG-AUTH-01**: `ApiKey`/`OrganizationApiKey` model — org-scoped, named labels, creation/rotation/revocation audit, **HMAC-SHA256 hashed storage** (high-entropy keys; repo convention), `co_live_xxx` prefix display
+- [x] **INTEG-AUTH-02**: Per-key scopes (`contractors:read|write`, `invoices:read|write`, `payments:read|write`, `webhooks:manage`, `classifications:read`, `compliance:read`, `audit:read`) enforced **per-endpoint** (closes the current `apiKeyTenantProcedure` no-per-scope-check BFLA gap); least-privilege default; UI scope picker
+- [x] **INTEG-AUTH-03**: Settings → Developer page — key CRUD UI, last-used-at, source-IP log, scope visualization, rotation flow with grace period
+- [x] **INTEG-AUTH-04**: Per-key rate limiting via Redis (Upstash) token bucket; per-tier limits (Starter 1k req/mo + 1 webhook sub, Pro 10k + 5, Enterprise unlimited/custom)
+- [x] **INTEG-AUTH-05**: Every external mutation audit-logged with `apiKeyId` + `sourceIp` + `userAgent` (composes with v3.0 `writeAuditLog`)
 
 ### Theme C — Outbound Webhook Subscriptions (INTEG-WEBHOOK)
 
-- [ ] **INTEG-WEBHOOK-01**: `WebhookSubscription` model — per-org, per-event-filter, target URL, HMAC secret, retry policy, enabled flag, last-success/failure timestamps
-- [ ] **INTEG-WEBHOOK-02**: Event catalog — `contractor.{created,updated,offboarded,compliance_blocked}`, `invoice.{received,matched,approved,rejected,paid}`, `payment_run.{created,completed}`, `workflow.{task.completed,completed}`, `classification.outcome`, `compliance_doc.{expiring_soon,expired}` (composes with v6.0 F1 band-state-machine); Zod-typed discriminated-union payloads
-- [ ] **INTEG-WEBHOOK-03**: Greenfield outbound dispatcher on the existing `OutboxEvent` transactional outbox + QStash — exponential backoff (1m/5m/30m/2h/12h/24h), max 6 retries, DLQ to `webhook_failures`, admin alert at 5 failures/1h (distinct from the inbound `webhook-dispatcher.ts`)
-- [ ] **INTEG-WEBHOOK-04**: HMAC-SHA256 signature header `X-CO-Signature = t={unix_ms},v1={hex_hmac}` (Stripe convention), per-subscription secret
-- [ ] **INTEG-WEBHOOK-05**: Replay protection — signed timestamp + 5-minute acceptance window; sample verifier in TS/Python/Go/PHP in docs
-- [ ] **INTEG-WEBHOOK-06**: Subscription management API + UI (Settings → Developer → Webhooks) with test-fire button + last-100-deliveries log
-- [ ] **INTEG-WEBHOOK-07**: Per-subscription PII redaction opt-in (`include_pii: false` default) — strips PESEL/SSN/NI/Steuer-IdNr/Emirates ID/Iqama/email/phone unless set (RODO-defensible)
+- [x] **INTEG-WEBHOOK-01**: `WebhookSubscription` model — per-org, per-event-filter, target URL, HMAC secret, retry policy, enabled flag, last-success/failure timestamps
+- [x] **INTEG-WEBHOOK-02**: Event catalog — `contractor.{created,updated,offboarded,compliance_blocked}`, `invoice.{received,matched,approved,rejected,paid}`, `payment_run.{created,completed}`, `workflow.{task.completed,completed}`, `classification.outcome`, `compliance_doc.{expiring_soon,expired}` (composes with v6.0 F1 band-state-machine); Zod-typed discriminated-union payloads
+- [x] **INTEG-WEBHOOK-03**: Greenfield outbound dispatcher on the existing `OutboxEvent` transactional outbox + QStash — exponential backoff (1m/5m/30m/2h/12h/24h), max 6 retries, DLQ to `webhook_failures`, admin alert at 5 failures/1h (distinct from the inbound `webhook-dispatcher.ts`)
+- [x] **INTEG-WEBHOOK-04**: HMAC-SHA256 signature header `X-CO-Signature = t={unix_ms},v1={hex_hmac}` (Stripe convention), per-subscription secret
+- [x] **INTEG-WEBHOOK-05**: Replay protection — signed timestamp + 5-minute acceptance window; sample verifier in TS/Python/Go/PHP in docs
+- [x] **INTEG-WEBHOOK-06**: Subscription management API + UI (Settings → Developer → Webhooks) with test-fire button + last-100-deliveries log
+- [x] **INTEG-WEBHOOK-07**: Per-subscription PII redaction opt-in (`include_pii: false` default) — strips PESEL/SSN/NI/Steuer-IdNr/Emirates ID/Iqama/email/phone unless set (RODO-defensible)
 
 ### Theme C — Integration Security (INTEG-SEC)
 
-- [ ] **INTEG-SEC-01**: SSRF guard on outbound webhook target URLs — reject private ranges (RFC 1918, loopback, link-local, AWS metadata `169.254.169.254`, cloud equivalents) at BOTH subscribe time AND dispatch time, with DNS-rebind protection (re-resolve + IP-pin immediately before connect; redirects disabled) via `request-filtering-agent`
-- [ ] **INTEG-SEC-02**: HTTPS-only target URLs by default (HTTP only via per-org admin override + warning banner)
-- [ ] **INTEG-SEC-03**: Per-org webhook dispatch rate limit (100 events/min per subscription) — anti-fanout-DDoS
-- [ ] **INTEG-SEC-04**: OWASP API Security Top 10 review checklist as a phase gate (BOLA, BFLA, SSRF, mass-assignment, security-misconfig, injection)
-- [ ] **INTEG-SEC-05**: API-key leak alarm — alert org admins if a key shows usage from >3 distinct source IPs in 24h
+- [x] **INTEG-SEC-01**: SSRF guard on outbound webhook target URLs — reject private ranges (RFC 1918, loopback, link-local, AWS metadata `169.254.169.254`, cloud equivalents) at BOTH subscribe time AND dispatch time, with DNS-rebind protection (re-resolve + IP-pin immediately before connect; redirects disabled) via `request-filtering-agent`
+- [x] **INTEG-SEC-02**: HTTPS-only target URLs by default (HTTP only via per-org admin override + warning banner)
+- [x] **INTEG-SEC-03**: Per-org webhook dispatch rate limit (100 events/min per subscription) — anti-fanout-DDoS
+- [x] **INTEG-SEC-04**: OWASP API Security Top 10 review checklist as a phase gate (BOLA, BFLA, SSRF, mass-assignment, security-misconfig, injection)
+- [x] **INTEG-SEC-05**: API-key leak alarm — alert org admins if a key shows usage from >3 distinct source IPs in 24h
 
 ### Theme C — Marketplace Listings (INTEG-ZAPIER / N8N / MAKE / MARKETPLACE)
 
 - [x] **INTEG-ZAPIER-01**: Zapier app — auth (API key or OAuth 2.0), 8+ triggers (event-catalog-mapped), 6+ actions (create contractor/invoice, approve invoice, mark payment paid, create workflow task, lookup contractor by tax ID); Zapier-sandbox bundle test
-- [x] **INTEG-ZAPIER-02**: Zapier public-listing submission + review iteration (2–4 week cycle tracked as a separate milestone)
+- [ ] **INTEG-ZAPIER-02**: Zapier public-listing submission + review iteration (2–4 week cycle tracked as a separate milestone) — DEFERRED (external partner review; app + bundle test built in Phase 101)
 - [x] **INTEG-N8N-01**: n8n community node package `@contractor-ops/n8n-nodes` published to npm; nodes mirror the Zapier trigger/action surface; installable via n8n community-nodes UI
 - [x] **INTEG-N8N-02**: n8n docs page + example workflows (invoice→Slack, contractor-onboard-from-Personio, compliance-expiry→PagerDuty)
 - [x] **INTEG-MAKE-01**: Make.com app submission to the Make App Directory (same trigger/action surface as Zapier)
@@ -271,88 +271,88 @@ Which phases cover which requirements. Phase numbering continues from v6.0 (ende
 | US-LOC-03 | Phase 85 | Complete |
 | US-FORM-03 | Phase 86 | Complete |
 | US-FORM-04 | Phase 86 | Complete |
-| US-FORM-05 | Phase 86 | Pending |
-| US-FORM-07 | Phase 86 | Pending |
-| US-FORM-06 | Phase 87 | Pending |
-| US-CLASS-01 | Phase 87 | Pending |
-| US-CLASS-02 | Phase 87 | Pending |
-| US-CLASS-03 | Phase 87 | Pending |
-| US-CLASS-04 | Phase 87 | Pending |
-| US-PAY-01 | Phase 88 | Pending |
-| US-PAY-02 | Phase 88 | Pending |
-| US-PAY-03 | Phase 88 | Pending |
-| US-PAY-04 | Phase 88 | Pending |
-| US-PAY-05 | Phase 88 | Pending |
+| US-FORM-05 | Phase 86 | Complete |
+| US-FORM-07 | Phase 86 | Complete |
+| US-FORM-06 | Phase 87 | Complete |
+| US-CLASS-01 | Phase 87 | Complete |
+| US-CLASS-02 | Phase 87 | Complete |
+| US-CLASS-03 | Phase 87 | Complete |
+| US-CLASS-04 | Phase 87 | Complete |
+| US-PAY-01 | Phase 88 | Complete |
+| US-PAY-02 | Phase 88 | Complete |
+| US-PAY-03 | Phase 88 | Complete |
+| US-PAY-04 | Phase 88 | Complete |
+| US-PAY-05 | Phase 88 | Complete |
 | WORKER-01 | Phase 89 | Complete |
 | WORKER-02 | Phase 89 | Complete |
 | WORKER-03 | Phase 89 | Complete |
 | WORKER-04 | Phase 89 | Complete |
 | WORKER-05 | Phase 89 | Complete |
-| EMP-REG-PL-01 | Phase 90 | Pending |
-| EMP-REG-DE-01 | Phase 90 | Pending |
-| EMP-REG-UK-01 | Phase 90 | Pending |
-| EMP-REG-US-01 | Phase 90 | Pending |
-| EMP-REG-AE-01 | Phase 90 | Pending |
-| EMP-REG-SA-01 | Phase 90 | Pending |
-| AKTA-01 | Phase 91 | Pending |
-| AKTA-02 | Phase 91 | Pending |
-| AKTA-03 | Phase 91 | Pending |
-| AKTA-04 | Phase 91 | Pending |
+| EMP-REG-PL-01 | Phase 90 | Complete |
+| EMP-REG-DE-01 | Phase 90 | Complete |
+| EMP-REG-UK-01 | Phase 90 | Complete |
+| EMP-REG-US-01 | Phase 90 | Complete |
+| EMP-REG-AE-01 | Phase 90 | Complete |
+| EMP-REG-SA-01 | Phase 90 | Complete |
+| AKTA-01 | Phase 91 | Complete |
+| AKTA-02 | Phase 91 | Complete |
+| AKTA-03 | Phase 91 | Complete |
+| AKTA-04 | Phase 91 | Complete |
 | LEAVE-01 | Phase 92 | Complete |
 | LEAVE-02 | Phase 92 | Complete |
 | LEAVE-03 | Phase 92 | Complete |
 | TIME-EMP-01 | Phase 92 | Complete |
 | TIME-EMP-02 | Phase 92 | Complete |
 | TIME-EMP-03 | Phase 92 | Complete |
-| EMP-ON-01 | Phase 93 | Pending |
-| EMP-OFF-01 | Phase 93 | Pending |
-| EMP-OFF-02 | Phase 93 | Pending |
-| PAYROLL-PL-01 | Phase 94 | Pending |
-| PAYROLL-PL-02 | Phase 94 | Pending |
-| PAYROLL-PL-03 | Phase 94 | Pending |
-| PAYROLL-DE-01 | Phase 94 | Pending |
-| PAYROLL-DE-02 | Phase 94 | Pending |
-| PAYROLL-UK-01 | Phase 94 | Pending |
-| PAYROLL-US-01 | Phase 94 | Pending |
-| HRIS-SYNC-01 | Phase 95 | Pending |
-| HRIS-SYNC-02 | Phase 95 | Pending |
-| HRIS-SYNC-03 | Phase 95 | Pending |
-| HRIS-SYNC-04 | Phase 95 | Pending |
-| HRIS-SYNC-05 | Phase 95 | Pending |
-| HRIS-SYNC-06 | Phase 95 | Pending |
-| EMP-PORTAL-01 | Phase 96 | Pending |
-| EMP-PORTAL-02 | Phase 96 | Pending |
-| EMP-PORTAL-03 | Phase 96 | Pending |
-| EMP-PORTAL-04 | Phase 96 | Pending |
-| HR-DASH-01 | Phase 97 | Pending |
-| HR-DASH-02 | Phase 97 | Pending |
-| HR-DASH-03 | Phase 97 | Pending |
-| HR-DASH-04 | Phase 97 | Pending |
-| HR-DASH-05 | Phase 97 | Pending |
+| EMP-ON-01 | Phase 93 | Complete |
+| EMP-OFF-01 | Phase 93 | Complete |
+| EMP-OFF-02 | Phase 93 | Complete |
+| PAYROLL-PL-01 | Phase 94 | Complete |
+| PAYROLL-PL-02 | Phase 94 | Complete |
+| PAYROLL-PL-03 | Phase 94 | Complete |
+| PAYROLL-DE-01 | Phase 94 | Complete |
+| PAYROLL-DE-02 | Phase 94 | Complete |
+| PAYROLL-UK-01 | Phase 94 | Complete |
+| PAYROLL-US-01 | Phase 94 | Complete |
+| HRIS-SYNC-01 | Phase 95 | Complete |
+| HRIS-SYNC-02 | Phase 95 | Complete |
+| HRIS-SYNC-03 | Phase 95 | Complete |
+| HRIS-SYNC-04 | Phase 95 | Complete |
+| HRIS-SYNC-05 | Phase 95 | Complete |
+| HRIS-SYNC-06 | Phase 95 | Complete |
+| EMP-PORTAL-01 | Phase 96 | Complete |
+| EMP-PORTAL-02 | Phase 96 | Complete |
+| EMP-PORTAL-03 | Phase 96 | Complete |
+| EMP-PORTAL-04 | Phase 96 | Complete |
+| HR-DASH-01 | Phase 97 | Complete |
+| HR-DASH-02 | Phase 97 | Complete |
+| HR-DASH-03 | Phase 97 | Complete |
+| HR-DASH-04 | Phase 97 | Complete |
+| HR-DASH-05 | Phase 97 | Complete |
 | INTEG-API-01 | Phase 98 | Complete |
 | INTEG-API-02 | Phase 98 | Complete |
 | INTEG-API-03 | Phase 98 | Complete |
 | INTEG-API-04 | Phase 98 | Complete |
 | INTEG-API-05 | Phase 98 | Complete |
-| INTEG-AUTH-01 | Phase 99 | Pending |
-| INTEG-AUTH-02 | Phase 99 | Pending |
-| INTEG-AUTH-03 | Phase 99 | Pending |
-| INTEG-AUTH-04 | Phase 99 | Pending |
-| INTEG-AUTH-05 | Phase 99 | Pending |
-| INTEG-WEBHOOK-01 | Phase 100 | Pending |
-| INTEG-WEBHOOK-02 | Phase 100 | Pending |
-| INTEG-WEBHOOK-03 | Phase 100 | Pending |
-| INTEG-WEBHOOK-04 | Phase 100 | Pending |
-| INTEG-WEBHOOK-05 | Phase 100 | Pending |
-| INTEG-WEBHOOK-06 | Phase 100 | Pending |
-| INTEG-WEBHOOK-07 | Phase 100 | Pending |
-| INTEG-SEC-01 | Phase 100 | Pending |
-| INTEG-SEC-02 | Phase 100 | Pending |
-| INTEG-SEC-03 | Phase 100 | Pending |
-| INTEG-SEC-04 | Phase 100 | Pending |
-| INTEG-SEC-05 | Phase 100 | Pending |
+| INTEG-AUTH-01 | Phase 99 | Complete |
+| INTEG-AUTH-02 | Phase 99 | Complete |
+| INTEG-AUTH-03 | Phase 99 | Complete |
+| INTEG-AUTH-04 | Phase 99 | Complete |
+| INTEG-AUTH-05 | Phase 99 | Complete |
+| INTEG-WEBHOOK-01 | Phase 100 | Complete |
+| INTEG-WEBHOOK-02 | Phase 100 | Complete |
+| INTEG-WEBHOOK-03 | Phase 100 | Complete |
+| INTEG-WEBHOOK-04 | Phase 100 | Complete |
+| INTEG-WEBHOOK-05 | Phase 100 | Complete |
+| INTEG-WEBHOOK-06 | Phase 100 | Complete |
+| INTEG-WEBHOOK-07 | Phase 100 | Complete |
+| INTEG-SEC-01 | Phase 100 | Complete |
+| INTEG-SEC-02 | Phase 100 | Complete |
+| INTEG-SEC-03 | Phase 100 | Complete |
+| INTEG-SEC-04 | Phase 100 | Complete |
+| INTEG-SEC-05 | Phase 100 | Complete |
 | INTEG-ZAPIER-01 | Phase 101 | Complete |
-| INTEG-ZAPIER-02 | Phase 101 | Complete |
+| INTEG-ZAPIER-02 | Phase 101 | Deferred (external — public-listing submission + 2–4wk review, separate ongoing milestone; app + bundle test built) |
 | INTEG-N8N-01 | Phase 101 | Complete |
 | INTEG-N8N-02 | Phase 101 | Complete |
 | INTEG-MAKE-01 | Phase 101 | Complete |
