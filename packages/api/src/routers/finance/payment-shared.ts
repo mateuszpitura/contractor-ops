@@ -31,9 +31,9 @@ import type { ExportFormat } from '../../services/payment-format-detection';
 import { groupItemsByFormat } from '../../services/payment-format-detection';
 import { convertForSettlement, resolveSettlementCurrency } from '../../services/payment-settlement';
 import { calculateWht } from '../../services/tax-rate.service';
-import { enqueueWebhookEvent } from '../../services/webhooks/enqueue';
 import { applyTreaty } from '../../services/treaty-rate.service';
 import type { DbClient } from '../../services/types';
+import { enqueueWebhookEvent } from '../../services/webhooks/enqueue';
 
 export const log = createLogger({ service: 'payment-router' });
 
